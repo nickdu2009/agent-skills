@@ -73,6 +73,11 @@ Return:
 - Do not let progress updates collapse into vague status language.
 - Keep the plan short enough to execute, not so broad that it becomes a project document.
 
+# Common Anti-Patterns
+
+- **Editing while still discovering.** The agent starts modifying a file before confirming the full set of files that need to change, then backtracks when a dependency surfaces. The plan was never stated.
+- **Vague progress reporting.** The agent says "making progress" or "almost done" instead of reporting concrete done / not done / next items. This hides whether the plan is still on track.
+
 # Composition
 
 Combine with:

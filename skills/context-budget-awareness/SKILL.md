@@ -84,6 +84,11 @@ Return:
 - If starting fresh would improve clarity, say so explicitly.
 - The compressed summary must include: the current symptom or objective, the confirmed scope, what has been ruled out, and the next intended step.
 
+# Common Anti-Patterns
+
+- **Carrying the entire session history.** The agent re-reads rejected hypotheses, old terminal output, and abandoned file paths into every subsequent step instead of compressing state after each milestone.
+- **Re-reading the same 500-line file for the fourth time.** The agent keeps loading the same large file without a new question driving the re-read, consuming context budget on information that should have been summarized after the first pass.
+
 # Composition
 
 Combine with:

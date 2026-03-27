@@ -76,6 +76,11 @@ Return:
 - If several leads exist, rank them and inspect one at a time.
 - If the task turns out to be global, make that conclusion explicit rather than drifting into it silently.
 
+# Common Anti-Patterns
+
+- **Grepping the entire repo before reading the error message.** The agent runs broad searches across every directory instead of starting from the user-provided clue. This wastes context and delays the first useful finding.
+- **Silent scope creep.** The agent discovers a related issue in a neighboring module and begins investigating it without stating that the original boundary was insufficient. The scope expands without an explicit expansion decision.
+
 # Composition 
 
 Combine with:

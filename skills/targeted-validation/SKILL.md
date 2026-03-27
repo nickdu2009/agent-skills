@@ -72,6 +72,11 @@ Return:
 - If broader validation is required, explain the risk that justifies the extra cost.
 - If no meaningful automated validation exists, propose the smallest manual or observational check.
 
+# Common Anti-Patterns
+
+- **"Run all tests" as the default.** The agent runs the full test suite after a one-line change in a single adapter, spending minutes on unrelated tests while the targeted adapter test would have taken seconds.
+- **Skipping validation entirely.** The agent declares "looks correct" after editing without running any check, leaving the change unverified because it "seemed simple."
+
 # Composition
 
 Combine with:

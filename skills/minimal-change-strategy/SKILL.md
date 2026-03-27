@@ -73,6 +73,11 @@ Return:
 - If the smallest patch is unsafe or too brittle, state why and escalate deliberately to a slightly larger change.
 - Keep diffs easy to review and easy to revert.
 
+# Common Anti-Patterns
+
+- **"While I'm here" cleanup.** The agent fixes the reported bug in one line, then reformats the surrounding function, renames a variable, and reorders imports — tripling the diff for no task-related reason.
+- **Rewriting instead of patching.** The agent replaces an entire function or class to fix a single branch condition, making the change harder to review and riskier to revert.
+
 # Composition
 
 Combine with:

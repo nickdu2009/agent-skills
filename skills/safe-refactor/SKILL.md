@@ -71,6 +71,11 @@ Return:
 - If a refactor step exposes hidden behavior changes, stop and split the work.
 - Keep each step easy to review and easy to revert.
 
+# Common Anti-Patterns
+
+- **Combining behavior change with structural cleanup.** The agent extracts a helper function and simultaneously changes its error handling semantics, introducing a behavior change hidden inside what was supposed to be a pure structural refactor.
+- **Doing everything in one step.** The agent renames a function, moves it to a new file, and changes its signature in a single commit instead of performing one structural operation at a time with validation between steps.
+
 # Composition
 
 Combine with:

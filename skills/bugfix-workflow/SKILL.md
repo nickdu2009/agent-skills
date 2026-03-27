@@ -76,6 +76,11 @@ Return:
 - Do not report "fixed" unless the original symptom was checked directly or the limitation is clearly stated.
 - For intermittent issues, record what remains unproven.
 
+# Common Anti-Patterns
+
+- **Patching before diagnosing.** The agent sees something that looks wrong and immediately edits it without confirming the code path is related to the reported symptom. The "fix" turns out to be for a different issue entirely.
+- **Treating correlation as causation.** A recent commit touched the same file where the bug manifests, so the agent assumes it is the cause and reverts part of it — without tracing the actual failure path or checking whether the symptom existed before that commit.
+
 # Composition
 
 Combine with:

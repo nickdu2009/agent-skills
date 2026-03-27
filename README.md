@@ -114,6 +114,25 @@ Add `conflict-resolution` when:
 - evidence must be compared and merged before acting
 - uncertainty should be preserved instead of collapsed too early
 
+### Phase Skills
+
+Phase skills provide a schema-first multi-wave execution system for large implementation projects. They are significantly heavier than execution and orchestration skills and should only be introduced when the task warrants structured project-level coordination.
+
+Add `phase-plan`, `phase-execute`, and `phase-contract-tools` when:
+
+- the implementation spans 5 or more PRs across multiple modules
+- work must be sequenced into waves with explicit dependencies
+- multiple agents need coordinated write access with merge ordering
+- the project requires formal handoff artifacts between execution phases
+
+Do not use phase skills for:
+
+- single-session tasks or one-off changes
+- tasks with fewer than 3 coordinated PRs
+- work that can be managed with `plan-before-action` and `multi-agent-protocol` alone
+
+When in doubt, start with `plan-before-action` plus `multi-agent-protocol` and escalate to phase skills only when wave-level coordination becomes necessary.
+
 ## Design Philosophy
 
 - Scope first.

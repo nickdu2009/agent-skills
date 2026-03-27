@@ -90,6 +90,11 @@ Return using this template:
 - If two findings can both be true at different layers, represent that possibility.
 - Keep adjudication narrow and evidence-seeking.
 
+# Common Anti-Patterns
+
+- **Loudest voice wins.** One subagent reports with "high confidence" while another says "medium confidence." The agent picks the high-confidence claim without comparing evidence quality — the medium-confidence claim had direct code-path evidence while the high-confidence claim relied on log correlation only.
+- **Collapsing disagreement into false consensus.** Two subagents contradict each other, and the agent silently drops the minority finding instead of presenting both with their evidence and labeling the disagreement.
+
 # Composition
 
 Combine with:

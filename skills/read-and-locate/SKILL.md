@@ -75,6 +75,11 @@ Return:
 - Do not present tentative leads as confirmed facts.
 - If the first clue is weak, say so and choose the narrowest next-best clue.
 
+# Common Anti-Patterns
+
+- **Reading every file in the directory.** The agent opens all files in `src/billing/` sequentially instead of starting from the invoice generation entry point and tracing one call path. Most files turn out to be irrelevant.
+- **Continuing to explore after the edit point is clear.** The agent already identified the serializer boundary but keeps browsing neighboring modules "just in case," wasting context on files that will not be touched.
+
 # Composition
 
 Combine with:

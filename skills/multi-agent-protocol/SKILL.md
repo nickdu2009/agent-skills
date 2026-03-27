@@ -230,7 +230,12 @@ These tasks require no multi-agent declaration and no activation of this skill:
 
 ---
 
-## 8. Examples
+## 8. Common Anti-Patterns
+
+- **Parallelizing by default.** The agent launches 3 subagents for a task that requires one coherent reasoning chain across a single module. The merge cost exceeds the time saved, and the split introduces coordination confusion.
+- **Overlapping write scopes.** Two subagents are assigned to edit the same file or the same function. Neither knows about the other's changes, and the merge produces silent logic errors or conflicts that the primary agent has to untangle.
+
+## 9. Examples
 
 ### Explore example
 
