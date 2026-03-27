@@ -1,0 +1,30 @@
+phase_id: smoke
+wave_id: 1
+execution_mode: serial
+wave_state: blocked
+control_pr: P99-01
+lanes:
+- lane_ref: smoke
+  ref_kind: pr
+  ref: P99-01
+  lane_state: not_started
+  owner: agent_a
+  blockers: []
+  validation_status: not_run
+  evidence_refs: []
+- lane_ref: review
+  ref_kind: role
+  ref: smoke_review
+  lane_state: not_started
+  owner: agent_a
+  blockers: []
+  validation_status: not_run
+  evidence_refs: []
+validation:
+  lane_checks: []
+  seam_checks: []
+  status: not_run
+next_action: ''
+planning_escalation:
+  needed: false
+  reason: ''

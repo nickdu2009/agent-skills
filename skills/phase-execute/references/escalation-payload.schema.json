@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/phase-execute/escalation-payload.schema.json",
+  "title": "Phase Execute Escalation Payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phase_id",
+    "wave_id",
+    "wave_state",
+    "trigger",
+    "affected_lanes",
+    "conflicting_paths",
+    "failing_commands",
+    "validation_evidence",
+    "last_safe_state",
+    "recommended_action"
+  ],
+  "properties": {
+    "phase_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "wave_id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "wave_state": {
+      "type": "string",
+      "enum": ["blocked", "active", "merge_ready", "next_wave_ready"]
+    },
+    "trigger": {
+      "type": "string",
+      "enum": ["merge_conflict", "hotspot_collision", "validation_cascade", "budget_exhausted"]
+    },
+    "affected_lanes": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "conflicting_paths": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "failing_commands": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "validation_evidence": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "last_safe_state": {
+      "type": "string",
+      "minLength": 1
+    },
+    "recommended_action": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

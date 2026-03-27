@@ -1,0 +1,39 @@
+Implement P99-01 Smoke Fixture Contract for smoke, Wave 1.
+
+Phase hard rules:
+- Use phase-contract-tools as the only skill-bundle contract authority.
+
+Read first in order:
+- docs/smoke-roadmap.md (Goals)
+- docs/smoke-wave-guide.md (Wave 1: Smoke Lane)
+
+Start condition: immediate
+
+You may change:
+- docs/smoke-*
+
+Do not touch:
+- repository-wide refactors
+
+Goal: Keep the shared helper smoke fixture valid.
+
+Files likely involved:
+- docs/smoke-plan.yaml
+- docs/smoke-wave-guide.md
+
+Expected changes:
+- Deterministic fixture docs and renderer outputs remain in sync.
+
+Guardrails:
+- Do not add extra smoke phase files.
+
+Non-goals:
+- No repository production code changes.
+
+Validation:
+- profile:smoke_go_test - Documented smoke command for the fixture.
+- go test ./internal/codexlite/tools/...
+
+Done when all are true:
+- The smoke fixture remains schema-valid.
+- Renderer smoke outputs remain deterministic.

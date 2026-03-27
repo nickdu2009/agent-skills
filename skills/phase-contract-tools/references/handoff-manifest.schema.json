@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/phase-contract-tools/handoff-manifest.schema.json",
+  "title": "Phase Contract Core Handoff Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "handoff_schema_version",
+    "phase",
+    "wave_id",
+    "wave_label",
+    "lane",
+    "owner",
+    "ref_kind",
+    "ref",
+    "plan_path",
+    "plan_sha256",
+    "body_sha256",
+    "generated_at"
+  ],
+  "properties": {
+    "handoff_schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "phase": {
+      "type": "string",
+      "minLength": 1
+    },
+    "wave_id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "wave_label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lane": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ref_kind": {
+      "type": "string",
+      "enum": ["pr", "role"]
+    },
+    "ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "plan_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "plan_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "body_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

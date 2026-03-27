@@ -1,0 +1,46 @@
+- id: "P13-10"
+  title: "Example Implementation Task"
+  milestone: "M3"
+  type: "implementation"
+  owner: "agent_c"
+  wave: 3
+  depends_on:
+    - "P13-09"
+  goal: "Implement one bounded piece of accepted behavior."
+  read_first:
+    - path: "docs/phaseN-roadmap.md"
+      section: "M3 section"
+    - path: "docs/phaseN-wave-guide.md"
+      section: "Wave 3 section"
+  start_condition:
+    gate: "after_prs"
+    refs:
+      - "P13-09"
+    note: "start only after the foundation gate lands"
+  scope:
+    allow:
+      - "cmd/codexlite/*"
+      - "internal/codexlite/config/*"
+    deny:
+      - "pkg/runtime/* semantics"
+      - "pkg/store/*"
+  files:
+    - "cmd/codexlite/run.go"
+    - "internal/codexlite/config/config.go"
+  expected_changes:
+    - "explicit config precedence"
+    - "bounded bootstrap followthrough"
+  guardrails:
+    - "Do not widen provider scope."
+    - "Do not change runtime semantics."
+  non_goals:
+    - "no policy-profile implementation yet"
+    - "no packaging-smoke work yet"
+  validation:
+    - kind: "profile"
+      ref: "codexlite_bootstrap_smoke"
+    - kind: "command"
+      command: "go test ./cmd/codexlite ./internal/codexlite/config/..."
+  done_when:
+    - "The bounded behavior is implemented."
+    - "The declared validation passes."

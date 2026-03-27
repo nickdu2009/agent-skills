@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/phase-contract-tools/wave-status-snapshot.schema.json",
+  "title": "Phase Contract Core Wave Status Snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phase_id",
+    "wave_id",
+    "execution_mode",
+    "wave_state",
+    "control_pr",
+    "lanes",
+    "validation",
+    "next_action",
+    "planning_escalation"
+  ],
+  "properties": {
+    "phase_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "wave_id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "execution_mode": {
+      "type": "string",
+      "enum": ["serial", "parallel"]
+    },
+    "wave_state": {
+      "type": "string",
+      "enum": ["blocked", "active", "merge_ready", "next_wave_ready"]
+    },
+    "control_pr": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lanes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lane_ref",
+          "ref_kind",
+          "ref",
+          "lane_state",
+          "owner",
+          "blockers",
+          "validation_status",
+          "evidence_refs"
+        ],
+        "properties": {
+          "lane_ref": {"type": "string", "minLength": 1},
+          "ref_kind": {"type": "string", "enum": ["pr", "role"]},
+          "ref": {"type": "string", "minLength": 1},
+          "lane_state": {"type": "string", "enum": ["not_started", "in_progress", "completed", "blocked"]},
+          "owner": {"type": "string", "minLength": 1},
+          "blockers": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "validation_status": {
+            "type": "string",
+            "enum": ["not_run", "in_progress", "passed", "failed"]
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {"type": "string", "minLength": 1},
+                {
+                  "type": "object",
+                  "minProperties": 1,
+                  "propertyNames": {
+                    "enum": ["branch", "commit", "validation", "diff", "artifact", "command"]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lane_checks", "seam_checks", "status"],
+      "properties": {
+        "lane_checks": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "seam_checks": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "status": {
+          "type": "string",
+          "enum": ["not_run", "in_progress", "passed", "failed"]
+        }
+      }
+    },
+    "next_action": {
+      "type": "string"
+    },
+    "planning_escalation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["needed", "reason"],
+      "properties": {
+        "needed": {"type": "boolean"},
+        "reason": {"type": "string"}
+      }
+    }
+  }
+}

@@ -1,0 +1,169 @@
+schema_version: "2.0"
+last_updated: "YYYY-MM-DD"
+status: proposed
+scope: "Machine-first execution source for Phase N."
+
+hard_rules:
+  - "runtime.Service remains the only durable execution state machine."
+
+schema_conventions:
+  authority:
+    yaml_fields_are_authoritative:
+      - "prs.id"
+      - "prs.owner"
+      - "prs.wave"
+      - "prs.depends_on"
+      - "prs.validation"
+      - "waves.control_pr"
+      - "waves.merge_order"
+      - "waves.lane_setup"
+    markdown_fields_are_narrative_only:
+      - "roadmap baseline and milestone context"
+      - "wave-guide human coordination text"
+      - "execution-index reading order"
+  identifiers:
+    pr_id_pattern: "^P[0-9]+-[0-9]{2}$"
+    team_ids: []
+    pr_types:
+      - "contract"
+      - "implementation"
+      - "control"
+      - "closeout"
+    role_kinds:
+      - "review"
+      - "sidecar"
+  field_semantics:
+    - "owner must equal team[].id."
+    - "wave on a PR must match the wave that lists the PR in waves[].prs."
+    - "waves[].lane_setup[].ref_kind must be pr or role."
+    - "If ref_kind is pr, lane_setup[].ref must match prs[].id."
+    - "If ref_kind is role, lane_setup[].ref must match waves[].roles[].id within the same wave."
+    - "validation entries are structured mappings with kind profile or command."
+    - "phase-local read_first entries may only reference phaseN-roadmap.md, phaseN-plan.yaml, phaseN-wave-guide.md, or phaseN-execution-index.md."
+    - "read_first entries are ordered mappings with path and optional section."
+    - "execution-critical strings must avoid vague phrases such as as needed, if needed, where appropriate, make sure, and when ready."
+    - "start_condition must be a mapping with gate, refs, and optional note."
+    - "done_when must be a list of concrete completion checks."
+  merge_semantics:
+    - "waves[].merge_order is an ordered list of batches."
+    - "Tasks inside one batch may proceed in parallel."
+    - "Later batches wait for earlier batches to finish."
+
+placeholder_conventions:
+  suite_dir:
+    token: "<suite-dir>"
+    meaning: "Concrete suite directory path."
+    example: "testdata/evals/codexlite/basic"
+  report_json:
+    token: "<report.json>"
+    meaning: "Writable JSON output path."
+    example: "tmp/gate-report.json"
+
+validation_profiles:
+  example_smoke:
+    description: "Example package smoke test."
+    command: "go test ./pkg/example/..."
+
+team:
+  - id: "agent_a"
+    label: "Agent A"
+    focus: "Primary implementation lane"
+    owns:
+      - "pkg/example/*"
+    avoid:
+      - "pkg/shared/*"
+  - id: "integrator"
+    label: "Integrator"
+    focus: "Shared seams and closeout"
+    owns:
+      - "docs/*"
+      - "shared hotspots"
+    avoid:
+      - "package-local work when a lane owns it"
+
+hotspots:
+  - path: "pkg/shared/*"
+    reason: "Shared contract surface"
+
+prs:
+  - id: "P13-01"
+    title: "Example Contract"
+    milestone: "M1"
+    type: "contract"
+    owner: "agent_a"
+    wave: 1
+    depends_on: []
+    goal: "Freeze the contract before implementation."
+    read_first:
+      - path: "docs/phaseN-roadmap.md"
+        section: "M1 section"
+    start_condition:
+      gate: "immediate"
+      refs: []
+    scope:
+      allow:
+        - "docs/phase13-*"
+      deny:
+        - "pkg/shared/* implementation"
+    files:
+      - "docs/phaseN-roadmap.md"
+    expected_changes:
+      - "accepted contract wording"
+    guardrails:
+      - "Do not implement behavior in this PR."
+    non_goals:
+      - "no implementation yet"
+    validation:
+      - kind: "profile"
+        ref: "example_smoke"
+    done_when:
+      - "The contract is explicit."
+      - "The contract is reusable."
+
+waves:
+  - id: 1
+    label: "Wave 1"
+    goal: "Contract freeze"
+    control_pr: "P13-01"
+    prs:
+      - "P13-01"
+    merge_order:
+      - ["P13-01"]
+    lane_setup:
+      - lane: "A"
+        owner: "agent_a"
+        ref_kind: "pr"
+        ref: "P13-01"
+      - lane: "Integrator"
+        owner: "integrator"
+        ref_kind: "role"
+        ref: "wave1_review"
+    roles:
+      - id: "wave1_review"
+        owner: "integrator"
+        kind: "review"
+        read_first:
+          - path: "docs/phaseN-execution-index.md"
+          - path: "docs/phaseN-wave-guide.md"
+            section: "Wave 1 section"
+        goal: "Keep shared seam review active."
+        start_condition:
+          gate: "immediate"
+          refs: []
+          note: "active throughout Wave 1"
+        scope:
+          allow:
+            - "docs/phase13-*"
+          deny:
+            - "lane-owned implementation"
+        guardrails:
+          - "Keep review narrow and explicit."
+        validation:
+          - kind: "profile"
+            ref: "example_smoke"
+        done_when:
+          - "Wave 1 remains aligned."
+    constraints:
+      - "No implementation work opens in Wave 1."
+    integrator_checklist:
+      - "confirm PR ids and wave refs stay aligned"

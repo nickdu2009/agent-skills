@@ -1,0 +1,145 @@
+schema_version: "2.0"
+last_updated: "2026-03-27"
+status: proposed
+scope: "Minimal smoke fixture for the shared phase contract helpers."
+
+hard_rules:
+  - "Use phase-contract-tools as the only skill-bundle contract authority."
+
+schema_conventions:
+  authority:
+    yaml_fields_are_authoritative:
+      - "prs.id"
+      - "prs.validation"
+      - "waves.control_pr"
+      - "waves.merge_order"
+      - "waves.lane_setup"
+    markdown_fields_are_narrative_only:
+      - "roadmap baseline and scope context"
+      - "wave-guide coordination cues"
+      - "execution-index reading order"
+  identifiers:
+    pr_id_pattern: "^P[0-9]+-[0-9]{2}$"
+    team_ids:
+      - "agent_a"
+    pr_types:
+      - "implementation"
+    role_kinds:
+      - "review"
+  field_semantics:
+    - "owner must equal team[].id."
+    - "validation entries are structured mappings."
+    - "start_condition must be a mapping with gate and refs."
+    - "done_when must be a list of concrete completion checks."
+  merge_semantics:
+    - "waves[].merge_order is an ordered list of batches."
+
+placeholder_conventions:
+  report_json:
+    token: "<report.json>"
+    meaning: "Writable JSON output path for smoke validation."
+    example: "tmp/smoke-report.json"
+
+validation_profiles:
+  smoke_go_test:
+    description: "Documented smoke command for the fixture."
+    command: "go test ./internal/codexlite/tools/..."
+
+team:
+  - id: "agent_a"
+    label: "Agent A"
+    focus: "Owns the only smoke lane."
+    owns:
+      - "docs/smoke-*"
+    avoid:
+      - "unrelated repository files"
+
+hotspots:
+  - path: "docs/smoke-*"
+    reason: "Smoke fixture stays self-contained."
+
+prs:
+  - id: "P99-01"
+    title: "Smoke Fixture Contract"
+    milestone: "M0"
+    type: "implementation"
+    owner: "agent_a"
+    wave: 1
+    depends_on: []
+    goal: "Keep the shared helper smoke fixture valid."
+    read_first:
+      - path: "docs/smoke-roadmap.md"
+        section: "Goals"
+      - path: "docs/smoke-wave-guide.md"
+        section: "Wave 1: Smoke Lane"
+    start_condition:
+      gate: "immediate"
+      refs: []
+    scope:
+      allow:
+        - "docs/smoke-*"
+      deny:
+        - "repository-wide refactors"
+    files:
+      - "docs/smoke-plan.yaml"
+      - "docs/smoke-wave-guide.md"
+    expected_changes:
+      - "Deterministic fixture docs and renderer outputs remain in sync."
+    guardrails:
+      - "Do not add extra smoke phase files."
+    non_goals:
+      - "No repository production code changes."
+    validation:
+      - kind: "profile"
+        ref: "smoke_go_test"
+    done_when:
+      - "The smoke fixture remains schema-valid."
+      - "Renderer smoke outputs remain deterministic."
+
+waves:
+  - id: 1
+    label: "Wave 1"
+    goal: "Validate the shared phase contract helpers."
+    control_pr: "P99-01"
+    prs:
+      - "P99-01"
+    merge_order:
+      - ["P99-01"]
+    lane_setup:
+      - lane: "smoke"
+        owner: "agent_a"
+        ref_kind: "pr"
+        ref: "P99-01"
+      - lane: "review"
+        owner: "agent_a"
+        ref_kind: "role"
+        ref: "smoke_review"
+    roles:
+      - id: "smoke_review"
+        owner: "agent_a"
+        kind: "review"
+        read_first:
+          - path: "docs/smoke-execution-index.md"
+        goal: "Confirm smoke fixture alignment."
+        start_condition:
+          gate: "after_prs"
+          refs:
+            - "P99-01"
+          note: "starts after smoke PR lands"
+        scope:
+          allow:
+            - "docs/smoke-*"
+          deny:
+            - "repository-wide changes"
+        guardrails:
+          - "Do not alter smoke fixture structure."
+        validation:
+          - kind: "profile"
+            ref: "smoke_go_test"
+        done_when:
+          - "Smoke fixture remains schema-valid."
+    constraints:
+      - "Keep the fixture machine-readable and deterministic."
+    integrator_checklist:
+      - "Confirm the smoke fixture still passes schema and doc-set validation."
+      - "Confirm renderer outputs still match the committed goldens."

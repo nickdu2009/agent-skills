@@ -1,0 +1,4 @@
+interface:
+  display_name: "Phase Contract Tools"
+  short_description: "Own the sole shared schema, render, handoff, snapshot, and validation contract for phase planning and execution"
+  default_prompt: "Use $phase-contract-tools when you need the shared schema-first phase tools library for the skill bundle: validate `phaseN-plan.yaml`, validate the strict four-file doc set, derive prompts or wave kickoff text from schema, render or verify immutable lane handoffs, render machine-readable wave status snapshots, and keep planning and execution aligned to one canonical contract and script entrypoint set."

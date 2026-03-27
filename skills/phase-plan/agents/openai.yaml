@@ -1,0 +1,4 @@
+interface:
+  display_name: "Phase Plan"
+  short_description: "Design schema-first phase execution systems against the shared tools library in $phase-contract-tools"
+  default_prompt: "Use $phase-plan to turn repository planning into a schema-first execution system: freeze the roadmap, encode work in phaseN-plan.yaml, build the wave guide and execution index, and validate or render only through $phase-contract-tools so planning and execution stay aligned to one canonical contract and script entrypoint set."

@@ -1,0 +1,24 @@
+smoke Wave 1 kickoff
+
+Goal: Validate the shared phase contract helpers.
+Control PR: P99-01
+
+Phase hard rules:
+- Use phase-contract-tools as the only skill-bundle contract authority.
+
+Lane setup:
+- smoke: agent_a -> pr P99-01 Smoke Fixture Contract
+- review: agent_a -> role smoke_review
+
+Wave roles:
+- smoke_review: agent_a -> review - Confirm smoke fixture alignment.
+
+Merge order:
+1. P99-01 Smoke Fixture Contract
+
+Constraints:
+- Keep the fixture machine-readable and deterministic.
+
+Integrator checklist:
+- Confirm the smoke fixture still passes schema and doc-set validation.
+- Confirm renderer outputs still match the committed goldens.
