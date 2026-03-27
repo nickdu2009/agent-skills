@@ -35,7 +35,7 @@ Keep edits small, local, and reviewable. The skill favors the narrowest patch th
 
 1. Define the required behavior change or defect correction.
 2. Identify the narrowest edit point that can produce that outcome.
-3. Compare options and choose the one with the smallest behavioral surface area.
+3. Compare options and choose the one that touches the fewest files, changes the fewest interfaces, and affects the fewest downstream consumers.
 4. Make the patch without broad restructuring.
 5. Validate only the affected area first.
 6. Record any intentional non-fixes that were observed but deferred.

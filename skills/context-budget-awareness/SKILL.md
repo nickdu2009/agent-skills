@@ -12,9 +12,13 @@ Teach the agent to control context growth. The skill helps avoid bloated session
 # When to Use
 
 - In long debugging or refactoring sessions.
-- When the active file set keeps growing.
-- When logs, policies, or previous attempts are dominating the session.
+- When the working set exceeds 8 files without a recent scope-narrowing step.
+- When the same file has been read more than twice without a new question driving the re-read.
+- When more than 3 hypotheses are active without evidence to rank them.
+- When the agent's last 3 actions did not advance the stated objective.
 - When a fresh focused pass may be cheaper than carrying the current context forward.
+
+These thresholds (8 files, 2 re-reads, 3 hypotheses, 3 stalled actions) are starting defaults. Adjust downward for small focused tasks or upward for large multi-module investigations where broader context is expected.
 
 # When Not to Use
 
@@ -35,7 +39,14 @@ Teach the agent to control context growth. The skill helps avoid bloated session
 
 1. Track the current objective and working set explicitly.
 2. Read only the slices of information needed for the next step.
-3. After each milestone, compress the state into a short working summary.
+3. After each milestone, compress the state using the standard summary template:
+   ```
+   - Symptom / Objective: ...
+   - Confirmed scope: ...
+   - Ruled out: ...
+   - Next step: ...
+   ```
+   A milestone is any of: a file was edited successfully, a hypothesis was confirmed or ruled out, the analysis target shifted to a different module, or a subagent returned results.
 4. Drop stale hypotheses, stale logs, and unused files from the active set.
 5. If the session becomes noisy, restart from the compressed summary instead of carrying everything forward.
 6. Rehydrate only the evidence needed for the next decision.
@@ -58,19 +69,20 @@ Optional but helpful:
 
 Return:
 
-- the current compressed state
-- the active working set
-- deferred context that may matter later
-- stale context that should no longer drive decisions
+- the current compressed state (using the standard summary template)
+- the active working set, classified as:
+  - **Live**: directly needed for the next step.
+  - **Deferred**: may matter in a later phase but does not block the current step.
+  - **Discarded**: investigated and found irrelevant, or superseded by newer evidence.
 - the next focused step
 
 # Guardrails
 
 - Do not keep huge logs or long file excerpts in active memory when a short summary is enough.
 - Do not re-read the same large file unless a new question requires it.
-- Do not let earlier hypotheses survive without evidence.
+- Drop any hypothesis that has no supporting evidence after the most recent investigation pass.
 - If starting fresh would improve clarity, say so explicitly.
-- Compression must preserve decision-relevant facts, not just shorten text.
+- The compressed summary must include: the current symptom or objective, the confirmed scope, what has been ruled out, and the next intended step.
 
 # Composition
 
@@ -85,9 +97,9 @@ Combine with:
 
 Task: "Debug an intermittent worker failure after a long session."
 
-Compressed state:
+Compressed state (standard summary template):
 
-- Symptom: worker fails only on retry path.
+- Symptom / Objective: worker fails only on retry path.
 - Confirmed scope: retry scheduler, payload serializer, retry test fixture.
 - Ruled out: queue connection, credential loading.
 - Next step: inspect serializer differences between initial and retry enqueue.

@@ -38,8 +38,10 @@ Force the agent to define the minimum useful task boundary before doing work. Th
 2. Propose the initial boundary: files, modules, interfaces, and validation surface.
 3. Inspect only that boundary.
 4. If evidence is missing, expand one layer outward and explain why.
-5. Stop expanding once there is enough evidence to answer, edit, or validate.
+5. Stop expanding when: (a) the next action is clear from current evidence, (b) the last expansion produced no new relevant evidence, or (c) the working set already covers the known call path end-to-end.
 6. Before editing, restate the final working set.
+
+If the task is analysis-only, the boundary is the answer surface. If the task is edit-capable, the boundary must also include the validation surface.
 
 # Input Contract
 

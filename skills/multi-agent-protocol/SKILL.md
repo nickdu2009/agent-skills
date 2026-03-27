@@ -62,7 +62,7 @@ Return format:
 1. Deduplicate overlapping findings across subagents.
 2. If two subagents report conflicting evidence, present both with their supporting evidence and label the disagreement.
 3. If confidence is low across all subagents, state the uncertainty explicitly rather than guessing.
-4. Use the `conflict-resolution` skill when disagreements are non-trivial.
+4. Use the `conflict-resolution` skill when disagreements are non-trivial. When doing so, map subagent output to its input format: `Findings` → `Claim`, infer `Source` from the subagent identity, carry `Evidence` and `Confidence` directly.
 
 ---
 

@@ -35,6 +35,10 @@ Teach the agent to understand only the amount of code needed to move the task fo
 
 1. Start from the strongest clue: endpoint, command, stack trace, test, symbol, or file path.
 2. Identify the first likely entry point.
+   - Runtime path: follow function calls and control flow.
+   - Data path: follow data transformations and storage boundaries.
+   - Ownership path: follow module boundaries and responsibility seams.
+   - Configuration path: follow config loading, overrides, and environment resolution.
 3. Trace only the adjacent call path or ownership path.
 4. Mark each discovered file as confirmed location or tentative lead.
 5. Stop once the likely edit points and validation surface are clear.

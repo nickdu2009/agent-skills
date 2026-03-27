@@ -36,8 +36,8 @@ Provide a practical, repeatable workflow for bugfix tasks. The skill keeps the a
 1. State the observable symptom.
 2. Define the smallest plausible fault domain.
 3. Gather evidence from code paths, tests, logs, or reproduction steps.
-4. Form and rank hypotheses.
-5. Edit only after one hypothesis is well supported.
+4. Form and rank hypotheses. Rank by: (1) directness of code-path evidence, (2) ease of verification, (3) consistency with observed symptoms. Investigate the top-ranked hypothesis first.
+5. Edit only after one hypothesis is confirmed by direct code-path evidence or a reproducible test case.
 6. Apply the smallest viable fix.
 7. Validate against the original symptom.
 8. Report what is confirmed, what is still uncertain, and what may need follow-up.

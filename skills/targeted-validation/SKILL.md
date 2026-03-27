@@ -37,7 +37,7 @@ Reduce validation cost while preserving enough confidence for the task at hand. 
 3. Run the targeted check.
 4. If it fails, diagnose whether the failure is in the code, the test, or the setup.
 5. Fix or narrow the issue around the failure.
-6. Broaden validation only if the local result is still insufficient.
+6. Broaden validation only when: (a) the targeted check passes but the change affects a shared interface used by other modules, (b) the targeted check cannot exercise the changed path at all, or (c) the change modifies error handling or fallback paths that are not covered by the targeted check.
 
 # Input Contract
 

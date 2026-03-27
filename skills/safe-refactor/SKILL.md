@@ -35,7 +35,7 @@ Make structural improvements with bounded risk. The skill is for small refactors
 1. Define the refactor goal.
 2. List invariants that must remain true.
 3. Choose the smallest structural step.
-4. Edit one step at a time.
+4. Edit one structural operation at a time: one extraction, one inline, one rename, or one move. Do not combine multiple structural operations in a single step.
 5. Run narrow validation after each meaningful step.
 6. Stop once the structural goal is met; do not convert the task into a redesign.
 

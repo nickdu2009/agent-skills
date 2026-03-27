@@ -34,20 +34,36 @@ Help the primary agent compare and arbitrate conflicting findings without collap
 
 # Execution Pattern
 
-1. Normalize findings into comparable claims.
+1. Normalize each finding into the standard format (Claim / Evidence / Source / Confidence).
+   - Rewrite each claim as: subject + predicate + scope.
+   - Drop findings that have no evidence attached.
+   - When receiving `multi-agent-protocol` subagent output, map fields: `Findings` → `Claim`, infer `Source` from the subagent identity, carry `Evidence` and `Confidence` directly. For Tier 2 output, `Uncertainty` becomes a confidence qualifier.
+   - Example normalization:
+     Raw: "Findings: stale cache on retry. Evidence: `cache.py:112`. Confidence: high"
+     Normalized: "Claim: cache invalidation is missing on the retry path. Evidence: `cache.py:112–118`. Source: subagent-1. Confidence: high"
 2. Group claims by topic or hypothesis.
 3. Mark consensus, partial consensus, and disagreement.
-4. Compare evidence quality: directness, reproducibility, code proximity, and consistency with observed symptoms.
+4. Compare evidence quality using these dimensions in priority order:
+   1. Direct code-path evidence (strongest)
+   2. Reproducible behavioral evidence
+   3. Log or timing correlation
+   4. Structural similarity or analogy (weakest)
+   When two findings conflict and their evidence types differ, prefer the finding with higher-priority evidence.
 5. Resolve only when one interpretation is clearly better supported.
 6. If resolution is weak, recommend the smallest targeted adjudication step.
 7. Produce a final merged view with uncertainty made explicit.
 
 # Input Contract
 
-Provide:
+Each finding must use this format:
 
-- the collected findings
-- the evidence attached to each finding
+- Claim: <one-sentence assertion>
+- Evidence: <file paths, line ranges, observed behavior, or log entries>
+- Source: <which agent, pass, or analysis produced this>
+- Confidence: <high | medium | low>
+
+Also provide:
+
 - the decision that depends on the merge
 - any priority on false positives versus false negatives
 
@@ -58,14 +74,13 @@ Optional but helpful:
 
 # Output Contract
 
-Return:
+Return using this template:
 
-- deduplicated findings
-- consensus points
-- disagreements
-- evidence-quality assessment
-- the merged recommendation
-- any targeted adjudication step if resolution is incomplete
+- Consensus: <list of agreed claims>
+- Disagreements: <claim A vs claim B, with evidence for each>
+- Evidence assessment: <which evidence is stronger and why>
+- Recommendation: <action to take>
+- Adjudication needed: <targeted check if resolution is incomplete, or "none">
 
 # Guardrails
 
@@ -91,6 +106,7 @@ Task: "Merge three subagent reports on a cache inconsistency bug."
 Possible merge result:
 
 - Consensus: stale reads involve the cache invalidation path.
-- Disagreement: one report blames missing invalidation, another blames clock skew in expiry logic.
-- Evidence assessment: missing invalidation has direct code-path evidence; clock skew has circumstantial timing evidence only.
-- Recommendation: inspect the invalidation branch first and run one targeted expiry-path check before ruling out the secondary hypothesis.
+- Disagreements: Report A claims missing invalidation (code-path evidence in `cache.py:112–118`) vs Report B claims clock skew in expiry logic (timing correlation from logs).
+- Evidence assessment: missing invalidation has direct code-path evidence (priority 1); clock skew has log correlation only (priority 3).
+- Recommendation: inspect the invalidation branch first.
+- Adjudication needed: run one targeted expiry-path check before ruling out clock skew.
