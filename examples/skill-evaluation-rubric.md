@@ -82,10 +82,10 @@ Score these dimensions for every scenario:
 - Pass: clarifies the symptom and fault domain before applying a fix.
 - Fail: patches speculative causes without confirming the failure path.
 
-### `subagent-orchestration`
+### `multi-agent-protocol`
 
-- Pass: uses parallelism only for low-coupling subproblems with clear assignments and merge expectations.
-- Fail: splits tightly coupled work or launches overlapping subproblems with unclear ownership.
+- Pass: uses tiered parallelism appropriately — Tier 1 for read-only exploration, Tier 2 with an explicit gate declaration for write-capable delegation — with clear assignments and merge expectations.
+- Fail: splits tightly coupled work, launches overlapping write scopes, skips the Tier 2 gate declaration, or conflates explore and delegate tiers.
 
 ### `conflict-resolution`
 

@@ -8,7 +8,7 @@ Checkout latency spikes intermittently. Evidence may live in the API path, datab
 
 - `scoped-tasking`
 - `plan-before-action`
-- `subagent-orchestration`
+- `multi-agent-protocol`
 - `conflict-resolution`
 - `targeted-validation`
 

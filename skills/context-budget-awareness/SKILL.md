@@ -1,5 +1,6 @@
 ---
 name: context-budget-awareness
+version: 0.1.0
 description: Keep the active context small, current, and aligned to the objective by trimming noise and compressing state.
 tags: [coding, agents, orchestration, efficiency]
 ---
@@ -78,7 +79,7 @@ Combine with:
 - `read-and-locate` to keep discovery tight in unfamiliar codebases
 - `bugfix-workflow` when diagnosis is spreading across too many hypotheses
 - `plan-before-action` to keep the next step explicit after compression
-- `subagent-orchestration` when multiple parallel findings need a compact merge state
+- `multi-agent-protocol` when multiple parallel findings need a compact merge state
 
 # Example
 

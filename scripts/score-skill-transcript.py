@@ -249,17 +249,23 @@ SKILL_SCORE_RULES: dict[str, ScoreRule] = {
             r"复现",
         ),
     ),
-    "subagent-orchestration": ScoreRule(
-        label="subagent-orchestration",
+    "multi-agent-protocol": ScoreRule(
+        label="multi-agent-protocol",
         positive_patterns=(
             r"\bsubagent\b",
             r"\bparallel\b",
             r"\blow-coupling\b",
             r"\bfindings\b",
             r"\brecommendation\b",
+            r"\btier\s*[12]\b",
+            r"\bdelegate\b",
+            r"\bexplore\b",
+            r"\bgate\b",
             r"子代理",
             r"并行",
             r"低耦合",
+            r"委派",
+            r"探索",
         ),
     ),
     "conflict-resolution": ScoreRule(

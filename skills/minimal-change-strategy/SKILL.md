@@ -1,5 +1,6 @@
 ---
 name: minimal-change-strategy
+version: 0.1.0
 description: Bias the agent toward the smallest viable code change that solves the task without unrelated rewrites.
 tags: [coding, agents, orchestration, efficiency]
 ---

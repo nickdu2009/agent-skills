@@ -1,5 +1,6 @@
 ---
 name: bugfix-workflow
+version: 0.1.0
 description: Diagnose, narrow, fix, and verify bugs through an evidence-first workflow with bounded scope and explicit residual risk.
 tags: [coding, agents, orchestration, efficiency]
 ---

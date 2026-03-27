@@ -1,5 +1,6 @@
 ---
 name: plan-before-action
+version: 0.1.0
 description: Require a clear plan, scope, assumptions, and intended file actions before the agent begins editing.
 tags: [coding, agents, orchestration, efficiency]
 ---
@@ -79,7 +80,7 @@ Combine with:
 - `scoped-tasking` to establish the initial boundary
 - `minimal-change-strategy` to constrain the edit size
 - `targeted-validation` to pre-decide how confidence will be earned
-- `subagent-orchestration` when the plan includes parallel analysis
+- `multi-agent-protocol` when the plan includes parallel analysis
 
 # Example
 

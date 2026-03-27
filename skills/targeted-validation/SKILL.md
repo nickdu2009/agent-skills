@@ -1,5 +1,6 @@
 ---
 name: targeted-validation
+version: 0.1.0
 description: Choose the narrowest meaningful validation that protects confidence without defaulting to full-suite execution.
 tags: [coding, agents, orchestration, efficiency]
 ---
@@ -77,7 +78,7 @@ Combine with:
 - `minimal-change-strategy` to keep validation cost aligned with patch size
 - `safe-refactor` to verify structural changes in small steps
 - `bugfix-workflow` to confirm the symptom is actually resolved
-- `subagent-orchestration` when separate hypotheses need separate checks
+- `multi-agent-protocol` when separate hypotheses need separate checks
 
 # Example
 

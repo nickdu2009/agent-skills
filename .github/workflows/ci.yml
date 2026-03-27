@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-skills:
+    name: Validate skill format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check canonical source boundary
+        run: |
+          echo "Checking that SKILL.md files only exist under skills/..."
+          SKILL_FILES=$(find . -name "SKILL.md" -not -path './.git/*' -not -path './skills/*')
+          if [ -n "$SKILL_FILES" ]; then
+            echo "ERROR: SKILL.md files found outside skills/:"
+            echo "$SKILL_FILES"
+            exit 1
+          fi
+          echo "OK: All SKILL.md files are under skills/"
+
+      - name: Validate SKILL.md frontmatter
+        run: |
+          EXIT_CODE=0
+          for skill_dir in skills/*/; do
+            SKILL_FILE="$skill_dir/SKILL.md"
+            SKILL_NAME=$(basename "$skill_dir")
+
+            if [ ! -f "$SKILL_FILE" ]; then
+              echo "ERROR: $skill_dir missing SKILL.md"
+              EXIT_CODE=1
+              continue
+            fi
+
+            FIRST_LINE=$(head -1 "$SKILL_FILE")
+            if [ "$FIRST_LINE" != "---" ]; then
+              echo "ERROR: $SKILL_FILE does not start with YAML frontmatter"
+              EXIT_CODE=1
+              continue
+            fi
+
+            FM_NAME=$(sed -n '/^---$/,/^---$/p' "$SKILL_FILE" | grep '^name:' | head -1 | sed 's/^name: *//')
+            FM_DESC=$(sed -n '/^---$/,/^---$/p' "$SKILL_FILE" | grep '^description:' | head -1)
+            FM_VERSION=$(sed -n '/^---$/,/^---$/p' "$SKILL_FILE" | grep '^version:' | head -1)
+
+            if [ -z "$FM_NAME" ]; then
+              echo "ERROR: $SKILL_FILE missing 'name' field"
+              EXIT_CODE=1
+            elif [ "$FM_NAME" != "$SKILL_NAME" ]; then
+              echo "ERROR: $SKILL_FILE name '$FM_NAME' does not match directory '$SKILL_NAME'"
+              EXIT_CODE=1
+            fi
+
+            if [ -z "$FM_DESC" ]; then
+              echo "ERROR: $SKILL_FILE missing 'description' field"
+              EXIT_CODE=1
+            fi
+
+            if [ -z "$FM_VERSION" ]; then
+              echo "WARN: $SKILL_FILE missing 'version' field"
+            fi
+
+            echo "OK: $SKILL_NAME"
+          done
+          exit $EXIT_CODE
+
+  install-smoke-test:
+    name: OpenSkills install smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install from skills/ directory
+        run: |
+          mkdir -p /tmp/smoke-test
+          cd /tmp/smoke-test
+          npx openskills install $GITHUB_WORKSPACE/skills --universal -y
+
+      - name: Sync and verify
+        run: |
+          cd /tmp/smoke-test
+          npx openskills sync -y
+          npx openskills list
+
+          SKILL_COUNT=$(npx openskills list 2>&1 | grep -c '(project)')
+          echo "Installed skills: $SKILL_COUNT"
+          if [ "$SKILL_COUNT" -lt 10 ]; then
+            echo "ERROR: Expected at least 10 skills, found $SKILL_COUNT"
+            exit 1
+          fi
+
+      - name: Verify skill readability
+        run: |
+          cd /tmp/smoke-test
+          npx openskills read scoped-tasking | head -5
+          npx openskills read bugfix-workflow | head -5

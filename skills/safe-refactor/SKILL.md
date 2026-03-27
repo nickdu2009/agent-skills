@@ -1,5 +1,6 @@
 ---
 name: safe-refactor
+version: 0.1.0
 description: Guide small, controlled refactors that improve structure while keeping behavior and interfaces stable unless change is explicitly requested.
 tags: [coding, agents, orchestration, efficiency]
 ---

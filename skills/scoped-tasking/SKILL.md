@@ -1,5 +1,6 @@
 ---
 name: scoped-tasking
+version: 0.1.0
 description: Narrow the task to the smallest useful analysis and edit boundary before exploring, editing, or validating.
 tags: [coding, agents, orchestration, efficiency]
 ---

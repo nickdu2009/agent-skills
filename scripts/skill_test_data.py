@@ -56,9 +56,9 @@ SKILL_RUBRICS: dict[str, tuple[str, ...]] = {
         "Pass if the symptom and fault domain are evidenced before the fix is applied.",
         "Fail if the agent patches speculative causes without confirming the failure path.",
     ),
-    "subagent-orchestration": (
-        "Pass if parallel work is used only for low-coupling subproblems with clear assignments.",
-        "Fail if the task is split despite heavy overlap or unclear merge boundaries.",
+    "multi-agent-protocol": (
+        "Pass if tiered parallelism is used appropriately with clear assignments, Tier 2 gate declarations, and structured merge.",
+        "Fail if the task is split despite heavy overlap, the Tier 2 gate is skipped, or write scopes overlap without explicit management.",
     ),
     "conflict-resolution": (
         "Pass if overlapping findings are compared by evidence quality and uncertainty is preserved.",
@@ -141,7 +141,7 @@ EXAMPLE_CASES: tuple[ExampleCase, ...] = (
         skills=(
             "scoped-tasking",
             "plan-before-action",
-            "subagent-orchestration",
+            "multi-agent-protocol",
             "conflict-resolution",
             "targeted-validation",
         ),

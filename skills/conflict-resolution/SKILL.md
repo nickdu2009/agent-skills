@@ -1,5 +1,6 @@
 ---
 name: conflict-resolution
+version: 0.1.0
 description: Merge overlapping or conflicting findings by comparing evidence quality, preserving uncertainty, and recommending targeted adjudication when needed.
 tags: [coding, agents, orchestration, efficiency]
 ---
@@ -78,7 +79,7 @@ Return:
 
 Combine with:
 
-- `subagent-orchestration` to normalize incoming outputs
+- `multi-agent-protocol` to normalize incoming outputs
 - `bugfix-workflow` when conflicting causes are being weighed
 - `targeted-validation` to design an adjudication check
 - `context-budget-awareness` to compress multi-branch reasoning into a usable merged state

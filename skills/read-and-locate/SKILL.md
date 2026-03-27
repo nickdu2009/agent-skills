@@ -1,5 +1,6 @@
 ---
 name: read-and-locate
+version: 0.1.0
 description: Efficiently discover just enough of the codebase to find relevant code paths, ownership boundaries, and likely edit points.
 tags: [coding, agents, orchestration, efficiency]
 ---
@@ -12,7 +13,7 @@ Teach the agent to understand only the amount of code needed to move the task fo
 
 - When the codebase is unfamiliar.
 - When the relevant file or module is not known yet.
-- When you need to trace a call path, data path, or ownership boundary.
+- When the agent needs to trace a call path, data path, or ownership boundary.
 - Before a bugfix or small feature change in an unfamiliar area.
 
 # When Not to Use

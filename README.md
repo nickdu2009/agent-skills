@@ -16,7 +16,7 @@ flowchart TD
     S --> R[read-and-locate]
     M --> F[safe-refactor]
     S --> B[bugfix-workflow]
-    P --> O[subagent-orchestration]
+    P --> O[multi-agent-protocol]
     O --> X[conflict-resolution]
 ```
 
@@ -55,7 +55,7 @@ Orchestration skills shape how a primary agent coordinates multiple lines of wor
 
 Included orchestration skills:
 
-- `subagent-orchestration`
+- `multi-agent-protocol`
 - `conflict-resolution`
 
 ## Recommended Starting Composition
@@ -101,11 +101,12 @@ Add `bugfix-workflow` when:
 - symptoms are known but the fault domain is not
 - evidence must be gathered before any edit is justified
 
-Add `subagent-orchestration` when:
+Add `multi-agent-protocol` when:
 
 - the task can be split into low-coupling subproblems
 - multiple hypotheses can be tested independently
 - different modules or artifact types can be analyzed in parallel
+- read-only exploration benefits from parallel subagents
 
 Add `conflict-resolution` when:
 
@@ -136,8 +137,10 @@ skills/
   read-and-locate/
   safe-refactor/
   bugfix-workflow/
-  subagent-orchestration/
+  multi-agent-protocol/
   conflict-resolution/
+templates/
+  AGENTS-multi-agent-rules.md
 examples/
   single-agent-bugfix.md
   safe-refactor.md
@@ -146,6 +149,7 @@ examples/
   multi-agent-root-cause-analysis.md
 scripts/
   sync-cursor-skills.py
+  setup-multi-agent-governance.sh
 ```
 
 ## Publishing Shape
@@ -190,9 +194,41 @@ npx openskills install ./skills --universal
 npx openskills sync
 ```
 
+Always install from `./skills`, not from the repository root. Installing from the root causes the OpenSkills scanner to find duplicate skills in generated local directories such as `.agent/skills/`.
+
 `--universal` installs to `.agent/skills/`, which is the safer default for multi-agent setups. If you prefer the default OpenSkills layout, omit `--universal`.
 
 For release readiness and acceptance checks, use [`OPENSKILLS-RELEASE-CHECKLIST.md`](OPENSKILLS-RELEASE-CHECKLIST.md).
+
+## Governance Setup
+
+The `multi-agent-protocol` skill works best when paired with a short Multi-Agent Rules section in your project-level `AGENTS.md` (or `CLAUDE.md` for Claude Code). A ready-made template lives in `templates/AGENTS-multi-agent-rules.md`.
+
+Install both the governance skills and inject the rules into a project:
+
+```bash
+./scripts/setup-multi-agent-governance.sh --project /path/to/my-repo
+```
+
+Install only the skills (no project file changes):
+
+```bash
+./scripts/setup-multi-agent-governance.sh --skills-only
+```
+
+Inject only the rules into an existing `AGENTS.md`:
+
+```bash
+./scripts/setup-multi-agent-governance.sh --rules-only /path/to/my-repo
+```
+
+Force a specific platform:
+
+```bash
+./scripts/setup-multi-agent-governance.sh --skills-only --platform codex --force
+```
+
+The script auto-detects installed platforms (Cursor, Codex, Claude Code) and places skills in the appropriate directory.
 
 ## Cursor Mirror
 
