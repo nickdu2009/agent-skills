@@ -1,7 +1,7 @@
 ---
 name: targeted-validation
 version: 0.1.0
-description: Choose the narrowest meaningful validation that protects confidence without defaulting to full-suite execution.
+description: Choose the narrowest meaningful test or check that verifies a change without defaulting to a full build or test suite. Use when the agent must decide what to test after a patch — not needed when the user already specifies exactly which tests to run.
 tags: [coding, agents, orchestration, efficiency]
 ---
 
@@ -11,9 +11,10 @@ Reduce validation cost while preserving enough confidence for the task at hand. 
 
 # When to Use
 
-- After a local patch, small refactor, or bounded bugfix.
-- When the affected surface can be tested or checked directly.
-- When full-suite execution is expensive and not clearly necessary.
+- After a local patch, small refactor, or bounded bugfix when deciding what to test.
+- When the affected surface can be tested or checked directly without a full build.
+- When full-suite execution is expensive and the change is local enough for a narrower check.
+- When the agent is about to run a broad test suite and a targeted check would suffice.
 
 # When Not to Use
 

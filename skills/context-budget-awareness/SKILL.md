@@ -1,7 +1,7 @@
 ---
 name: context-budget-awareness
 version: 0.1.0
-description: Keep the active context small, current, and aligned to the objective by trimming noise and compressing state.
+description: Compress and refocus the working state when a session grows long, hypotheses accumulate, or the active file set expands beyond what the current step needs. Extends the AGENTS.md Context Budget rules with a structured compression and rehydration pattern.
 tags: [coding, agents, orchestration, efficiency]
 ---
 

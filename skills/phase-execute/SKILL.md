@@ -1,6 +1,6 @@
 ---
 name: phase-execute
-description: Execute an accepted phase wave from a strict schema-first phase doc set. Use when Codex needs to consume `phaseN-plan.yaml`, decide whether a wave is blocked or active, launch bounded serial or parallel lanes, integrate results safely, and report wave readiness without inventing new planning artifacts or redefining the contract outside `phase-contract-tools`.
+description: Execute an accepted phase wave by consuming phaseN-plan.yaml, resolving wave gates, launching serial or parallel lanes, integrating results, and reporting wave status. Use after phase-plan has produced the execution docs and the agent is ready to implement a specific wave.
 ---
 
 # Phase Execute

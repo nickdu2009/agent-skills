@@ -1,4 +1,4 @@
 interface:
   display_name: "Phase Execute"
-  short_description: "Execute schema-first phase waves with safe serial or parallel lanes against the shared tools library in $phase-contract-tools"
-  default_prompt: "Use $phase-execute to preflight and execute an accepted wave from `phaseN-execution-index.md`, `phaseN-plan.yaml`, `phaseN-wave-guide.md`, and `phaseN-roadmap.md`, consume the shared contract tools from $phase-contract-tools, use only the canonical core script entrypoints, keep lane handoff immutable, act as integrator when parallel work is authorized, and report a structured wave status snapshot with state `blocked`, `active`, `merge_ready`, or `next_wave_ready`."
+  short_description: "Execute accepted phase waves by resolving gates, launching lanes, integrating results, and reporting wave status"
+  default_prompt: "Use $phase-execute to implement an accepted phase wave: preflight from phaseN-plan.yaml, resolve wave gates, launch serial or parallel lanes, integrate results, and report wave status. Use after $phase-plan has produced the execution docs and a specific wave is ready to implement."

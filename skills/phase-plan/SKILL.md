@@ -1,6 +1,6 @@
 ---
 name: phase-plan
-description: Design or update a machine-first phase execution system for a repository. Use when Codex needs to create or revise an implementation phase, convert roadmap prose into an executable phase plan, define PR sequencing and wave ownership, and author the strict phase doc set against the shared tools library in `phase-contract-tools`.
+description: Design or update a structured implementation plan that breaks a large task into sequenced waves of parallel work. Use when the agent needs to create phaseN-plan.yaml and supporting docs for multi-wave execution, or convert a roadmap into an executable plan with PR sequencing and wave ownership.
 ---
 
 # Phase Plan

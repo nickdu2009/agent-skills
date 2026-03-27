@@ -1,7 +1,7 @@
 ---
 name: minimal-change-strategy
 version: 0.1.0
-description: Bias the agent toward the smallest viable code change that solves the task without unrelated rewrites.
+description: Constrain a code change to the smallest viable patch when the diff is growing beyond the task, cleanup temptation is high, or multiple edit strategies compete. Not needed for simple single-file fixes where AGENTS.md Change Rules suffice.
 tags: [coding, agents, orchestration, efficiency]
 ---
 
@@ -11,9 +11,10 @@ Keep edits small, local, and reviewable. The skill favors the narrowest patch th
 
 # When to Use
 
-- For bugfixes, narrow feature adjustments, and compatibility work.
-- When the task can be solved by a local patch rather than a structural rewrite.
+- When surrounding code looks messy and the agent is tempted to clean up beyond the task.
+- When multiple edit strategies exist and the smallest one needs to be deliberately chosen.
 - When existing code is imperfect but functional outside the requested change.
+- When the diff is growing beyond what the task strictly requires.
 
 # When Not to Use
 

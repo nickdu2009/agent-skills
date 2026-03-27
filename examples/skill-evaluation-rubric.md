@@ -92,11 +92,60 @@ Score these dimensions for every scenario:
 - Pass: compares overlapping findings by evidence quality and preserves uncertainty where needed.
 - Fail: collapses conflicting findings into one answer without adjudication or confidence notes.
 
+## Trigger Accuracy
+
+Trigger accuracy measures whether the agent loaded the correct skills before execution. Score these separately from execution behavior.
+
+| Dimension | Pass Signal | Failure Signal |
+| --- | --- | --- |
+| True positive | The agent loaded a skill that the scenario requires | |
+| True negative | The agent did not load a skill that the scenario excludes | |
+| False negative | | The agent failed to load a required skill |
+| False positive | | The agent loaded a skill that was not needed and added noise |
+
+### Trigger Scoring
+
+| Score | Meaning |
+| --- | --- |
+| `2` | All expected skills loaded, no unexpected skills loaded |
+| `1` | Expected skills loaded but one or more unexpected skills also loaded (false positive) |
+| `0` | One or more expected skills were not loaded (false negative) |
+
+A false negative is worse than a false positive. If the agent never loads the skill, the skill's guidance is entirely absent. If the agent loads an extra skill, the cost is context waste but the intended guidance is still present.
+
+### AGENTS.md Boundary Cases
+
+For skills that overlap with AGENTS.md rules (`minimal-change-strategy`, `targeted-validation`, `context-budget-awareness`):
+
+| Score | Meaning |
+| --- | --- |
+| `2` | Simple tasks used only AGENTS.md rules; complex tasks escalated to the full skill |
+| `1` | The agent always loaded the full skill even for simple tasks (over-triggering) |
+| `0` | The agent never loaded the full skill even for complex tasks (under-triggering) |
+
+### Chain Trigger Cases
+
+For skills triggered by other skills (`conflict-resolution` via `multi-agent-protocol`, `phase-contract-tools` via `phase-plan`/`phase-execute`):
+
+| Score | Meaning |
+| --- | --- |
+| `2` | The skill was loaded only through its intended entry point |
+| `1` | The skill was loaded directly but the parent skill was also present |
+| `0` | The skill was loaded directly without the parent skill, or the parent skill failed to load it when needed |
+
 ## Decision Rule
+
+### Execution Decision Rule
 
 - Pass: no critical dimension scores `0`, and the primary skills under review mostly score `2`.
 - Conditional pass: no critical safety issue exists, but one or more primary skills score `1`.
 - Fail: any primary skill clearly scores `0`, or the execution pattern contradicts the skill intent.
+
+### Trigger Decision Rule
+
+- Pass: trigger accuracy is `2` across all tested cases.
+- Conditional pass: trigger accuracy is `1` on some cases (false positives only, no false negatives).
+- Fail: trigger accuracy is `0` on any case (false negatives present).
 
 ## Guardrails
 
@@ -104,3 +153,4 @@ Score these dimensions for every scenario:
 - Do not score only the final answer; score the execution behavior.
 - Do not upgrade a `1` to a `2` unless the pass signal is clearly visible in the transcript.
 - If evidence is missing, record uncertainty instead of guessing the score.
+- Do not conflate trigger accuracy with execution quality. A skill that triggered correctly but was followed poorly is a behavior issue, not a trigger issue.

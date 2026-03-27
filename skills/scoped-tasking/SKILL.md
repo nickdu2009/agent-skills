@@ -1,7 +1,7 @@
 ---
 name: scoped-tasking
 version: 0.1.0
-description: Narrow the task to the smallest useful analysis and edit boundary before exploring, editing, or validating.
+description: Narrow a broad or ambiguous task to the smallest useful boundary before exploring or editing. Use when the request is wide but the likely edit surface is small, or when scope is expanding without evidence.
 tags: [coding, agents, orchestration, efficiency]
 ---
 
@@ -11,10 +11,10 @@ Force the agent to define the minimum useful task boundary before doing work. Th
 
 # When to Use
 
-- At the start of almost any coding task.
-- When the request is broad but the likely edit surface is small.
-- Before repository exploration, editing, or validation.
+- When the request is broad or ambiguous but the likely edit surface is small.
+- When multiple modules, files, or systems are mentioned but the real change target is unclear.
 - When a task is expanding faster than evidence justifies.
+- When the agent is about to explore the repository without a clear starting point.
 
 # When Not to Use
 

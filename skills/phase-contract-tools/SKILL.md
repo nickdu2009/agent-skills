@@ -1,6 +1,6 @@
 ---
 name: phase-contract-tools
-description: Shared tools library for schema-first phase planning and execution. Use when Codex needs the canonical phase schema, doc-set rules, prompt and handoff derivation rules, stable wave-state vocabulary, machine-checkable execution artifacts, or executable helpers that validate and render phase artifacts without duplicating contract logic across skills.
+description: Shared contract library for phase planning and execution. Usually loaded by phase-plan or phase-execute, not triggered independently. Use directly only when the task is to fix, extend, or validate the phase contract scripts, schema definitions, or renderers themselves.
 ---
 
 # Phase Contract Tools

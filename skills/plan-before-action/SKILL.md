@@ -1,7 +1,7 @@
 ---
 name: plan-before-action
 version: 0.1.0
-description: Require a clear plan, scope, assumptions, and intended file actions before the agent begins editing.
+description: Require a clear plan with scope, assumptions, and intended file list before multi-step or uncertain edits. Use when multiple files are involved, sequencing matters, or the task shape is not yet clear.
 tags: [coding, agents, orchestration, efficiency]
 ---
 
@@ -11,10 +11,10 @@ Prevent impulsive editing. The skill requires the agent to converge on a short, 
 
 # When to Use
 
-- Before any non-trivial edit.
-- When multiple files or steps may be involved.
+- When the edit involves three or more files or multiple coordinated steps.
 - When the task includes uncertainty, assumptions, or sequencing risk.
-- When progress reporting matters.
+- When the agent is unsure which files need to change or in what order.
+- When progress reporting matters because the task is long or multi-phase.
 
 # When Not to Use
 

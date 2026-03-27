@@ -1,7 +1,7 @@
 ---
 name: read-and-locate
 version: 0.1.0
-description: Efficiently discover just enough of the codebase to find relevant code paths, ownership boundaries, and likely edit points.
+description: Find the relevant files, code paths, and edit points in an unfamiliar area of the codebase without broad exploration. Use when the agent does not yet know where the change should happen.
 tags: [coding, agents, orchestration, efficiency]
 ---
 

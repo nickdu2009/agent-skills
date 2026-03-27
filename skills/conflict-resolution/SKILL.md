@@ -1,7 +1,7 @@
 ---
 name: conflict-resolution
 version: 0.1.0
-description: Merge overlapping or conflicting findings by comparing evidence quality, preserving uncertainty, and recommending targeted adjudication when needed.
+description: Compare and arbitrate conflicting findings from parallel investigations or competing hypotheses. Typically loaded by the multi-agent-protocol synthesis step when subagent results disagree, or when the agent holds two plausible explanations with different supporting evidence.
 tags: [coding, agents, orchestration, efficiency]
 ---
 

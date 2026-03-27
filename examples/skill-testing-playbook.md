@@ -112,9 +112,94 @@ Follow-up:
 - 
 ```
 
+## Trigger Testing
+
+Trigger testing verifies that the agent loads the correct skill(s) in response to a user prompt. This is separate from behavior testing, which verifies execution after loading.
+
+### When to Run
+
+- After changing any `description` field in a skill frontmatter.
+- After changing `When to Use` or `When Not to Use` sections.
+- After adding or removing skills from the available set.
+
+### Trigger Test Matrix
+
+The matrix lives in `scripts/trigger_test_data.py`. Each case specifies:
+
+- `prompt`: a simulated user message
+- `expected_triggers`: skills that should be loaded
+- `expected_non_triggers`: skills that should NOT be loaded
+- `category`: the risk area being tested
+- `notes`: why this case matters for triggerability
+
+### Categories
+
+| Category | What It Tests |
+| --- | --- |
+| `task-type` | Does the right skill activate for bugs, refactors, and features? |
+| `agents-md-boundary` | Do simple tasks stay at AGENTS.md level while complex tasks escalate to the full skill? |
+| `discovery` | Does read-and-locate trigger when the edit point is unknown? |
+| `context-budget` | Does context-budget-awareness trigger when sessions grow noisy? |
+| `multi-agent` | Does multi-agent-protocol trigger for parallel work? Does conflict-resolution stay dormant until needed? |
+| `phase` | Do phase-plan and phase-execute trigger independently while phase-contract-tools stays hidden? |
+
+### How to Run a Trigger Test
+
+1. Pick a case from `scripts/trigger_test_data.py`.
+2. Start a fresh agent session (Cursor, Codex, or Claude Code).
+3. Send the case prompt as the first user message.
+4. Observe which skills the agent reads or references in its first response.
+5. Score against expected triggers and expected non-triggers.
+
+### Trigger Test Notes Template
+
+```text
+Case ID:
+Date:
+Platform: [Cursor | Codex | Claude Code]
+
+Prompt:
+<paste the case prompt>
+
+Expected triggers:
+- <skill-1>
+
+Expected non-triggers:
+- <skill-2>
+
+Actual triggers observed:
+-
+
+Actual non-triggers confirmed:
+-
+
+False positives (loaded but should not have):
+-
+
+False negatives (not loaded but should have):
+-
+
+Notes:
+-
+```
+
+### Scoring
+
+For each case:
+
+| Result | Meaning |
+| --- | --- |
+| `pass` | All expected triggers fired, no expected non-triggers fired |
+| `partial` | Expected triggers fired but one or more non-triggers also fired (false positive) |
+| `miss` | One or more expected triggers did not fire (false negative) |
+| `fail` | Expected triggers did not fire AND unexpected skills fired |
+
+A false negative (skill should have loaded but didn't) is more serious than a false positive (extra skill loaded unnecessarily) because a false negative means the agent misses the intended guidance entirely.
+
 ## Guardrails
 
 - Do not treat mirror sync as a behavior test.
+- Do not treat trigger testing as a behavior test — it only checks which skills are loaded, not how well they are followed.
 - Do not score only the final answer; score the execution pattern.
 - Do not widen the scenario during review unless the original prompt is insufficient.
 - If behavior differs from the skill intent, capture the mismatch explicitly instead of averaging it away.
