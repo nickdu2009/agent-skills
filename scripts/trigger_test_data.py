@@ -154,6 +154,22 @@ DISCOVERY_CASES: tuple[TriggerCase, ...] = (
         category="discovery",
         notes="Exact file and line known. No discovery or scoping skill needed.",
     ),
+    TriggerCase(
+        id="partial-path-known",
+        prompt="The rate limiter config is somewhere in the networking module but I don't know which file owns the per-endpoint limits.",
+        expected_triggers=("read-and-locate",),
+        expected_non_triggers=(),
+        category="discovery",
+        notes="Module known but exact file unknown. Boundary case: enough uncertainty to justify read-and-locate.",
+    ),
+    TriggerCase(
+        id="grep-sufficient",
+        prompt="Find all callers of the function validateOAuthToken and update the second argument from string to OAuthScope.",
+        expected_triggers=(),
+        expected_non_triggers=("read-and-locate",),
+        category="discovery",
+        notes="Exact function name provided. A grep/find-references operation suffices; read-and-locate adds no value.",
+    ),
 )
 
 
@@ -177,6 +193,30 @@ CONTEXT_BUDGET_CASES: tuple[TriggerCase, ...] = (
         expected_non_triggers=("context-budget-awareness",),
         category="context-budget",
         notes="Trivial short task. No context management needed.",
+    ),
+    TriggerCase(
+        id="many-files-opened",
+        prompt="I've read through about 12 files trying to trace this logging issue and I still can't find the root cause. The error appears in the output but I can't connect it to any of the handlers I've checked.",
+        expected_triggers=("context-budget-awareness",),
+        expected_non_triggers=(),
+        category="context-budget",
+        notes="Working set exceeds 8 files without convergence. Matches the quantitative trigger threshold in context-budget-awareness.",
+    ),
+    TriggerCase(
+        id="repeated-hypothesis",
+        prompt="We already checked the cache layer twice and the queue config three times. Each time it looked fine. I'm not sure what else to try.",
+        expected_triggers=("context-budget-awareness",),
+        expected_non_triggers=(),
+        category="context-budget",
+        notes="Multiple re-reads of the same areas without progress. Matches the 'same file read more than twice' trigger.",
+    ),
+    TriggerCase(
+        id="medium-session-focused",
+        prompt="We've been working on this for a while but we're making steady progress. The auth middleware is fixed, now let's update the session expiry check in the same file.",
+        expected_triggers=(),
+        expected_non_triggers=("context-budget-awareness",),
+        category="context-budget",
+        notes="Medium-length session but focused and progressing. No context compression needed.",
     ),
 )
 

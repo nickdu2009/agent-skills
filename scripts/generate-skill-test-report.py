@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -35,6 +36,12 @@ def parse_args() -> argparse.Namespace:
         "--write-report",
         type=Path,
         help="Write a Markdown report skeleton to the given path.",
+    )
+    parser.add_argument(
+        "--compare",
+        nargs=2,
+        metavar=("REPORT_A", "REPORT_B"),
+        help="Compare two filled-in Markdown reports and print score differences.",
     )
     return parser.parse_args()
 
@@ -177,8 +184,78 @@ def write_report(path: Path) -> None:
     output_path.write_text(render_report(), encoding="utf-8")
 
 
+_SCORE_RE = re.compile(
+    r"^\|\s*(?P<dimension>.+?)\s*\|\s*(?P<score>[012])\s*\|",
+    re.MULTILINE,
+)
+
+
+def extract_scores(report_text: str) -> dict[str, int]:
+    """Extract dimension/skill → score mappings from a filled-in report."""
+    scores: dict[str, int] = {}
+    for m in _SCORE_RE.finditer(report_text):
+        dim = m.group("dimension").strip().strip("`")
+        score = int(m.group("score"))
+        if dim in ("Dimension", "---"):
+            continue
+        scores[dim] = score
+    return scores
+
+
+def compare_reports(path_a: str, path_b: str) -> str:
+    file_a = Path(path_a) if Path(path_a).is_absolute() else REPO_ROOT / path_a
+    file_b = Path(path_b) if Path(path_b).is_absolute() else REPO_ROOT / path_b
+
+    text_a = file_a.read_text(encoding="utf-8")
+    text_b = file_b.read_text(encoding="utf-8")
+
+    scores_a = extract_scores(text_a)
+    scores_b = extract_scores(text_b)
+
+    all_dims = sorted(set(scores_a) | set(scores_b))
+    if not all_dims:
+        return "No scored dimensions found in either report. Are the reports filled in?"
+
+    lines = [
+        "# Score Comparison",
+        "",
+        f"- Report A: `{path_a}`",
+        f"- Report B: `{path_b}`",
+        "",
+        "| Dimension | A | B | Delta |",
+        "| --- | --- | --- | --- |",
+    ]
+
+    regressions = 0
+    improvements = 0
+    for dim in all_dims:
+        sa = scores_a.get(dim, "-")
+        sb = scores_b.get(dim, "-")
+        if isinstance(sa, int) and isinstance(sb, int):
+            delta = sb - sa
+            delta_str = f"+{delta}" if delta > 0 else str(delta)
+            if delta < 0:
+                regressions += 1
+            elif delta > 0:
+                improvements += 1
+        else:
+            delta_str = "n/a"
+        lines.append(f"| {dim} | {sa} | {sb} | {delta_str} |")
+
+    lines.extend([
+        "",
+        f"Improvements: {improvements}  |  Regressions: {regressions}  |  Unchanged: {len(all_dims) - improvements - regressions}",
+    ])
+
+    return "\n".join(lines)
+
+
 def main() -> int:
     args = parse_args()
+
+    if args.compare:
+        print(compare_reports(args.compare[0], args.compare[1]))
+        return 0
 
     try:
         validate_examples_exist()

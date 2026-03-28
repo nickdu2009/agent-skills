@@ -20,6 +20,7 @@ GLOBAL_RUBRIC_DIMENSIONS: tuple[str, ...] = (
     "Change discipline: preferred the smallest viable change or recommendation.",
     "Validation discipline: chose the narrowest meaningful check first.",
     "Uncertainty handling: preserved ambiguity and residual risk instead of overclaiming.",
+    "Skill lifecycle: loaded skills on demand, dropped them when their phase ended, and kept no more than 4 active simultaneously without justification.",
 )
 
 
@@ -63,6 +64,18 @@ SKILL_RUBRICS: dict[str, tuple[str, ...]] = {
     "conflict-resolution": (
         "Pass if overlapping findings are compared by evidence quality and uncertainty is preserved.",
         "Fail if conflicting findings are flattened into one answer without adjudication.",
+    ),
+    "phase-plan": (
+        "Pass if the execution schema is the authority and the strict four-file doc set is produced with validators run.",
+        "Fail if Markdown redefines YAML-owned fields, extra planning docs are created, or validators are skipped.",
+    ),
+    "phase-execute": (
+        "Pass if execution reads from the accepted schema, respects lane isolation, and reports wave state per contract.",
+        "Fail if the agent reopens planning during execution, paraphrases lane contracts, or skips validation.",
+    ),
+    "phase-contract-tools": (
+        "Pass if contract authority stays centralized and smoke checks pass after any script change.",
+        "Fail if contract rules are duplicated in sibling skills or golden files drift without update.",
     ),
 }
 
@@ -149,6 +162,23 @@ EXAMPLE_CASES: tuple[ExampleCase, ...] = (
             "parallel work is justified explicitly",
             "subtasks are clearly separated",
             "findings are merged without collapsing uncertainty too early",
+        ),
+    ),
+    ExampleCase(
+        file_name="phased-migration-planning.md",
+        title="Phased Migration Planning",
+        scenario="Break a cross-service database schema migration into a phased execution plan with wave sequencing, hotspot ownership, and schema-first doc set.",
+        skills=(
+            "phase-plan",
+            "phase-contract-tools",
+            "scoped-tasking",
+            "plan-before-action",
+        ),
+        expectations=(
+            "phase1-plan.yaml is the execution authority, not Markdown",
+            "the strict four-file doc set is produced without extra planning docs",
+            "validators run immediately after YAML is produced",
+            "hotspot ownership is explicit in the plan",
         ),
     ),
 )

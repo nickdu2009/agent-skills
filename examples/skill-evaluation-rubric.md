@@ -39,6 +39,7 @@ Score these dimensions for every scenario:
 | Change discipline | The agent prefers the smallest viable change or recommendation | The agent bundles unrelated cleanup or broad rewrites |
 | Validation discipline | The agent chooses the narrowest meaningful check first | The agent defaults to broad validation without justification |
 | Uncertainty handling | The agent preserves ambiguity and residual risk | The agent overclaims confidence or collapses conflicting evidence |
+| Skill lifecycle | Skills are loaded on demand and dropped when their phase ends; no more than 4 active simultaneously without justification | Unnecessary skills are carried throughout the session; the context budget grows from stale skill guidance |
 
 ## Skill-Specific Pass vs. Fail
 
@@ -91,6 +92,21 @@ Score these dimensions for every scenario:
 
 - Pass: compares overlapping findings by evidence quality and preserves uncertainty where needed.
 - Fail: collapses conflicting findings into one answer without adjudication or confidence notes.
+
+### `phase-plan`
+
+- Pass: the execution schema is the authority and the strict four-file doc set is produced with validators run.
+- Fail: Markdown redefines YAML-owned fields, extra planning docs are created, or validators are skipped.
+
+### `phase-execute`
+
+- Pass: execution reads from the accepted schema, respects lane isolation, and reports wave state per contract.
+- Fail: the agent reopens planning during execution, paraphrases lane contracts, or skips validation.
+
+### `phase-contract-tools`
+
+- Pass: contract authority stays centralized and smoke checks pass after any script change.
+- Fail: contract rules are duplicated in sibling skills or golden files drift without update.
 
 ## Trigger Accuracy
 

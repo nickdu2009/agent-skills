@@ -1,0 +1,353 @@
+Connection lost, reconnecting...
+Retry attempt 1...
+Retry attempt 2...
+All five skills loaded. Here's the full execution walkthrough, step by step, as I would carry it out against a real codebase.
+
+---
+
+## Step 1 — Scoped Tasking: Define the boundary
+
+**Objective (one sentence):** Extract duplicated payload normalization from three webhook handlers into a single shared helper without changing handler signatures, response codes, or normalized output.
+
+**Initial boundary:**
+- **Files in scope:** The three handler files (e.g., `order_webhook.py`, `payment_webhook.py`, `shipment_webhook.py`) and the target location for the new helper (e.g., `webhook_utils.py` or an existing shared module).
+- **Interfaces in scope:** Each handler's function signature, HTTP response codes, and the normalized output shape.
+- **Validation surface:** Unit tests covering the three handlers, if they exist; manual curl/request comparison if they don't.
+
+**Explicitly excluded:**
+- Retry logic, error-handling changes, or timeout configuration.
+- Other files in the webhook package not involved in normalization.
+- Reorganization of the webhook package layout.
+
+**Next action:** Discover the three handlers and confirm the duplication is truly equivalent.
+
+---
+
+## Step 2 — Read and Locate: Find the code and confirm duplication
+
+**Strongest clue:** The task names three webhook handlers that each normalize the same incoming payload shape.
+
+**Discovery sequence I would follow:**
+
+1. **Find the handlers.** Search for webhook handler registrations — grep for route decorators, handler function definitions, or framework registration patterns (e.g., `@app.route`, `@router.post`, `def handle_*_webhook`).
+
+2. **Read each handler's normalization block.** For each of the three handlers, read just the function body and identify the normalization logic — the lines between "receive raw payload" and "pass normalized data to business logic."
+
+3. **Diff the normalization blocks.** Compare the three blocks line by line. Mark each as:
+   - **Confirmed identical** — same logic, same field mapping, same defaults.
+   - **Cosmetically different** — variable names differ but logic is equivalent.
+   - **Behaviorally different** — one handler strips whitespace, another doesn't; one coerces nulls, another raises.
+
+**Decision point — behavioral differences:**
+- If all three are identical or cosmetically different: proceed with extraction.
+- If any behavioral difference exists: document it, stop the refactor for that handler, and split it into a follow-up task. Only extract the subset that is truly equivalent.
+
+**Output of this step (what I would report):**
+
+- **Confirmed locations:** `handlers/order_webhook.py:34-52`, `handlers/payment_webhook.py:28-46`, `handlers/shipment_webhook.py:41-59` (hypothetical).
+- **Tentative lead:** An existing `handlers/utils.py` that already has some shared helpers — potential home for the new function.
+- **Likely edit points:** The normalization block in each handler, plus the new helper location.
+- **What remains unknown but doesn't block:** Whether integration tests exist beyond unit tests.
+
+---
+
+## Step 3 — Plan Before Action: Declare invariants and sequence
+
+**Goal:** Extract shared normalization into `normalize_webhook_payload()` without changing behavior.
+
+**Assumptions:**
+1. The three normalization blocks are behaviorally equivalent (confirmed in Step 2).
+2. A shared utils module already exists or can be created alongside the handlers.
+3. Handler signatures are the entry point for the framework — changing them would break routing.
+
+**Invariants (must remain true throughout):**
+1. Each handler's function signature is unchanged.
+2. Each handler returns the same HTTP status codes for the same inputs.
+3. The normalized output (the dict/object passed to downstream logic) is field-for-field identical.
+4. Error messages visible to callers are unchanged.
+5. No new dependencies are introduced.
+
+**Planned working set:**
+| File | Action |
+|---|---|
+| `handlers/utils.py` (or new) | Add `normalize_webhook_payload()` |
+| `handlers/order_webhook.py` | Replace inline normalization with helper call |
+| `handlers/payment_webhook.py` | Replace inline normalization with helper call |
+| `handlers/shipment_webhook.py` | Replace inline normalization with helper call |
+| `tests/test_order_webhook.py` | Run (no edit expected) |
+| `tests/test_payment_webhook.py` | Run (no edit expected) |
+| `tests/test_shipment_webhook.py` | Run (no edit expected) |
+
+**Intended sequence (one structural operation per step):**
+
+| Step | Operation | Validation |
+|---|---|---|
+| 3a | Write `normalize_webhook_payload()` in the shared module | Type check / lint the new file |
+| 3b | Switch handler 1 to use the helper | Run handler 1's tests |
+| 3c | Switch handler 2 to use the helper | Run handler 2's tests |
+| 3d | Switch handler 3 to use the helper | Run handler 3's tests |
+| 3e | Remove any now-dead normalization imports/helpers from each handler | Lint + run all three handler test files |
+
+---
+
+## Step 4 — Safe Refactor: Execute one structural step at a time
+
+### Step 4a — Write the shared helper
+
+**What I do:** Create `normalize_webhook_payload(raw_payload: dict) -> dict` in the shared module. The body is copied verbatim from one of the three handlers (the "canonical" copy — pick the one with the cleanest variable names). No logic changes.
+
+**Why verbatim:** Copying the exact logic preserves behavior. Renaming variables or "improving" the code in the same step would mix structural change with behavior change.
+
+**Validation (targeted-validation):**
+- Run: `python -m py_compile handlers/utils.py` (or equivalent lint/type check).
+- Sufficient because: the helper has no callers yet, so no runtime path is affected. We just need it to parse and type-check.
+
+### Step 4b — Switch handler 1
+
+**What I do:** In `order_webhook.py`, replace the inline normalization block (lines 34-52) with:
+
+```python
+from handlers.utils import normalize_webhook_payload
+
+normalized = normalize_webhook_payload(raw_payload)
+```
+
+The lines above and below the normalization block stay untouched — the handler signature, response codes, and downstream call with `normalized` are already in place.
+
+**Decision point — variable naming:** If the handler used a different variable name (e.g., `clean_data` instead of `normalized`), I either:
+- Keep the old name and assign: `clean_data = normalize_webhook_payload(raw_payload)` — zero downstream changes.
+- Or rename — but only if it's a local variable with no further reach.
+
+**Validation (targeted-validation):**
+- Run: `pytest tests/test_order_webhook.py -v`
+- Boundary: only handler 1's tests. The other two handlers haven't been touched yet.
+- If tests pass: proceed. If tests fail: the extraction changed behavior — stop and investigate before touching the next handler.
+
+### Step 4c — Switch handler 2
+
+Same pattern as 4b, applied to `payment_webhook.py`. Validate with `pytest tests/test_payment_webhook.py -v`.
+
+### Step 4d — Switch handler 3
+
+Same pattern, applied to `shipment_webhook.py`. Validate with `pytest tests/test_shipment_webhook.py -v`.
+
+### Step 4e — Remove dead code
+
+**What I do:** Check each handler for any imports or local helper functions that were only used by the old inline normalization. Remove them.
+
+**Validation (targeted-validation):**
+- Run: `pytest tests/test_order_webhook.py tests/test_payment_webhook.py tests/test_shipment_webhook.py -v`
+- Also run lint across the three handler files to confirm no unused imports remain.
+- This is the first time I widen validation to all three files simultaneously, because the dead-code removal could affect any of them.
+
+---
+
+## Step 5 — Targeted Validation: Final confidence check
+
+**Change summary:** One new function in `handlers/utils.py`, three handler files with inline normalization replaced by a one-line call, possible dead-code removal.
+
+**Chosen validation boundary:** The three handler test files.
+
+**Why this is sufficient:**
+- The helper function is exercised indirectly through every handler test that sends a payload and checks the normalized result.
+- No shared interface outside the webhook package was changed.
+- No new error paths were introduced.
+
+**When I would broaden:**
+- If any handler test was missing or clearly incomplete (e.g., doesn't test the normalization output), I would add a direct unit test for `normalize_webhook_payload` with the same input/output pairs.
+- If the webhook package has integration tests that exercise the full HTTP path, I would run those as a final gate — but only after the targeted tests pass.
+
+**Residual risk:**
+- If one handler had a subtle behavioral difference that tests didn't cover (e.g., it trimmed whitespace on one field and the test didn't assert on that field), the extraction would silently unify behavior. This is the primary residual risk of extraction without exhaustive test coverage. I would note this in the PR description.
+
+---
+
+## Summary of execution discipline
+
+| Skill | What it enforced |
+|---|---|
+| **scoped-tasking** | Boundary limited to 3 handlers + 1 helper. No package reorg. No retry/error changes. |
+| **read-and-locate** | Discovered and confirmed duplication equivalence before planning. Would have stopped if behavioral differences were found. |
+| **plan-before-action** | Invariants stated before any edit. File list and sequence declared. Progress tracked as done/not-done/next. |
+| **safe-refactor** | One structural operation per step. No behaviorNow I'll walk through the full execution pattern, step by step, as if working against a real codebase. Each skill activates at the appropriate phase.
+
+---
+
+## Step 1: Scope the Task (scoped-tasking)
+
+**Objective in one sentence:** Extract duplicated payload normalization logic from three webhook handlers into a single shared helper, preserving all handler signatures, response codes, and normalized output.
+
+**Initial boundary:**
+- The three webhook handler files/functions (e.g. `handleOrderCreated`, `handleOrderUpdated`, `handleOrderCancelled`)
+- Any existing normalization utility in the webhook package
+- Tests covering those three handlers
+
+**Explicitly excluded:**
+- Other handlers in the webhook package that don't share this normalization
+- Retry logic, error-handling strategy, or webhook infrastructure
+- Package-level reorganization (file moves, directory restructuring)
+
+**Task type:** Edit-capable (structural refactor).
+
+At this point I would not scan the full repo. I'd use targeted search to find the three handlers.
+
+---
+
+## Step 2: Discover the Code (read-and-locate)
+
+**Strongest clue:** "webhook handlers" + "normalize" / "payload" keywords.
+
+**Discovery sequence I would execute:**
+
+1. **Search for webhook handler registrations** — grep for route definitions or handler function names containing "webhook" to find the entry points.
+
+2. **Read each handler** — open each of the three files/functions. For each, identify:
+   - Where raw payload arrives (function parameter)
+   - The normalization block (field extraction, renaming, type coercion, default filling)
+   - Where normalized data is handed off to business logic
+   - The response code returned
+
+3. **Diff the normalization blocks** — compare the three normalization sections side-by-side. Mark:
+   - **Identical lines** — extraction candidates
+   - **Structurally identical but cosmetically different** — minor variations (e.g. different variable names for the same thing)
+   - **Genuinely different logic** — behavior divergences that must not be silently merged
+
+4. **Check for an existing shared utility** — search the webhook package for any `normalize`, `transform`, or `parse` helper that already exists.
+
+5. **Locate tests** — find test files that exercise each handler's happy path and edge cases.
+
+**Expected output at this stage:**
+
+| Item | Status |
+|---|---|
+| Handler A location + normalization lines | Confirmed |
+| Handler B location + normalization lines | Confirmed |
+| Handler C location + normalization lines | Confirmed |
+| Existing shared utility | Confirmed (exists or doesn't) |
+| Test files for handlers | Confirmed |
+| Behavior differences between handlers | Confirmed or flagged |
+
+**Stop condition:** I know all three normalization blocks, their differences, and the test surface. No further exploration needed.
+
+---
+
+## Step 3: Plan the Refactor (plan-before-action)
+
+**Goal:** Extract shared normalization into one helper; switch each handler to call it.
+
+**Assumptions:**
+- All three handlers receive the same incoming payload shape (stated in the task)
+- The normalization output shape is identical across handlers (must verify)
+- No handler adds handler-specific normalization steps that differ in behavior (must verify)
+
+**Open questions (resolved during read-and-locate):**
+- Are there minor behavioral differences? If yes: split those into a follow-up task per non-goals.
+
+**Intended files and actions:**
+
+| # | File | Action |
+|---|---|---|
+| 1 | New or existing utility file in the webhook package | Create `normalizeWebhookPayload(raw) -> normalized` |
+| 2 | Handler A | Replace inline normalization with call to helper |
+| 3 | Handler B | Replace inline normalization with call to helper |
+| 4 | Handler C | Replace inline normalization with call to helper |
+
+**Sequence:** Create helper first (step 1), then switch one handler at a time (steps 2-4), validating after each switch.
+
+---
+
+## Step 4: State Invariants and Execute (safe-refactor)
+
+### Invariants (stated before any edit)
+
+1. **Handler signatures** — function name, parameters, return type unchanged
+2. **Response codes** — every HTTP status code returned by each handler remains identical
+3. **Normalized output shape** — field names, types, default values produced by normalization are byte-for-byte equivalent
+4. **Error messages** — any validation errors raised during normalization stay the same
+5. **No new dependencies** — the helper does not pull in modules the handlers didn't already use
+
+### Refactor steps (one structural operation each)
+
+**Step 4a — Extract the helper**
+
+Write `normalizeWebhookPayload` as a pure function that takes the raw payload and returns the normalized structure. The implementation is copied verbatim from one of the three handlers (whichever is the most complete/canonical).
+
+*Validation:* The helper compiles/type-checks. No handlers are changed yet — existing tests still pass unchanged. I'd run the handler tests to confirm no regression from the new file alone.
+
+**Step 4b — Switch Handler A**
+
+Replace Handler A's inline normalization block with a call to `normalizeWebhookPayload`. Handler A's signature, response codes, and downstream calls remain untouched.
+
+*Validation:* Run Handler A's tests. Compare: does every test that passed before still pass? If a test fails, the normalization output differs — stop and investigate before proceeding.
+
+**Step 4c — Switch Handler B**
+
+Same operation for Handler B. Replace inline block, keep everything else stable.
+
+*Validation:* Run Handler B's tests.
+
+**Step 4d — Switch Handler C**
+
+Same operation for Handler C.
+
+*Validation:* Run Handler C's tests.
+
+**Step 4e — Remove dead code**
+
+Delete the now-unused inline normalization blocks if any residual lines remain. This is a separate step so the deletion is independently reviewable.
+
+*Validation:* Run all three handlers' tests one final time.
+
+### Decision point: behavior divergence
+
+If during Step 4b/c/d a test fails because one handler's normalization actually differs (e.g., Handler B coerces a field to uppercase while the others don't), I would:
+
+1. **Stop** — not force-merge the divergent behavior into the shared helper.
+2. **Document** the divergence explicitly.
+3. **Split** into a follow-up task: "Reconcile Handler B normalization difference before sharing helper."
+4. **Leave** the divergent handler on its inline logic for now, and only share the helper among the handlers that truly match.
+
+This matches the non-goal: *"If extraction reveals behavior differences between handlers, split into a follow-up task."*
+
+---
+
+## Step 5: Validate (targeted-validation)
+
+**Validation boundary:** Only the three webhook handlers and the new helper.
+
+**Chosen checks (narrowest sufficient):**
+
+| After step | Check | Why sufficient |
+|---|---|---|
+| 4a (extract helper) | Handler tests (all three) | Proves the new file didn't break imports or existing behavior |
+| 4b (switch A) | Handler A tests only | Only Handler A changed |
+| 4c (switch B) | Handler B tests only | Only Handler B changed |
+| 4d (switch C) | Handler C tests only | Only Handler C changed |
+| 4e (cleanup) | All three handler tests | Final confirmation after dead code removal |
+
+**Why not the full test suite:** The change is confined to three handlers and one new helper. No shared interfaces, no schema changes, no cross-module contracts were modified. Broader validation adds cost without covering additional risk surface.
+
+**Broader validation trigger:** If any handler test fails and the failure trace reaches outside the webhook package (e.g., a downstream service mock breaks), I'd expand to integration tests covering the webhook-to-service boundary.
+
+---
+
+## Final State
+
+**Done:**
+- Shared `normalizeWebhookPayload` helper extracted
+- All three handlers call the helper instead of inline logic
+- Dead inline normalization code removed
+- Targeted tests pass after each step
+
+**Not done (by design):**
+- Retry logic changes (out of scope)
+- Error-handling strategy changes (out of scope)
+- Package reorganization (out of scope)
+- Any divergent handler normalization (split to follow-up if discovered)
+
+**Residual risk:**
+- If the handlers lack test coverage for edge-case payload shapes, the refactor could hide a normalization difference that tests don't exercise. Mitigation: review the helper against all three original blocks manually during the PR, and note coverage gaps in the PR description.
+
+---
+
+This is the full execution pattern: scope first, discover narrowly, plan with invariants, execute one structural step at a time with validation after each, and stop exactly at the task boundary.

@@ -1,0 +1,212 @@
+All five skills loaded. Here is the full execution walkthrough, step by step, as I would carry it out against a real codebase.
+
+---
+
+## Step 1 — Scoped Tasking: Define the Boundary
+
+**Objective (one sentence):** The `PUT /accounts/:id` endpoint returns 500 when the optional marketing profile is missing; it should return 404.
+
+**Initial boundary:**
+
+| Layer | Likely targets |
+|---|---|
+| Route/controller | `accounts_controller` (or equivalent handler for `PUT /accounts/:id`) |
+| Service | `account_update_service` — the method that orchestrates the update |
+| Data access | `marketing_profile_repository` or wherever the profile is fetched |
+| Tests | Controller/service tests covering the "missing optional profile" path |
+
+**Explicitly excluded:**
+
+- Other endpoints (GET, DELETE, list accounts)
+- Global error-handling middleware
+- Profile-related interfaces and type definitions
+- Unrelated account fields (billing, auth, etc.)
+
+**Scope rationale:** The symptom is tied to one endpoint and one optional sub-resource. The fault domain cannot be wider than the call chain from route handler to the profile lookup. I start there.
+
+---
+
+## Step 2 — Bugfix Workflow: Symptom, Fault Domain, Evidence, Hypotheses
+
+### 2a. State the observable symptom
+
+> `PUT /accounts/:id` returns HTTP 500 when the account exists but the optional marketing profile does not. Expected: HTTP 404 (or graceful skip), with the rest of the account update succeeding.
+
+The bug is **deterministic** — it reproduces every time the profile row is absent.
+
+### 2b. Define the smallest plausible fault domain
+
+The 500 means an **unhandled exception** is propagating to the framework's default error handler. The fault domain is:
+
+1. The service method that fetches the marketing profile during account update.
+2. The controller/handler that calls that service and translates results to HTTP status codes.
+
+### 2c. Gather evidence (what I would do in a real codebase)
+
+In a real session, I would execute these reads in parallel:
+
+- **Read the route handler** for `PUT /accounts/:id` — find how it calls the service layer.
+- **Read the service method** — find the profile lookup call and check whether it handles a "not found" result.
+- **Read the profile repository/client call** — confirm what it returns or throws when the row is missing.
+- **Search for existing tests** covering the missing-profile path (`Grep` for "marketing_profile" + "not found" or "404" or "null").
+
+**Expected evidence pattern:** The profile lookup either (a) throws an unguarded exception (e.g., `ProfileNotFoundError`) that nothing catches, or (b) returns `null`/`undefined` and the caller dereferences it without a nil check.
+
+### 2d. Form and rank hypotheses
+
+| # | Hypothesis | Directness | Ease of verification |
+|---|---|---|---|
+| H1 | The profile lookup throws a `NotFoundError` (or equivalent) and neither the service nor the controller catches it, so the framework's 500 handler fires. | High — directly on the call path | Easy — read the service method |
+| H2 | The profile lookup returns `null` and the service dereferences a property on it, causing a `TypeError`. | Medium — same call path, different mechanism | Easy — read the service method |
+| H3 | A middleware or interceptor is transforming the response incorrectly. | Low — no direct evidence | Expensive — requires broader read |
+
+**Investigation order:** H1 first (most common pattern for "500 on missing optional resource"), then H2 if H1 is disproven. H3 only if both fail.
+
+### 2e. Confirm hypothesis (simulated)
+
+In a real codebase I would now read the service method. The expected finding:
+
+```python
+# account_update_service.py (simulated)
+def update_account(self, account_id, payload):
+    account = self.account_repo.get(account_id)
+    if not account:
+        raise NotFoundError("Account not found")
+
+    profile = self.marketing_profile_repo.get(account_id)  # throws if missing
+    profile.preferences = payload.get("marketing_preferences", {})
+    # ... rest of update ...
+```
+
+The `marketing_profile_repo.get()` throws when no row exists, and nothing guards it. **H1 confirmed.**
+
+---
+
+## Step 3 — Plan Before Action
+
+**Goal:** Return 404 (not 500) when the marketing profile is absent during account update, without altering the rest of the update flow.
+
+**Assumptions:**
+- The marketing profile is optional — its absence is a normal data state, not a system error.
+- The account update should still succeed for non-profile fields even if the profile is missing.
+- No other callers of this lookup need the throw behavior changed.
+
+**Open question:** Should the endpoint return 404 for the whole request, or should it succeed on the account fields and only report the profile as missing? The bug report says "return 404," so I follow that.
+
+**Intended files and actions:**
+
+| File | Action |
+|---|---|
+| `account_update_service` (or controller) | Add a guard: if profile is missing, raise/return 404 explicitly instead of letting the unhandled exception propagate as 500. |
+| Test file for the update endpoint | Add or fix a test case for the "missing marketing profile" path asserting 404. |
+
+**No other files touched.**
+
+---
+
+## Step 4 — Minimal Change Strategy
+
+### Required behavior change
+
+Replace unhandled 500 with explicit 404 when the marketing profile is absent.
+
+### Narrowest edit point
+
+Add a guard clause in the service method (or controller) around the profile lookup. Two options:
+
+| Option | Files touched | Interface change | Risk |
+|---|---|---|---|
+| A: Wrap the profile lookup in a try/catch (or null check) in the service method, raise a domain-level `NotFoundError` that the controller maps to 404. | 1 | None | Low |
+| B: Change the repository to return `None`/`null` instead of throwing, then add a null check in the service. | 2 (repo + service) | Changes repo contract | Medium — other callers may rely on the throw |
+
+**Choice: Option A.** It touches one file, changes no interfaces, and the controller already maps `NotFoundError` to 404 (as evidenced by the account-not-found path working correctly).
+
+### The patch (simulated)
+
+Before:
+
+```python
+profile = self.marketing_profile_repo.get(account_id)
+profile.preferences = payload.get("marketing_preferences", {})
+```
+
+After:
+
+```python
+profile = self.marketing_profile_repo.find(account_id)
+if profile is None:
+    raise NotFoundError("Marketing profile not found")
+profile.preferences = payload.get("marketing_preferences", {})
+```
+
+Or, if the repo only has `.get()` that throws:
+
+```python
+try:
+    profile = self.marketing_profile_repo.get(account_id)
+except ProfileNotFoundError:
+    raise NotFoundError("Marketing profile not found")
+profile.preferences = payload.get("marketing_preferences", {})
+```
+
+**What this preserves:**
+- The account-level not-found check is untouched.
+- The rest of the update flow is untouched.
+- The repo interface is untouched.
+- No renames, no reformatting, no error-hierarchy changes.
+
+**Deferred non-fixes (observed but intentionally not addressed):**
+- The broader question of whether the profile should be auto-created on first update is a product decision, not a bugfix.
+- Other optional sub-resources may have the same unguarded pattern — that is a follow-up audit, not part of this patch.
+
+---
+
+## Step 5 — Targeted Validation
+
+### Change surface
+
+One branch added in one method of `account_update_service`. Affects only the `PUT /accounts/:id` path when the marketing profile is absent.
+
+### Cheapest sufficient validation
+
+| Check | Covers | Cost |
+|---|---|---|
+| Run the single test for "update account with missing marketing profile" | The exact symptom | Seconds |
+| Run all `account_update_service` tests | Guards against regression in neighboring update branches | Low (one file) |
+| Run the full API test suite | Everything | Expensive and unnecessary |
+
+**Chosen validation:**
+
+1. **Primary:** Run the targeted test for the missing-profile path — assert it returns 404 with an appropriate error body.
+2. **Secondary:** Run the `account_update_service` unit tests to confirm the happy path (profile present) still returns 200.
+
+**Not running:** The full API test suite. The change is a single guard clause in one service method; it cannot affect other endpoints.
+
+### Expected test commands (simulated)
+
+```bash
+# Primary — the exact symptom
+pytest tests/test_account_update.py::test_update_missing_marketing_profile -v
+
+# Secondary — regression guard for the happy path
+pytest tests/test_account_update.py -v
+```
+
+### Broader validation recommendation
+
+Not required for this change. The patch adds one branch; it does not alter shared infrastructure, error-handling middleware, or public interfaces.
+
+---
+
+## Summary Report
+
+| Item | Status |
+|---|---|
+| **Symptom** | `PUT /accounts/:id` returns 500 when marketing profile is missing |
+| **Root cause** | Unhandled exception from profile lookup propagates as 500 |
+| **Fix** | Guard clause in the service method; raise domain `NotFoundError` mapped to 404 |
+| **Files changed** | 1 service file, 1 test file |
+| **Interfaces changed** | None |
+| **Validation** | Targeted: missing-profile test (404) + happy-path test (200) |
+| **Residual risk** | Other optional sub-resources may have the same unguarded pattern — recommend a follow-up audit |
+| **Deferred** | Auto-creation of missing profiles (product decision); broad error-handling refactor (explicit non-goal) |
