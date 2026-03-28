@@ -69,6 +69,47 @@ jobs:
           done
           exit $EXIT_CODE
 
+  validate-scripts:
+    name: Validate script syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check Python syntax
+        run: python3 -c "import ast; ast.parse(open('scripts/sync-cursor-skills.py').read())"
+
+      - name: Check Bash syntax
+        run: |
+          bash -n scripts/setup-multi-agent-governance.sh
+          bash -n scripts/setup-skill-governance.sh
+
+      - name: Verify Cursor mirror copies full directories
+        run: |
+          python3 scripts/sync-cursor-skills.py
+          python3 scripts/sync-cursor-skills.py --check
+
+          if [ ! -d ".cursor/skills/phase-contract-tools/scripts" ]; then
+            echo "ERROR: phase-contract-tools/scripts/ not mirrored"
+            exit 1
+          fi
+
+          PCT_SCRIPTS=$(ls .cursor/skills/phase-contract-tools/scripts/*.py 2>/dev/null | wc -l)
+          if [ "$PCT_SCRIPTS" -lt 10 ]; then
+            echo "ERROR: Expected at least 10 phase-contract-tools scripts, found $PCT_SCRIPTS"
+            exit 1
+          fi
+
+          if [ -d ".cursor/skills/scoped-tasking/scripts" ]; then
+            echo "ERROR: scoped-tasking should not have a scripts/ subdirectory"
+            exit 1
+          fi
+
+          echo "OK: Cursor mirror copies full skill directories"
+
   install-smoke-test:
     name: OpenSkills install smoke test
     runs-on: ubuntu-latest
