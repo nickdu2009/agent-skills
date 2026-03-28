@@ -37,6 +37,9 @@ install_skill() {
       target_dir="$HOME/.cursor/skills/$skill_name"
       ;;
     claude-code)
+      # Claude Code skills are installed to the Codex/OpenSkills universal path.
+      # Claude Code discovers skills via CLAUDE.md project rules; the universal
+      # skill directory is shared with the OpenSkills ecosystem.
       target_dir="${CODEX_HOME:-$HOME/.codex}/skills/$skill_name"
       ;;
   esac
@@ -61,7 +64,62 @@ install_skill() {
   echo "  INSTALLED: $target_dir"
 }
 
+check_skill() {
+  local skill_name="$1"
+  local source_dir="$REPO_ROOT/skills/$skill_name"
+  local target_dir=""
+  local platform="$2"
+
+  case "$platform" in
+    codex)
+      target_dir="${CODEX_HOME:-$HOME/.codex}/skills/$skill_name"
+      ;;
+    cursor|cursor-cli)
+      target_dir="$HOME/.cursor/skills/$skill_name"
+      ;;
+    claude-code)
+      target_dir="${CODEX_HOME:-$HOME/.codex}/skills/$skill_name"
+      ;;
+  esac
+
+  if [ -z "$target_dir" ]; then
+    echo "  SKIP: unknown platform '$platform'"
+    return 0
+  fi
+
+  if [ ! -d "$target_dir" ]; then
+    echo "MISSING: $target_dir"
+    return 1
+  fi
+
+  if ! diff -q "$source_dir/SKILL.md" "$target_dir/SKILL.md" &>/dev/null; then
+    echo "OUTDATED: $target_dir"
+    return 1
+  fi
+
+  echo "OK: $skill_name"
+  return 0
+}
+
 # --- AGENTS.md injection ---
+_multi_agent_rules_section_end() {
+  local file="$1"
+  local start="$2"
+  awk -v s="$start" '
+    NR < s { next }
+    NR == s { next }
+    NR > s && /^## / { print NR - 1; done = 1; exit }
+    { end = NR }
+    END {
+      if (done) exit
+      if (s) {
+        if (length(end) == 0) print s
+        else print end
+      }
+    }
+  ' "$file"
+}
+
 inject_agents_md() {
   local project_dir="$1"
   local agents_file="$project_dir/AGENTS.md"
@@ -75,8 +133,21 @@ inject_agents_md() {
   fi
 
   if grep -q "## Multi-Agent Rules" "$agents_file"; then
+    if [ "$UPDATE" = "1" ]; then
+      local start end
+      start=$(sed -n '/## Multi-Agent Rules/=' "$agents_file" | head -1)
+      end=$(_multi_agent_rules_section_end "$agents_file" "$start")
+      {
+        head -n $((start - 1)) "$agents_file"
+        cat "$snippet"
+        tail -n +$((end + 1)) "$agents_file"
+      } > "${agents_file}.tmp"
+      mv "${agents_file}.tmp" "$agents_file"
+      echo "  UPDATED: Multi-Agent Rules section in $agents_file"
+      return
+    fi
     echo "  EXISTS: $agents_file already has Multi-Agent Rules section"
-    echo "  To replace, remove the existing section and re-run."
+    echo "  To replace, remove the existing section and re-run, or use --update."
     return
   fi
 
@@ -99,7 +170,21 @@ inject_claude_md() {
   fi
 
   if grep -q "## Multi-Agent Rules" "$claude_file"; then
+    if [ "$UPDATE" = "1" ]; then
+      local start end
+      start=$(sed -n '/## Multi-Agent Rules/=' "$claude_file" | head -1)
+      end=$(_multi_agent_rules_section_end "$claude_file" "$start")
+      {
+        head -n $((start - 1)) "$claude_file"
+        cat "$snippet"
+        tail -n +$((end + 1)) "$claude_file"
+      } > "${claude_file}.tmp"
+      mv "${claude_file}.tmp" "$claude_file"
+      echo "  UPDATED: Multi-Agent Rules section in $claude_file"
+      return
+    fi
     echo "  EXISTS: $claude_file already has Multi-Agent Rules section"
+    echo "  To replace, use --update."
     return
   fi
 
@@ -119,6 +204,8 @@ OPTIONS:
   --skills-only       Install governance skills only (no AGENTS.md changes)
   --rules-only DIR    Inject Multi-Agent Rules into AGENTS.md/CLAUDE.md in DIR
   --project DIR       Install skills AND inject rules into DIR
+  --check             Verify installed skills match repo (no changes)
+  --update            Replace existing Multi-Agent Rules section when injecting rules
   --platform NAME     Force platform: codex, cursor, claude-code (auto-detected by default)
   --force             Overwrite existing skill installations
   --help              Show this help
@@ -135,6 +222,12 @@ EXAMPLES:
 
   # Force overwrite existing skills
   ./scripts/setup-multi-agent-governance.sh --skills-only --force
+
+  # Check skill installs without modifying anything
+  ./scripts/setup-multi-agent-governance.sh --check
+
+  # Refresh Multi-Agent Rules in place
+  ./scripts/setup-multi-agent-governance.sh --rules-only /path/to/my-repo --update
 EOF
 }
 
@@ -147,12 +240,15 @@ MODE=""
 PROJECT_DIR=""
 PLATFORM=""
 FORCE="0"
+UPDATE="0"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --skills-only)  MODE="skills"; shift ;;
     --rules-only)   MODE="rules"; PROJECT_DIR="$2"; shift 2 ;;
     --project)      MODE="all"; PROJECT_DIR="$2"; shift 2 ;;
+    --check)        MODE="check"; shift ;;
+    --update)       UPDATE="1"; shift ;;
     --platform)     PLATFORM="$2"; shift 2 ;;
     --force)        FORCE="1"; shift ;;
     --help|-h)      usage; exit 0 ;;
@@ -182,6 +278,22 @@ fi
 
 echo "Detected platforms: ${PLATFORMS[*]}"
 echo ""
+
+CHECK_EXIT=0
+
+if [ "$MODE" = "check" ]; then
+  echo "--- Checking skills ---"
+  for platform in "${PLATFORMS[@]}"; do
+    echo "Platform: $platform"
+    for skill in "${SKILLS[@]}"; do
+      check_skill "$skill" "$platform" || CHECK_EXIT=1
+    done
+    echo ""
+  done
+  echo "=== Done ==="
+  echo ""
+  exit "$CHECK_EXIT"
+fi
 
 if [ "$MODE" = "skills" ] || [ "$MODE" = "all" ]; then
   echo "--- Installing skills ---"

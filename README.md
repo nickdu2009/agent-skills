@@ -133,6 +133,66 @@ Do not use phase skills for:
 
 When in doubt, start with `plan-before-action` plus `multi-agent-protocol` and escalate to phase skills only when wave-level coordination becomes necessary.
 
+## Installation Paths
+
+This repository supports three installation methods. Choose based on your situation.
+
+### OpenSkills (recommended for consumers)
+
+Install all skills into any project via the OpenSkills CLI:
+
+```bash
+npx openskills install your-org/agent-skills --universal
+npx openskills sync
+```
+
+This is the primary recommended path for external consumers.
+
+### Full Skill Governance (recommended for teams)
+
+Install all execution and orchestration skills with AGENTS.md rule injection:
+
+```bash
+./scripts/setup-skill-governance.sh --project /path/to/my-repo
+```
+
+Include phase skills for large multi-wave projects:
+
+```bash
+./scripts/setup-skill-governance.sh --project /path/to/my-repo --include-phase
+```
+
+For multi-agent governance only (2 orchestration skills):
+
+```bash
+./scripts/setup-multi-agent-governance.sh --project /path/to/my-repo
+```
+
+### Cursor Development Mirror (this repository only)
+
+Generate a project-local `.cursor/skills/` mirror for development within this repository:
+
+```bash
+python3 scripts/sync-cursor-skills.py
+```
+
+This mirror is project-local (`$REPO_ROOT/.cursor/skills/`), ignored by Git, and can be rebuilt at any time. It is not the same as global skill installation.
+
+To verify the mirror is current:
+
+```bash
+python3 scripts/sync-cursor-skills.py --check
+```
+
+### Path Comparison
+
+| Method | Scope | Target Path | Use When |
+|--------|-------|-------------|----------|
+| OpenSkills | All skills | `.agent/skills/` | External consumer installing into a project |
+| `setup-skill-governance.sh` | All skills + rules | `$HOME/.cursor/skills/` or `$HOME/.codex/skills/` | Team adopting the full discipline suite |
+| `setup-multi-agent-governance.sh` | 2 orchestration skills + rules | `$HOME/.cursor/skills/` or `$HOME/.codex/skills/` | Only need multi-agent coordination |
+| `sync-cursor-skills.py` | All skills (mirror) | `$REPO_ROOT/.cursor/skills/` | Developing this skill library itself |
+
 ## Design Philosophy
 
 - Scope first.
@@ -160,6 +220,9 @@ skills/
   conflict-resolution/
 templates/
   AGENTS-multi-agent-rules.md
+  AGENTS-skill-lifecycle-rules.md
+  cross-platform-trigger-baseline.md
+  transcript-evaluation-report.md
 examples/
   single-agent-bugfix.md
   safe-refactor.md
@@ -169,6 +232,9 @@ examples/
 scripts/
   sync-cursor-skills.py
   setup-multi-agent-governance.sh
+  setup-skill-governance.sh
+docs/
+  skill-system-evaluation.md
 ```
 
 ## Publishing Shape
@@ -249,6 +315,12 @@ Force a specific platform:
 
 The script auto-detects installed platforms (Cursor, Codex, Claude Code) and places skills in the appropriate directory.
 
+For the full skill governance suite (all 10 execution and orchestration skills plus lifecycle rules):
+
+```bash
+./scripts/setup-skill-governance.sh --project /path/to/my-repo
+```
+
 ## Cursor Mirror
 
 If you want local Cursor discovery while working in this repository, generate `.cursor/skills/` from `skills/`:
@@ -264,6 +336,8 @@ To verify that the local mirror is still current:
 ```bash
 python3 scripts/sync-cursor-skills.py --check
 ```
+
+Note: The Cursor mirror copies entire skill directories, including subdirectories such as `scripts/`, `references/`, and `fixtures/` for skills that have them. This ensures that relative path references within skill instructions remain valid.
 
 ## How to Test Skills
 

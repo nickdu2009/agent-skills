@@ -15,8 +15,12 @@ TARGET_DIR = REPO_ROOT / ".cursor" / "skills"
 SKILL_FILE = "SKILL.md"
 
 
-def sha256_text(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+def file_sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def discover_source_skills() -> list[Path]:
@@ -32,10 +36,6 @@ def discover_source_skills() -> list[Path]:
     return skill_dirs
 
 
-def read_text(path: Path) -> str:
-    return path.read_text(encoding="utf-8")
-
-
 def discover_target_skills() -> list[Path]:
     if not TARGET_DIR.exists():
         return []
@@ -47,31 +47,42 @@ def discover_target_skills() -> list[Path]:
     return skill_dirs
 
 
-def target_skill_file(skill_dir: Path) -> Path:
-    return TARGET_DIR / skill_dir.name / SKILL_FILE
+def collect_rel_files(root: Path) -> dict[str, Path]:
+    if not root.exists():
+        return {}
+    out: dict[str, Path] = {}
+    for path in root.rglob("*"):
+        if path.is_file():
+            out[path.relative_to(root).as_posix()] = path
+    return out
 
 
 def check_sync(skill_dirs: list[Path]) -> int:
     drift_found = False
     source_names = {skill_dir.name for skill_dir in skill_dirs}
 
-    for skill_dir in skill_dirs:
-        source_file = skill_dir / SKILL_FILE
-        target_file = target_skill_file(skill_dir)
+    for skill_dir in sorted(skill_dirs, key=lambda p: p.name):
+        dst_root = TARGET_DIR / skill_dir.name
+        src_files = collect_rel_files(skill_dir)
+        dst_files = collect_rel_files(dst_root) if dst_root.exists() else {}
 
-        if not target_file.exists():
+        src_keys = set(src_files.keys())
+        dst_keys = set(dst_files.keys())
+
+        for rel in sorted(src_keys - dst_keys):
             drift_found = True
-            print(f"MISSING {target_file.relative_to(REPO_ROOT)}")
-            continue
+            print(f"MISSING {dst_root.relative_to(REPO_ROOT) / rel}")
 
-        source_hash = sha256_text(read_text(source_file))
-        target_hash = sha256_text(read_text(target_file))
-
-        if source_hash != target_hash:
+        for rel in sorted(dst_keys - src_keys):
             drift_found = True
-            print(f"OUTDATED {target_file.relative_to(REPO_ROOT)}")
+            print(f"EXTRA {dst_root.relative_to(REPO_ROOT) / rel}")
 
-    for target_dir in discover_target_skills():
+        for rel in sorted(src_keys & dst_keys):
+            if file_sha256(src_files[rel]) != file_sha256(dst_files[rel]):
+                drift_found = True
+                print(f"OUTDATED {dst_root.relative_to(REPO_ROOT) / rel}")
+
+    for target_dir in sorted(discover_target_skills(), key=lambda p: p.name):
         if target_dir.name not in source_names:
             drift_found = True
             print(f"EXTRA {target_dir.relative_to(REPO_ROOT)}")
@@ -102,13 +113,10 @@ def sync_skills(skill_dirs: list[Path]) -> int:
     synced = 0
 
     for skill_dir in skill_dirs:
-        source_file = skill_dir / SKILL_FILE
-        target_file = target_skill_file(skill_dir)
-
-        target_file.parent.mkdir(parents=True, exist_ok=True)
-        target_file.write_text(read_text(source_file), encoding="utf-8")
+        dst = TARGET_DIR / skill_dir.name
+        shutil.copytree(skill_dir, dst, dirs_exist_ok=True)
         synced += 1
-        print(f"SYNCED {target_file.relative_to(REPO_ROOT)}")
+        print(f"SYNCED {dst.relative_to(REPO_ROOT)}")
 
     print(f"Synced {synced} Cursor skill(s).")
     return 0
