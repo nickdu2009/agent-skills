@@ -70,7 +70,7 @@ jobs:
           exit $EXIT_CODE
 
   validate-scripts:
-    name: Validate script syntax
+    name: Validate tooling syntax
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -79,18 +79,39 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Enforce repository layout boundaries
+        run: python3 maintainer/scripts/install/validate_repo_layout.py
+
       - name: Check Python syntax
-        run: python3 -c "import ast; ast.parse(open('scripts/sync-cursor-skills.py').read())"
+        run: |
+          python3 - <<'PY'
+          import ast
+          from pathlib import Path
+
+          files = [
+              Path("maintainer/scripts/install/sync-cursor-skills.py"),
+              Path("maintainer/scripts/install/validate_repo_layout.py"),
+              Path("maintainer/data/skill_test_data.py"),
+              Path("maintainer/data/trigger_test_data.py"),
+              Path("maintainer/scripts/evaluation/generate-skill-test-report.py"),
+              Path("maintainer/scripts/evaluation/run_behavior_eval.py"),
+              Path("maintainer/scripts/evaluation/run_trigger_tests.py"),
+              Path("maintainer/scripts/evaluation/score-skill-transcript.py"),
+          ]
+          for path in files:
+              ast.parse(path.read_text())
+              print(f"OK: {path}")
+          PY
 
       - name: Check Bash syntax
         run: |
-          bash -n scripts/setup-multi-agent-governance.sh
-          bash -n scripts/setup-skill-governance.sh
+          bash -n maintainer/scripts/install/setup-multi-agent-governance.sh
+          bash -n maintainer/scripts/install/setup-skill-governance.sh
 
       - name: Verify Cursor mirror copies full directories
         run: |
-          python3 scripts/sync-cursor-skills.py
-          python3 scripts/sync-cursor-skills.py --check
+          python3 maintainer/scripts/install/sync-cursor-skills.py
+          python3 maintainer/scripts/install/sync-cursor-skills.py --check
 
           if [ ! -d ".cursor/skills/phase-contract-tools/scripts" ]; then
             echo "ERROR: phase-contract-tools/scripts/ not mirrored"

@@ -10,10 +10,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+DATA_DIR = REPO_ROOT / "maintainer" / "data"
+sys.path.insert(0, str(DATA_DIR))
+
 from skill_test_data import ALL_SKILLS, EXAMPLE_CASES, GLOBAL_RUBRIC_DIMENSIONS, resolve_example
 
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_TRANSCRIPTS_DIR = (
     Path.home()
     / ".cursor"

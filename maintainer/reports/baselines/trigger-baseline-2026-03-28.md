@@ -78,4 +78,4 @@ The `context-budget-awareness` skill description does not trigger for prompts de
 
 - Consider expanding `context-budget-awareness` description to cover mid-session symptom keywords
 - Re-run after any description changes to establish a new baseline
-- Run the same test matrix on Cursor/Codex/Claude Code platforms for cross-platform data (see `templates/cross-platform-trigger-baseline.md`)
+- Run the same test matrix on Cursor/Codex/Claude Code platforms for cross-platform data (see `templates/evaluation/cross-platform-trigger-baseline.md`)

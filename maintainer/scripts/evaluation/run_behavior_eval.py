@@ -10,8 +10,8 @@ Modes:
   --mode api      Call OpenAI API to score the transcript automatically
 
 Usage:
-  uv run scripts/run_behavior_eval.py --transcript path/to/transcript.txt --scenario single-agent-bugfix.md
-  uv run scripts/run_behavior_eval.py --transcript path/to/transcript.txt --scenario single-agent-bugfix.md --mode api
+  uv run maintainer/scripts/evaluation/run_behavior_eval.py --transcript path/to/transcript.txt --scenario single-agent-bugfix.md
+  uv run maintainer/scripts/evaluation/run_behavior_eval.py --transcript path/to/transcript.txt --scenario single-agent-bugfix.md --mode api
 """
 
 from __future__ import annotations
@@ -23,12 +23,13 @@ import sys
 import textwrap
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[3]
+DATA_DIR = REPO_ROOT / "maintainer" / "data"
 
 from dotenv import load_dotenv
 load_dotenv(REPO_ROOT / ".env")
 
-sys.path.insert(0, str(REPO_ROOT / "scripts"))
+sys.path.insert(0, str(DATA_DIR))
 from skill_test_data import (
     EXAMPLE_CASES,
     GLOBAL_RUBRIC_DIMENSIONS,

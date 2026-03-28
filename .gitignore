@@ -12,3 +12,5 @@ __pycache__/
 .venv/
 venv/
 env/
+/maintainer/reports/runs/*
+!/maintainer/reports/runs/.gitkeep

@@ -18,7 +18,7 @@ Record trigger accuracy across platforms to establish a quantitative baseline. R
 
 ## Test Cases
 
-Use cases from `scripts/trigger_test_data.py`. For each case, record the result on each platform.
+Use cases from `maintainer/data/trigger_test_data.py`. For each case, record the result on each platform.
 
 ### Case Template
 

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 # --- Detect platform ---
 detect_platforms() {
@@ -123,7 +123,7 @@ _multi_agent_rules_section_end() {
 inject_agents_md() {
   local project_dir="$1"
   local agents_file="$project_dir/AGENTS.md"
-  local snippet="$REPO_ROOT/templates/AGENTS-multi-agent-rules.md"
+  local snippet="$REPO_ROOT/templates/governance/AGENTS-multi-agent-rules.md"
 
   if [ ! -f "$agents_file" ]; then
     echo "  CREATE: $agents_file (new file with Multi-Agent Rules)"
@@ -160,7 +160,7 @@ inject_agents_md() {
 inject_claude_md() {
   local project_dir="$1"
   local claude_file="$project_dir/CLAUDE.md"
-  local snippet="$REPO_ROOT/templates/AGENTS-multi-agent-rules.md"
+  local snippet="$REPO_ROOT/templates/governance/AGENTS-multi-agent-rules.md"
 
   if [ ! -f "$claude_file" ]; then
     echo "  CREATE: $claude_file (new file with Multi-Agent Rules)"
@@ -212,22 +212,22 @@ OPTIONS:
 
 EXAMPLES:
   # Auto-detect platform, install skills only
-  ./scripts/setup-multi-agent-governance.sh --skills-only
+  ./maintainer/scripts/install/setup-multi-agent-governance.sh --skills-only
 
   # Install everything for a specific project
-  ./scripts/setup-multi-agent-governance.sh --project /path/to/my-repo
+  ./maintainer/scripts/install/setup-multi-agent-governance.sh --project /path/to/my-repo
 
   # Inject rules into an existing AGENTS.md
-  ./scripts/setup-multi-agent-governance.sh --rules-only /path/to/my-repo
+  ./maintainer/scripts/install/setup-multi-agent-governance.sh --rules-only /path/to/my-repo
 
   # Force overwrite existing skills
-  ./scripts/setup-multi-agent-governance.sh --skills-only --force
+  ./maintainer/scripts/install/setup-multi-agent-governance.sh --skills-only --force
 
   # Check skill installs without modifying anything
-  ./scripts/setup-multi-agent-governance.sh --check
+  ./maintainer/scripts/install/setup-multi-agent-governance.sh --check
 
   # Refresh Multi-Agent Rules in place
-  ./scripts/setup-multi-agent-governance.sh --rules-only /path/to/my-repo --update
+  ./maintainer/scripts/install/setup-multi-agent-governance.sh --rules-only /path/to/my-repo --update
 EOF
 }
 

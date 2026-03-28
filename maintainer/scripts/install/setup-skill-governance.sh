@@ -2,10 +2,10 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
-MULTI_AGENT_SNIPPET="$REPO_ROOT/templates/AGENTS-multi-agent-rules.md"
-SKILL_LIFECYCLE_SNIPPET="$REPO_ROOT/templates/AGENTS-skill-lifecycle-rules.md"
+MULTI_AGENT_SNIPPET="$REPO_ROOT/templates/governance/AGENTS-multi-agent-rules.md"
+SKILL_LIFECYCLE_SNIPPET="$REPO_ROOT/templates/governance/AGENTS-skill-lifecycle-rules.md"
 
 detect_platforms() {
   local platforms=()
@@ -338,15 +338,15 @@ OPTIONS:
   --help              Show this help
 
 EXAMPLES:
-  ./scripts/setup-skill-governance.sh --skills-only
+  ./maintainer/scripts/install/setup-skill-governance.sh --skills-only
 
-  ./scripts/setup-skill-governance.sh --project /path/to/my-repo
+  ./maintainer/scripts/install/setup-skill-governance.sh --project /path/to/my-repo
 
-  ./scripts/setup-skill-governance.sh --skills-only --include-phase --force
+  ./maintainer/scripts/install/setup-skill-governance.sh --skills-only --include-phase --force
 
-  ./scripts/setup-skill-governance.sh --rules-only /path/to/my-repo --update
+  ./maintainer/scripts/install/setup-skill-governance.sh --rules-only /path/to/my-repo --update
 
-  ./scripts/setup-skill-governance.sh --check --include-phase
+  ./maintainer/scripts/install/setup-skill-governance.sh --check --include-phase
 EOF
 }
 

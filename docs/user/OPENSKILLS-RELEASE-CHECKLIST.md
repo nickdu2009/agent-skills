@@ -120,6 +120,7 @@ Local convenience layers are allowed, but they must remain clearly outside the p
 - [ ] Cursor mirrors are regenerated from `skills/`, not hand-maintained
 - [ ] `.cursor/` stays ignored by Git
 - [ ] Local OpenSkills outputs such as `.agent/`, `.claude/`, and `AGENTS.md` stay ignored by Git
+- [ ] `maintainer/` contains internal evaluation assets only, not installable skill source
 - [ ] Release notes and README do not imply that generated local artifacts are canonical source
 
 ## 6. Release Decision

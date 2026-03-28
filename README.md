@@ -153,19 +153,19 @@ This is the primary recommended path for external consumers.
 Install all execution and orchestration skills with AGENTS.md rule injection:
 
 ```bash
-./scripts/setup-skill-governance.sh --project /path/to/my-repo
+./maintainer/scripts/install/setup-skill-governance.sh --project /path/to/my-repo
 ```
 
 Include phase skills for large multi-wave projects:
 
 ```bash
-./scripts/setup-skill-governance.sh --project /path/to/my-repo --include-phase
+./maintainer/scripts/install/setup-skill-governance.sh --project /path/to/my-repo --include-phase
 ```
 
 For multi-agent governance only (2 orchestration skills):
 
 ```bash
-./scripts/setup-multi-agent-governance.sh --project /path/to/my-repo
+./maintainer/scripts/install/setup-multi-agent-governance.sh --project /path/to/my-repo
 ```
 
 ### Cursor Development Mirror (this repository only)
@@ -173,7 +173,7 @@ For multi-agent governance only (2 orchestration skills):
 Generate a project-local `.cursor/skills/` mirror for development within this repository:
 
 ```bash
-python3 scripts/sync-cursor-skills.py
+python3 maintainer/scripts/install/sync-cursor-skills.py
 ```
 
 This mirror is project-local (`$REPO_ROOT/.cursor/skills/`), ignored by Git, and can be rebuilt at any time. It is not the same as global skill installation.
@@ -181,7 +181,7 @@ This mirror is project-local (`$REPO_ROOT/.cursor/skills/`), ignored by Git, and
 To verify the mirror is current:
 
 ```bash
-python3 scripts/sync-cursor-skills.py --check
+python3 maintainer/scripts/install/sync-cursor-skills.py --check
 ```
 
 ### Path Comparison
@@ -206,7 +206,6 @@ python3 scripts/sync-cursor-skills.py --check
 
 ```text
 README.md
-OPENSKILLS-RELEASE-CHECKLIST.md
 skills/
   scoped-tasking/
   minimal-change-strategy/
@@ -219,23 +218,50 @@ skills/
   multi-agent-protocol/
   conflict-resolution/
 templates/
-  AGENTS-multi-agent-rules.md
-  AGENTS-skill-lifecycle-rules.md
-  cross-platform-trigger-baseline.md
-  transcript-evaluation-report.md
+  governance/
+    AGENTS-multi-agent-rules.md
+    AGENTS-skill-lifecycle-rules.md
+  evaluation/
+    cross-platform-trigger-baseline.md
+    transcript-evaluation-report.md
 examples/
   single-agent-bugfix.md
   safe-refactor.md
   read-and-locate.md
   context-budgeted-debugging.md
   multi-agent-root-cause-analysis.md
-scripts/
-  sync-cursor-skills.py
-  setup-multi-agent-governance.sh
-  setup-skill-governance.sh
+  phased-migration-planning.md
 docs/
-  skill-system-evaluation.md
+  user/
+    OPENSKILLS-RELEASE-CHECKLIST.md
+  maintainer/
+    skill-system-evaluation.md
+    test-evaluation-repair-plan.md
+maintainer/
+  data/
+  scripts/
+    install/
+    evaluation/
+  reports/
+    baselines/
+    runs/
 ```
+
+## Repository Boundaries
+
+Keep each top-level area narrowly scoped:
+
+- `skills/`: the only canonical published skill source.
+- `examples/`: user-visible scenario inputs for behavior testing and documentation.
+- `docs/user/`: user-facing operational and release documentation.
+- `templates/governance/`: reusable governance snippets intended for installation and rule injection.
+- `templates/evaluation/`: evaluation-only report templates used by the maintainer toolchain.
+- `maintainer/scripts/install/`: stable user-facing entrypoints for installation and local mirror sync.
+- `docs/maintainer/`: maintainer notes, evaluations, and repair plans.
+- `maintainer/data/`: shared evaluation fixtures, rubrics, and trigger matrices.
+- `maintainer/scripts/evaluation/`: maintainer-only scoring, trigger, and report-generation utilities.
+- `maintainer/reports/baselines/`: retained reference outputs that are worth committing.
+- `maintainer/reports/runs/`: scratch run output; promote only durable results into `baselines/`.
 
 ## Publishing Shape
 
@@ -245,14 +271,14 @@ That source-of-truth rule matters for installers that recursively scan repositor
 
 Local tool-specific mirrors and generated install outputs must stay out of the published source tree.
 
-Generated local artifacts in this repository include:
+Generated install artifacts in consumer repositories include:
 
 - `.cursor/`
 - `.agent/`
 - `.claude/`
 - `AGENTS.md`
 
-These are local-only files or directories and are ignored by Git.
+In this repository itself, internal evaluation assets live under `maintainer/` and are not part of the published skill source tree.
 
 ## OpenSkills
 
@@ -283,34 +309,34 @@ Always install from `./skills`, not from the repository root. Installing from th
 
 `--universal` installs to `.agent/skills/`, which is the safer default for multi-agent setups. If you prefer the default OpenSkills layout, omit `--universal`.
 
-For release readiness and acceptance checks, use [`OPENSKILLS-RELEASE-CHECKLIST.md`](OPENSKILLS-RELEASE-CHECKLIST.md).
+For release readiness and acceptance checks, use [`docs/user/OPENSKILLS-RELEASE-CHECKLIST.md`](docs/user/OPENSKILLS-RELEASE-CHECKLIST.md).
 
 ## Governance Setup
 
-The `multi-agent-protocol` skill works best when paired with a short Multi-Agent Rules section in your project-level `AGENTS.md` (or `CLAUDE.md` for Claude Code). A ready-made template lives in `templates/AGENTS-multi-agent-rules.md`.
+The `multi-agent-protocol` skill works best when paired with a short Multi-Agent Rules section in your project-level `AGENTS.md` (or `CLAUDE.md` for Claude Code). A ready-made template lives in `templates/governance/AGENTS-multi-agent-rules.md`.
 
 Install both the governance skills and inject the rules into a project:
 
 ```bash
-./scripts/setup-multi-agent-governance.sh --project /path/to/my-repo
+./maintainer/scripts/install/setup-multi-agent-governance.sh --project /path/to/my-repo
 ```
 
 Install only the skills (no project file changes):
 
 ```bash
-./scripts/setup-multi-agent-governance.sh --skills-only
+./maintainer/scripts/install/setup-multi-agent-governance.sh --skills-only
 ```
 
 Inject only the rules into an existing `AGENTS.md`:
 
 ```bash
-./scripts/setup-multi-agent-governance.sh --rules-only /path/to/my-repo
+./maintainer/scripts/install/setup-multi-agent-governance.sh --rules-only /path/to/my-repo
 ```
 
 Force a specific platform:
 
 ```bash
-./scripts/setup-multi-agent-governance.sh --skills-only --platform codex --force
+./maintainer/scripts/install/setup-multi-agent-governance.sh --skills-only --platform codex --force
 ```
 
 The script auto-detects installed platforms (Cursor, Codex, Claude Code) and places skills in the appropriate directory.
@@ -318,7 +344,7 @@ The script auto-detects installed platforms (Cursor, Codex, Claude Code) and pla
 For the full skill governance suite (all 10 execution and orchestration skills plus lifecycle rules):
 
 ```bash
-./scripts/setup-skill-governance.sh --project /path/to/my-repo
+./maintainer/scripts/install/setup-skill-governance.sh --project /path/to/my-repo
 ```
 
 ## Cursor Mirror
@@ -326,7 +352,7 @@ For the full skill governance suite (all 10 execution and orchestration skills p
 If you want local Cursor discovery while working in this repository, generate `.cursor/skills/` from `skills/`:
 
 ```bash
-python3 scripts/sync-cursor-skills.py
+python3 maintainer/scripts/install/sync-cursor-skills.py
 ```
 
 The generated `.cursor/` tree is local-only, ignored by Git, and can be deleted and rebuilt at any time.
@@ -334,7 +360,7 @@ The generated `.cursor/` tree is local-only, ignored by Git, and can be deleted 
 To verify that the local mirror is still current:
 
 ```bash
-python3 scripts/sync-cursor-skills.py --check
+python3 maintainer/scripts/install/sync-cursor-skills.py --check
 ```
 
 Note: The Cursor mirror copies entire skill directories, including subdirectories such as `scripts/`, `references/`, and `fixtures/` for skills that have them. This ensures that relative path references within skill instructions remain valid.
@@ -358,20 +384,20 @@ Use this three-part loop:
 2. Run one or more example scenarios as acceptance tests.
 3. Record whether the agent behavior matched the intended skill guardrails.
 
-Before release, also run an OpenSkills install smoke test using the checklist in [`OPENSKILLS-RELEASE-CHECKLIST.md`](OPENSKILLS-RELEASE-CHECKLIST.md).
+Before release, also run an OpenSkills install smoke test using the checklist in [`docs/user/OPENSKILLS-RELEASE-CHECKLIST.md`](docs/user/OPENSKILLS-RELEASE-CHECKLIST.md).
 
 ### 1. Static Verification
 
 Use the existing sync checker after every change to `skills/`:
 
 ```bash
-python3 scripts/sync-cursor-skills.py --check
+python3 maintainer/scripts/install/sync-cursor-skills.py --check
 ```
 
 If the mirror is out of date, rebuild it:
 
 ```bash
-python3 scripts/sync-cursor-skills.py
+python3 maintainer/scripts/install/sync-cursor-skills.py
 ```
 
 ### 2. Scenario-Based Acceptance Testing
@@ -390,6 +416,7 @@ Recommended examples:
 - `examples/safe-refactor.md`
 - `examples/context-budgeted-debugging.md`
 - `examples/multi-agent-root-cause-analysis.md`
+- `examples/phased-migration-planning.md`
 
 When testing, evaluate behavior rather than only the final answer. For example:
 
@@ -404,22 +431,22 @@ When testing, evaluate behavior rather than only the final answer. For example:
 Use the helper script to print the example-to-skill matrix:
 
 ```bash
-python3 scripts/generate-skill-test-report.py
+python3 maintainer/scripts/evaluation/generate-skill-test-report.py
 ```
 
-Generate a Markdown report template for a manual test pass:
+Generate a Markdown report template for a manual test pass in the scratch runs area:
 
 ```bash
-python3 scripts/generate-skill-test-report.py --write-report skill-test-report.md
+python3 maintainer/scripts/evaluation/generate-skill-test-report.py --write-report maintainer/reports/runs/skill-test-report.md
 ```
 
 Optionally include the local mirror sync check in the same command:
 
 ```bash
-python3 scripts/generate-skill-test-report.py --check-sync --write-report skill-test-report.md
+python3 maintainer/scripts/evaluation/generate-skill-test-report.py --check-sync --write-report maintainer/reports/runs/skill-test-report.md
 ```
 
-The generated report is designed for lightweight regression checks across skill revisions. It does not replace human review of agent behavior.
+The generated report is designed for lightweight regression checks across skill revisions. It does not replace human review of agent behavior. Copy only durable reference runs into `maintainer/reports/baselines/`.
 
 ## How to Use
 

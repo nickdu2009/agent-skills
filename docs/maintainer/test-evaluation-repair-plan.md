@@ -1,7 +1,7 @@
 # 测试评估体系修复计划
 
 > 基于日期：2026-03-28
-> 上游评估：`docs/skill-system-evaluation.md`
+> 上游评估：`docs/maintainer/skill-system-evaluation.md`
 > 执行状态：R1/R3/R4/R5/R6/R7 已完成，R2 待手动执行
 
 ---
@@ -32,17 +32,17 @@
 1. 在 `.env` 中配置 `OPENAI_API_KEY`（已有 `dotenv` 支持）。
 2. 执行全量触发测试：
    ```bash
-   uv run scripts/run_trigger_tests.py --mode api
+   uv run maintainer/scripts/evaluation/run_trigger_tests.py --mode api
    ```
-3. 将结果保存到 `reports/trigger-baseline-YYYY-MM-DD.md`，按 `templates/cross-platform-trigger-baseline.md` 格式填写。
+3. 将结果保存到 `maintainer/reports/baselines/trigger-baseline-YYYY-MM-DD.md`，按 `templates/evaluation/cross-platform-trigger-baseline.md` 格式填写。
 4. 在 Cursor 中手动运行 3-5 个代表性 case，记录实际平台触发行为与 API 评估的差异。
 
 **产出文件**：
 
 | 文件 | 操作 |
 |------|------|
-| `reports/trigger-baseline-YYYY-MM-DD.md` | 新建 |
-| `.gitignore` | 确认 `reports/` 不被忽略 |
+| `maintainer/reports/baselines/trigger-baseline-YYYY-MM-DD.md` | 新建 |
+| `.gitignore` | 确认 `maintainer/reports/baselines/` 保持可提交 |
 
 **验收条件**：报告包含 22 个 case 的 pass/partial/miss/fail 结果和总通过率。
 
@@ -52,23 +52,23 @@
 
 **优先级**：P0
 
-**目标**：对至少 2 个场景执行手动测试，填写 `templates/transcript-evaluation-report.md`。
+**目标**：对至少 2 个场景执行手动测试，填写 `templates/evaluation/transcript-evaluation-report.md`。
 
 **步骤**：
 
 1. 选择 `single-agent-bugfix.md` 和 `safe-refactor.md` 作为首轮场景。
 2. 在 Cursor 中新建会话，粘贴 `skill-testing-playbook.md` 中的 Prompt Template。
 3. 记录完整转录，按 `transcript-evaluation-report.md` 评分。
-4. 保存到 `reports/behavior-YYYY-MM-DD-<scenario>.md`。
+4. 保存到 `maintainer/reports/baselines/behavior-YYYY-MM-DD-<scenario>.md`。
 
 **产出文件**：
 
 | 文件 | 操作 |
 |------|------|
-| `reports/behavior-YYYY-MM-DD-single-agent-bugfix.md` | 新建 |
-| `reports/behavior-YYYY-MM-DD-safe-refactor.md` | 新建 |
+| `maintainer/reports/baselines/behavior-YYYY-MM-DD-single-agent-bugfix.md` | 新建 |
+| `maintainer/reports/baselines/behavior-YYYY-MM-DD-safe-refactor.md` | 新建 |
 
-**验收条件**：每份报告包含 5 个 Global Dimension 评分和所有相关 skill-specific 评分，Decision 行已填写。
+**验收条件**：每份报告包含 6 个 Global Dimension 评分和所有相关 skill-specific 评分，Decision 行已填写。
 
 ---
 
@@ -102,7 +102,7 @@
 
 #### R3b — 补充 rubric 条目
 
-在 `scripts/skill_test_data.py` 的 `SKILL_RUBRICS` 中新增三条：
+在 `maintainer/data/skill_test_data.py` 的 `SKILL_RUBRICS` 中新增三条：
 
 ```python
 "phase-plan": (
@@ -123,13 +123,13 @@
 
 #### R3c — 补充场景矩阵条目
 
-在 `scripts/skill_test_data.py` 的 `EXAMPLE_CASES` 和 `examples/skill-testing-playbook.md` 的 Scenario Matrix 中新增 `phased-migration-planning.md` 对应行。
+在 `maintainer/data/skill_test_data.py` 的 `EXAMPLE_CASES` 和 `examples/skill-testing-playbook.md` 的 Scenario Matrix 中新增 `phased-migration-planning.md` 对应行。
 
 **产出文件**：
 
 | 文件 | 操作 |
 |------|------|
-| `scripts/skill_test_data.py` | 修改：新增 3 个 rubric + 1 个 example case |
+| `maintainer/data/skill_test_data.py` | 修改：新增 3 个 rubric + 1 个 example case |
 | `examples/skill-evaluation-rubric.md` | 修改：新增 3 个 skill-specific 段落 |
 | `examples/skill-testing-playbook.md` | 修改：Scenario Matrix 新增 1 行 |
 
@@ -139,7 +139,7 @@
 
 **优先级**：P1
 
-**目标**：新建 `scripts/run_behavior_eval.py`，接受转录文件输入，使用 LLM 按 rubric 自动评分。
+**目标**：新建 `maintainer/scripts/evaluation/run_behavior_eval.py`，接受转录文件输入，使用 LLM 按 rubric 自动评分。
 
 **设计约束**：
 
@@ -152,7 +152,7 @@
 **输入契约**：
 
 ```text
-run_behavior_eval.py --transcript path/to/transcript.txt --scenario single-agent-bugfix.md [--mode api|prompt]
+maintainer/scripts/evaluation/run_behavior_eval.py --transcript path/to/transcript.txt --scenario single-agent-bugfix.md [--mode api|prompt]
 ```
 
 **输出契约**（`--mode api`）：
@@ -177,7 +177,7 @@ run_behavior_eval.py --transcript path/to/transcript.txt --scenario single-agent
 
 | 文件 | 操作 |
 |------|------|
-| `scripts/run_behavior_eval.py` | 新建 |
+| `maintainer/scripts/evaluation/run_behavior_eval.py` | 新建 |
 
 **验收条件**：对一份手动转录运行 `--mode api` 产出的评分与人工评分在同一 Decision 级别（pass/conditional/fail 一致）。
 
@@ -210,7 +210,7 @@ run_behavior_eval.py --transcript path/to/transcript.txt --scenario single-agent
 
 | 文件 | 操作 |
 |------|------|
-| `scripts/trigger_test_data.py` | 修改：新增 5 个 case |
+| `maintainer/data/trigger_test_data.py` | 修改：新增 5 个 case |
 
 ---
 
@@ -228,15 +228,15 @@ run_behavior_eval.py --transcript path/to/transcript.txt --scenario single-agent
 |-----------|-------------|----------------|
 | Skill lifecycle | Skills are loaded on demand and dropped when their phase ends; no more than 4 active simultaneously without justification | Unnecessary skills are carried throughout the session; the context budget grows from stale skill guidance |
 
-在 `scripts/skill_test_data.py` 的 `GLOBAL_RUBRIC_DIMENSIONS` 中新增对应条目。
+在 `maintainer/data/skill_test_data.py` 的 `GLOBAL_RUBRIC_DIMENSIONS` 中新增对应条目。
 
 **产出文件**：
 
 | 文件 | 操作 |
 |------|------|
 | `examples/skill-evaluation-rubric.md` | 修改：Global Dimensions 新增 1 行 |
-| `scripts/skill_test_data.py` | 修改：`GLOBAL_RUBRIC_DIMENSIONS` 新增 1 条 |
-| `scripts/generate-skill-test-report.py` | 无需改动（自动读取 `GLOBAL_RUBRIC_DIMENSIONS`） |
+| `maintainer/data/skill_test_data.py` | 修改：`GLOBAL_RUBRIC_DIMENSIONS` 新增 1 条 |
+| `maintainer/scripts/evaluation/generate-skill-test-report.py` | 无需改动（自动读取 `GLOBAL_RUBRIC_DIMENSIONS`） |
 
 ---
 
@@ -248,15 +248,15 @@ run_behavior_eval.py --transcript path/to/transcript.txt --scenario single-agent
 
 **方案**：
 
-1. 在 `reports/` 目录下按日期命名报告文件（R1、R2 已定义命名规则）。
-2. 在 `scripts/generate-skill-test-report.py` 中增加 `--compare` 参数，接受两份报告路径，输出变化的评分维度。
+1. 在 `maintainer/reports/baselines/` 目录下按日期命名基线报告文件（R1、R2 已定义命名规则）。
+2. 在 `maintainer/scripts/evaluation/generate-skill-test-report.py` 中增加 `--compare` 参数，接受两份报告路径，输出变化的评分维度。
 3. 报告文件顶部包含 git SHA，支持将评分结果与代码版本关联。
 
 **产出文件**：
 
 | 文件 | 操作 |
 |------|------|
-| `scripts/generate-skill-test-report.py` | 修改：新增 `--compare` 参数 |
+| `maintainer/scripts/evaluation/generate-skill-test-report.py` | 修改：新增 `--compare` 参数 |
 
 ---
 
@@ -285,12 +285,12 @@ R6 (生命周期)  ── 独立可并行
 | 文件 | 类型 | 涉及修复项 |
 |------|------|-----------|
 | `examples/phased-migration-planning.md` | 新建 | R3a |
-| `scripts/run_behavior_eval.py` | 新建 | R4 |
-| `reports/trigger-baseline-*.md` | 新建 | R1 |
-| `reports/behavior-*-*.md` | 新建 | R2 |
-| `scripts/skill_test_data.py` | 修改 | R3b, R3c, R6 |
-| `scripts/trigger_test_data.py` | 修改 | R5 |
-| `scripts/generate-skill-test-report.py` | 修改 | R7 |
+| `maintainer/scripts/evaluation/run_behavior_eval.py` | 新建 | R4 |
+| `maintainer/reports/baselines/trigger-baseline-*.md` | 新建 | R1 |
+| `maintainer/reports/baselines/behavior-*-*.md` | 新建 | R2 |
+| `maintainer/data/skill_test_data.py` | 修改 | R3b, R3c, R6 |
+| `maintainer/data/trigger_test_data.py` | 修改 | R5 |
+| `maintainer/scripts/evaluation/generate-skill-test-report.py` | 修改 | R7 |
 | `examples/skill-evaluation-rubric.md` | 修改 | R3b, R6 |
 | `examples/skill-testing-playbook.md` | 修改 | R3c |
 | `.gitignore` | 确认 | R1 |
@@ -302,7 +302,7 @@ R6 (生命周期)  ── 独立可并行
 - 不重新设计测试框架架构（当前架构是正确的）。
 - 不构建 CI 级别的行为测试自动化（LLM-as-judge 的结果不稳定到足以做 CI gate）。
 - 不为 AGENTS.md 规则本身建立单独的测试套件（通过行为场景间接覆盖已足够）。
-- 不构建 dashboard 或 web UI（`reports/` 目录 + Markdown 足够当前阶段）。
+- 不构建 dashboard 或 web UI（`maintainer/reports/` 目录 + Markdown 足够当前阶段）。
 
 ---
 

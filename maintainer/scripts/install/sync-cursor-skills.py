@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[3]
 SOURCE_DIR = REPO_ROOT / "skills"
 TARGET_DIR = REPO_ROOT / ".cursor" / "skills"
 SKILL_FILE = "SKILL.md"

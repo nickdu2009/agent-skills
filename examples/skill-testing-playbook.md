@@ -34,13 +34,13 @@ flowchart TD
 Run:
 
 ```bash
-python3 scripts/sync-cursor-skills.py --check
+python3 maintainer/scripts/install/sync-cursor-skills.py --check
 ```
 
 If needed:
 
 ```bash
-python3 scripts/sync-cursor-skills.py
+python3 maintainer/scripts/install/sync-cursor-skills.py
 ```
 
 ## Scenario Matrix
@@ -125,7 +125,7 @@ Trigger testing verifies that the agent loads the correct skill(s) in response t
 
 ### Trigger Test Matrix
 
-The matrix lives in `scripts/trigger_test_data.py`. Each case specifies:
+The matrix lives in `maintainer/data/trigger_test_data.py`. Each case specifies:
 
 - `prompt`: a simulated user message
 - `expected_triggers`: skills that should be loaded
@@ -146,7 +146,7 @@ The matrix lives in `scripts/trigger_test_data.py`. Each case specifies:
 
 ### How to Run a Trigger Test
 
-1. Pick a case from `scripts/trigger_test_data.py`.
+1. Pick a case from `maintainer/data/trigger_test_data.py`.
 2. Start a fresh agent session (Cursor, Codex, or Claude Code).
 3. Send the case prompt as the first user message.
 4. Observe which skills the agent reads or references in its first response.

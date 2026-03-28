@@ -13,6 +13,10 @@ Modes:
 Filter:
   --category <name>   Run only one category
   --case <id>         Run only one case
+
+Usage:
+  uv run maintainer/scripts/evaluation/run_trigger_tests.py --mode report
+  uv run maintainer/scripts/evaluation/run_trigger_tests.py --mode api
 """
 
 from __future__ import annotations
@@ -24,13 +28,14 @@ import sys
 import textwrap
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[3]
 SKILLS_DIR = REPO_ROOT / "skills"
+DATA_DIR = REPO_ROOT / "maintainer" / "data"
 
 from dotenv import load_dotenv
 load_dotenv(REPO_ROOT / ".env")
 
-sys.path.insert(0, str(REPO_ROOT / "scripts"))
+sys.path.insert(0, str(DATA_DIR))
 from trigger_test_data import (
     ALL_TRIGGER_CASES,
     CATEGORIES,

@@ -9,12 +9,15 @@ import subprocess
 import sys
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+DATA_DIR = REPO_ROOT / "maintainer" / "data"
+sys.path.insert(0, str(DATA_DIR))
+
 from skill_test_data import EXAMPLE_CASES, GLOBAL_RUBRIC_DIMENSIONS, SKILL_RUBRICS
 
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
 EXAMPLES_DIR = REPO_ROOT / "examples"
-SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync-cursor-skills.py"
+SYNC_SCRIPT = REPO_ROOT / "maintainer" / "scripts" / "install" / "sync-cursor-skills.py"
 
 
 def parse_args() -> argparse.Namespace:

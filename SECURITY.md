@@ -2,7 +2,7 @@
 
 ## Scope
 
-This repository contains agent behavior skills (SKILL.md files) and supporting Python scripts. Skills are plain Markdown with YAML frontmatter and contain no executable code. The `scripts/` directory contains Python utilities for local development and testing.
+This repository contains agent behavior skills (SKILL.md files) and supporting Python scripts. Skills are plain Markdown with YAML frontmatter and contain no executable code. The `maintainer/scripts/install/` directory contains install and mirror entrypoints, while `maintainer/` contains internal evaluation utilities, data, and retained reports.
 
 ## Reporting a Vulnerability
 
@@ -14,7 +14,7 @@ For issues related to the OpenSkills CLI or installation toolchain, report to th
 
 When installing skills from any source:
 
-- Review `scripts/` directory contents before running any Python scripts
+- Review both the `maintainer/scripts/install/` entrypoints and any `maintainer/` utilities before running repository tooling
 - Use `npx openskills read <skill-name>` to inspect skill content before use
 - Prefer installing from the canonical `skills/` directory rather than the repository root
 - Verify that installed skills match the expected count and names using `npx openskills list`
