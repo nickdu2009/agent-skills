@@ -31,7 +31,9 @@ Resolve bundled assets relative to the directory that contains `SKILL.md`.
 - `references/...` are read-only operating rules for this skill
 - `../phase-contract-tools/references/...` are the shared contract references
 - `../phase-contract-tools/scripts/...` are the shared contract helpers
+- this skill does **not** ship a local `scripts/` directory; all contract helpers live under `../phase-contract-tools/scripts/` when both skills are installed side by side
 - do not assume these files exist in the target repository
+- when invoking a helper script, pass target-repository paths explicitly
 - repository execution authority always comes from the accepted phase docs, not from the skill bundle
 
 If this SKILL.md and a bundled reference document disagree on a rule, this SKILL.md wins.
@@ -84,7 +86,8 @@ If any of these are unclear, ask before launching work.
 Use this first-action sequence before touching implementation:
 
 1. resolve and, if needed, confirm the phase id, wave id, and whether parallel execution is authorized
-2. run `../phase-contract-tools/scripts/preflight_phase_execution.py`
+2. from the directory that contains this `SKILL.md`, run preflight via the sibling contract bundle:
+   `uv run ../phase-contract-tools/scripts/preflight_phase_execution.py --plan /path/to/docs/phaseN-plan.yaml --docs-dir /path/to/repo/docs --phase phaseN --wave <wave_id>`
 3. read `execution-index`, then `plan.yaml`, then `wave-guide`, then `roadmap`
 4. emit one preflight status line that states the resolved wave, `control_pr`, and serial versus parallel decision
 5. only then build the execution cursor and launch or implement work
@@ -155,18 +158,18 @@ Do not call any non-core contract helper path during execution.
 
 When starting a wave (cold start or resume):
 - read: wave-execution-patterns.md, schema-consumption-rules.md
-- run: preflight_phase_execution.py (if unavailable, use the manual checklist in Before Execution)
+- run: `uv run ../phase-contract-tools/scripts/preflight_phase_execution.py` with the same `--plan`, `--docs-dir`, `--phase`, and `--wave` arguments as in Quickstart (if unavailable, use the manual checklist in Before Execution)
 
 When launching parallel lanes:
 - read: integrator-decision-rules.md, llm-following-performance.md, handoff-manifest.schema.md
-- run: render_lane_handoff.py, list_wave_lanes.py
+- run: `uv run ../phase-contract-tools/scripts/list_wave_lanes.py` and `uv run ../phase-contract-tools/scripts/render_lane_handoff.py` with `--plan`, `--wave`, and `--lane` as in **Use these shared contract scripts**
 
 When handling failures:
 - read: rollback-and-conflict-procedure.md, wave-state-model.md, escalation-payload.schema.json
 
 When reporting wave status:
 - read: wave-status-snapshot.schema.md
-- run: render_wave_status_snapshot.py
+- run: `uv run ../phase-contract-tools/scripts/render_wave_status_snapshot.py` with `--plan` and `--wave` as in **Use these shared contract scripts**
 
 Do not load all references at once. Load only the set that matches the current task.
 

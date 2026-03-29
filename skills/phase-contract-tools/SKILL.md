@@ -98,11 +98,11 @@ This skill does not own:
 
 When validating a plan:
 - read: machine-execution-schema.md, llm-friendly-phase-schema.md
-- run: validate_phase_execution_schema.py, validate_phase_doc_set.py
+- run: from the directory that contains this `SKILL.md`, `uv run scripts/validate_phase_execution_schema.py` and `uv run scripts/validate_phase_doc_set.py` with the same arguments as in **Use these scripts from the skill bundle** below
 
 When rendering a prompt or handoff:
 - read: prompt-derivation-from-schema.md, handoff-manifest.schema.md
-- run: render_agent_prompt.py or render_lane_handoff.py
+- run: `uv run scripts/render_agent_prompt.py` or `uv run scripts/render_lane_handoff.py` with arguments as in **Use these scripts from the skill bundle** below
 
 When verifying execution state:
 - read: wave-state-model.md, wave-status-snapshot.schema.md, schema-consumption-rules.md

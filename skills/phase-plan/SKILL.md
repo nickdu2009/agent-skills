@@ -23,6 +23,7 @@ Resolve bundled assets relative to the directory that contains `SKILL.md`.
 
 - `../phase-contract-tools/references/...` are the shared contract references
 - `../phase-contract-tools/scripts/...` are the shared contract helpers
+- this skill does **not** ship a local `scripts/` directory; all contract helpers live under `../phase-contract-tools/scripts/` when both skills are installed side by side
 - do not assume these files exist in the target repository
 - when invoking a helper script, pass target-repository paths explicitly
 
@@ -185,15 +186,15 @@ Do not define a parallel contract inside `phase-plan`.
 
 When authoring a new phase:
 - read: machine-execution-schema.md, llm-friendly-phase-schema.md, phase-execution-schema-template.yaml, phase-agent-task-template.yaml
-- run: validate_phase_execution_schema.py, validate_phase_doc_set.py after authoring
+- run: from the directory that contains this `SKILL.md`, `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py` and `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py` with the same arguments as in **Use these shared contract scripts** (after authoring)
 
 When repairing an existing plan:
 - read: machine-execution-schema.md, llm-friendly-phase-schema.md
-- run: validate_phase_execution_schema.py to see current errors
+- run: `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan ...` to see current errors
 
 When deriving prompts:
 - read: prompt-derivation-from-schema.md
-- run: render_agent_prompt.py or render_wave_kickoff.py
+- run: `uv run ../phase-contract-tools/scripts/render_agent_prompt.py` or `uv run ../phase-contract-tools/scripts/render_wave_kickoff.py` with arguments as in **Use these shared contract scripts**
 
 Do not load all references at once. Load only the set that matches the current task.
 
@@ -212,9 +213,9 @@ Follow this order:
 3. Encode execution structure in `phaseN-plan.yaml`.
 4. Build the human coordination view in `phaseN-wave-guide.md`.
 5. Build the reading order and authority view in `phaseN-execution-index.md`.
-6. Validate the schema through `../phase-contract-tools/scripts/validate_phase_execution_schema.py`.
-7. Validate the doc set through `../phase-contract-tools/scripts/validate_phase_doc_set.py`.
-8. Derive prompts or kickoff text from the schema only through `../phase-contract-tools/scripts/*` renderers when needed.
+6. Validate the schema: `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/docs/phaseN-plan.yaml`.
+7. Validate the doc set: `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --docs-dir /path/to/repo/docs --phase phaseN`.
+8. Derive prompts or kickoff text from the schema only through `uv run ../phase-contract-tools/scripts/render_agent_prompt.py` or `uv run ../phase-contract-tools/scripts/render_wave_kickoff.py` when needed (see **Use these shared contract scripts** for placeholders).
 
 Do not start by drafting prompt text.
 
