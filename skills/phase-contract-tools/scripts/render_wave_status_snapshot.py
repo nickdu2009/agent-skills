@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from _shared_phase_tools import find_wave, infer_phase, load_plan
+from _shared_phase_tools import contract_gaps_for_ids, collect_required_contracts_for_wave, find_wave, infer_phase, load_plan
 
 
 VALID_WAVE_STATES = {"blocked", "active", "merge_ready", "next_wave_ready"}
@@ -35,6 +35,14 @@ def parse_args() -> argparse.Namespace:
 
 
 def render_snapshot(plan_path: Path, data: dict[str, Any], wave: dict[str, Any], execution_mode: str, wave_state: str) -> dict[str, Any]:
+    checked_contracts = collect_required_contracts_for_wave(data, wave)
+    blocking_gaps, accepted_gaps = contract_gaps_for_ids(data, checked_contracts)
+    if not checked_contracts:
+        contract_state = "not_applicable"
+    elif blocking_gaps:
+        contract_state = "blocked"
+    else:
+        contract_state = "pending"
     lanes = []
     for entry in wave.get("lane_setup", []):
         if not isinstance(entry, dict):
@@ -58,6 +66,12 @@ def render_snapshot(plan_path: Path, data: dict[str, Any], wave: dict[str, Any],
         "execution_mode": execution_mode,
         "wave_state": wave_state,
         "control_pr": str(wave.get("control_pr", "")),
+        "contract_status": {
+            "state": contract_state,
+            "checked_contracts": checked_contracts,
+            "blocking_gaps": blocking_gaps,
+            "accepted_gaps": accepted_gaps,
+        },
         "lanes": lanes,
         "validation": {
             "lane_checks": [],

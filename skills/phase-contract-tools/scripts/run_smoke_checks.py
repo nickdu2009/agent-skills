@@ -76,6 +76,9 @@ def main() -> int:
             temp_path = Path(temp_dir)
             handoff_path = temp_path / "smoke-handoff.md"
             snapshot_path = temp_path / "smoke-snapshot.yaml"
+            invalid_plan_path = temp_path / "invalid-contract-plan.yaml"
+            invalid_done_when_plan_path = temp_path / "invalid-done-when-plan.yaml"
+            missing_external_contract_plan_path = temp_path / "missing-external-contract-plan.yaml"
             run(
                 [
                     "uv",
@@ -109,6 +112,52 @@ def main() -> int:
 
             snapshot_path.write_text(snapshot, encoding="utf-8")
             run(["uv", "run", "scripts/validate_wave_status_snapshot.py", "--snapshot", str(snapshot_path)], root)
+
+            invalid_plan_text = (fixture_docs / "smoke-plan.yaml").read_text(encoding="utf-8").replace(
+                "    contract_guardrails:\n      - \"Do not substitute the legacy smoke route shape.\"\n      - \"Do not reuse legacy DTO names unless they match the owned spec.\"\n",
+                "",
+            )
+            invalid_plan_path.write_text(invalid_plan_text, encoding="utf-8")
+            proc = subprocess.run(
+                ["uv", "run", "scripts/validate_phase_execution_schema.py", "--plan", str(invalid_plan_path)],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if proc.returncode == 0 or "contract_guardrails" not in (proc.stdout + proc.stderr):
+                raise AssertionError("validate_phase_execution_schema should reject required_contracts without contract_guardrails")
+
+            invalid_done_when_text = (fixture_docs / "smoke-plan.yaml").read_text(encoding="utf-8").replace(
+                '      - "The smoke fixture remains schema-valid."\n',
+                '      - "The smoke fixture remains schema-valid."\n      - "adapter unavailable is acceptable."\n',
+            )
+            invalid_done_when_plan_path.write_text(invalid_done_when_text, encoding="utf-8")
+            proc = subprocess.run(
+                ["uv", "run", "scripts/validate_phase_execution_schema.py", "--plan", str(invalid_done_when_plan_path)],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if proc.returncode == 0 or "adapter unavailable" not in (proc.stdout + proc.stderr):
+                raise AssertionError("validate_phase_execution_schema should reject invalid completion phrases like adapter unavailable")
+
+            missing_external_contract_text = (fixture_docs / "smoke-plan.yaml").read_text(encoding="utf-8").replace(
+                'external_contracts:\n  - id: "contract_smoke_api"\n    path: "specs/smoke-api.yaml"\n    kind: "openapi"\n    authority: "external_contract"\n    owned_scope:\n      mode: "subset"\n      include:\n        - "paths./smoke"\n        - "components.schemas.SmokeResponse"\n      exclude:\n        - "paths owned by upstream fixtures"\n\n',
+                "",
+            )
+            missing_external_contract_plan_path.write_text(missing_external_contract_text, encoding="utf-8")
+            proc = subprocess.run(
+                ["uv", "run", "scripts/validate_phase_execution_schema.py", "--plan", str(missing_external_contract_plan_path)],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            combined = proc.stdout + proc.stderr
+            if proc.returncode == 0 or "required contract" not in combined.lower():
+                raise AssertionError("validate_phase_execution_schema should reject required_contracts that point to undeclared external contracts")
         print("Smoke checks passed.")
         return 0
     except Exception as exc:  # noqa: BLE001

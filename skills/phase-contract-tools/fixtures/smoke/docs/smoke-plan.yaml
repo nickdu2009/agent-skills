@@ -45,6 +45,27 @@ validation_profiles:
     description: "Documented smoke command for the fixture."
     command: "go test ./internal/codexlite/tools/..."
 
+external_contracts:
+  - id: "contract_smoke_api"
+    path: "specs/smoke-api.yaml"
+    kind: "openapi"
+    authority: "external_contract"
+    owned_scope:
+      mode: "subset"
+      include:
+        - "paths./smoke"
+        - "components.schemas.SmokeResponse"
+      exclude:
+        - "paths owned by upstream fixtures"
+
+accepted_contract_gaps:
+  - id: "gap-smoke-followup"
+    contract: "contract_smoke_api"
+    scope: "POST /smoke"
+    reason: "response example generation remains manual in the smoke fixture"
+    blocking: false
+    accepted_by: "maintainer"
+
 team:
   - id: "agent_a"
     label: "Agent A"
@@ -87,6 +108,11 @@ prs:
       - "Deterministic fixture docs and renderer outputs remain in sync."
     guardrails:
       - "Do not add extra smoke phase files."
+    required_contracts:
+      - "contract_smoke_api"
+    contract_guardrails:
+      - "Do not substitute the legacy smoke route shape."
+      - "Do not reuse legacy DTO names unless they match the owned spec."
     non_goals:
       - "No repository production code changes."
     validation:
@@ -95,6 +121,9 @@ prs:
     done_when:
       - "The smoke fixture remains schema-valid."
       - "Renderer smoke outputs remain deterministic."
+    contract_done_when:
+      - "The owned smoke API subset remains aligned with specs/smoke-api.yaml."
+      - "Only accepted non-blocking contract gaps remain."
 
 waves:
   - id: 1

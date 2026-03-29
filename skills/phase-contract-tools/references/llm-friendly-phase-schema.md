@@ -12,9 +12,11 @@ The goal is not to sound polished. The goal is to make execution reliable.
 - Prefer explicit nouns over pronouns.
 - Prefer exact files, packages, commands, and IDs over general phrasing.
 - Put hard limits in `guardrails`, not in narrative text.
+- Put external contract authority in `external_contracts`, not in roadmap prose alone.
 - Put excluded work in `non_goals` or `scope.deny`.
 - Put runnable checks in `validation`.
 - Put completion checks in `done_when`.
+- Put contract completion checks in `contract_done_when`.
 - Keep `read_first` ordered.
 - Keep phase-local `read_first` references inside the four-file phase set.
 - Make `start_condition` resolve to a concrete gate, not a mood.
@@ -125,6 +127,48 @@ Bad:
 
 ```yaml
 notes: "Be careful and preserve behavior."
+```
+
+### `required_contracts`
+
+Use contract ids only.
+
+Good:
+
+```yaml
+required_contracts:
+  - "contract_api"
+```
+
+Bad:
+
+```yaml
+required_contracts:
+  - "the external webhook spec"
+```
+
+### `contract_guardrails`
+
+Use these for forbidden substitutions against the public contract.
+
+Good:
+
+```yaml
+contract_guardrails:
+  - "Do not substitute legacy webhook field names."
+  - "Do not reuse the legacy DTO unless it matches the owned spec fields."
+```
+
+### `contract_done_when`
+
+Use these for contract-level completion checks.
+
+Good:
+
+```yaml
+contract_done_when:
+  - "The owned webhook payload matches the declared spec fields."
+  - "No blocking contract gap remains for this PR."
 ```
 
 ### `validation`

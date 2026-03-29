@@ -14,6 +14,7 @@ Use this skill as the shared tools layer for schema-first phase work.
 It owns the stable contract for:
 
 - `docs/phaseN-plan.yaml`
+- external contract authority declarations consumed through `phaseN-plan.yaml`
 - the strict four-file phase doc set
 - prompt derivation from schema
 - wave lane handoff artifacts
@@ -23,6 +24,19 @@ It owns the stable contract for:
 `$phase-plan` should use this skill to design and validate phases.
 
 `$phase-execute` should use this skill to consume, render, verify, and report execution state.
+
+## External Contract Authority
+
+`docs/phaseN-plan.yaml` is the execution authority inside the repository.
+
+It is not the public contract authority.
+
+When a phase depends on OpenAPI, YAML protocol docs, webhook contracts, PDFs, or a user-named spec:
+
+- declare that source under `external_contracts`
+- declare the owned subset and excluded subset explicitly
+- keep execution aligned with the declared contract instead of legacy repository shapes
+- treat `fail-closed` behavior as risk control, not as contract completion
 
 ## Skill Assets
 
@@ -39,6 +53,8 @@ References elaborate and provide examples; they do not override top-level skill 
 Read these references when needed:
 
 - [references/contract-authority-and-migration.md](references/contract-authority-and-migration.md) for authority boundaries, cutover rules, and core-only entrypoints
+- [references/external-contract-authority.md](references/external-contract-authority.md) for external contract authority, owned subset rules, and accepted gap modeling
+- [references/contract-alignment-checklist.md](references/contract-alignment-checklist.md) for planner and executor checks that keep execution aligned with declared public contracts
 - [references/machine-execution-schema.md](references/machine-execution-schema.md) for the phase schema authority model
 - [references/llm-friendly-phase-schema.md](references/llm-friendly-phase-schema.md) for agent-facing field-writing rules
 - [references/prompt-derivation-from-schema.md](references/prompt-derivation-from-schema.md) for prompt and kickoff render rules
@@ -81,6 +97,7 @@ Use these scripts from the skill bundle:
 This skill owns:
 
 - schema field definitions
+- external contract authority field semantics
 - validation rules
 - render rules
 - lane handoff manifest rules
@@ -97,15 +114,15 @@ This skill does not own:
 ## Reference Loading By Task
 
 When validating a plan:
-- read: machine-execution-schema.md, llm-friendly-phase-schema.md
+- read: external-contract-authority.md, machine-execution-schema.md, llm-friendly-phase-schema.md
 - run: from the directory that contains this `SKILL.md`, `uv run scripts/validate_phase_execution_schema.py` and `uv run scripts/validate_phase_doc_set.py` with the same arguments as in **Use these scripts from the skill bundle** below
 
 When rendering a prompt or handoff:
-- read: prompt-derivation-from-schema.md, handoff-manifest.schema.md
+- read: external-contract-authority.md, prompt-derivation-from-schema.md, handoff-manifest.schema.md
 - run: `uv run scripts/render_agent_prompt.py` or `uv run scripts/render_lane_handoff.py` with arguments as in **Use these scripts from the skill bundle** below
 
 When verifying execution state:
-- read: wave-state-model.md, wave-status-snapshot.schema.md, schema-consumption-rules.md
+- read: contract-alignment-checklist.md, wave-state-model.md, wave-status-snapshot.schema.md, schema-consumption-rules.md
 
 When resolving authority questions:
 - read: contract-authority-and-migration.md

@@ -14,7 +14,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from _shared_phase_tools import find_wave, infer_phase, load_plan
+from _shared_phase_tools import contract_gaps_for_ids, contract_map, collect_required_contracts_for_wave, find_wave, infer_phase, load_plan
 
 
 def parse_args() -> argparse.Namespace:
@@ -110,6 +110,24 @@ def main() -> int:
                 file=sys.stderr,
             )
             return 1
+        required_contracts = collect_required_contracts_for_wave(data, wave)
+        declared_contracts = contract_map(data)
+        missing_contracts = [contract_id for contract_id in required_contracts if contract_id not in declared_contracts]
+        if missing_contracts:
+            print(
+                "ERROR preflight-phase-execution: selected wave requires undeclared external contracts: "
+                + ", ".join(missing_contracts),
+                file=sys.stderr,
+            )
+            return 1
+        blocking_gaps, accepted_gaps = contract_gaps_for_ids(data, required_contracts)
+        if blocking_gaps:
+            print(
+                "ERROR preflight-phase-execution: selected wave has blocking contract gaps: "
+                + ", ".join(blocking_gaps),
+                file=sys.stderr,
+            )
+            return 1
         pr_map = {pr["id"]: pr for pr in data.get("prs", []) if isinstance(pr, dict) and isinstance(pr.get("id"), str)}
         role_map = {}
         for role in wave.get("roles", []):
@@ -142,6 +160,12 @@ def main() -> int:
             print(
                 f"WARN preflight-phase-execution: {len(blocked_lanes)} lane(s) have unresolved start conditions: "
                 + "; ".join(blocked_lanes),
+            )
+        if required_contracts:
+            print(
+                "OK preflight-phase-execution: contract checks passed for "
+                + ", ".join(required_contracts)
+                + (f" (accepted gaps: {', '.join(accepted_gaps)})" if accepted_gaps else ".")
             )
         lane_count = len([item for item in wave.get("lane_setup", []) if isinstance(item, dict)])
         print(

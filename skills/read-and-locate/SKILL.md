@@ -1,7 +1,7 @@
 ---
 name: read-and-locate
 version: 0.1.0
-description: Find the relevant files, code paths, and edit points in an unfamiliar area of the codebase without broad exploration. Use when the agent does not yet know where the change should happen.
+description: Find the relevant files, code paths, and edit points in an unfamiliar area of the codebase when the agent must trace a runtime, data, ownership, or configuration path. Do not use when an exact symbol, class, function, or file search is sufficient.
 tags: [coding, agents, orchestration, efficiency]
 ---
 
@@ -19,6 +19,7 @@ Teach the agent to understand only the amount of code needed to move the task fo
 # When Not to Use
 
 - When the exact edit file is already known.
+- When an exact symbol, class, function, or file search is enough to find the edit surface.
 - When the user asks for a broad architectural survey.
 - When the task is analysis of one already-open file with no discovery needed.
 
@@ -71,6 +72,7 @@ Return:
 
 - Do not start with repo-wide reading.
 - Do not read entire directories when one or two files can establish the path.
+- Do not trigger when grep, find-references, or one exact symbol lookup is sufficient.
 - Do not keep exploring after the next action is already clear.
 - Do not present tentative leads as confirmed facts.
 - If the first clue is weak, say so and choose the narrowest next-best clue.

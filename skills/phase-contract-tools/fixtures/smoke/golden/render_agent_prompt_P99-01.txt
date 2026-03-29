@@ -27,6 +27,17 @@ Expected changes:
 Guardrails:
 - Do not add extra smoke phase files.
 
+External contract authority:
+- contract_smoke_api: specs/smoke-api.yaml (openapi)
+- contract_smoke_api owned scope mode: subset
+- contract_smoke_api owned include: paths./smoke, components.schemas.SmokeResponse
+- contract_smoke_api owned exclude: paths owned by upstream fixtures
+- contract_smoke_api accepted gap: gap-smoke-followup - response example generation remains manual in the smoke fixture
+- contract guardrail: Do not substitute the legacy smoke route shape.
+- contract guardrail: Do not reuse legacy DTO names unless they match the owned spec.
+- contract done check: The owned smoke API subset remains aligned with specs/smoke-api.yaml.
+- contract done check: Only accepted non-blocking contract gaps remain.
+
 Non-goals:
 - No repository production code changes.
 
@@ -37,3 +48,7 @@ Validation:
 Done when all are true:
 - The smoke fixture remains schema-valid.
 - Renderer smoke outputs remain deterministic.
+
+Contract done when all are true:
+- The owned smoke API subset remains aligned with specs/smoke-api.yaml.
+- Only accepted non-blocking contract gaps remain.

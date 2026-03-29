@@ -33,6 +33,8 @@ References elaborate and provide examples; they do not override top-level skill 
 Read these shared contract references when needed:
 
 - [`../phase-contract-tools/references/contract-authority-and-migration.md`](../phase-contract-tools/references/contract-authority-and-migration.md) for authority boundaries, cutover rules, and core-only entrypoints
+- [`../phase-contract-tools/references/external-contract-authority.md`](../phase-contract-tools/references/external-contract-authority.md) for external contract authority, owned subset, excluded subset, and accepted gap rules
+- [`../phase-contract-tools/references/contract-alignment-checklist.md`](../phase-contract-tools/references/contract-alignment-checklist.md) for planning checks that keep contract-bound phases aligned
 - [`../phase-contract-tools/references/machine-execution-schema.md`](../phase-contract-tools/references/machine-execution-schema.md) for the execution authority model and required schema fields
 - [`../phase-contract-tools/references/llm-friendly-phase-schema.md`](../phase-contract-tools/references/llm-friendly-phase-schema.md) for agent-facing instruction encoding rules
 - [`../phase-contract-tools/references/phase-execution-schema-template.yaml`](../phase-contract-tools/references/phase-execution-schema-template.yaml) for a full phase schema skeleton
@@ -168,6 +170,7 @@ If code and older planning docs disagree, plan from current code and record the 
 `phase-contract-tools` is the sole contract authority and owns:
 
 - execution schema field semantics
+- external contract authority field semantics
 - agent-facing field-writing rules
 - prompt derivation rules
 - schema and doc-set validation helpers
@@ -176,6 +179,7 @@ If code and older planning docs disagree, plan from current code and record the 
 When authoring or repairing `phaseN-plan.yaml`, treat these as the contract authorities:
 
 - `../phase-contract-tools/references/contract-authority-and-migration.md`
+- `../phase-contract-tools/references/external-contract-authority.md`
 - `../phase-contract-tools/references/machine-execution-schema.md`
 - `../phase-contract-tools/references/llm-friendly-phase-schema.md`
 - `../phase-contract-tools/references/prompt-derivation-from-schema.md`
@@ -185,11 +189,11 @@ Do not define a parallel contract inside `phase-plan`.
 ## Reference Loading By Task
 
 When authoring a new phase:
-- read: machine-execution-schema.md, llm-friendly-phase-schema.md, phase-execution-schema-template.yaml, phase-agent-task-template.yaml
+- read: external-contract-authority.md, machine-execution-schema.md, llm-friendly-phase-schema.md, phase-execution-schema-template.yaml, phase-agent-task-template.yaml
 - run: from the directory that contains this `SKILL.md`, `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py` and `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py` with the same arguments as in **Use these shared contract scripts** (after authoring)
 
 When repairing an existing plan:
-- read: machine-execution-schema.md, llm-friendly-phase-schema.md
+- read: external-contract-authority.md, machine-execution-schema.md, llm-friendly-phase-schema.md
 - run: `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan ...` to see current errors
 
 When deriving prompts:
@@ -209,13 +213,15 @@ If partial-output mode is requested, execute only the steps relevant to the requ
 Follow this order:
 
 1. Read the current code baseline and accepted planning inputs.
-2. Freeze scope, non-goals, and milestones in `phaseN-roadmap.md`.
-3. Encode execution structure in `phaseN-plan.yaml`.
-4. Build the human coordination view in `phaseN-wave-guide.md`.
-5. Build the reading order and authority view in `phaseN-execution-index.md`.
-6. Validate the schema: `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/docs/phaseN-plan.yaml`.
-7. Validate the doc set: `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --docs-dir /path/to/repo/docs --phase phaseN`.
-8. Derive prompts or kickoff text from the schema only through `uv run ../phase-contract-tools/scripts/render_agent_prompt.py` or `uv run ../phase-contract-tools/scripts/render_wave_kickoff.py` when needed (see **Use these shared contract scripts** for placeholders).
+2. Identify any external contract authority named by the user, repo inputs, or accepted design docs.
+3. Freeze the authority matrix: execution authority, external contract authority, owned subset, and excluded subset.
+4. Freeze scope, non-goals, and milestones in `phaseN-roadmap.md`.
+5. Encode execution structure and any contract-bound fields in `phaseN-plan.yaml`.
+6. Build the human coordination view in `phaseN-wave-guide.md`.
+7. Build the reading order and authority view in `phaseN-execution-index.md`.
+8. Validate the schema: `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/docs/phaseN-plan.yaml`.
+9. Validate the doc set: `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --docs-dir /path/to/repo/docs --phase phaseN`.
+10. Derive prompts or kickoff text from the schema only through `uv run ../phase-contract-tools/scripts/render_agent_prompt.py` or `uv run ../phase-contract-tools/scripts/render_wave_kickoff.py` when needed (see **Use these shared contract scripts** for placeholders).
 
 Do not start by drafting prompt text.
 
@@ -264,6 +270,8 @@ Fix hard errors before finishing. If a warning is intentionally accepted, state 
 - Do not hide constraints inside prose-heavy paragraphs.
 - Do not invent owner splits or PR ids inside prompts.
 - Do not add any extra phase planning docs beyond the strict four-file set.
+- Do not use legacy route shapes or DTOs as temporary substitutes when they conflict with the declared external contract.
+- Do not leave a contract-bound PR with only repo-local `done_when`; add `required_contracts`, `contract_guardrails`, and `contract_done_when`.
 - Do not leave validation as "run tests" when you can name the package, suite, or profile.
 - Do not use vague execution language such as `as needed`, `if needed`, or `make sure`.
 - Do not let `read_first` drift into undeclared phase-local files outside the strict four-file set.
@@ -277,8 +285,10 @@ The following done criteria apply to a full-doc-set planning pass.
 The planning pass is done only when:
 
 - the baseline matches observable code reality
+- any external contract authority is identified or explicitly marked not applicable
 - the roadmap freezes scope and non-goals clearly
 - the YAML schema is complete and internally consistent
+- contract-bound PRs declare `required_contracts`, `contract_guardrails`, and `contract_done_when`
 - the wave guide is sufficient for human coordination without duplicating YAML
 - the execution index states reading order and authority clearly
 - prompts can be derived from the schema without hand-maintained prompt docs

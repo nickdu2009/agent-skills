@@ -10,6 +10,7 @@
     "execution_mode",
     "wave_state",
     "control_pr",
+    "contract_status",
     "lanes",
     "validation",
     "next_action",
@@ -35,6 +36,29 @@
     "control_pr": {
       "type": "string",
       "minLength": 1
+    },
+    "contract_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "checked_contracts", "blocking_gaps", "accepted_gaps"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["not_applicable", "pending", "aligned", "blocked"]
+        },
+        "checked_contracts": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "blocking_gaps": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "accepted_gaps": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
     },
     "lanes": {
       "type": "array",

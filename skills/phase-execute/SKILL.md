@@ -47,6 +47,8 @@ Read these references when needed:
 - [references/rollback-and-conflict-procedure.md](references/rollback-and-conflict-procedure.md) for ordered rollback and conflict handling
 - [references/escalation-payload.schema.json](references/escalation-payload.schema.json) for machine validation of escalation payloads
 - [`../phase-contract-tools/references/contract-authority-and-migration.md`](../phase-contract-tools/references/contract-authority-and-migration.md) for sole contract ownership, cutover rules, and core-only entrypoints
+- [`../phase-contract-tools/references/external-contract-authority.md`](../phase-contract-tools/references/external-contract-authority.md) for external contract authority, owned subset, excluded subset, and accepted gap rules
+- [`../phase-contract-tools/references/contract-alignment-checklist.md`](../phase-contract-tools/references/contract-alignment-checklist.md) for execution checks that keep contract-bound work aligned
 - [`../phase-contract-tools/references/schema-consumption-rules.md`](../phase-contract-tools/references/schema-consumption-rules.md) for consuming structured phase fields
 - [`../phase-contract-tools/references/wave-state-model.md`](../phase-contract-tools/references/wave-state-model.md) for allowed wave states and transition rules
 - [`../phase-contract-tools/references/wave-status-snapshot.schema.md`](../phase-contract-tools/references/wave-status-snapshot.schema.md) for the canonical wave status output shape
@@ -89,8 +91,9 @@ Use this first-action sequence before touching implementation:
 2. from the directory that contains this `SKILL.md`, run preflight via the sibling contract bundle:
    `uv run ../phase-contract-tools/scripts/preflight_phase_execution.py --plan /path/to/docs/phaseN-plan.yaml --docs-dir /path/to/repo/docs --phase phaseN --wave <wave_id>`
 3. read `execution-index`, then `plan.yaml`, then `wave-guide`, then `roadmap`
-4. emit one preflight status line that states the resolved wave, `control_pr`, and serial versus parallel decision
-5. only then build the execution cursor and launch or implement work
+4. resolve any `required_contracts`, owned subset boundaries, and blocking versus accepted contract gaps for the selected wave
+5. emit one preflight status line that states the resolved wave, `control_pr`, serial versus parallel decision, and contract readiness
+6. only then build the execution cursor and launch or implement work
 
 If the wave can be resolved unambiguously from the current message and repository state, do not ask the user to restate it. State the resolved wave in the preflight status line instead.
 
@@ -127,6 +130,8 @@ Always check:
 - current phase doc set exists and matches the accepted four-file model
 - requested wave id exists in `waves`
 - `control_pr`, `prs`, `merge_order`, and `lane_setup` are present for the wave
+- required external contracts are declared for any contract-bound PRs in the wave
+- blocking contract gaps are not being mistaken for completion state
 - current git and file state for any already-completed or in-flight work
 - whether wave entry gates are already satisfied
 
@@ -144,6 +149,8 @@ Do not infer progress from prior chat messages alone.
 Consume structured execution fields through the shared contract references:
 
 - `../phase-contract-tools/references/contract-authority-and-migration.md`
+- `../phase-contract-tools/references/external-contract-authority.md`
+- `../phase-contract-tools/references/contract-alignment-checklist.md`
 - `../phase-contract-tools/references/schema-consumption-rules.md`
 - `../phase-contract-tools/references/handoff-manifest.schema.md`
 
@@ -157,7 +164,7 @@ Do not call any non-core contract helper path during execution.
 ## Reference Loading By Task
 
 When starting a wave (cold start or resume):
-- read: wave-execution-patterns.md, schema-consumption-rules.md
+- read: wave-execution-patterns.md, external-contract-authority.md, schema-consumption-rules.md, contract-alignment-checklist.md
 - run: `uv run ../phase-contract-tools/scripts/preflight_phase_execution.py` with the same `--plan`, `--docs-dir`, `--phase`, and `--wave` arguments as in Quickstart (if unavailable, use the manual checklist in Before Execution)
 
 When launching parallel lanes:
@@ -286,6 +293,8 @@ Do not invent additional state labels unless the user explicitly asks for a diff
 - never paraphrase a schema-derived lane contract before delegation
 - never rely on memory for resumability
 - never call a wave complete without checking `done_when` and planned validation
+- never call a wave contract-complete when `contract_done_when` is unmet or a blocking contract gap remains
+- never use fail-closed or adapter-unavailable behavior as proof of contract completion
 - never deviate from the sole shared contract files in `../phase-contract-tools`
 
 ## Output Contract
@@ -294,6 +303,7 @@ Return:
 
 - a wave status snapshot that follows [`../phase-contract-tools/references/wave-status-snapshot.schema.md`](../phase-contract-tools/references/wave-status-snapshot.schema.md)
 - the resolved wave id and execution mode
+- contract checks completed, blocking contract gaps, accepted contract gaps, and current contract status
 - current lane states and blockers
 - what was launched or implemented
 - validation completed versus still pending

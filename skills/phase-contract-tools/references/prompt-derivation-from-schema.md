@@ -9,6 +9,8 @@ Prompts are not primary planning docs. They are renderings of accepted schema fi
 Read from `phaseN-plan.yaml` only:
 
 - `hard_rules`
+- `external_contracts`
+- `accepted_contract_gaps`
 - `validation_profiles`
 - `placeholder_conventions`
 - `team`
@@ -33,9 +35,12 @@ Render from `prs[]`:
 - files
 - expected_changes
 - guardrails
+- required_contracts
+- contract_guardrails
 - non_goals
 - validation
 - done_when
+- contract_done_when
 
 ### Lane prompt
 
@@ -56,6 +61,7 @@ Render from:
 
 - `waves[].label`
 - `waves[].goal`
+- `waves[].contract_status` when present
 - `waves[].lane_setup`
 - `waves[].merge_order`
 - `waves[].constraints`
@@ -76,6 +82,17 @@ If a command contains `<token>`, include the token and its meaning from `placeho
 
 Do not silently guess a replacement value.
 
+### External contract constraints
+
+When a PR declares `required_contracts`:
+
+- expand each contract id through `external_contracts[].id`
+- include the contract source path and kind
+- include owned subset include and exclude lists
+- include matching entries from `accepted_contract_gaps`
+- include `contract_guardrails`
+- include `contract_done_when`
+
 ## Prompt Shape
 
 Keep the rendered prompt bounded and executable.
@@ -88,8 +105,9 @@ Preferred order:
 4. scope
 5. expected changes
 6. guardrails
-7. validation
-8. done condition
+7. external contract constraints
+8. validation
+9. done condition
 
 ## Anti-Patterns
 
@@ -97,6 +115,7 @@ Preferred order:
 - summarizing away `scope.deny`
 - hiding guardrails in prose
 - omitting `done_when`
+- omitting required contract constraints from a contract-bound prompt
 - creating a wave prompt pack file by default
 - introducing a new `phaseN-*` planning doc just to hold rendered text
 

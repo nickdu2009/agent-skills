@@ -15,7 +15,15 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from _shared_phase_tools import find_pr, find_wave, infer_phase, load_plan
+from _shared_phase_tools import (
+    accepted_contract_gaps,
+    collect_required_contracts_for_pr,
+    contract_map,
+    find_pr,
+    find_wave,
+    infer_phase,
+    load_plan,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -113,6 +121,44 @@ def render_start_condition(start_condition: dict[str, Any]) -> list[str]:
     return lines
 
 
+def render_contract_constraints(data: dict[str, Any], pr: dict[str, Any]) -> list[str]:
+    contract_ids = collect_required_contracts_for_pr(pr)
+    if not contract_ids:
+        return []
+    contracts = contract_map(data)
+    gaps = accepted_contract_gaps(data)
+    lines = ["External contract authority:"]
+    for contract_id in contract_ids:
+        contract = contracts.get(contract_id, {})
+        path = contract.get("path", "")
+        kind = contract.get("kind", "")
+        lines.append(f"- {contract_id}: {path} ({kind})".rstrip())
+        owned_scope = contract.get("owned_scope", {})
+        if isinstance(owned_scope, dict):
+            include = [str(item) for item in owned_scope.get("include", []) if str(item)]
+            exclude = [str(item) for item in owned_scope.get("exclude", []) if str(item)]
+            mode = owned_scope.get("mode")
+            if mode:
+                lines.append(f"- {contract_id} owned scope mode: {mode}")
+            if include:
+                lines.append(f"- {contract_id} owned include: {', '.join(include)}")
+            if exclude:
+                lines.append(f"- {contract_id} owned exclude: {', '.join(exclude)}")
+        matching_gaps = [
+            gap for gap in gaps if gap.get("contract") == contract_id
+        ]
+        if matching_gaps:
+            for gap in matching_gaps:
+                label = str(gap.get("id") or gap.get("scope") or contract_id)
+                prefix = "blocking gap" if bool(gap.get("blocking")) else "accepted gap"
+                reason = str(gap.get("reason", "")).strip()
+                detail = f"{label} - {reason}" if reason else label
+                lines.append(f"- {contract_id} {prefix}: {detail}")
+    lines.extend(f"- contract guardrail: {item}" for item in pr.get("contract_guardrails", []) if isinstance(item, str))
+    lines.extend(f"- contract done check: {item}" for item in pr.get("contract_done_when", []) if isinstance(item, str))
+    return lines
+
+
 def render_pr_prompt(plan_path: Path, data: dict[str, Any], pr: dict[str, Any], wave: dict[str, Any] | None = None, lane: dict[str, Any] | None = None) -> str:
     phase = infer_phase(plan_path, data)
     wave_label = wave.get("label") if isinstance(wave, dict) else f"Wave {pr.get('wave')}"
@@ -144,11 +190,15 @@ def render_pr_prompt(plan_path: Path, data: dict[str, Any], pr: dict[str, Any], 
     lines.extend([""])
     lines.extend(render_list("Guardrails", [str(item) for item in pr.get("guardrails", [])]))
     lines.extend([""])
+    lines.extend(render_contract_constraints(data, pr))
+    lines.extend([""])
     lines.extend(render_list("Non-goals", [str(item) for item in pr.get("non_goals", [])]))
     lines.extend([""])
     lines.extend(render_list("Validation", expand_validation([item for item in pr.get("validation", []) if isinstance(item, dict)], data)))
     lines.extend([""])
     lines.extend(render_list("Done when all are true", [str(item) for item in pr.get("done_when", [])]))
+    lines.extend([""])
+    lines.extend(render_list("Contract done when all are true", [str(item) for item in pr.get("contract_done_when", []) if isinstance(item, str)]))
     return "\n".join(line for line in lines if line is not None)
 
 

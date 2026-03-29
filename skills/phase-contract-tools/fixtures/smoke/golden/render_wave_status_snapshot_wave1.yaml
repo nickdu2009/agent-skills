@@ -3,6 +3,13 @@ wave_id: 1
 execution_mode: serial
 wave_state: blocked
 control_pr: P99-01
+contract_status:
+  state: pending
+  checked_contracts:
+  - contract_smoke_api
+  blocking_gaps: []
+  accepted_gaps:
+  - gap-smoke-followup
 lanes:
 - lane_ref: smoke
   ref_kind: pr

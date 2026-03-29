@@ -13,6 +13,7 @@ Every execution update should provide:
 - `execution_mode`
 - `wave_state`
 - `control_pr`
+- `contract_status`
 - `lanes`
 - `validation`
 - `next_action`
@@ -41,6 +42,25 @@ Every execution update should provide:
 ### `control_pr`
 
 - string PR id from `phaseN-plan.yaml`
+
+### `contract_status`
+
+- mapping with at least:
+  - `state`
+  - `checked_contracts`
+  - `blocking_gaps`
+  - `accepted_gaps`
+
+`state` should be:
+
+- `not_applicable`
+- `pending`
+- `aligned`
+- `blocked`
+
+`checked_contracts` should list contract ids checked for the wave.
+
+`blocking_gaps` and `accepted_gaps` should list gap ids or short explicit gap labels.
 
 ### `lanes`
 
@@ -99,6 +119,12 @@ wave_id: 2
 execution_mode: parallel
 wave_state: active
 control_pr: P13-22
+contract_status:
+  state: aligned
+  checked_contracts:
+    - contract_api
+  blocking_gaps: []
+  accepted_gaps: []
 lanes:
   - lane_ref: backend
     ref_kind: pr
@@ -138,6 +164,11 @@ wave_id: 1
 execution_mode: serial
 wave_state: blocked
 control_pr: P0-00
+contract_status:
+  state: not_applicable
+  checked_contracts: []
+  blocking_gaps: []
+  accepted_gaps: []
 lanes: []
 validation:
   lane_checks: []
@@ -156,3 +187,4 @@ Do not:
 - omit lane blockers when a lane is blocked
 - use free-form state labels outside the defined enums
 - report `merge_ready` or `next_wave_ready` without corresponding validation status
+- report repo-local completion without stating contract alignment status

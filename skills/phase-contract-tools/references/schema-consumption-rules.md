@@ -10,6 +10,8 @@ Consume execution data from YAML first.
 - use YAML to decide
 - if Markdown and YAML disagree on execution fields, YAML wins
 
+If a phase declares `external_contracts`, consume them as the public contract authority for the owned subset. Do not treat repository-local behavior as a substitute for those declarations.
+
 ## Resolve The Wave
 
 For the selected wave, read at least:
@@ -81,6 +83,24 @@ Rules:
 - do not merge multiple entries into one prose sentence
 - do not invent substitute commands when a profile exists
 
+## External Contracts
+
+Read these fields when present:
+
+- `external_contracts`
+- `accepted_contract_gaps`
+- `prs[].required_contracts`
+- `prs[].contract_guardrails`
+- `prs[].contract_done_when`
+
+Rules:
+
+- every `required_contracts` entry must resolve to `external_contracts[].id`
+- preserve the declared contract id list order
+- treat `contract_guardrails` as hard execution limits, not advisory notes
+- treat `contract_done_when` as additional completion checks, not optional context
+- do not ignore a blocking gap just because repo-local validation passes
+
 ## Done When
 
 `done_when` is a list of atomic completion checks.
@@ -104,9 +124,11 @@ When a renderer is unavailable, derive a lane instruction block in this order:
 5. owned files or packages
 6. expected changes
 7. guardrails
-8. non-goals
-9. validation
-10. `done_when`
+8. contract guardrails
+9. non-goals
+10. validation
+11. `done_when`
+12. `contract_done_when`
 
 Pass that block to the worker unchanged.
 
@@ -118,5 +140,6 @@ Do not:
 - launch a lane with an unresolved typed reference
 - treat `note` fields as a license to widen scope
 - derive lane readiness from memory instead of objective state
+- treat fail-closed or adapter-unavailable states as contract completion
 
 For orchestration-level violations such as stale handoffs, validation substitution, or chat-memory drift, follow the execution skill's instruction-following discipline.

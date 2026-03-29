@@ -23,6 +23,8 @@ In the strict model, execution accuracy wins over prose flexibility:
 
 Markdown docs exist around the schema, not above it.
 
+When a phase depends on a public API, webhook, or user-named spec, `phaseN-plan.yaml` must also carry the external contract authority metadata needed to keep execution aligned with that spec.
+
 ## Authority Model
 
 Use this order:
@@ -61,10 +63,40 @@ hard_rules: []
 schema_conventions: {}
 placeholder_conventions: {}
 validation_profiles: {}
+external_contracts: []
+accepted_contract_gaps: []
 team: []
 hotspots: []
 prs: []
 waves: []
+```
+
+`external_contracts` and `accepted_contract_gaps` are optional for phases with no external contract surface. They become required in practice when the phase touches a declared public contract surface.
+
+## External Contract Fields
+
+Use this structure when external contract authority exists:
+
+```yaml
+external_contracts:
+  - id: "contract_api"
+    path: "specs/public-api.yaml"
+    kind: "openapi"
+    authority: "external_contract"
+    owned_scope:
+      mode: "subset"
+      include:
+        - "paths./v1/widgets"
+      exclude:
+        - "paths owned by another service"
+
+accepted_contract_gaps:
+  - id: "gap-webhook-signature"
+    contract: "contract_api"
+    scope: "POST /v1/webhooks"
+    reason: "signature rollout is blocked on the upstream gateway"
+    blocking: false
+    accepted_by: "product"
 ```
 
 ## PR Card Contract
@@ -93,6 +125,8 @@ Each `prs[]` entry should include:
   files: []
   expected_changes: []
   guardrails: []
+  required_contracts: []
+  contract_guardrails: []
   non_goals: []
   validation:
     - kind: "profile"
@@ -100,6 +134,7 @@ Each `prs[]` entry should include:
   done_when:
     - "Config loading is explicit."
     - "Bootstrap profiles are accepted."
+  contract_done_when: []
 ```
 
 Execution accuracy rules for PR cards:
@@ -110,6 +145,7 @@ Execution accuracy rules for PR cards:
 - `validation` entries must be structured mappings with `kind`
 - `start_condition` must be a mapping with `gate`, `refs`, and optional `note`
 - `done_when` must be a list of concrete completion checks
+- when `required_contracts` is non-empty, `contract_guardrails` and `contract_done_when` must also be non-empty lists
 - `goal`, `start_condition.note`, `guardrails`, `non_goals`, and `done_when` items must avoid vague phrases such as `as needed` or `when ready`
 
 ## Wave Contract
@@ -197,3 +233,4 @@ If a command contains a placeholder token such as `<suite-dir>` or `<report.json
 - Encoding refs indirectly in titles or notes
 - Mixing goal, scope, validation, and stop conditions in one paragraph
 - Hand-authoring prompt docs that drift from YAML
+- Treating repo-local completion as proof of public contract alignment

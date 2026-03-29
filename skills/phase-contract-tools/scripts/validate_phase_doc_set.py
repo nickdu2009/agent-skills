@@ -130,6 +130,7 @@ def validate_doc_set(docs_dir: Path, phase: str) -> tuple[list[Issue], list[Issu
     plan = load_yaml(plan_path)
     wave_guide_text = read_text(wave_guide_path)
     index_text = read_text(index_path)
+    external_contracts = [item for item in plan.get("external_contracts", []) if isinstance(item, dict)]
 
     pr_ids = {pr["id"] for pr in plan.get("prs", []) if isinstance(pr, dict) and isinstance(pr.get("id"), str)}
     waves = {wave["id"]: wave for wave in plan.get("waves", []) if isinstance(wave, dict) and isinstance(wave.get("id"), int)}
@@ -269,6 +270,69 @@ def validate_doc_set(docs_dir: Path, phase: str) -> tuple[list[Issue], list[Issu
             location=str(roadmap_path),
             repair="add a final done-when section to the roadmap",
         )
+
+    if external_contracts:
+        external_contract_section = section_text(roadmap_text, "External Contract Authority")
+        if not external_contract_section:
+            add_issue(
+                errors,
+                "roadmap.external-contract-authority",
+                "roadmap is missing an External Contract Authority section for a contract-bound phase.",
+                expected="add `## External Contract Authority`",
+                location=str(roadmap_path),
+                repair="add an External Contract Authority section that names the contract source and owned subset",
+            )
+        else:
+            lowered_contract_section = external_contract_section.lower()
+            if "owned subset" not in lowered_contract_section:
+                add_issue(
+                    errors,
+                    "roadmap.external-contract-authority",
+                    "roadmap External Contract Authority section does not describe the owned subset.",
+                    expected="mention the owned subset explicitly",
+                    location=f"{roadmap_path}:{line_of(roadmap_text, '## External Contract Authority') or 1}",
+                    repair="add an owned subset line to the roadmap External Contract Authority section",
+                )
+            if "excluded subset" not in lowered_contract_section:
+                add_issue(
+                    errors,
+                    "roadmap.external-contract-authority",
+                    "roadmap External Contract Authority section does not describe the excluded subset.",
+                    expected="mention the excluded subset explicitly",
+                    location=f"{roadmap_path}:{line_of(roadmap_text, '## External Contract Authority') or 1}",
+                    repair="add an excluded subset line to the roadmap External Contract Authority section",
+                )
+        goals_section = section_text(roadmap_text, "Goals").lower()
+        done_when_section = (section_text(roadmap_text, "Phase Done-When") or section_text(roadmap_text, "Done-When")).lower()
+        if "contract" not in goals_section and "align" not in goals_section:
+            add_issue(
+                errors,
+                "roadmap.goals.contract-alignment",
+                "roadmap goals do not mention contract alignment for a contract-bound phase.",
+                expected="mention contract alignment in roadmap goals",
+                location=f"{roadmap_path}:{line_of(roadmap_text, '## Goals') or 1}",
+                repair="add a goal that names the external contract alignment outcome",
+            )
+        if "contract" not in done_when_section and "align" not in done_when_section:
+            add_issue(
+                errors,
+                "roadmap.done-when.contract-alignment",
+                "roadmap done-when does not mention contract alignment for a contract-bound phase.",
+                expected="mention contract alignment in Phase Done-When",
+                location=f"{roadmap_path}:{roadmap_done_when_line or 1}",
+                repair="add a done-when item that states the owned subset is aligned or only accepted non-blocking gaps remain",
+            )
+        for contract in external_contracts:
+            contract_path_value = contract.get("path")
+            if isinstance(contract_path_value, str) and contract_path_value not in roadmap_text:
+                add_issue(
+                    errors,
+                    "roadmap.external-contract-authority",
+                    f"roadmap does not mention contract source `{contract_path_value}`.",
+                    expected=f"mention `{contract_path_value}` in the External Contract Authority section",
+                    location=str(roadmap_path),
+                    repair=f"reference `{contract_path_value}` in the roadmap contract authority section",
+                )
 
     return errors, warnings
 

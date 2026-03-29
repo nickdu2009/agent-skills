@@ -10,6 +10,15 @@ Lane setup:
 - smoke: agent_a -> pr P99-01 Smoke Fixture Contract
 - review: agent_a -> role smoke_review
 
+External contracts:
+- contract_smoke_api: specs/smoke-api.yaml (openapi)
+- contract_smoke_api owned include: paths./smoke, components.schemas.SmokeResponse
+- contract_smoke_api owned exclude: paths owned by upstream fixtures
+- accepted gaps: gap-smoke-followup
+Contract guardrails:
+- Do not substitute the legacy smoke route shape.
+- Do not reuse legacy DTO names unless they match the owned spec.
+
 Wave roles:
 - smoke_review: agent_a -> review - Confirm smoke fixture alignment.
 

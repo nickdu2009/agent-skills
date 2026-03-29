@@ -42,3 +42,55 @@ def find_lane(wave: dict[str, Any], lane_name: str) -> dict[str, Any]:
         if isinstance(lane, dict) and str(lane.get("lane", "")).lower() == lane_name.lower():
             return lane
     raise KeyError(f"unknown lane `{lane_name}` in wave {wave.get('id')}")
+
+
+def contract_map(data: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    contracts: dict[str, dict[str, Any]] = {}
+    for item in data.get("external_contracts", []):
+        if isinstance(item, dict) and isinstance(item.get("id"), str):
+            contracts[item["id"]] = item
+    return contracts
+
+
+def accepted_contract_gaps(data: dict[str, Any]) -> list[dict[str, Any]]:
+    return [item for item in data.get("accepted_contract_gaps", []) if isinstance(item, dict)]
+
+
+def collect_required_contracts_for_pr(pr: dict[str, Any]) -> list[str]:
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for item in pr.get("required_contracts", []):
+        if isinstance(item, str) and item and item not in seen:
+            seen.add(item)
+            ordered.append(item)
+    return ordered
+
+
+def collect_required_contracts_for_wave(data: dict[str, Any], wave: dict[str, Any]) -> list[str]:
+    ordered: list[str] = []
+    seen: set[str] = set()
+    pr_lookup = {pr["id"]: pr for pr in data.get("prs", []) if isinstance(pr, dict) and isinstance(pr.get("id"), str)}
+    for pr_id in wave.get("prs", []):
+        if not isinstance(pr_id, str):
+            continue
+        for contract_id in collect_required_contracts_for_pr(pr_lookup.get(pr_id, {})):
+            if contract_id not in seen:
+                seen.add(contract_id)
+                ordered.append(contract_id)
+    return ordered
+
+
+def contract_gaps_for_ids(data: dict[str, Any], contract_ids: list[str]) -> tuple[list[str], list[str]]:
+    blocking: list[str] = []
+    accepted: list[str] = []
+    contract_set = set(contract_ids)
+    for gap in accepted_contract_gaps(data):
+        contract_id = gap.get("contract")
+        if contract_id not in contract_set:
+            continue
+        label = str(gap.get("id") or gap.get("scope") or contract_id)
+        if bool(gap.get("blocking")):
+            blocking.append(label)
+        else:
+            accepted.append(label)
+    return blocking, accepted

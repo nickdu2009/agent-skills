@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from _shared_phase_tools import find_wave, infer_phase, load_plan
+from _shared_phase_tools import contract_gaps_for_ids, contract_map, collect_required_contracts_for_wave, find_wave, infer_phase, load_plan
 
 
 def parse_args() -> argparse.Namespace:
@@ -33,9 +33,26 @@ def pr_title_map(data: dict[str, Any]) -> dict[str, str]:
     return titles
 
 
+def wave_contract_guardrails(data: dict[str, Any], wave: dict[str, Any]) -> list[str]:
+    pr_lookup = {pr["id"]: pr for pr in data.get("prs", []) if isinstance(pr, dict) and isinstance(pr.get("id"), str)}
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for pr_id in wave.get("prs", []):
+        pr = pr_lookup.get(pr_id, {})
+        for item in pr.get("contract_guardrails", []):
+            if isinstance(item, str) and item not in seen:
+                seen.add(item)
+                ordered.append(item)
+    return ordered
+
+
 def render_wave(plan_path: Path, data: dict[str, Any], wave: dict[str, Any]) -> str:
     phase = infer_phase(plan_path, data)
     titles = pr_title_map(data)
+    required_contracts = collect_required_contracts_for_wave(data, wave)
+    contracts = contract_map(data)
+    blocking_gaps, accepted_gaps = contract_gaps_for_ids(data, required_contracts)
+    contract_guardrails = wave_contract_guardrails(data, wave)
     lines = [f"{phase} {wave['label']} kickoff", ""]
     lines.append(f"Goal: {wave.get('goal', '')}")
     lines.append(f"Control PR: {wave.get('control_pr', '')}")
@@ -55,6 +72,29 @@ def render_wave(plan_path: Path, data: dict[str, Any], wave: dict[str, Any]) -> 
         else:
             label = ref
         lines.append(f"- {lane.get('lane')}: {lane.get('owner')} -> {ref_kind} {label}")
+    if required_contracts:
+        lines.append("")
+        lines.append("External contracts:")
+        for contract_id in required_contracts:
+            contract = contracts.get(contract_id, {})
+            detail = f"{contract.get('path', '')} ({contract.get('kind', '')})".rstrip()
+            lines.append(f"- {contract_id}: {detail}")
+            owned_scope = contract.get("owned_scope", {})
+            if isinstance(owned_scope, dict):
+                include = [str(item) for item in owned_scope.get("include", []) if str(item)]
+                exclude = [str(item) for item in owned_scope.get("exclude", []) if str(item)]
+                if include:
+                    lines.append(f"- {contract_id} owned include: {', '.join(include)}")
+                if exclude:
+                    lines.append(f"- {contract_id} owned exclude: {', '.join(exclude)}")
+        if blocking_gaps:
+            lines.append("- blocking gaps: " + ", ".join(blocking_gaps))
+        if accepted_gaps:
+            lines.append("- accepted gaps: " + ", ".join(accepted_gaps))
+        if contract_guardrails:
+            lines.append("Contract guardrails:")
+            for item in contract_guardrails:
+                lines.append(f"- {item}")
     roles = [role for role in wave.get("roles", []) if isinstance(role, dict)]
     if roles:
         lines.append("")

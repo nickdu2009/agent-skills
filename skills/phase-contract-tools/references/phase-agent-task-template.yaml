@@ -33,6 +33,11 @@
   guardrails:
     - "Do not widen provider scope."
     - "Do not change runtime semantics."
+  required_contracts:
+    - "contract_api"
+  contract_guardrails:
+    - "Do not substitute legacy route shapes."
+    - "Do not reuse legacy DTOs unless they match the owned spec."
   non_goals:
     - "no policy-profile implementation yet"
     - "no packaging-smoke work yet"
@@ -44,3 +49,6 @@
   done_when:
     - "The bounded behavior is implemented."
     - "The declared validation passes."
+  contract_done_when:
+    - "The owned spec subset remains aligned with the declared external contract."
+    - "No blocking contract gap remains for this PR."

@@ -69,6 +69,7 @@ WAVE_REQUIRED = {
 PLACEHOLDER_RE = re.compile(r"<[^>]+>")
 START_GATE_VALUES = {"immediate", "after_prs", "after_waves"}
 VALIDATION_KINDS = {"profile", "command"}
+OWNED_SCOPE_MODES = {"full", "subset"}
 VAGUE_PHRASE_PATTERNS = (
     "as needed",
     "if needed",
@@ -83,6 +84,22 @@ VAGUE_PHRASE_PATTERNS = (
     "clean up",
     "looks good",
     "when ready",
+)
+CONTRACT_SENSITIVE_PATTERNS = (
+    "openapi",
+    "webhook",
+    "public api",
+    "public contract",
+    "contract authority",
+    "legacy dto",
+    "route shape",
+    "owned subset",
+)
+INVALID_CONTRACT_COMPLETION_PATTERNS = (
+    "adapter unavailable",
+    "legacy dto reuse",
+    "temporary route alias",
+    "fail-closed",
 )
 
 
@@ -193,6 +210,14 @@ def walk_strings(value: Any, path: tuple[Any, ...]):
             yield from walk_strings(item, path + (idx,))
     elif isinstance(value, str):
         yield path, value
+
+
+def looks_contract_sensitive(value: Any) -> bool:
+    for _, text in walk_strings(value, ()):
+        lowered = text.lower()
+        if any(pattern in lowered for pattern in CONTRACT_SENSITIVE_PATTERNS):
+            return True
+    return False
 
 
 def validate_read_first_entries(
@@ -438,6 +463,72 @@ def validate_schema(plan_path: Path) -> tuple[list[Issue], list[Issue]]:
             if not isinstance(command, str) or not command.strip():
                 add_issue(errors, plan_path, line_map, profile_path + ("command",), "validation profile command must be a non-empty string.", repair="set validation_profiles.*.command to a runnable shell command")
 
+    external_contracts = data.get("external_contracts", [])
+    contract_ids: set[str] = set()
+    if expect_type(
+        errors,
+        plan_path,
+        line_map,
+        ("external_contracts",),
+        external_contracts,
+        list,
+        "a list",
+    ):
+        for idx, contract in enumerate(external_contracts):
+            contract_path = ("external_contracts", idx)
+            if not isinstance(contract, dict):
+                add_issue(errors, plan_path, line_map, contract_path, "external contract entry must be a mapping.", repair="rewrite the contract entry as a mapping with id, path, kind, authority, and owned_scope")
+                continue
+            contract_id = contract.get("id")
+            if not isinstance(contract_id, str) or not contract_id.strip():
+                add_issue(errors, plan_path, line_map, contract_path + ("id",), "external contract id must be a non-empty string.", repair="set external_contracts[].id to a stable contract id")
+            elif contract_id in contract_ids:
+                add_issue(errors, plan_path, line_map, contract_path + ("id",), f"duplicate external contract id `{contract_id}`.", repair="rename one of the duplicate external contract ids")
+            else:
+                contract_ids.add(contract_id)
+            contract_source = contract.get("path")
+            if not isinstance(contract_source, str) or not contract_source.strip():
+                add_issue(errors, plan_path, line_map, contract_path + ("path",), "external contract path must be a non-empty string.", repair="set external_contracts[].path to the contract source path")
+            kind = contract.get("kind")
+            if not isinstance(kind, str) or not kind.strip():
+                add_issue(errors, plan_path, line_map, contract_path + ("kind",), "external contract kind must be a non-empty string.", repair="set external_contracts[].kind to a short source type such as openapi or yaml")
+            authority = contract.get("authority")
+            if authority != "external_contract":
+                add_issue(errors, plan_path, line_map, contract_path + ("authority",), f"external contract authority must stay `external_contract`, not `{authority}`.", expected="external_contract", repair="set external_contracts[].authority to `external_contract`")
+            owned_scope = contract.get("owned_scope")
+            if expect_type(errors, plan_path, line_map, contract_path + ("owned_scope",), owned_scope, dict, "a mapping"):
+                mode = owned_scope.get("mode")
+                if mode not in OWNED_SCOPE_MODES:
+                    add_issue(errors, plan_path, line_map, contract_path + ("owned_scope", "mode"), f"invalid owned_scope mode `{mode}`.", expected=f"one of {sorted(OWNED_SCOPE_MODES)}", repair="set owned_scope.mode to full or subset")
+                for field in ("include", "exclude"):
+                    value = owned_scope.get(field)
+                    if not isinstance(value, list):
+                        add_issue(errors, plan_path, line_map, contract_path + ("owned_scope", field), f"owned_scope.{field} must be a list.", expected="a list", repair=f"rewrite owned_scope.{field} as a list of scope strings")
+
+    accepted_contract_gaps = data.get("accepted_contract_gaps", [])
+    if expect_type(
+        errors,
+        plan_path,
+        line_map,
+        ("accepted_contract_gaps",),
+        accepted_contract_gaps,
+        list,
+        "a list",
+    ):
+        for idx, gap in enumerate(accepted_contract_gaps):
+            gap_path = ("accepted_contract_gaps", idx)
+            if not isinstance(gap, dict):
+                add_issue(errors, plan_path, line_map, gap_path, "accepted contract gap entry must be a mapping.", repair="rewrite the gap entry as a mapping with id, contract, scope, reason, blocking, and accepted_by")
+                continue
+            for field in ("id", "contract", "scope", "reason", "accepted_by"):
+                value = gap.get(field)
+                if not isinstance(value, str) or not value.strip():
+                    add_issue(errors, plan_path, line_map, gap_path + (field,), f"`{field}` must be a non-empty string.", repair=f"set accepted_contract_gaps[].{field} to a non-empty string")
+            if gap.get("contract") not in contract_ids:
+                add_issue(errors, plan_path, line_map, gap_path + ("contract",), f"unknown external contract `{gap.get('contract')}`.", expected=f"one of {sorted(contract_ids)}", repair="set accepted_contract_gaps[].contract to a declared external contract id")
+            if not isinstance(gap.get("blocking"), bool):
+                add_issue(errors, plan_path, line_map, gap_path + ("blocking",), "`blocking` must be a boolean.", expected="true or false", repair="set accepted_contract_gaps[].blocking to true or false")
+
     prs = data.get("prs")
     pr_ids: set[str] = set()
     pr_to_wave: dict[str, int] = {}
@@ -551,11 +642,63 @@ def validate_schema(plan_path: Path) -> tuple[list[Issue], list[Issue]]:
             validate_read_first_entries(errors, plan_path, line_map, pr_path + ("read_first",), pr.get("read_first"), phase_name, allowed_phase_docs)
             validate_validation_entries(errors, plan_path, line_map, pr_path + ("validation",), pr.get("validation"), profile_ids, declared_tokens)
 
+            required_contracts = pr.get("required_contracts", [])
+            if required_contracts is not None and not isinstance(required_contracts, list):
+                add_issue(errors, plan_path, line_map, pr_path + ("required_contracts",), "required_contracts must be a list when present.", expected="a list", repair="rewrite required_contracts as an ordered list of external contract ids")
+                required_contracts = []
+            if isinstance(required_contracts, list):
+                for contract_idx, contract_id in enumerate(required_contracts):
+                    if not isinstance(contract_id, str) or not contract_id.strip():
+                        add_issue(errors, plan_path, line_map, pr_path + ("required_contracts", contract_idx), "required_contracts entry must be a non-empty contract id string.", repair="replace the entry with a declared external contract id")
+                    elif contract_id not in contract_ids:
+                        add_issue(errors, plan_path, line_map, pr_path + ("required_contracts", contract_idx), f"unknown required contract `{contract_id}`.", expected=f"one of {sorted(contract_ids)}", repair="replace the contract id with one declared under external_contracts")
+
+            has_required_contracts = isinstance(required_contracts, list) and any(isinstance(item, str) and item.strip() for item in required_contracts)
+            for field in ("contract_guardrails", "contract_done_when"):
+                value = pr.get(field, [])
+                if value is not None and not isinstance(value, list):
+                    add_issue(errors, plan_path, line_map, pr_path + (field,), f"`{field}` must be a list when present.", expected="a list", repair=f"rewrite `{field}` as a list of concrete contract checks")
+                    continue
+                if has_required_contracts and not value:
+                    add_issue(errors, plan_path, line_map, pr_path + (field,), f"`{field}` is required when required_contracts is non-empty.", expected=f"a non-empty `{field}` list", repair=f"add at least one concrete entry under `{field}`")
+                for item_idx, item in enumerate(value or []):
+                    if not isinstance(item, str) or not item.strip():
+                        add_issue(errors, plan_path, line_map, pr_path + (field, item_idx), f"`{field}` entry must be a non-empty string.", repair=f"replace the `{field}` entry with a concrete contract rule")
+                    elif field == "contract_done_when":
+                        lowered = item.lower()
+                        for invalid_phrase in INVALID_CONTRACT_COMPLETION_PATTERNS:
+                            if invalid_phrase in lowered:
+                                add_issue(errors, plan_path, line_map, pr_path + (field, item_idx), f"invalid contract completion phrase `{invalid_phrase}` is not allowed.", expected="a contract alignment outcome, not a fallback or legacy condition", repair="replace the entry with a concrete owned-subset alignment check")
+
+            if contract_ids and not has_required_contracts and looks_contract_sensitive(pr):
+                add_issue(
+                    warnings,
+                    plan_path,
+                    line_map,
+                    pr_path,
+                    "PR appears contract-sensitive but does not declare required_contracts.",
+                    expected="declare required_contracts plus contract_guardrails and contract_done_when",
+                    repair="add required_contracts and the matching contract guardrails/done checks for this PR",
+                )
+
             for field in ("files", "expected_changes", "guardrails", "non_goals"):
                 value = pr.get(field)
                 if not isinstance(value, list):
                     add_issue(errors, plan_path, line_map, pr_path + (field,), f"`{field}` must be a list.", expected="a list", repair=f"rewrite `{field}` as a list of strings")
                     continue
+
+    if not contract_ids and isinstance(prs, list):
+        for idx, pr in enumerate(prs):
+            if isinstance(pr, dict) and looks_contract_sensitive(pr):
+                add_issue(
+                    warnings,
+                    plan_path,
+                    line_map,
+                    ("prs", idx),
+                    "PR appears contract-sensitive but the plan declares no external_contracts.",
+                    expected="declare external_contracts when the phase depends on a public contract source",
+                    repair="add external_contracts and wire the PR through required_contracts if this phase consumes an external contract",
+                )
 
     waves = data.get("waves")
     wave_ids: set[int] = set()
@@ -822,6 +965,11 @@ def validate_schema(plan_path: Path) -> tuple[list[Issue], list[Issue]]:
             for done_idx, entry in enumerate(done_when):
                 if not isinstance(entry, str) or not entry.strip():
                     add_issue(errors, plan_path, line_map, pr_path + ("done_when", done_idx), "done_when entry must be a non-empty string.", repair="replace the done_when entry with a concrete completion check")
+                else:
+                    lowered = entry.lower()
+                    for invalid_phrase in INVALID_CONTRACT_COMPLETION_PATTERNS:
+                        if invalid_phrase in lowered:
+                            add_issue(errors, plan_path, line_map, pr_path + ("done_when", done_idx), f"invalid completion phrase `{invalid_phrase}` is not allowed.", expected="a concrete completion check, not a fallback or legacy condition", repair="replace the entry with a concrete repo-local or contract alignment outcome")
         for dep_idx, dep in enumerate(pr.get("depends_on", [])):
             if isinstance(dep, str) and dep not in pr_ids:
                 add_issue(

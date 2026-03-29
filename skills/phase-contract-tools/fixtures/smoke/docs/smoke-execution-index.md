@@ -14,6 +14,8 @@
 3. `smoke-roadmap.md`
 4. `smoke-execution-index.md`
 
+External contract authority for this fixture is declared in `specs/smoke-api.yaml` and consumed through `smoke-plan.yaml`.
+
 ## Wave Summary
 
 | Wave | Goal | Control PR |

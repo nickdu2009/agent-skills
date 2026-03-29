@@ -64,6 +64,20 @@ validation_profiles:
     description: "Example package smoke test."
     command: "go test ./pkg/example/..."
 
+external_contracts:
+  - id: "contract_api"
+    path: "specs/public-api.yaml"
+    kind: "openapi"
+    authority: "external_contract"
+    owned_scope:
+      mode: "subset"
+      include:
+        - "paths./v1/widgets"
+      exclude:
+        - "paths owned by another service"
+
+accepted_contract_gaps: []
+
 team:
   - id: "agent_a"
     label: "Agent A"
@@ -111,6 +125,10 @@ prs:
       - "accepted contract wording"
     guardrails:
       - "Do not implement behavior in this PR."
+    required_contracts:
+      - "contract_api"
+    contract_guardrails:
+      - "Do not substitute legacy route shapes."
     non_goals:
       - "no implementation yet"
     validation:
@@ -119,6 +137,9 @@ prs:
     done_when:
       - "The contract is explicit."
       - "The contract is reusable."
+    contract_done_when:
+      - "The owned spec subset is explicit."
+      - "No blocking contract gap remains for this PR."
 
 waves:
   - id: 1
