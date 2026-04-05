@@ -1,8 +1,9 @@
 ---
 name: multi-agent-protocol
-version: 0.1.0
 description: Complete operational protocol for launching, coordinating, and synthesizing parallel subagents. Use when the AGENTS.md multi-agent rules indicate Tier 1 or Tier 2 parallelism and the agent needs the full decision framework, subagent prompt templates, merge checklist, and failure handling procedures.
-tags: [coding, agents, orchestration, efficiency]
+metadata:
+  version: "0.1.0"
+  tags: "coding, agents, orchestration, efficiency"
 ---
 
 # Multi-Agent Protocol

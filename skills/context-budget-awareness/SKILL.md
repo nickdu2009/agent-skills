@@ -1,8 +1,9 @@
 ---
 name: context-budget-awareness
-version: 0.1.0
 description: Compress and refocus the working state when an investigation is stuck or spinning — many files read without convergence, the same areas checked repeatedly without progress, hypotheses accumulating without evidence to rank them, or recent actions not advancing the objective. Use when the session has grown noisy and a fresh focused pass would be cheaper than carrying the full history forward. Extends the AGENTS.md Context Budget rules with a structured compression and rehydration pattern.
-tags: [coding, agents, orchestration, efficiency]
+metadata:
+  version: "0.1.0"
+  tags: "coding, agents, orchestration, efficiency"
 ---
 
 # Purpose

@@ -1,8 +1,9 @@
 ---
 name: plan-before-action
-version: 0.1.0
 description: Require a clear plan with scope, assumptions, and intended file list before multi-step or uncertain edits. Use when multiple files are involved, sequencing matters, or the task shape is not yet clear.
-tags: [coding, agents, orchestration, efficiency]
+metadata:
+  version: "0.1.0"
+  tags: "coding, agents, orchestration, efficiency"
 ---
 
 # Purpose

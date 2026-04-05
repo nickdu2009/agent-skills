@@ -1,8 +1,9 @@
 ---
 name: targeted-validation
-version: 0.1.0
 description: Choose the narrowest meaningful test or check that verifies a change without defaulting to a full build or test suite. Use when the agent must decide what to test after a patch — not needed when the user already specifies exactly which tests to run.
-tags: [coding, agents, orchestration, efficiency]
+metadata:
+  version: "0.1.0"
+  tags: "coding, agents, orchestration, efficiency"
 ---
 
 # Purpose

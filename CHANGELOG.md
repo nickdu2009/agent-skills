@@ -12,16 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reorganized non-skill repository content into explicit user and maintainer surfaces: install entrypoints now live under `maintainer/scripts/install/`, user release docs under `docs/user/`, and maintainer-only evaluation data, docs, templates, and retained baselines under `maintainer/`, `docs/maintainer/`, and nested `templates/` subdirectories.
 - Replaced `subagent-orchestration` with `multi-agent-protocol`, a tiered orchestration skill that distinguishes read-only exploration (Tier 1) from write-capable delegation (Tier 2) with explicit gate declarations, structured subagent contracts, and platform-specific mappings.
 - Updated all cross-references in `conflict-resolution`, `context-budget-awareness`, `targeted-validation`, `plan-before-action`, examples, and scoring scripts.
-- Renamed the governance setup script to `maintainer/scripts/install/setup-multi-agent-governance.sh` for clearer multi-agent intent.
+- Unified governance installation and local mirror sync behind a single public script, `maintainer/scripts/install/manage-governance.py`, with profile-based and mirror modes.
 
 ### Added
 
-- `templates/governance/AGENTS-multi-agent-rules.md` — a ready-made snippet for injecting Multi-Agent Rules into project-level `AGENTS.md` or `CLAUDE.md`.
-- `maintainer/scripts/install/setup-multi-agent-governance.sh` — cross-platform installer for governance skills and rules injection (supports Cursor, Codex, Claude Code).
+- `templates/governance/AGENTS-template.md` and `templates/governance/CLAUDE-template.md` — ready-made platform-specific governance templates for project-level rule injection.
+- `maintainer/scripts/install/manage-governance.py` — cross-platform entrypoint for governance skills, rule injection, and local mirror management (supports Cursor, Codex, Claude Code).
 
 ### Removed
 
 - `subagent-orchestration` skill (superseded by `multi-agent-protocol`).
+- Standalone local mirror sync entrypoints in favor of `manage-governance.py --sync-local` and `--check-local`.
 
 ## [0.1.0] - 2026-03-27
 

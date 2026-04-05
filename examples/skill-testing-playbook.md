@@ -34,13 +34,13 @@ flowchart TD
 Run:
 
 ```bash
-python3 maintainer/scripts/install/sync-cursor-skills.py --check
+python3 maintainer/scripts/install/manage-governance.py --check-local cursor
 ```
 
 If needed:
 
 ```bash
-python3 maintainer/scripts/install/sync-cursor-skills.py
+python3 maintainer/scripts/install/manage-governance.py --sync-local cursor
 ```
 
 ## Scenario Matrix

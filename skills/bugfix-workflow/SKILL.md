@@ -1,8 +1,9 @@
 ---
 name: bugfix-workflow
-version: 0.1.0
 description: Diagnose, narrow, fix, and verify a bug through an evidence-first workflow. Use when a bug or unexpected behavior is reported and the root cause is not yet confirmed.
-tags: [coding, agents, orchestration, efficiency]
+metadata:
+  version: "0.1.0"
+  tags: "coding, agents, orchestration, efficiency"
 ---
 
 # Purpose

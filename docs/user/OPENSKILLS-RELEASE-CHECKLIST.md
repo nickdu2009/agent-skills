@@ -117,7 +117,7 @@ Behavior checks:
 
 Local convenience layers are allowed, but they must remain clearly outside the published source boundary.
 
-- [ ] Cursor mirrors are regenerated from `skills/`, not hand-maintained
+- [ ] Cursor and Claude mirrors are regenerated from `skills/`, not hand-maintained
 - [ ] `.cursor/` stays ignored by Git
 - [ ] Local OpenSkills outputs such as `.agent/`, `.claude/`, and `AGENTS.md` stay ignored by Git
 - [ ] `maintainer/` contains internal evaluation assets only, not installable skill source

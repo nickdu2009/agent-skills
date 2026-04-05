@@ -33,6 +33,7 @@ ALLOWED_TOP_LEVEL_NAMES = frozenset({
     "SECURITY.md",
     "AGENTS.md",
     ".gitignore",
+    "phase-toolchain-optimization-zh.md",
 })
 
 REQUIRED_TOP_LEVEL_NAMES = frozenset({
@@ -44,9 +45,7 @@ REQUIRED_TOP_LEVEL_NAMES = frozenset({
 })
 
 REQUIRED_INSTALL_FILES = (
-    REPO_ROOT / "maintainer" / "scripts" / "install" / "sync-cursor-skills.py",
-    REPO_ROOT / "maintainer" / "scripts" / "install" / "setup-skill-governance.sh",
-    REPO_ROOT / "maintainer" / "scripts" / "install" / "setup-multi-agent-governance.sh",
+    REPO_ROOT / "maintainer" / "scripts" / "install" / "manage-governance.py",
     REPO_ROOT / "maintainer" / "scripts" / "install" / "validate_repo_layout.py",
 )
 

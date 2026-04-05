@@ -94,7 +94,8 @@
 
 测试基础设施包括：
 
-- **静态检查**：`sync-cursor-skills.py --check` 检测镜像漂移
+- **静态检查**：`manage-governance.py --check-local <cursor|claude>` 检测本地镜像漂移
+- **Claude Code 冒烟**：`run_claude_trigger_smoke.py` 在干净临时工作区里执行非交互触发验证
 - **CI**：GitHub Actions 检查 `SKILL.md` 位置、frontmatter 格式、OpenSkills 安装冒烟
 - **场景测试**：5 个 `examples/` 场景作为行为验收测试
 - **评分体系**：`skill-evaluation-rubric.md` 提供 0/1/2 三级评分标准

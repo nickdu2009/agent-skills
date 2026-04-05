@@ -17,7 +17,7 @@ from skill_test_data import EXAMPLE_CASES, GLOBAL_RUBRIC_DIMENSIONS, SKILL_RUBRI
 
 
 EXAMPLES_DIR = REPO_ROOT / "examples"
-SYNC_SCRIPT = REPO_ROOT / "maintainer" / "scripts" / "install" / "sync-cursor-skills.py"
+SYNC_SCRIPT = REPO_ROOT / "maintainer" / "scripts" / "install" / "manage-governance.py"
 
 
 def parse_args() -> argparse.Namespace:
@@ -58,7 +58,7 @@ def validate_examples_exist() -> None:
 
 def run_sync_check() -> int:
     result = subprocess.run(
-        [sys.executable, str(SYNC_SCRIPT), "--check"],
+        [sys.executable, str(SYNC_SCRIPT), "--check-local", "cursor"],
         cwd=REPO_ROOT,
         check=False,
     )

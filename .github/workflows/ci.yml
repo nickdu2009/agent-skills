@@ -89,7 +89,8 @@ jobs:
           from pathlib import Path
 
           files = [
-              Path("maintainer/scripts/install/sync-cursor-skills.py"),
+              Path("maintainer/scripts/install/manage-governance.py"),
+              Path("maintainer/scripts/install/run_manage_governance_smoke.py"),
               Path("maintainer/scripts/install/validate_repo_layout.py"),
               Path("maintainer/data/skill_test_data.py"),
               Path("maintainer/data/trigger_test_data.py"),
@@ -103,33 +104,8 @@ jobs:
               print(f"OK: {path}")
           PY
 
-      - name: Check Bash syntax
-        run: |
-          bash -n maintainer/scripts/install/setup-multi-agent-governance.sh
-          bash -n maintainer/scripts/install/setup-skill-governance.sh
-
-      - name: Verify Cursor mirror copies full directories
-        run: |
-          python3 maintainer/scripts/install/sync-cursor-skills.py
-          python3 maintainer/scripts/install/sync-cursor-skills.py --check
-
-          if [ ! -d ".cursor/skills/phase-contract-tools/scripts" ]; then
-            echo "ERROR: phase-contract-tools/scripts/ not mirrored"
-            exit 1
-          fi
-
-          PCT_SCRIPTS=$(ls .cursor/skills/phase-contract-tools/scripts/*.py 2>/dev/null | wc -l)
-          if [ "$PCT_SCRIPTS" -lt 10 ]; then
-            echo "ERROR: Expected at least 10 phase-contract-tools scripts, found $PCT_SCRIPTS"
-            exit 1
-          fi
-
-          if [ -d ".cursor/skills/scoped-tasking/scripts" ]; then
-            echo "ERROR: scoped-tasking should not have a scripts/ subdirectory"
-            exit 1
-          fi
-
-          echo "OK: Cursor mirror copies full skill directories"
+      - name: Run temporary-directory installer smoke tests
+        run: python3 maintainer/scripts/install/run_manage_governance_smoke.py
 
   install-smoke-test:
     name: OpenSkills install smoke test

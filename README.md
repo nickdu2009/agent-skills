@@ -150,38 +150,44 @@ This is the primary recommended path for external consumers.
 
 ### Full Skill Governance (recommended for teams)
 
+`manage-governance.py` is the single public entrypoint for this repository's governance tooling. It handles skill copy plus `AGENTS.md` / `CLAUDE.md` rule injection in one place.
+
 Install all execution and orchestration skills with AGENTS.md rule injection:
 
 ```bash
-./maintainer/scripts/install/setup-skill-governance.sh --project /path/to/my-repo
+python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo
 ```
 
 Include phase skills for large multi-wave projects:
 
 ```bash
-./maintainer/scripts/install/setup-skill-governance.sh --project /path/to/my-repo --include-phase
+python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo --include-phase
 ```
 
 For multi-agent governance only (2 orchestration skills):
 
 ```bash
-./maintainer/scripts/install/setup-multi-agent-governance.sh --project /path/to/my-repo
+python3 maintainer/scripts/install/manage-governance.py --profile multi-agent --project /path/to/my-repo
 ```
 
-### Cursor Development Mirror (this repository only)
+### Local Development Mirrors (this repository only)
 
-Generate a project-local `.cursor/skills/` mirror for development within this repository:
+These mirror operations now run through the same installer script. They are not an end-user install path; they only rebuild repo-local `.cursor/skills/` and `.claude/skills/` mirrors while developing this library.
+
+Generate a project-local tool mirror from the canonical `skills/` tree:
 
 ```bash
-python3 maintainer/scripts/install/sync-cursor-skills.py
+python3 maintainer/scripts/install/manage-governance.py --sync-local cursor
+python3 maintainer/scripts/install/manage-governance.py --sync-local claude
 ```
 
-This mirror is project-local (`$REPO_ROOT/.cursor/skills/`), ignored by Git, and can be rebuilt at any time. It is not the same as global skill installation.
+These mirrors are project-local (`$REPO_ROOT/.cursor/skills/` and `$REPO_ROOT/.claude/skills/`), ignored by Git, and can be rebuilt at any time. They are not the same as global skill installation.
 
-To verify the mirror is current:
+To verify a mirror is current:
 
 ```bash
-python3 maintainer/scripts/install/sync-cursor-skills.py --check
+python3 maintainer/scripts/install/manage-governance.py --check-local cursor
+python3 maintainer/scripts/install/manage-governance.py --check-local claude
 ```
 
 ### Path Comparison
@@ -189,9 +195,9 @@ python3 maintainer/scripts/install/sync-cursor-skills.py --check
 | Method | Scope | Target Path | Use When |
 |--------|-------|-------------|----------|
 | OpenSkills | All skills | `.agent/skills/` | External consumer installing into a project |
-| `setup-skill-governance.sh` | All skills + rules | `$HOME/.cursor/skills/` or `$HOME/.codex/skills/` | Team adopting the full discipline suite |
-| `setup-multi-agent-governance.sh` | 2 orchestration skills + rules | `$HOME/.cursor/skills/` or `$HOME/.codex/skills/` | Only need multi-agent coordination |
-| `sync-cursor-skills.py` | All skills (mirror) | `$REPO_ROOT/.cursor/skills/` | Developing this skill library itself |
+| `manage-governance.py` | All skills + rules (`--profile full`) | `$HOME/.cursor/skills/`, `$HOME/.codex/skills/`, or `$HOME/.claude/skills/` | Team adopting the full discipline suite |
+| `manage-governance.py` | 2 orchestration skills + rules (`--profile multi-agent`) | `$HOME/.cursor/skills/`, `$HOME/.codex/skills/`, or `$HOME/.claude/skills/` | Only need multi-agent coordination |
+| `manage-governance.py --sync-local <target>` | All skills (mirror) | `$REPO_ROOT/.cursor/skills/` or `$REPO_ROOT/.claude/skills/` | Developing this skill library itself |
 
 ## Design Philosophy
 
@@ -219,8 +225,8 @@ skills/
   conflict-resolution/
 templates/
   governance/
-    AGENTS-multi-agent-rules.md
-    AGENTS-skill-lifecycle-rules.md
+    AGENTS-template.md
+    CLAUDE-template.md
   evaluation/
     cross-platform-trigger-baseline.md
     transcript-evaluation-report.md
@@ -254,7 +260,7 @@ Keep each top-level area narrowly scoped:
 - `skills/`: the only canonical published skill source.
 - `examples/`: user-visible scenario inputs for behavior testing and documentation.
 - `docs/user/`: user-facing operational and release documentation.
-- `templates/governance/`: reusable governance snippets intended for installation and rule injection.
+- `templates/governance/`: reusable platform-specific governance templates used for installation and rule injection.
 - `templates/evaluation/`: evaluation-only report templates used by the maintainer toolchain.
 - `maintainer/scripts/install/`: stable user-facing entrypoints for installation and local mirror sync.
 - `docs/maintainer/`: maintainer notes, evaluations, and repair plans.
@@ -313,30 +319,32 @@ For release readiness and acceptance checks, use [`docs/user/OPENSKILLS-RELEASE-
 
 ## Governance Setup
 
-The `multi-agent-protocol` skill works best when paired with a short Multi-Agent Rules section in your project-level `AGENTS.md` (or `CLAUDE.md` for Claude Code). A ready-made template lives in `templates/governance/AGENTS-multi-agent-rules.md`.
+The `multi-agent-protocol` skill works best when paired with project-level governance rules. Ready-made platform templates live in `templates/governance/AGENTS-template.md` and `templates/governance/CLAUDE-template.md`.
+
+The complete supported install flow lives in one script: `maintainer/scripts/install/manage-governance.py`. Use `--profile multi-agent` for the light setup, or omit it for the full suite.
 
 Install both the governance skills and inject the rules into a project:
 
 ```bash
-./maintainer/scripts/install/setup-multi-agent-governance.sh --project /path/to/my-repo
+python3 maintainer/scripts/install/manage-governance.py --profile multi-agent --project /path/to/my-repo
 ```
 
 Install only the skills (no project file changes):
 
 ```bash
-./maintainer/scripts/install/setup-multi-agent-governance.sh --skills-only
+python3 maintainer/scripts/install/manage-governance.py --profile multi-agent --skills-only
 ```
 
 Inject only the rules into an existing `AGENTS.md`:
 
 ```bash
-./maintainer/scripts/install/setup-multi-agent-governance.sh --rules-only /path/to/my-repo
+python3 maintainer/scripts/install/manage-governance.py --profile multi-agent --rules-only /path/to/my-repo
 ```
 
 Force a specific platform:
 
 ```bash
-./maintainer/scripts/install/setup-multi-agent-governance.sh --skills-only --platform codex --force
+python3 maintainer/scripts/install/manage-governance.py --profile multi-agent --skills-only --platform codex --force
 ```
 
 The script auto-detects installed platforms (Cursor, Codex, Claude Code) and places skills in the appropriate directory.
@@ -344,26 +352,28 @@ The script auto-detects installed platforms (Cursor, Codex, Claude Code) and pla
 For the full skill governance suite (all 10 execution and orchestration skills plus lifecycle rules):
 
 ```bash
-./maintainer/scripts/install/setup-skill-governance.sh --project /path/to/my-repo
+python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo
 ```
 
-## Cursor Mirror
+## Local Mirrors
 
-If you want local Cursor discovery while working in this repository, generate `.cursor/skills/` from `skills/`:
+If you want local Cursor or Claude discovery while working in this repository, generate a tool-specific mirror from `skills/`:
 
 ```bash
-python3 maintainer/scripts/install/sync-cursor-skills.py
+python3 maintainer/scripts/install/manage-governance.py --sync-local cursor
+python3 maintainer/scripts/install/manage-governance.py --sync-local claude
 ```
 
-The generated `.cursor/` tree is local-only, ignored by Git, and can be deleted and rebuilt at any time.
+The generated `.cursor/` and `.claude/` trees are local-only, ignored by Git, and can be deleted and rebuilt at any time.
 
-To verify that the local mirror is still current:
+To verify that a local mirror is still current:
 
 ```bash
-python3 maintainer/scripts/install/sync-cursor-skills.py --check
+python3 maintainer/scripts/install/manage-governance.py --check-local cursor
+python3 maintainer/scripts/install/manage-governance.py --check-local claude
 ```
 
-Note: The Cursor mirror copies entire skill directories, including subdirectories such as `scripts/`, `references/`, and `fixtures/` for skills that have them. This ensures that relative path references within skill instructions remain valid.
+Note: These mirrors copy entire skill directories, including subdirectories such as `scripts/`, `references/`, and `fixtures/` for skills that have them. This ensures that relative path references within skill instructions remain valid.
 
 ## How to Test Skills
 
@@ -371,7 +381,7 @@ Skill testing in this repository is intentionally lightweight. These skills shap
 
 ```mermaid
 flowchart TD
-    A[Edit skills/] --> B[Check Cursor mirror sync]
+    A[Edit skills/] --> B[Check local skill mirror sync]
     B --> C[Pick one example scenario]
     C --> D[Run the scenario in Cursor or another agent]
     D --> E[Score behavior against the checklist]
@@ -380,24 +390,31 @@ flowchart TD
 
 Use this three-part loop:
 
-1. Verify the local Cursor mirror is current.
+1. Verify the relevant local mirror is current.
 2. Run one or more example scenarios as acceptance tests.
 3. Record whether the agent behavior matched the intended skill guardrails.
 
 Before release, also run an OpenSkills install smoke test using the checklist in [`docs/user/OPENSKILLS-RELEASE-CHECKLIST.md`](docs/user/OPENSKILLS-RELEASE-CHECKLIST.md).
 
+For high-value Claude Code multi-turn acceptance scenarios, use
+[`docs/maintainer/claude-interactive-test-checklist.md`](docs/maintainer/claude-interactive-test-checklist.md)
+and the fixture-backed execution plan in
+[`docs/maintainer/claude-interactive-test-implementation-plan.md`](docs/maintainer/claude-interactive-test-implementation-plan.md).
+
 ### 1. Static Verification
 
-Use the existing sync checker after every change to `skills/`:
+Use the built-in local mirror checker after every change to `skills/`:
 
 ```bash
-python3 maintainer/scripts/install/sync-cursor-skills.py --check
+python3 maintainer/scripts/install/manage-governance.py --check-local cursor
+python3 maintainer/scripts/install/manage-governance.py --check-local claude
 ```
 
 If the mirror is out of date, rebuild it:
 
 ```bash
-python3 maintainer/scripts/install/sync-cursor-skills.py
+python3 maintainer/scripts/install/manage-governance.py --sync-local cursor
+python3 maintainer/scripts/install/manage-governance.py --sync-local claude
 ```
 
 ### 2. Scenario-Based Acceptance Testing
