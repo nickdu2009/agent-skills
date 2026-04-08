@@ -1,12 +1,12 @@
 # Prompt Derivation From Schema
 
-Use this reference when the user wants prompts or kickoff text derived from `phaseN-plan.yaml`.
+Use this reference when the user wants prompts or kickoff text derived from `plan.yaml`.
 
 Prompts are not primary planning docs. They are renderings of accepted schema fields.
 
 ## Inputs
 
-Read from `phaseN-plan.yaml` only:
+Read from `plan.yaml` only:
 
 - `hard_rules`
 - `external_contracts`

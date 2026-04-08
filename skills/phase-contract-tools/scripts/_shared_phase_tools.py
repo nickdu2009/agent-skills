@@ -2,10 +2,19 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
 import yaml
+
+
+PHASE_FILES = {
+    "roadmap": "roadmap.md",
+    "plan": "plan.yaml",
+    "wave_guide": "wave-guide.md",
+    "execution_index": "execution-index.md",
+}
 
 
 class Issue:
@@ -42,10 +51,41 @@ def load_plan(path: Path) -> dict[str, Any]:
     return data
 
 
+def resolve_phase_root(explicit: Path | None = None) -> Path:
+    """Resolve the phase docs root from an explicit path, env var, or default."""
+
+    if explicit is not None:
+        return explicit.expanduser().resolve()
+    env_root = os.environ.get("PHASE_DOCS_ROOT")
+    if env_root:
+        return Path(env_root).expanduser().resolve()
+    return (Path.cwd() / "docs" / "phases").resolve()
+
+
+def phase_dir(phase_root: Path, phase: str) -> Path:
+    """Return the directory for one phase doc set."""
+
+    return phase_root / phase
+
+
+def phase_file(phase_root: Path, phase: str, filename: str) -> Path:
+    """Return one file path inside a phase doc directory."""
+
+    return phase_dir(phase_root, phase) / filename
+
+
+def phase_doc_paths(phase_root: Path, phase: str) -> dict[str, Path]:
+    """Return the canonical four-file path set for a phase."""
+
+    return {name: phase_file(phase_root, phase, filename) for name, filename in PHASE_FILES.items()}
+
+
 def infer_phase(plan_path: Path, data: dict[str, Any]) -> str:
     phase = data.get("phase")
     if isinstance(phase, str) and phase:
         return phase
+    if plan_path.name == PHASE_FILES["plan"]:
+        return plan_path.parent.name
     stem = plan_path.stem
     return stem[:-5] if stem.endswith("-plan") else stem
 

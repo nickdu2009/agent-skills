@@ -67,7 +67,7 @@ Use the smallest rollback that preserves correctness:
 - keep committed lane work and stop promotion when the failure is under review
 - stop the whole wave only when the failure changes hotspot ownership, merge order, or phase-level execution safety
 
-Do not rewrite `phaseN-plan.yaml` as a shortcut to make the current state look valid.
+Do not rewrite `plan.yaml` as a shortcut to make the current state look valid.
 
 ## Escalation Rules
 

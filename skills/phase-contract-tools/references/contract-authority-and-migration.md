@@ -6,10 +6,10 @@ Use this reference when you need to understand where the phase contract lives an
 
 There are two different authorities:
 
-- repository execution authority: `docs/phaseN-plan.yaml` inside the target repository
+- repository execution authority: `$PHASE_DOCS_ROOT/phaseN/plan.yaml` inside the target repository
 - skill-bundle contract authority: `$phase-contract-tools` inside the skill bundle
 
-`phaseN-plan.yaml` decides the work for one repository.
+`plan.yaml` decides the work for one repository.
 
 `$phase-contract-tools` decides how that schema, its validators, its renderers, and its execution artifacts are defined.
 
@@ -33,7 +33,7 @@ Do not fork or restate those rules in sibling skills.
 `$phase-plan` uses `$phase-contract-tools` to:
 
 - read the schema and field-writing rules
-- validate `phaseN-plan.yaml`
+- validate `plan.yaml`
 - validate the strict four-file doc set
 - derive prompts or kickoff text from accepted schema
 

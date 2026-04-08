@@ -18,7 +18,7 @@ from typing import Any
 import yaml
 from yaml.nodes import MappingNode, Node, ScalarNode, SequenceNode
 
-from _shared_phase_tools import Issue
+from _shared_phase_tools import Issue, PHASE_FILES, infer_phase
 
 
 TOP_LEVEL_REQUIRED = {
@@ -107,7 +107,7 @@ INVALID_CONTRACT_COMPLETION_PATTERNS = (
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate a phase execution schema.")
-    parser.add_argument("--plan", required=True, help="Path to docs/phaseN-plan.yaml")
+    parser.add_argument("--plan", required=True, help="Path to a phase plan file such as docs/phases/phase13/plan.yaml")
     return parser.parse_args()
 
 
@@ -218,7 +218,13 @@ def validate_read_first_entries(
         if not isinstance(path_value, str) or not path_value.strip():
             add_issue(errors, plan_path, line_map, entry_path + ("path",), "read_first.path must be a non-empty string.", repair="set read_first.path to a document path")
             continue
-        if f"docs/{phase_name}-" in path_value and path_value not in allowed_phase_docs:
+        phase_local_markers = (
+            f"docs/phases/{phase_name}/",
+            f"phases/{phase_name}/",
+            f"{phase_name}/",
+            f"docs/{phase_name}-",
+        )
+        if any(marker in path_value for marker in phase_local_markers) and path_value not in allowed_phase_docs:
             add_issue(
                 errors,
                 plan_path,
@@ -339,14 +345,23 @@ def validate_schema(plan_path: Path) -> tuple[list[Issue], list[Issue]]:
                 repair=f"add `{key}` at the top level of the plan schema",
             )
 
-    phase_name = plan_path.stem[:-5] if plan_path.stem.endswith("-plan") else plan_path.stem
+    phase_name = infer_phase(plan_path, data)
     allowed_phase_docs = {
-        f"docs/{phase_name}-roadmap.md",
-        f"docs/{phase_name}-plan.yaml",
-        f"docs/{phase_name}-wave-guide.md",
-        f"docs/{phase_name}-execution-index.md",
+        f"docs/phases/{phase_name}/{PHASE_FILES['roadmap']}",
+        f"docs/phases/{phase_name}/{PHASE_FILES['plan']}",
+        f"docs/phases/{phase_name}/{PHASE_FILES['wave_guide']}",
+        f"docs/phases/{phase_name}/{PHASE_FILES['execution_index']}",
+        f"phases/{phase_name}/{PHASE_FILES['roadmap']}",
+        f"phases/{phase_name}/{PHASE_FILES['plan']}",
+        f"phases/{phase_name}/{PHASE_FILES['wave_guide']}",
+        f"phases/{phase_name}/{PHASE_FILES['execution_index']}",
     }
     deprecated_doc_names = {
+        "first-wave-pr-breakdown.md",
+        "parallel-matrix.md",
+        "pr-delivery-plan.md",
+        "pr-parallelization-plan.md",
+        "pr-plan.md",
         f"docs/{phase_name}-first-wave-pr-breakdown.md",
         f"docs/{phase_name}-parallel-matrix.md",
         f"docs/{phase_name}-pr-delivery-plan.md",

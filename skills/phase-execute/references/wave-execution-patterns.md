@@ -6,10 +6,10 @@ Use this reference when you need the default operating model for running an acce
 
 Wave execution consumes exactly:
 
-- `phaseN-execution-index.md`
-- `phaseN-plan.yaml`
-- `phaseN-wave-guide.md`
-- `phaseN-roadmap.md`
+- `execution-index.md`
+- `plan.yaml`
+- `wave-guide.md`
+- `roadmap.md`
 
 If execution depends on any additional planning artifact, repair the phase through `$phase-plan` before launching work.
 
@@ -24,10 +24,10 @@ Read execution docs in this order:
 
 Use this precedence when conflicts appear:
 
-1. `phaseN-plan.yaml`
-2. `phaseN-execution-index.md`
-3. `phaseN-wave-guide.md`
-4. `phaseN-roadmap.md`
+1. `plan.yaml`
+2. `execution-index.md`
+3. `wave-guide.md`
+4. `roadmap.md`
 
 Narrative docs help coordination. YAML defines execution.
 

@@ -1,6 +1,6 @@
 # Smoke Wave Guide
 
-Use `smoke-plan.yaml` as the machine-readable execution authority for this fixture.
+Use `plan.yaml` as the machine-readable execution authority for this fixture.
 
 ## Wave 1: Smoke Lane
 

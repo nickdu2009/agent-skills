@@ -41,7 +41,7 @@ Every execution update should provide:
 
 ### `control_pr`
 
-- string PR id from `phaseN-plan.yaml`
+- string PR id from `plan.yaml`
 
 ### `contract_status`
 

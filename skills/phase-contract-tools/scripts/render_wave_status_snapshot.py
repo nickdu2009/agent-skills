@@ -25,7 +25,7 @@ VALID_EXECUTION_MODES = {"serial", "parallel"}
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Render a wave status snapshot from a phase execution schema.")
-    parser.add_argument("--plan", required=True, help="Path to docs/phaseN-plan.yaml")
+    parser.add_argument("--plan", required=True, help="Path to a phase plan file such as docs/phases/phase13/plan.yaml")
     parser.add_argument("--wave", required=True, type=int, help="Wave id")
     parser.add_argument("--format", choices=("yaml", "json"), default="yaml", help="Output format")
     parser.add_argument("--execution-mode", choices=sorted(VALID_EXECUTION_MODES), default="serial", help="Execution mode override")

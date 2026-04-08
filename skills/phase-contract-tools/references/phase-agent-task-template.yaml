@@ -8,9 +8,9 @@
     - "P13-09"
   goal: "Implement one bounded piece of accepted behavior."
   read_first:
-    - path: "docs/phaseN-roadmap.md"
+    - path: "phases/phaseN/roadmap.md"
       section: "M3 section"
-    - path: "docs/phaseN-wave-guide.md"
+    - path: "phases/phaseN/wave-guide.md"
       section: "Wave 3 section"
   start_condition:
     gate: "after_prs"

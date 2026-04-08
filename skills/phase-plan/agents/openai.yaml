@@ -1,4 +1,4 @@
 interface:
   display_name: "Phase Plan"
   short_description: "Design structured implementation plans that break large tasks into sequenced waves of parallel work"
-  default_prompt: "Use $phase-plan to design a structured implementation plan: freeze the roadmap, encode work in phaseN-plan.yaml, build the wave guide and execution index, and validate through $phase-contract-tools. Optionally pass the result through $phase-plan-review before execution. Use when a large task needs to be broken into sequenced waves of parallel work with PR sequencing and wave ownership."
+  default_prompt: "Use $phase-plan to design a structured implementation plan: freeze the roadmap, encode work in plan.yaml, build the wave guide and execution index, and validate through $phase-contract-tools. Optionally pass the result through $phase-plan-review before execution. Use when a large task needs to be broken into sequenced waves of parallel work with PR sequencing and wave ownership."

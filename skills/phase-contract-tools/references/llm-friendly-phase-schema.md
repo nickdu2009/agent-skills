@@ -227,9 +227,9 @@ Good:
 
 ```yaml
 read_first:
-  - path: "docs/phaseN-roadmap.md"
+  - path: "phases/phaseN/roadmap.md"
     section: "M3 section"
-  - path: "docs/phaseN-wave-guide.md"
+  - path: "phases/phaseN/wave-guide.md"
     section: "Wave 3 section"
 ```
 
@@ -237,7 +237,7 @@ Bad:
 
 ```yaml
 read_first:
-  - path: "docs/phaseN-random-note.md"
+  - path: "phases/phaseN/random-note.md"
   - "anything relevant"
 ```
 
@@ -259,7 +259,7 @@ Good:
     gate: "after_waves"
     refs: [1]
   read_first:
-    - path: "docs/phaseN-roadmap.md"
+    - path: "phases/phaseN/roadmap.md"
       section: "M1 section"
   scope:
     allow:

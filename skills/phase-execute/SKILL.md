@@ -1,6 +1,6 @@
 ---
 name: phase-execute
-description: Execute an accepted phase wave by consuming phaseN-plan.yaml, resolving wave gates, launching serial or parallel lanes, integrating results, and reporting wave status. Use after phase-plan has produced the execution docs and the agent is ready to implement a specific wave.
+description: Execute an accepted phase wave by consuming plan.yaml, resolving wave gates, launching serial or parallel lanes, integrating results, and reporting wave status. Use after phase-plan has produced the execution docs and the agent is ready to implement a specific wave.
 ---
 
 # Phase Execute
@@ -9,10 +9,12 @@ Execute the phase from the schema, not from memory and not from legacy planning 
 
 The accepted execution doc set is:
 
-- `docs/phaseN-execution-index.md`
-- `docs/phaseN-plan.yaml`
-- `docs/phaseN-wave-guide.md`
-- `docs/phaseN-roadmap.md`
+- `$PHASE_DOCS_ROOT/phaseN/execution-index.md`
+- `$PHASE_DOCS_ROOT/phaseN/plan.yaml`
+- `$PHASE_DOCS_ROOT/phaseN/wave-guide.md`
+- `$PHASE_DOCS_ROOT/phaseN/roadmap.md`
+
+Unless the user or environment says otherwise, treat `PHASE_DOCS_ROOT` as the phase-doc root and default it to `docs/phases`.
 
 Do not require or recreate:
 
@@ -56,17 +58,17 @@ Read these references when needed:
 
 Use these shared contract scripts:
 
-- `uv run ../phase-contract-tools/scripts/preflight_phase_execution.py --plan /path/to/docs/phaseN-plan.yaml --docs-dir /path/to/repo/docs --phase phaseN --wave 1`
-- `uv run ../phase-contract-tools/scripts/list_wave_lanes.py --plan /path/to/docs/phaseN-plan.yaml --wave 1 --json`
-- `uv run ../phase-contract-tools/scripts/render_lane_handoff.py --plan /path/to/docs/phaseN-plan.yaml --wave 1 --lane backend`
-- `uv run ../phase-contract-tools/scripts/verify_lane_handoff.py --plan /path/to/docs/phaseN-plan.yaml --handoff /tmp/wave1-backend.md --strict`
-- `uv run ../phase-contract-tools/scripts/render_wave_status_snapshot.py --plan /path/to/docs/phaseN-plan.yaml --wave 1`
+- `uv run ../phase-contract-tools/scripts/preflight_phase_execution.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --phase-root /path/to/repo/docs/phases --phase phaseN --wave 1`
+- `uv run ../phase-contract-tools/scripts/list_wave_lanes.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --wave 1 --json`
+- `uv run ../phase-contract-tools/scripts/render_lane_handoff.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --wave 1 --lane backend`
+- `uv run ../phase-contract-tools/scripts/verify_lane_handoff.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --handoff /tmp/wave1-backend.md --strict`
+- `uv run ../phase-contract-tools/scripts/render_wave_status_snapshot.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --wave 1`
 - `uv run ../phase-contract-tools/scripts/validate_handoff_manifest.py --handoff /tmp/wave1-backend.md` (validate a handoff manifest before trusting lane output)
 - `uv run ../phase-contract-tools/scripts/validate_wave_status_snapshot.py --snapshot /tmp/wave1-status.yaml` (validate a status snapshot before reporting wave state)
 
 ## Core Principles
 
-1. `phaseN-plan.yaml` is the execution authority.
+1. `plan.yaml` is the execution authority.
 2. State lives in the environment, not in the conversation.
 3. The primary agent is the integrator unless the wave is strictly serial.
 4. Lane instructions must be passed to subagents unchanged.
@@ -91,7 +93,7 @@ Use this first-action sequence before touching implementation:
 
 1. resolve and, if needed, confirm the phase id, wave id, and whether parallel execution is authorized
 2. from the directory that contains this `SKILL.md`, run preflight via the sibling contract bundle:
-   `uv run ../phase-contract-tools/scripts/preflight_phase_execution.py --plan /path/to/docs/phaseN-plan.yaml --docs-dir /path/to/repo/docs --phase phaseN --wave <wave_id>`
+   `uv run ../phase-contract-tools/scripts/preflight_phase_execution.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --phase-root /path/to/repo/docs/phases --phase phaseN --wave <wave_id>`
 3. read `execution-index`, then `plan.yaml`, then `wave-guide`, then `roadmap`
 4. resolve any `required_contracts`, owned subset boundaries, and blocking versus accepted contract gaps for the selected wave
 5. emit one preflight status line that states the resolved wave, `control_pr`, serial versus parallel decision, and contract readiness
@@ -109,17 +111,17 @@ If the phase is a resume, rebuild state from the repository before trusting any 
 
 Read phase documents in this order:
 
-1. `phaseN-execution-index.md`
-2. `phaseN-plan.yaml`
-3. `phaseN-wave-guide.md`
-4. `phaseN-roadmap.md`
+1. `execution-index.md`
+2. `plan.yaml`
+3. `wave-guide.md`
+4. `roadmap.md`
 
 Authority order for execution fields:
 
-1. `phaseN-plan.yaml`
-2. `phaseN-execution-index.md`
-3. `phaseN-wave-guide.md`
-4. `phaseN-roadmap.md`
+1. `plan.yaml`
+2. `execution-index.md`
+3. `wave-guide.md`
+4. `roadmap.md`
 
 If Markdown disagrees with YAML on execution fields, YAML wins.
 
@@ -159,7 +161,7 @@ Consume structured execution fields through the shared contract references:
 Do not reinterpret those contract rules locally.
 
 Manual preflight fallback is an execution transport fallback, not a contract fallback.
-All semantics still come from `phaseN-plan.yaml` and the shared contract references.
+All semantics still come from `plan.yaml` and the shared contract references.
 
 Do not call any non-core contract helper path during execution.
 
@@ -167,7 +169,7 @@ Do not call any non-core contract helper path during execution.
 
 When starting a wave (cold start or resume):
 - read: wave-execution-patterns.md, external-contract-authority.md, schema-consumption-rules.md, contract-alignment-checklist.md
-- run: `uv run ../phase-contract-tools/scripts/preflight_phase_execution.py` with the same `--plan`, `--docs-dir`, `--phase`, and `--wave` arguments as in Quickstart (if unavailable, use the manual checklist in Before Execution)
+- run: `uv run ../phase-contract-tools/scripts/preflight_phase_execution.py` with the same `--plan`, `--phase-root`, `--phase`, and `--wave` arguments as in Quickstart (if unavailable, use the manual checklist in Before Execution)
 
 When launching parallel lanes:
 - read: integrator-decision-rules.md, llm-following-performance.md, handoff-manifest.schema.md

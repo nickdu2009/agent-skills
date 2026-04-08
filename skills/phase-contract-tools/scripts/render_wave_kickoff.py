@@ -20,7 +20,7 @@ from _shared_phase_tools import contract_gaps_for_ids, contract_map, collect_req
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Render a wave kickoff summary from a phase execution schema.")
-    parser.add_argument("--plan", required=True, help="Path to docs/phaseN-plan.yaml")
+    parser.add_argument("--plan", required=True, help="Path to a phase plan file such as docs/phases/phase13/plan.yaml")
     parser.add_argument("--wave", required=True, type=int, help="Wave id to render")
     return parser.parse_args()
 

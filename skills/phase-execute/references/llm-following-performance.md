@@ -8,7 +8,7 @@ Execution discipline is part of correctness, not style.
 
 State is in the environment, not in the prompt.
 
-- recompute progress from `phaseN-plan.yaml`, git state, and repository artifacts
+- recompute progress from `plan.yaml`, git state, and repository artifacts
 - do not rely on prior chat turns to decide what is complete
 - make every wave resumable from objective state
 

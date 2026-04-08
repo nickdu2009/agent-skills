@@ -21,7 +21,7 @@ from _shared_phase_tools import find_lane, find_wave, load_plan
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Verify an immutable lane handoff artifact.")
-    parser.add_argument("--plan", required=True, help="Path to docs/phaseN-plan.yaml")
+    parser.add_argument("--plan", required=True, help="Path to a phase plan file such as docs/phases/phase13/plan.yaml")
     parser.add_argument("--handoff", help="Path to the rendered handoff artifact. Defaults to stdin.")
     parser.add_argument("--strict", action="store_true", help="Re-render the lane body and compare it to the handoff body")
     parser.add_argument(

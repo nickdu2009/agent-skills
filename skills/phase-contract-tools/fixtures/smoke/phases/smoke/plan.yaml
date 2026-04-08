@@ -71,12 +71,12 @@ team:
     label: "Agent A"
     focus: "Owns the only smoke lane."
     owns:
-      - "docs/smoke-*"
+      - "phases/smoke/*"
     avoid:
       - "unrelated repository files"
 
 hotspots:
-  - path: "docs/smoke-*"
+  - path: "phases/smoke/*"
     reason: "Smoke fixture stays self-contained."
 
 prs:
@@ -89,21 +89,21 @@ prs:
     depends_on: []
     goal: "Keep the shared helper smoke fixture valid."
     read_first:
-      - path: "docs/smoke-roadmap.md"
+      - path: "phases/smoke/roadmap.md"
         section: "Goals"
-      - path: "docs/smoke-wave-guide.md"
+      - path: "phases/smoke/wave-guide.md"
         section: "Wave 1: Smoke Lane"
     start_condition:
       gate: "immediate"
       refs: []
     scope:
       allow:
-        - "docs/smoke-*"
+        - "phases/smoke/*"
       deny:
         - "repository-wide refactors"
     files:
-      - "docs/smoke-plan.yaml"
-      - "docs/smoke-wave-guide.md"
+      - "phases/smoke/plan.yaml"
+      - "phases/smoke/wave-guide.md"
     expected_changes:
       - "Deterministic fixture docs and renderer outputs remain in sync."
     guardrails:
@@ -148,7 +148,7 @@ waves:
         owner: "agent_a"
         kind: "review"
         read_first:
-          - path: "docs/smoke-execution-index.md"
+          - path: "phases/smoke/execution-index.md"
         goal: "Confirm smoke fixture alignment."
         start_condition:
           gate: "after_prs"
@@ -157,7 +157,7 @@ waves:
           note: "starts after smoke PR lands"
         scope:
           allow:
-            - "docs/smoke-*"
+            - "phases/smoke/*"
           deny:
             - "repository-wide changes"
         guardrails:

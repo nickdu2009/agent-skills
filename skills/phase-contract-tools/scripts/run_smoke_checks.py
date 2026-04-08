@@ -31,21 +31,23 @@ def assert_match(label: str, actual: str, expected_path: Path) -> None:
 
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
-    fixture_docs = root / "fixtures" / "smoke" / "docs"
+    fixture_phase_root = root / "fixtures" / "smoke" / "phases"
+    fixture_phase_dir = fixture_phase_root / "smoke"
+    fixture_plan = fixture_phase_dir / "plan.yaml"
     golden_dir = root / "fixtures" / "smoke" / "golden"
 
     try:
-        run(["uv", "run", "scripts/validate_phase_execution_schema.py", "--plan", str(fixture_docs / "smoke-plan.yaml")], root)
-        run(["uv", "run", "scripts/validate_phase_doc_set.py", "--docs-dir", str(fixture_docs), "--phase", "smoke"], root)
+        run(["uv", "run", "scripts/validate_phase_execution_schema.py", "--plan", str(fixture_plan)], root)
+        run(["uv", "run", "scripts/validate_phase_doc_set.py", "--phase-root", str(fixture_phase_root), "--phase", "smoke"], root)
         run(
             [
                 "uv",
                 "run",
                 "scripts/preflight_phase_execution.py",
                 "--plan",
-                str(fixture_docs / "smoke-plan.yaml"),
-                "--docs-dir",
-                str(fixture_docs),
+                str(fixture_plan),
+                "--phase-root",
+                str(fixture_phase_root),
                 "--phase",
                 "smoke",
                 "--wave",
@@ -55,19 +57,19 @@ def main() -> int:
         )
 
         prompt = run(
-            ["uv", "run", "scripts/render_agent_prompt.py", "--plan", str(fixture_docs / "smoke-plan.yaml"), "--pr", "P99-01"],
+            ["uv", "run", "scripts/render_agent_prompt.py", "--plan", str(fixture_plan), "--pr", "P99-01"],
             root,
         )
         assert_match("render_agent_prompt", prompt, golden_dir / "render_agent_prompt_P99-01.txt")
 
         kickoff = run(
-            ["uv", "run", "scripts/render_wave_kickoff.py", "--plan", str(fixture_docs / "smoke-plan.yaml"), "--wave", "1"],
+            ["uv", "run", "scripts/render_wave_kickoff.py", "--plan", str(fixture_plan), "--wave", "1"],
             root,
         )
         assert_match("render_wave_kickoff", kickoff, golden_dir / "render_wave_kickoff_wave1.txt")
 
         snapshot = run(
-            ["uv", "run", "scripts/render_wave_status_snapshot.py", "--plan", str(fixture_docs / "smoke-plan.yaml"), "--wave", "1"],
+            ["uv", "run", "scripts/render_wave_status_snapshot.py", "--plan", str(fixture_plan), "--wave", "1"],
             root,
         )
         assert_match("render_wave_status_snapshot", snapshot, golden_dir / "render_wave_status_snapshot_wave1.yaml")
@@ -85,7 +87,7 @@ def main() -> int:
                     "run",
                     "scripts/render_lane_handoff.py",
                     "--plan",
-                    str(fixture_docs / "smoke-plan.yaml"),
+                    str(fixture_plan),
                     "--wave",
                     "1",
                     "--lane",
@@ -102,7 +104,7 @@ def main() -> int:
                     "run",
                     "scripts/verify_lane_handoff.py",
                     "--plan",
-                    str(fixture_docs / "smoke-plan.yaml"),
+                    str(fixture_plan),
                     "--handoff",
                     str(handoff_path),
                     "--strict",
@@ -113,7 +115,7 @@ def main() -> int:
             snapshot_path.write_text(snapshot, encoding="utf-8")
             run(["uv", "run", "scripts/validate_wave_status_snapshot.py", "--snapshot", str(snapshot_path)], root)
 
-            invalid_plan_text = (fixture_docs / "smoke-plan.yaml").read_text(encoding="utf-8").replace(
+            invalid_plan_text = fixture_plan.read_text(encoding="utf-8").replace(
                 "    contract_guardrails:\n      - \"Do not substitute the legacy smoke route shape.\"\n      - \"Do not reuse legacy DTO names unless they match the owned spec.\"\n",
                 "",
             )
@@ -128,7 +130,7 @@ def main() -> int:
             if proc.returncode == 0 or "contract_guardrails" not in (proc.stdout + proc.stderr):
                 raise AssertionError("validate_phase_execution_schema should reject required_contracts without contract_guardrails")
 
-            invalid_done_when_text = (fixture_docs / "smoke-plan.yaml").read_text(encoding="utf-8").replace(
+            invalid_done_when_text = fixture_plan.read_text(encoding="utf-8").replace(
                 '      - "The smoke fixture remains schema-valid."\n',
                 '      - "The smoke fixture remains schema-valid."\n      - "adapter unavailable is acceptable."\n',
             )
@@ -143,7 +145,7 @@ def main() -> int:
             if proc.returncode == 0 or "adapter unavailable" not in (proc.stdout + proc.stderr):
                 raise AssertionError("validate_phase_execution_schema should reject invalid completion phrases like adapter unavailable")
 
-            missing_external_contract_text = (fixture_docs / "smoke-plan.yaml").read_text(encoding="utf-8").replace(
+            missing_external_contract_text = fixture_plan.read_text(encoding="utf-8").replace(
                 'external_contracts:\n  - id: "contract_smoke_api"\n    path: "specs/smoke-api.yaml"\n    kind: "openapi"\n    authority: "external_contract"\n    owned_scope:\n      mode: "subset"\n      include:\n        - "paths./smoke"\n        - "components.schemas.SmokeResponse"\n      exclude:\n        - "paths owned by upstream fixtures"\n\n',
                 "",
             )

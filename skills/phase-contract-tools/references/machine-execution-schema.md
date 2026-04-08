@@ -1,10 +1,10 @@
 # Machine Execution Schema
 
-Use this reference when you need the schema contract for `docs/phaseN-plan.yaml`.
+Use this reference when you need the schema contract for `$PHASE_DOCS_ROOT/phaseN/plan.yaml`.
 
 ## Purpose
 
-`phaseN-plan.yaml` is the execution authority for a phase.
+`plan.yaml` is the execution authority for a phase.
 
 It should contain the machine-readable facts that agents need in order to execute work with minimal inference:
 
@@ -23,16 +23,16 @@ In the strict model, execution accuracy wins over prose flexibility:
 
 Markdown docs exist around the schema, not above it.
 
-When a phase depends on a public API, webhook, or user-named spec, `phaseN-plan.yaml` must also carry the external contract authority metadata needed to keep execution aligned with that spec.
+When a phase depends on a public API, webhook, or user-named spec, `plan.yaml` must also carry the external contract authority metadata needed to keep execution aligned with that spec.
 
 ## Authority Model
 
 Use this order:
 
-1. `phaseN-plan.yaml` owns execution fields
-2. `phaseN-wave-guide.md` owns human wave coordination
-3. `phaseN-roadmap.md` owns milestone narrative and baseline
-4. `phaseN-execution-index.md` owns reading order and authority explanation
+1. `plan.yaml` owns execution fields
+2. `wave-guide.md` owns human wave coordination
+3. `roadmap.md` owns milestone narrative and baseline
+4. `execution-index.md` owns reading order and authority explanation
 
 If markdown and YAML disagree on task ownership, refs, validation, or wave membership, repair the docs and keep YAML as the source of execution truth.
 
@@ -40,10 +40,10 @@ If markdown and YAML disagree on task ownership, refs, validation, or wave membe
 
 The standard phase set is:
 
-1. `phaseN-roadmap.md`
-2. `phaseN-plan.yaml`
-3. `phaseN-wave-guide.md`
-4. `phaseN-execution-index.md`
+1. `$PHASE_DOCS_ROOT/phaseN/roadmap.md`
+2. `$PHASE_DOCS_ROOT/phaseN/plan.yaml`
+3. `$PHASE_DOCS_ROOT/phaseN/wave-guide.md`
+4. `$PHASE_DOCS_ROOT/phaseN/execution-index.md`
 
 Do not add extra `phaseN-*` planning docs in the strict model.
 
@@ -113,7 +113,7 @@ Each `prs[]` entry should include:
   depends_on: ["P13-09"]
   goal: "Implement explicit config loading."
   read_first:
-    - path: "docs/phaseN-roadmap.md"
+    - path: "phases/phaseN/roadmap.md"
       section: "M3 section"
   start_condition:
     gate: "after_prs"

@@ -1,6 +1,6 @@
 ---
 name: phase-plan
-description: Design or update a structured implementation plan that breaks a large task into sequenced waves of parallel work. Use when the agent needs to create phaseN-plan.yaml and supporting docs for multi-wave execution, or convert a roadmap into an executable plan with PR sequencing and wave ownership.
+description: Design or update a structured implementation plan that breaks a large task into sequenced waves of parallel work. Use when the agent needs to create plan.yaml and supporting docs for multi-wave execution, or convert a roadmap into an executable plan with PR sequencing and wave ownership.
 ---
 
 # Phase Plan
@@ -9,13 +9,15 @@ Design the phase as an execution system, not as a pile of planning prose.
 
 The primary output is a structured execution schema:
 
-- `docs/phaseN-plan.yaml`
+- `$PHASE_DOCS_ROOT/phaseN/plan.yaml`
 
 Markdown exists to help humans coordinate around that schema:
 
-- `docs/phaseN-roadmap.md`
-- `docs/phaseN-wave-guide.md`
-- `docs/phaseN-execution-index.md`
+- `$PHASE_DOCS_ROOT/phaseN/roadmap.md`
+- `$PHASE_DOCS_ROOT/phaseN/wave-guide.md`
+- `$PHASE_DOCS_ROOT/phaseN/execution-index.md`
+
+Unless the user or environment says otherwise, treat `PHASE_DOCS_ROOT` as the phase-doc root and default it to `docs/phases`.
 
 ## Skill Assets
 
@@ -43,10 +45,10 @@ Read these shared contract references when needed:
 
 Use these shared contract scripts:
 
-- `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/docs/phaseN-plan.yaml`
-- `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --docs-dir /path/to/repo/docs --phase phaseN`
-- `uv run ../phase-contract-tools/scripts/render_agent_prompt.py --plan /path/to/docs/phaseN-plan.yaml --pr P13-10`
-- `uv run ../phase-contract-tools/scripts/render_wave_kickoff.py --plan /path/to/docs/phaseN-plan.yaml --wave 3`
+- `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml`
+- `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --phase-root /path/to/repo/docs/phases --phase phaseN`
+- `uv run ../phase-contract-tools/scripts/render_agent_prompt.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --pr P13-10`
+- `uv run ../phase-contract-tools/scripts/render_wave_kickoff.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --wave 3`
 
 ## Core Principles
 
@@ -62,10 +64,10 @@ Use these shared contract scripts:
 
 Unless the user explicitly asks for a narrower subset, produce exactly this default phase set:
 
-1. `docs/phaseN-roadmap.md`
-2. `docs/phaseN-plan.yaml`
-3. `docs/phaseN-wave-guide.md`
-4. `docs/phaseN-execution-index.md`
+1. `$PHASE_DOCS_ROOT/phaseN/roadmap.md`
+2. `$PHASE_DOCS_ROOT/phaseN/plan.yaml`
+3. `$PHASE_DOCS_ROOT/phaseN/wave-guide.md`
+4. `$PHASE_DOCS_ROOT/phaseN/execution-index.md`
 
 Do not create these by default:
 
@@ -89,7 +91,7 @@ In partial-output mode:
 
 ## File Responsibilities
 
-### `phaseN-roadmap.md`
+### `$PHASE_DOCS_ROOT/phaseN/roadmap.md`
 
 Use it for:
 
@@ -110,7 +112,7 @@ Do not use it for:
 - prompt text
 - duplicate validation command blocks that already live in YAML
 
-### `phaseN-plan.yaml`
+### `$PHASE_DOCS_ROOT/phaseN/plan.yaml`
 
 This is the only execution authority.
 
@@ -128,7 +130,7 @@ It owns:
 
 If Markdown disagrees with YAML on execution fields, YAML wins.
 
-### `phaseN-wave-guide.md`
+### `$PHASE_DOCS_ROOT/phaseN/wave-guide.md`
 
 Use it for:
 
@@ -137,11 +139,11 @@ Use it for:
 - merge windows
 - wave constraints
 - integrator checklists
-- how to resolve work from `phaseN-plan.yaml`
+- how to resolve work from `plan.yaml`
 
 Do not restate full PR payloads here.
 
-### `phaseN-execution-index.md`
+### `$PHASE_DOCS_ROOT/phaseN/execution-index.md`
 
 Use it for:
 
@@ -176,7 +178,7 @@ If code and older planning docs disagree, plan from current code and record the 
 - schema and doc-set validation helpers
 - cutover rules for canonical script entrypoints
 
-When authoring or repairing `phaseN-plan.yaml`, treat these as the contract authorities:
+When authoring or repairing `plan.yaml`, treat these as the contract authorities:
 
 - `../phase-contract-tools/references/contract-authority-and-migration.md`
 - `../phase-contract-tools/references/external-contract-authority.md`
@@ -215,12 +217,12 @@ Follow this order:
 1. Read the current code baseline and accepted planning inputs.
 2. Identify any external contract authority named by the user, repo inputs, or accepted design docs.
 3. Freeze the authority matrix: execution authority, external contract authority, owned subset, and excluded subset.
-4. Freeze scope, non-goals, and milestones in `phaseN-roadmap.md`.
-5. Encode execution structure and any contract-bound fields in `phaseN-plan.yaml`.
-6. Build the human coordination view in `phaseN-wave-guide.md`.
-7. Build the reading order and authority view in `phaseN-execution-index.md`.
-8. Validate the schema: `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/docs/phaseN-plan.yaml`.
-9. Validate the doc set: `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --docs-dir /path/to/repo/docs --phase phaseN`.
+4. Freeze scope, non-goals, and milestones in `$PHASE_DOCS_ROOT/phaseN/roadmap.md`.
+5. Encode execution structure and any contract-bound fields in `$PHASE_DOCS_ROOT/phaseN/plan.yaml`.
+6. Build the human coordination view in `$PHASE_DOCS_ROOT/phaseN/wave-guide.md`.
+7. Build the reading order and authority view in `$PHASE_DOCS_ROOT/phaseN/execution-index.md`.
+8. Validate the schema: `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml`.
+9. Validate the doc set: `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --phase-root /path/to/repo/docs/phases --phase phaseN`.
 10. Derive prompts or kickoff text from the schema only through `uv run ../phase-contract-tools/scripts/render_agent_prompt.py` or `uv run ../phase-contract-tools/scripts/render_wave_kickoff.py` when needed (see **Use these shared contract scripts** for placeholders).
 
 Do not start by drafting prompt text.
@@ -230,17 +232,17 @@ Do not start by drafting prompt text.
 Run both validators for a non-trivial full-doc-set phase.
 
 For partial-output mode:
-- run schema validation if `docs/phaseN-plan.yaml` was created or changed
+- run schema validation if `$PHASE_DOCS_ROOT/phaseN/plan.yaml` was created or changed
 - run doc-set validation only when the full strict four-file set is being delivered
 - if a validator is skipped, state why
 
 Schema validation:
 
-- `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/docs/phaseN-plan.yaml`
+- `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml`
 
 Doc-set validation:
 
-- `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --docs-dir /path/to/repo/docs --phase phaseN`
+- `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --phase-root /path/to/repo/docs/phases --phase phaseN`
 
 Validator output must be LLM-actionable:
 

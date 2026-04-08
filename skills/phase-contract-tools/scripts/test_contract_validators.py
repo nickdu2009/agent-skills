@@ -73,6 +73,10 @@ class TestInferPhase:
         data: dict = {}
         assert infer_phase(Path("docs/phase13-plan.yaml"), data) == "phase13"
 
+    def test_from_new_phase_dir(self):
+        data: dict = {}
+        assert infer_phase(Path("docs/phases/phase13/plan.yaml"), data) == "phase13"
+
     def test_from_stem_no_plan_suffix(self):
         data: dict = {}
         assert infer_phase(Path("docs/phase13.yaml"), data) == "phase13"
@@ -199,13 +203,13 @@ class TestSchemaValidationNegative:
 # validate_phase_doc_set — negative cases
 # ---------------------------------------------------------------------------
 
-def _run_doc_set_validator(docs_dir: Path, phase: str) -> tuple[int, str]:
+def _run_doc_set_validator(phase_root: Path, phase: str) -> tuple[int, str]:
     """Run the doc-set validator and return (returncode, combined output)."""
     import subprocess
     scripts_dir = Path(__file__).resolve().parent
     proc = subprocess.run(
         ["uv", "run", "scripts/validate_phase_doc_set.py",
-         "--docs-dir", str(docs_dir), "--phase", phase],
+         "--phase-root", str(phase_root), "--phase", phase],
         cwd=scripts_dir.parent,
         capture_output=True,
         text=True,
@@ -216,24 +220,24 @@ def _run_doc_set_validator(docs_dir: Path, phase: str) -> tuple[int, str]:
 
 class TestDocSetValidationNegative:
     def test_missing_required_doc(self, tmp_path: Path):
-        docs = tmp_path / "docs"
-        docs.mkdir()
-        (docs / "phase1-plan.yaml").write_text("schema_version: '2.0'")
-        rc, out = _run_doc_set_validator(docs, "phase1")
+        phase_root = tmp_path / "phases"
+        phase_dir = phase_root / "phase1"
+        phase_dir.mkdir(parents=True)
+        (phase_dir / "plan.yaml").write_text("schema_version: '2.0'")
+        rc, out = _run_doc_set_validator(phase_root, "phase1")
         assert rc != 0
         assert "missing" in out.lower()
 
     def test_extra_phase_file(self, tmp_path: Path):
-        docs = tmp_path / "docs"
-        docs.mkdir()
-        for name in ("phase1-roadmap.md", "phase1-plan.yaml",
-                      "phase1-wave-guide.md", "phase1-execution-index.md",
-                      "phase1-pr-delivery-plan.md"):
-            (docs / name).write_text("placeholder\n")
-        (docs / "phase1-plan.yaml").write_text(yaml.dump({
+        phase_root = tmp_path / "phases"
+        phase_dir = phase_root / "phase1"
+        phase_dir.mkdir(parents=True)
+        for name in ("roadmap.md", "plan.yaml", "wave-guide.md", "execution-index.md", "pr-delivery-plan.md"):
+            (phase_dir / name).write_text("placeholder\n")
+        (phase_dir / "plan.yaml").write_text(yaml.dump({
             "schema_version": "2.0", "prs": [], "waves": [],
         }))
-        rc, out = _run_doc_set_validator(docs, "phase1")
+        rc, out = _run_doc_set_validator(phase_root, "phase1")
         assert rc != 0
         assert "extra" in out.lower() or "pr-delivery-plan" in out
 
@@ -245,12 +249,16 @@ class TestDocSetValidationNegative:
 class TestSmokeFixture:
     @pytest.fixture
     def fixture_dir(self) -> Path:
-        return Path(__file__).resolve().parents[1] / "fixtures" / "smoke" / "docs"
+        return Path(__file__).resolve().parents[1] / "fixtures" / "smoke" / "phases" / "smoke"
+
+    @pytest.fixture
+    def fixture_phase_root(self, fixture_dir: Path) -> Path:
+        return fixture_dir.parent
 
     def test_schema_validator_passes(self, fixture_dir: Path):
-        rc, out = _run_validator(fixture_dir / "smoke-plan.yaml")
+        rc, out = _run_validator(fixture_dir / "plan.yaml")
         assert rc == 0, f"Schema validation failed:\n{out}"
 
-    def test_doc_set_validator_passes(self, fixture_dir: Path):
-        rc, out = _run_doc_set_validator(fixture_dir, "smoke")
+    def test_doc_set_validator_passes(self, fixture_phase_root: Path):
+        rc, out = _run_doc_set_validator(fixture_phase_root, "smoke")
         assert rc == 0, f"Doc-set validation failed:\n{out}"

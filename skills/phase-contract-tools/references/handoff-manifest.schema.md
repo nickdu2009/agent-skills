@@ -1,6 +1,6 @@
 # Handoff Manifest Schema
 
-Use this reference for immutable lane handoff artifacts derived from `phaseN-plan.yaml`.
+Use this reference for immutable lane handoff artifacts derived from `plan.yaml`.
 
 Machine validation lives in `handoff-manifest.schema.json`.
 

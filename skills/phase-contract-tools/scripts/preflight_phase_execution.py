@@ -14,13 +14,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-from _shared_phase_tools import contract_gaps_for_ids, contract_map, collect_required_contracts_for_wave, find_wave, infer_phase, load_plan
+from _shared_phase_tools import contract_gaps_for_ids, contract_map, collect_required_contracts_for_wave, find_wave, infer_phase, load_plan, resolve_phase_root
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run execution preflight checks for a schema-first phase.")
-    parser.add_argument("--plan", required=True, help="Path to docs/phaseN-plan.yaml")
-    parser.add_argument("--docs-dir", required=True, help="Directory containing the strict four-file phase doc set")
+    parser.add_argument("--plan", required=True, help="Path to a phase plan file such as docs/phases/phase13/plan.yaml")
+    parser.add_argument("--phase-root", help="Root directory that contains per-phase doc directories")
     parser.add_argument("--phase", required=True, help="Phase prefix such as phase13")
     parser.add_argument("--wave", type=int, help="Optional wave id to validate for execution readiness")
     parser.add_argument(
@@ -54,7 +54,7 @@ def print_stream(prefix: str, text: str, stream) -> None:
 def main() -> int:
     args = parse_args()
     plan_path = Path(args.plan).expanduser().resolve()
-    docs_dir = Path(args.docs_dir).expanduser().resolve()
+    phase_root = resolve_phase_root(Path(args.phase_root) if args.phase_root else None)
     scripts_dir = (
         Path(args.contract_scripts).expanduser().resolve()
         if args.contract_scripts
@@ -81,8 +81,8 @@ def main() -> int:
 
     doc_rc, doc_out, doc_err = run_script(
         validate_doc_set,
-        "--docs-dir",
-        str(docs_dir),
+        "--phase-root",
+        str(phase_root),
         "--phase",
         args.phase,
     )

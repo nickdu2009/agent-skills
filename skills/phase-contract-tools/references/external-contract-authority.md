@@ -4,7 +4,7 @@ Use this reference when a phase touches a public API, webhook, protocol, schema 
 
 ## Core Model
 
-`phaseN-plan.yaml` remains the execution authority inside the repository.
+`plan.yaml` remains the execution authority inside the repository.
 
 External contract authority is separate:
 
@@ -101,7 +101,7 @@ Contract completion means the owned subset remains aligned with the declared ext
 
 Do not:
 
-- treat `phaseN-plan.yaml` as the source of truth for public contract semantics
+- treat `plan.yaml` as the source of truth for public contract semantics
 - reuse legacy DTOs or route shapes when they do not match the declared contract
 - mark `adapter unavailable` as a completion state
 - hide contract gaps inside prose instead of `accepted_contract_gaps`

@@ -17,7 +17,7 @@ from typing import Any
 
 import yaml
 
-from _shared_phase_tools import Issue
+from _shared_phase_tools import Issue, PHASE_FILES, phase_doc_paths, resolve_phase_root
 
 
 PR_ID_RE = re.compile(r"\bP\d+-\d+\b")
@@ -27,7 +27,7 @@ WAVE_SUMMARY_ROW_RE = re.compile(r"^\|\s*Wave (\d+)\s*\|.*\|\s*(P\d+-\d+)\s*\|$"
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Validate a schema-first phase doc set.")
-    parser.add_argument("--docs-dir", required=True, help="Directory containing the phase docs.")
+    parser.add_argument("--phase-root", help="Root directory that contains per-phase doc directories.")
     parser.add_argument("--phase", required=True, help="Phase prefix such as phase13.")
     return parser.parse_args()
 
@@ -74,14 +74,16 @@ def section_text(text: str, heading: str) -> str:
     return match.group(1).strip() if match else ""
 
 
-def validate_doc_set(docs_dir: Path, phase: str) -> tuple[list[Issue], list[Issue]]:
+def validate_doc_set(phase_root: Path, phase: str) -> tuple[list[Issue], list[Issue]]:
     errors: list[Issue] = []
     warnings: list[Issue] = []
 
-    roadmap_path = docs_dir / f"{phase}-roadmap.md"
-    plan_path = docs_dir / f"{phase}-plan.yaml"
-    wave_guide_path = docs_dir / f"{phase}-wave-guide.md"
-    index_path = docs_dir / f"{phase}-execution-index.md"
+    phase_paths = phase_doc_paths(phase_root, phase)
+    phase_path = phase_paths["plan"].parent
+    roadmap_path = phase_paths["roadmap"]
+    plan_path = phase_paths["plan"]
+    wave_guide_path = phase_paths["wave_guide"]
+    index_path = phase_paths["execution_index"]
 
     required = [roadmap_path, plan_path, wave_guide_path, index_path]
     allowed_names = {path.name for path in required}
@@ -91,7 +93,7 @@ def validate_doc_set(docs_dir: Path, phase: str) -> tuple[list[Issue], list[Issu
     if errors:
         return errors, warnings
 
-    phase_files = {path.name for path in docs_dir.glob(f"{phase}-*") if path.is_file()}
+    phase_files = {path.name for path in phase_path.iterdir() if path.is_file()}
     extra_phase_files = sorted(phase_files - allowed_names)
     if extra_phase_files:
         add_issue(
@@ -99,7 +101,7 @@ def validate_doc_set(docs_dir: Path, phase: str) -> tuple[list[Issue], list[Issu
             "doc-set.extra-files",
             f"found extra phase docs outside the strict four-file model: {extra_phase_files}.",
             expected=f"only {sorted(allowed_names)}",
-            location=str(docs_dir),
+            location=str(phase_path),
             repair="delete the extra phase files or fold their content into roadmap, plan.yaml, wave-guide, or execution-index",
         )
 
@@ -218,6 +220,11 @@ def validate_doc_set(docs_dir: Path, phase: str) -> tuple[list[Issue], list[Issu
         )
 
     deprecated_names = (
+        "first-wave-pr-breakdown.md",
+        "parallel-matrix.md",
+        "pr-delivery-plan.md",
+        "pr-parallelization-plan.md",
+        "pr-plan.md",
         f"{phase}-first-wave-pr-breakdown.md",
         f"{phase}-parallel-matrix.md",
         f"{phase}-pr-delivery-plan.md",
@@ -316,16 +323,16 @@ def validate_doc_set(docs_dir: Path, phase: str) -> tuple[list[Issue], list[Issu
 
 def main() -> int:
     args = parse_args()
-    docs_dir = Path(args.docs_dir).expanduser().resolve()
+    phase_root = resolve_phase_root(Path(args.phase_root) if args.phase_root else None)
     phase = normalize_phase(args.phase)
-    if not docs_dir.exists():
-        print(f"ERROR docs-dir: docs directory not found.\nlocation: {docs_dir}")
+    if not phase_root.exists():
+        print(f"ERROR phase-root: phase root directory not found.\nlocation: {phase_root}")
         return 1
 
     try:
-        errors, warnings = validate_doc_set(docs_dir, phase)
+        errors, warnings = validate_doc_set(phase_root, phase)
     except Exception as exc:  # noqa: BLE001
-        print(f"ERROR doc-set: unable to validate doc set: {exc}\nlocation: {docs_dir}")
+        print(f"ERROR doc-set: unable to validate doc set: {exc}\nlocation: {phase_root / phase}")
         return 1
 
     if errors:

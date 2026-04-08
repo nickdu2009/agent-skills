@@ -39,7 +39,7 @@ schema_conventions:
     - "If ref_kind is pr, lane_setup[].ref must match prs[].id."
     - "If ref_kind is role, lane_setup[].ref must match waves[].roles[].id within the same wave."
     - "validation entries are structured mappings with kind profile or command."
-    - "phase-local read_first entries may only reference phaseN-roadmap.md, phaseN-plan.yaml, phaseN-wave-guide.md, or phaseN-execution-index.md."
+    - "phase-local read_first entries may only reference phases/phaseN/roadmap.md, phases/phaseN/plan.yaml, phases/phaseN/wave-guide.md, or phases/phaseN/execution-index.md."
     - "read_first entries are ordered mappings with path and optional section."
     - "execution-critical strings must avoid vague phrases such as as needed, if needed, where appropriate, make sure, and when ready."
     - "start_condition must be a mapping with gate, refs, and optional note."
@@ -109,7 +109,7 @@ prs:
     depends_on: []
     goal: "Freeze the contract before implementation."
     read_first:
-      - path: "docs/phaseN-roadmap.md"
+      - path: "phases/phaseN/roadmap.md"
         section: "M1 section"
     start_condition:
       gate: "immediate"
@@ -120,7 +120,7 @@ prs:
       deny:
         - "pkg/shared/* implementation"
     files:
-      - "docs/phaseN-roadmap.md"
+      - "phases/phaseN/roadmap.md"
     expected_changes:
       - "accepted contract wording"
     guardrails:
@@ -164,8 +164,8 @@ waves:
         owner: "integrator"
         kind: "review"
         read_first:
-          - path: "docs/phaseN-execution-index.md"
-          - path: "docs/phaseN-wave-guide.md"
+          - path: "phases/phaseN/execution-index.md"
+          - path: "phases/phaseN/wave-guide.md"
             section: "Wave 1 section"
         goal: "Keep shared seam review active."
         start_condition:

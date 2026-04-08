@@ -1,6 +1,6 @@
 # Schema Consumption Rules
 
-Use this reference when executing a wave directly from `phaseN-plan.yaml`.
+Use this reference when executing a wave directly from `plan.yaml`.
 
 ## Authority
 

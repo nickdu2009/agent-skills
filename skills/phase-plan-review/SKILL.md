@@ -40,10 +40,12 @@ Read these shared contract references when needed:
 
 Use these shared contract scripts:
 
-- `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/docs/phaseN-plan.yaml`
-- `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --docs-dir /path/to/repo/docs --phase phaseN`
-- `uv run ../phase-contract-tools/scripts/preflight_phase_execution.py --plan /path/to/docs/phaseN-plan.yaml --docs-dir /path/to/repo/docs --phase phaseN --wave <wave-id>` (when a specific wave is under review)
-- `uv run ../phase-contract-tools/scripts/render_agent_prompt.py --plan /path/to/docs/phaseN-plan.yaml --pr <pr-id>` (optional, for prompt readiness testing)
+- `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml`
+- `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --phase-root /path/to/repo/docs/phases --phase phaseN`
+- `uv run ../phase-contract-tools/scripts/preflight_phase_execution.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --phase-root /path/to/repo/docs/phases --phase phaseN --wave <wave-id>` (when a specific wave is under review)
+- `uv run ../phase-contract-tools/scripts/render_agent_prompt.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --pr <pr-id>` (optional, for prompt readiness testing)
+
+Unless the user or environment says otherwise, treat `PHASE_DOCS_ROOT` as the phase-doc root and default it to `docs/phases`.
 
 ## Core Principles
 
@@ -61,12 +63,12 @@ Use these shared contract scripts:
 ### Required
 
 - the phase id (e.g., `phase13`)
-- the docs directory path (e.g., `/path/to/repo/docs`)
+- the phase docs root path (e.g., `/path/to/repo/docs/phases`)
 - the four-file phase doc set must exist:
-  - `docs/phaseN-roadmap.md`
-  - `docs/phaseN-plan.yaml`
-  - `docs/phaseN-wave-guide.md`
-  - `docs/phaseN-execution-index.md`
+  - `$PHASE_DOCS_ROOT/phaseN/roadmap.md`
+  - `$PHASE_DOCS_ROOT/phaseN/plan.yaml`
+  - `$PHASE_DOCS_ROOT/phaseN/wave-guide.md`
+  - `$PHASE_DOCS_ROOT/phaseN/execution-index.md`
 
 If any of the four files is missing, the review FAILS immediately without proceeding to deeper checks.
 
@@ -130,7 +132,7 @@ Skipped in: artifact-only review.
 
 Review whether:
 
-- every goal in `phaseN-roadmap.md` is covered by at least one PR's `goal` or `expected_changes` in `phaseN-plan.yaml`
+- every goal in `roadmap.md` is covered by at least one PR's `goal` or `expected_changes` in `plan.yaml`
 - every PR traces back to at least one stated goal, milestone, or explicit requirement — no orphan PRs
 - key requirements map to roadmap, waves, PR tasks, validation, and done criteria
 - success criteria can be traced to concrete execution work
@@ -239,13 +241,13 @@ Review whether:
 
 - the strict four-file set is present when the plan claims execution readiness
 - partial-output mode is explicitly declared when applicable
-- `phaseN-plan.yaml` remains the execution authority
+- `plan.yaml` remains the execution authority
 - Markdown does not redefine YAML-owned fields
 - structured task payloads are not duplicated across files
-- every PR id in `phaseN-plan.yaml` has a corresponding mention in `phaseN-wave-guide.md` and `phaseN-execution-index.md`
-- every wave in `phaseN-plan.yaml` has a matching heading section in `phaseN-wave-guide.md`
-- the reading order in `phaseN-execution-index.md` lists all four files
-- the authority order in `phaseN-execution-index.md` places `phaseN-plan.yaml` first
+- every PR id in `plan.yaml` has a corresponding mention in `wave-guide.md` and `execution-index.md`
+- every wave in `plan.yaml` has a matching heading section in `wave-guide.md`
+- the reading order in `execution-index.md` lists all four files
+- the authority order in `execution-index.md` places `plan.yaml` first
 
 Validator-covered checks (already handled by `validate_phase_doc_set.py` — do not re-check manually):
 
@@ -262,8 +264,8 @@ Run the validators first. Their output covers structural checks; this dimension 
 
 Validator-covered checks (do not re-check manually — trust the validator output):
 
-- schema validation has run via `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/docs/phaseN-plan.yaml` — this covers: `owner` resolves to `team[].id`, `depends_on` resolves to declared PR, `ref_kind: pr` points to same-wave PR, `ref_kind: role` points to same-wave role, `control_pr` belongs to its wave, `merge_order` covers same PR set as `waves[].prs`, every lane has `start_condition`
-- doc-set validation has run via `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --docs-dir /path/to/repo/docs --phase phaseN` — this covers: deprecated doc name references, extra `phaseN-*` files, `control_pr` consistency across index and plan
+- schema validation has run via `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml` — this covers: `owner` resolves to `team[].id`, `depends_on` resolves to declared PR, `ref_kind: pr` points to same-wave PR, `ref_kind: role` points to same-wave role, `control_pr` belongs to its wave, `merge_order` covers same PR set as `waves[].prs`, every lane has `start_condition`
+- doc-set validation has run via `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --phase-root /path/to/repo/docs/phases --phase phaseN` — this covers: deprecated doc name references, extra phase-local files, `control_pr` consistency across index and plan
 - wave preflight has run when a specific wave is under review
 - any skipped validation is explained with concrete residual risk
 
@@ -308,7 +310,7 @@ Verify that a prompt renderer can produce complete lane instructions from the sc
 
 Optionally, test prompt rendering for a sample PR:
 
-- `uv run ../phase-contract-tools/scripts/render_agent_prompt.py --plan /path/to/docs/phaseN-plan.yaml --pr <first-pr-id>`
+- `uv run ../phase-contract-tools/scripts/render_agent_prompt.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --pr <first-pr-id>`
 
 If the renderer fails, that is a blocking finding.
 

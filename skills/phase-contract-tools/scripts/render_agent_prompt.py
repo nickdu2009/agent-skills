@@ -28,7 +28,7 @@ from _shared_phase_tools import (
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Render a PR or lane prompt from a phase execution schema.")
-    parser.add_argument("--plan", required=True, help="Path to docs/phaseN-plan.yaml")
+    parser.add_argument("--plan", required=True, help="Path to a phase plan file such as docs/phases/phase13/plan.yaml")
     parser.add_argument("--pr", help="Render the prompt for one PR id")
     parser.add_argument("--wave", type=int, help="Wave id for lane-based rendering")
     parser.add_argument("--lane", help="Lane label for lane-based rendering")

@@ -4,13 +4,13 @@ Phase hard rules:
 - Use phase-contract-tools as the only skill-bundle contract authority.
 
 Read first in order:
-- docs/smoke-roadmap.md (Goals)
-- docs/smoke-wave-guide.md (Wave 1: Smoke Lane)
+- phases/smoke/roadmap.md (Goals)
+- phases/smoke/wave-guide.md (Wave 1: Smoke Lane)
 
 Start condition: immediate
 
 You may change:
-- docs/smoke-*
+- phases/smoke/*
 
 Do not touch:
 - repository-wide refactors
@@ -18,8 +18,8 @@ Do not touch:
 Goal: Keep the shared helper smoke fixture valid.
 
 Files likely involved:
-- docs/smoke-plan.yaml
-- docs/smoke-wave-guide.md
+- phases/smoke/plan.yaml
+- phases/smoke/wave-guide.md
 
 Expected changes:
 - Deterministic fixture docs and renderer outputs remain in sync.
