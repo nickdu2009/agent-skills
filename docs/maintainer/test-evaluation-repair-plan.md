@@ -106,8 +106,8 @@
 
 ```python
 "phase-plan": (
-    "Pass if the execution schema is the authority and the strict four-file doc set is produced with validators run.",
-    "Fail if Markdown redefines YAML-owned fields, extra planning docs are created, or validators are skipped.",
+    "Pass if the execution schema is the authority, the per-phase strict four-file doc set is produced, the phase-root README is maintained, and validators run.",
+    "Fail if Markdown redefines YAML-owned fields, extra phase-local planning docs are created, the phase-root README is missing, or validators are skipped.",
 ),
 "phase-execute": (
     "Pass if execution reads from the accepted schema, respects lane isolation, and reports wave state per contract.",

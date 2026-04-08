@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from _shared_phase_tools import Issue, load_plan, infer_phase, find_pr, find_wave, contract_map
+from _shared_phase_tools import Issue, VALID_PHASE_STATUSES, load_plan, infer_phase, find_pr, find_wave, contract_map
 
 
 # ---------------------------------------------------------------------------
@@ -198,6 +198,20 @@ class TestSchemaValidationNegative:
         assert rc != 0
         assert "unknown_team" in out or "team" in out
 
+    def test_invalid_top_level_status_enum(self, tmp_path: Path):
+        plan = tmp_path / "plan.yaml"
+        plan.write_text(yaml.dump({
+            "schema_version": "2.0", "last_updated": "2026-01-01", "status": "paused",
+            "scope": "test", "hard_rules": [], "schema_conventions": {},
+            "placeholder_conventions": {}, "validation_profiles": {},
+            "team": [{"id": "t1", "name": "team1"}],
+            "hotspots": [], "prs": [], "waves": [],
+        }))
+        rc, out = _run_validator(plan)
+        assert rc != 0
+        assert "status" in out
+        assert all(item in out for item in VALID_PHASE_STATUSES)
+
 
 # ---------------------------------------------------------------------------
 # validate_phase_doc_set — negative cases
@@ -218,20 +232,227 @@ def _run_doc_set_validator(phase_root: Path, phase: str) -> tuple[int, str]:
     return proc.returncode, proc.stdout + proc.stderr
 
 
+def _run_phase_root_readme_renderer(phase_root: Path) -> tuple[int, str]:
+    """Run the phase-root README renderer and return (returncode, combined output)."""
+    import subprocess
+    scripts_dir = Path(__file__).resolve().parent
+    proc = subprocess.run(
+        ["uv", "run", "scripts/render_phase_root_readme.py", "--phase-root", str(phase_root)],
+        cwd=scripts_dir.parent,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return proc.returncode, proc.stdout + proc.stderr
+
+
 class TestDocSetValidationNegative:
     def test_missing_required_doc(self, tmp_path: Path):
         phase_root = tmp_path / "phases"
         phase_dir = phase_root / "phase1"
         phase_dir.mkdir(parents=True)
+        (phase_root / "README.md").write_text(
+            "# Phase Index\n\n## Phase Summaries\n\n- `phase1`: goal: summary; scope: validator test; status: proposed\n"
+        )
         (phase_dir / "plan.yaml").write_text("schema_version: '2.0'")
         rc, out = _run_doc_set_validator(phase_root, "phase1")
         assert rc != 0
         assert "missing" in out.lower()
 
+    def test_missing_phase_root_readme(self, tmp_path: Path):
+        phase_root = tmp_path / "phases"
+        phase_dir = phase_root / "phase1"
+        phase_dir.mkdir(parents=True)
+        for name in ("roadmap.md", "plan.yaml", "wave-guide.md", "execution-index.md"):
+            (phase_dir / name).write_text("placeholder\n")
+        (phase_dir / "plan.yaml").write_text(yaml.dump({
+            "schema_version": "2.0", "prs": [], "waves": [],
+        }))
+        rc, out = _run_doc_set_validator(phase_root, "phase1")
+        assert rc != 0
+        assert "README.md" in out
+
+    def test_phase_root_readme_must_include_phase_summary(self, tmp_path: Path):
+        phase_root = tmp_path / "phases"
+        phase_dir = phase_root / "phase1"
+        phase_dir.mkdir(parents=True)
+        (phase_root / "README.md").write_text(
+            "# Phase Index\n\n## Phase Summaries\n\n- `phase2`: goal: summary; scope: validator test; status: proposed\n"
+        )
+        for name in ("roadmap.md", "plan.yaml", "wave-guide.md", "execution-index.md"):
+            (phase_dir / name).write_text("placeholder\n")
+        (phase_dir / "plan.yaml").write_text(yaml.dump({
+            "schema_version": "2.0", "prs": [], "waves": [],
+        }))
+        rc, out = _run_doc_set_validator(phase_root, "phase1")
+        assert rc != 0
+        assert "phase1" in out
+
+    def test_phase_root_readme_must_include_phase_summaries_section(self, tmp_path: Path):
+        phase_root = tmp_path / "phases"
+        phase_dir = phase_root / "phase1"
+        phase_dir.mkdir(parents=True)
+        (phase_root / "README.md").write_text(
+            "# Phase Index\n\n- `phase1`: goal: summary; scope: validator test; status: proposed\n"
+        )
+        for name in ("roadmap.md", "plan.yaml", "wave-guide.md", "execution-index.md"):
+            (phase_dir / name).write_text("placeholder\n")
+        (phase_dir / "plan.yaml").write_text(yaml.dump({
+            "schema_version": "2.0", "prs": [], "waves": [],
+        }))
+        rc, out = _run_doc_set_validator(phase_root, "phase1")
+        assert rc != 0
+        assert "Phase Summaries" in out
+
+    def test_phase_root_readme_must_use_bullet_summary_format(self, tmp_path: Path):
+        phase_root = tmp_path / "phases"
+        phase_dir = phase_root / "phase1"
+        phase_dir.mkdir(parents=True)
+        (phase_root / "README.md").write_text(
+            "# Phase Index\n\n## Phase Summaries\n\nphase1: goal: summary; scope: validator test; status: proposed\n"
+        )
+        for name in ("roadmap.md", "plan.yaml", "wave-guide.md", "execution-index.md"):
+            (phase_dir / name).write_text("placeholder\n")
+        (phase_dir / "plan.yaml").write_text(yaml.dump({
+            "schema_version": "2.0", "prs": [], "waves": [],
+        }))
+        rc, out = _run_doc_set_validator(phase_root, "phase1")
+        assert rc != 0
+        assert "bullet summary" in out.lower()
+
+    def test_phase_root_readme_must_include_goal_scope_status_fields(self, tmp_path: Path):
+        phase_root = tmp_path / "phases"
+        phase_dir = phase_root / "phase1"
+        phase_dir.mkdir(parents=True)
+        (phase_root / "README.md").write_text(
+            "# Phase Index\n\n## Phase Summaries\n\n- `phase1`: goal: summary only\n"
+        )
+        for name in ("roadmap.md", "plan.yaml", "wave-guide.md", "execution-index.md"):
+            (phase_dir / name).write_text("placeholder\n")
+        (phase_dir / "plan.yaml").write_text(yaml.dump({
+            "schema_version": "2.0", "prs": [], "waves": [],
+        }))
+        rc, out = _run_doc_set_validator(phase_root, "phase1")
+        assert rc != 0
+        assert "scope` field" in out and "status` field" in out
+
+    def test_phase_root_readme_rejects_invalid_status_enum(self, tmp_path: Path):
+        phase_root = tmp_path / "phases"
+        phase_dir = phase_root / "phase1"
+        phase_dir.mkdir(parents=True)
+        (phase_root / "README.md").write_text(
+            "# Phase Index\n\n## Phase Summaries\n\n- `phase1`: goal: summary; scope: validator test; status: paused\n"
+        )
+        for name in ("roadmap.md", "plan.yaml", "wave-guide.md", "execution-index.md"):
+            (phase_dir / name).write_text("placeholder\n")
+        (phase_dir / "plan.yaml").write_text(yaml.dump({
+            "schema_version": "2.0", "prs": [], "waves": [],
+        }))
+        rc, out = _run_doc_set_validator(phase_root, "phase1")
+        assert rc != 0
+        assert "status `paused`" in out
+
+    def test_phase_root_readme_requires_field_order(self, tmp_path: Path):
+        phase_root = tmp_path / "phases"
+        phase_dir = phase_root / "phase1"
+        phase_dir.mkdir(parents=True)
+        (phase_root / "README.md").write_text(
+            "# Phase Index\n\n## Phase Summaries\n\n- `phase1`: scope: validator test; goal: summary; status: proposed\n"
+        )
+        for name in ("roadmap.md", "plan.yaml", "wave-guide.md", "execution-index.md"):
+            (phase_dir / name).write_text("placeholder\n")
+        (phase_dir / "plan.yaml").write_text(yaml.dump({
+            "schema_version": "2.0", "prs": [], "waves": [],
+        }))
+        rc, out = _run_doc_set_validator(phase_root, "phase1")
+        assert rc != 0
+        assert "field-order" in out
+
+    def test_phase_root_readme_rejects_duplicate_phase_entries(self, tmp_path: Path):
+        phase_root = tmp_path / "phases"
+        phase_dir = phase_root / "phase1"
+        phase_dir.mkdir(parents=True)
+        (phase_root / "README.md").write_text(
+            "# Phase Index\n\n## Phase Summaries\n\n"
+            "- `phase1`: goal: summary a; scope: validator test; status: proposed\n"
+            "- `phase1`: goal: summary b; scope: validator test; status: active\n"
+        )
+        for name in ("roadmap.md", "plan.yaml", "wave-guide.md", "execution-index.md"):
+            (phase_dir / name).write_text("placeholder\n")
+        (phase_dir / "plan.yaml").write_text(yaml.dump({
+            "schema_version": "2.0", "prs": [], "waves": [],
+        }))
+        rc, out = _run_doc_set_validator(phase_root, "phase1")
+        assert rc != 0
+        assert "duplicate" in out.lower()
+
+    def test_phase_root_readme_rejects_unknown_phase_entries(self, tmp_path: Path):
+        phase_root = tmp_path / "phases"
+        phase_dir = phase_root / "phase1"
+        phase_dir.mkdir(parents=True)
+        (phase_root / "README.md").write_text(
+            "# Phase Index\n\n## Phase Summaries\n\n"
+            "- `phase1`: goal: summary; scope: validator test; status: proposed\n"
+            "- `phase9`: goal: summary; scope: validator test; status: proposed\n"
+        )
+        for name in ("roadmap.md", "plan.yaml", "wave-guide.md", "execution-index.md"):
+            (phase_dir / name).write_text("placeholder\n")
+        (phase_dir / "plan.yaml").write_text(yaml.dump({
+            "schema_version": "2.0", "prs": [], "waves": [],
+        }))
+        rc, out = _run_doc_set_validator(phase_root, "phase1")
+        assert rc != 0
+        assert "unknown-phase" in out
+
+    def test_phase_root_readme_must_cover_all_actual_phases(self, tmp_path: Path):
+        phase_root = tmp_path / "phases"
+        phase1_dir = phase_root / "phase1"
+        phase2_dir = phase_root / "phase2"
+        phase1_dir.mkdir(parents=True)
+        phase2_dir.mkdir(parents=True)
+        (phase_root / "README.md").write_text(
+            "# Phase Index\n\n## Phase Summaries\n\n"
+            "- `phase1`: goal: summary; scope: validator test; status: proposed\n"
+        )
+        for phase_dir in (phase1_dir, phase2_dir):
+            for name in ("roadmap.md", "plan.yaml", "wave-guide.md", "execution-index.md"):
+                (phase_dir / name).write_text("placeholder\n")
+            (phase_dir / "plan.yaml").write_text(yaml.dump({
+                "schema_version": "2.0", "prs": [], "waves": [],
+            }))
+        rc, out = _run_doc_set_validator(phase_root, "phase1")
+        assert rc != 0
+        assert "missing-phase" in out
+        assert "phase2" in out
+
+    def test_phase_root_readme_must_be_sorted(self, tmp_path: Path):
+        phase_root = tmp_path / "phases"
+        phase1_dir = phase_root / "phase1"
+        phase2_dir = phase_root / "phase2"
+        phase1_dir.mkdir(parents=True)
+        phase2_dir.mkdir(parents=True)
+        (phase_root / "README.md").write_text(
+            "# Phase Index\n\n## Phase Summaries\n\n"
+            "- `phase2`: goal: summary; scope: validator test; status: proposed\n"
+            "- `phase1`: goal: summary; scope: validator test; status: proposed\n"
+        )
+        for phase_dir in (phase1_dir, phase2_dir):
+            for name in ("roadmap.md", "plan.yaml", "wave-guide.md", "execution-index.md"):
+                (phase_dir / name).write_text("placeholder\n")
+            (phase_dir / "plan.yaml").write_text(yaml.dump({
+                "schema_version": "2.0", "prs": [], "waves": [],
+            }))
+        rc, out = _run_doc_set_validator(phase_root, "phase1")
+        assert rc != 0
+        assert "out of order" in out.lower()
+
     def test_extra_phase_file(self, tmp_path: Path):
         phase_root = tmp_path / "phases"
         phase_dir = phase_root / "phase1"
         phase_dir.mkdir(parents=True)
+        (phase_root / "README.md").write_text(
+            "# Phase Index\n\n## Phase Summaries\n\n- `phase1`: goal: summary; scope: validator test; status: proposed\n"
+        )
         for name in ("roadmap.md", "plan.yaml", "wave-guide.md", "execution-index.md", "pr-delivery-plan.md"):
             (phase_dir / name).write_text("placeholder\n")
         (phase_dir / "plan.yaml").write_text(yaml.dump({
@@ -262,3 +483,10 @@ class TestSmokeFixture:
     def test_doc_set_validator_passes(self, fixture_phase_root: Path):
         rc, out = _run_doc_set_validator(fixture_phase_root, "smoke")
         assert rc == 0, f"Doc-set validation failed:\n{out}"
+
+    def test_phase_root_readme_renderer_passes(self, fixture_phase_root: Path):
+        rc, out = _run_phase_root_readme_renderer(fixture_phase_root)
+        assert rc == 0, f"Phase root README renderer failed:\n{out}"
+        assert "# Phase Index" in out
+        assert "## Phase Summaries" in out
+        assert "- `smoke`:" in out

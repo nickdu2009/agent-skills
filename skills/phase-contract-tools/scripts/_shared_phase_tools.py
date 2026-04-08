@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,18 @@ PHASE_FILES = {
     "wave_guide": "wave-guide.md",
     "execution_index": "execution-index.md",
 }
+
+PHASE_ROOT_README = "README.md"
+PHASE_SUMMARIES_HEADING = "## Phase Summaries"
+VALID_PHASE_STATUSES = ("proposed", "active", "blocked", "done")
+PHASE_SUMMARY_LINE_RE = re.compile(
+    r"^\-\s+`?(?P<phase>[^`:\s]+)`?\s*:\s*"
+    r"goal:\s*(?P<goal>[^;\n]+?)\s*;\s*"
+    r"scope:\s*(?P<scope>[^;\n]+?)\s*;\s*"
+    r"status:\s*(?P<status>[A-Za-z_][A-Za-z0-9_-]*)\s*$",
+    re.IGNORECASE,
+)
+PHASE_ID_RE = re.compile(r"^phase(?P<number>\d+)$", re.IGNORECASE)
 
 
 class Issue:
@@ -80,14 +93,56 @@ def phase_doc_paths(phase_root: Path, phase: str) -> dict[str, Path]:
     return {name: phase_file(phase_root, phase, filename) for name, filename in PHASE_FILES.items()}
 
 
+def phase_root_readme_path(phase_root: Path) -> Path:
+    """Return the canonical phase-root summary README path."""
+
+    return phase_root / PHASE_ROOT_README
+
+
+def normalize_phase_id(value: str) -> str:
+    return value.strip().lower()
+
+
+def phase_sort_key(phase_id: str) -> tuple[int, int | str, str]:
+    normalized = normalize_phase_id(phase_id)
+    match = PHASE_ID_RE.match(normalized)
+    if match:
+        return (0, int(match.group("number")), normalized)
+    return (1, normalized, normalized)
+
+
+def iter_phase_dirs(phase_root: Path) -> list[Path]:
+    """Return phase directories under the phase root that contain plan.yaml."""
+
+    phase_dirs: list[Path] = []
+    if not phase_root.exists():
+        return phase_dirs
+    for child in phase_root.iterdir():
+        if child.is_dir() and (child / PHASE_FILES["plan"]).is_file():
+            phase_dirs.append(child)
+    return sorted(phase_dirs, key=lambda path: phase_sort_key(path.name))
+
+
+def discover_phase_ids(phase_root: Path) -> list[str]:
+    """Return normalized phase ids discovered from directories under the phase root."""
+
+    return [normalize_phase_id(path.name) for path in iter_phase_dirs(phase_root)]
+
+
+def render_phase_summary_line(phase: str, goal: str, scope: str, status: str) -> str:
+    """Render one canonical phase summary line for the root README."""
+
+    return f"- `{normalize_phase_id(phase)}`: goal: {goal.strip()}; scope: {scope.strip()}; status: {status.strip().lower()}"
+
+
 def infer_phase(plan_path: Path, data: dict[str, Any]) -> str:
     phase = data.get("phase")
     if isinstance(phase, str) and phase:
-        return phase
+        return normalize_phase_id(phase)
     if plan_path.name == PHASE_FILES["plan"]:
-        return plan_path.parent.name
+        return normalize_phase_id(plan_path.parent.name)
     stem = plan_path.stem
-    return stem[:-5] if stem.endswith("-plan") else stem
+    return normalize_phase_id(stem[:-5] if stem.endswith("-plan") else stem)
 
 
 def find_pr(data: dict[str, Any], pr_id: str) -> dict[str, Any]:

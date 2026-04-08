@@ -34,7 +34,8 @@ Do not fork or restate those rules in sibling skills.
 
 - read the schema and field-writing rules
 - validate `plan.yaml`
-- validate the strict four-file doc set
+- validate the strict four-file per-phase doc set and the phase-root README
+- render or refresh the phase-root README
 - derive prompts or kickoff text from accepted schema
 
 `$phase-plan` owns authoring and sequencing.
@@ -61,6 +62,7 @@ All automation and all documentation should call:
 
 - `phase-contract-tools/scripts/validate_phase_execution_schema.py`
 - `phase-contract-tools/scripts/validate_phase_doc_set.py`
+- `phase-contract-tools/scripts/render_phase_root_readme.py`
 - `phase-contract-tools/scripts/render_agent_prompt.py`
 - `phase-contract-tools/scripts/render_wave_kickoff.py`
 - `phase-contract-tools/scripts/preflight_phase_execution.py`
@@ -84,3 +86,5 @@ Do not:
 - keep duplicate contract entrypoints under sibling skills
 - add a second copy of a validator or renderer under another skill
 - treat sibling skill docs as stronger than the core contract
+
+`$PHASE_DOCS_ROOT/README.md` is contract-defined and validator-covered, but it is not the fifth file inside any `phaseN/` directory. Keep it at the phase-doc root.

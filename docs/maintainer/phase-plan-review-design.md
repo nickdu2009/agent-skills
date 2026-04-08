@@ -34,9 +34,9 @@ When review finds defects, the correct next step is to return to `phase-plan`.
 
 - Review "are we doing the right thing?" before "can we execute it?"
 - Treat upstream requirement and design alignment as higher priority than doc completeness
-- Keep `docs/phaseN-plan.yaml` as the repository execution authority
+- Keep `docs/phases/phaseN/plan.yaml` as the repository execution authority
 - Keep `phase-contract-tools` as the only contract authority
-- Do not add a fifth default phase planning document
+- Do not add a fifth default planning document inside `docs/phases/phaseN/`; `docs/phases/README.md` is the only allowed root-level summary file
 - If upstream inputs are missing, downgrade the review scope explicitly instead of implying full approval
 
 ## 4. Inputs
@@ -47,10 +47,11 @@ Potential review inputs include:
 - accepted design docs, RFCs, migration notes, or architecture notes
 - external specs or user-named contract sources
 - relevant current-code baseline for ownership and feasibility checks
-- `docs/phaseN-execution-index.md`
-- `docs/phaseN-plan.yaml`
-- `docs/phaseN-wave-guide.md`
-- `docs/phaseN-roadmap.md`
+- `docs/phases/README.md`
+- `docs/phases/phaseN/execution-index.md`
+- `docs/phases/phaseN/plan.yaml`
+- `docs/phases/phaseN/wave-guide.md`
+- `docs/phases/phaseN/roadmap.md`
 - optional wave id
 - optional user-specified risk focus or acceptance criteria
 
@@ -83,7 +84,7 @@ Check whether requirement documents, design documents, external contracts, and o
 
 ### Layer 2: Plan Quality
 
-Check whether the strict four-file phase doc set is complete, coherent, scoped correctly, contract-aligned, and structurally executable.
+Check whether the per-phase strict four-file phase doc set is complete, coherent, scoped correctly, contract-aligned, and structurally executable, and whether `docs/phases/README.md` provides the repository-level phase summary.
 
 ### Layer 3: Execution Readiness
 
@@ -176,7 +177,7 @@ Review whether:
 
 Review whether:
 
-- the strict four-file set is present when the plan claims execution readiness
+- the per-phase strict four-file set is present when the plan claims execution readiness
 - partial-output mode is explicitly declared when applicable
 - `phaseN-plan.yaml` remains the execution authority
 - Markdown does not redefine YAML-owned fields
@@ -241,7 +242,7 @@ The following should normally be blocking:
 - a key requirement has no traceable execution mapping
 - wave breakdown conflicts with real dependency structure
 - `done_when` does not prove the stated objective is complete
-- the strict four-file set is incomplete while the plan still claims execution readiness
+- the per-phase strict four-file set is incomplete while the plan still claims execution readiness
 - YAML and Markdown conflict on execution fields
 - validators or preflight report hard errors
 - the plan creates an obvious rollback or release-control gap

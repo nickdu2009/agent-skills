@@ -19,6 +19,22 @@ Markdown exists to help humans coordinate around that schema:
 
 Unless the user or environment says otherwise, treat `PHASE_DOCS_ROOT` as the phase-doc root and default it to `docs/phases`.
 
+The phase-doc root also owns a root summary file:
+
+- `$PHASE_DOCS_ROOT/README.md`
+
+Use this root README to summarize each phase at a glance. It is a coordination and navigation file, not a per-phase execution artifact and not part of any `phaseN/` strict four-file set.
+
+Use this minimal shape by default:
+
+```markdown
+# Phase Index
+
+## Phase Summaries
+
+- `phaseN`: goal: one-line goal; scope: current scope boundary; status: proposed | active | blocked | done
+```
+
 ## Skill Assets
 
 Resolve bundled assets relative to the directory that contains `SKILL.md`.
@@ -47,6 +63,7 @@ Use these shared contract scripts:
 
 - `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml`
 - `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --phase-root /path/to/repo/docs/phases --phase phaseN`
+- `uv run ../phase-contract-tools/scripts/render_phase_root_readme.py --phase-root /path/to/repo/docs/phases --write /path/to/repo/docs/phases/README.md`
 - `uv run ../phase-contract-tools/scripts/render_agent_prompt.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --pr P13-10`
 - `uv run ../phase-contract-tools/scripts/render_wave_kickoff.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --wave 3`
 
@@ -68,6 +85,7 @@ Unless the user explicitly asks for a narrower subset, produce exactly this defa
 2. `$PHASE_DOCS_ROOT/phaseN/plan.yaml`
 3. `$PHASE_DOCS_ROOT/phaseN/wave-guide.md`
 4. `$PHASE_DOCS_ROOT/phaseN/execution-index.md`
+5. `$PHASE_DOCS_ROOT/README.md`
 
 Do not create these by default:
 
@@ -77,7 +95,7 @@ Do not create these by default:
 - `phaseN-pr-parallelization-plan.md`
 - `phaseN-waveX-agent-launch-prompts.md`
 
-Do not add extra `phaseN-*` planning docs.
+Do not add extra `phaseN-*` planning docs inside `$PHASE_DOCS_ROOT/phaseN/`.
 
 If the user wants additional handoff material, derive it from the schema at response time or through a renderer instead of creating another planning file.
 
@@ -85,7 +103,7 @@ If the user explicitly asks for a narrower subset, enter partial-output mode.
 
 In partial-output mode:
 - produce only the explicitly requested artifacts
-- do not claim the strict four-file phase doc set is complete
+- do not claim the per-phase strict four-file phase doc set is complete
 - run only the validators that apply to the artifacts that were created or changed
 - explicitly state which artifacts and validations were omitted
 
@@ -152,6 +170,24 @@ Use it for:
 - role-to-doc navigation
 - current doc-set boundaries
 
+### `$PHASE_DOCS_ROOT/README.md`
+
+Use it for:
+
+- a short summary for each phase under `$PHASE_DOCS_ROOT`
+- phase-to-phase reading order at the repository level
+- quick navigation into each `phaseN/` directory
+- one bullet entry per phase under a shared `## Phase Summaries` section
+- fixed summary fields in this order: `goal`, `scope`, `status`
+- one entry per actual phase directory under `$PHASE_DOCS_ROOT`, in ascending phase order, with no duplicates
+
+Do not use it for:
+
+- execution authority
+- wave-by-wave task payloads
+- duplicated `plan.yaml` structure
+- replacing any file inside the per-phase four-file set
+
 ## Build The Baseline
 
 Establish the real baseline from current code and accepted planning state, not from stale prose.
@@ -192,11 +228,11 @@ Do not define a parallel contract inside `phase-plan`.
 
 When authoring a new phase:
 - read: external-contract-authority.md, machine-execution-schema.md, llm-friendly-phase-schema.md, phase-execution-schema-template.yaml, phase-agent-task-template.yaml
-- run: from the directory that contains this `SKILL.md`, `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py` and `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py` with the same arguments as in **Use these shared contract scripts** (after authoring)
+- run: from the directory that contains this `SKILL.md`, `uv run ../phase-contract-tools/scripts/render_phase_root_readme.py`, `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py`, and `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py` with the same arguments as in **Use these shared contract scripts** (after authoring)
 
 When repairing an existing plan:
 - read: external-contract-authority.md, machine-execution-schema.md, llm-friendly-phase-schema.md
-- run: `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan ...` to see current errors
+- run: `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan ...` to see current errors, then refresh `$PHASE_DOCS_ROOT/README.md` if goal, scope, or status changed
 
 When deriving prompts:
 - read: prompt-derivation-from-schema.md
@@ -221,9 +257,10 @@ Follow this order:
 5. Encode execution structure and any contract-bound fields in `$PHASE_DOCS_ROOT/phaseN/plan.yaml`.
 6. Build the human coordination view in `$PHASE_DOCS_ROOT/phaseN/wave-guide.md`.
 7. Build the reading order and authority view in `$PHASE_DOCS_ROOT/phaseN/execution-index.md`.
-8. Validate the schema: `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml`.
-9. Validate the doc set: `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --phase-root /path/to/repo/docs/phases --phase phaseN`.
-10. Derive prompts or kickoff text from the schema only through `uv run ../phase-contract-tools/scripts/render_agent_prompt.py` or `uv run ../phase-contract-tools/scripts/render_wave_kickoff.py` when needed (see **Use these shared contract scripts** for placeholders).
+8. Add or refresh `$PHASE_DOCS_ROOT/README.md`: append a new phase entry when a new phase is created, and refresh the existing entry when the phase goal, scope, or status changes. Prefer `uv run ../phase-contract-tools/scripts/render_phase_root_readme.py --phase-root ... --write ...` over hand-editing.
+9. Validate the schema: `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml`.
+10. Validate the doc set: `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --phase-root /path/to/repo/docs/phases --phase phaseN`.
+11. Derive prompts or kickoff text from the schema only through `uv run ../phase-contract-tools/scripts/render_agent_prompt.py` or `uv run ../phase-contract-tools/scripts/render_wave_kickoff.py` when needed (see **Use these shared contract scripts** for placeholders).
 
 Do not start by drafting prompt text.
 
@@ -233,7 +270,7 @@ Run both validators for a non-trivial full-doc-set phase.
 
 For partial-output mode:
 - run schema validation if `$PHASE_DOCS_ROOT/phaseN/plan.yaml` was created or changed
-- run doc-set validation only when the full strict four-file set is being delivered
+- run doc-set validation only when the root README plus the full per-phase strict four-file set are being delivered
 - if a validator is skipped, state why
 
 Schema validation:
@@ -271,12 +308,12 @@ Fix hard errors before finishing. If a warning is intentionally accepted, state 
 - Do not duplicate full task payloads across docs.
 - Do not hide constraints inside prose-heavy paragraphs.
 - Do not invent owner splits or PR ids inside prompts.
-- Do not add any extra phase planning docs beyond the strict four-file set.
+- Do not add any extra phase planning docs inside `$PHASE_DOCS_ROOT/phaseN/` beyond the strict four-file set.
 - Do not use legacy route shapes or DTOs as temporary substitutes when they conflict with the declared external contract.
 - Do not leave a contract-bound PR with only repo-local `done_when`; add `required_contracts`, `contract_guardrails`, and `contract_done_when`.
 - Do not leave validation as "run tests" when you can name the package, suite, or profile.
 - Do not use vague execution language such as `as needed`, `if needed`, or `make sure`.
-- Do not let `read_first` drift into undeclared phase-local files outside the strict four-file set.
+- Do not let `read_first` drift into undeclared phase-local files outside the strict four-file set inside `$PHASE_DOCS_ROOT/phaseN/`.
 - Do not store document path and section hint in one `read_first` string.
 - Do not store profile refs and shell commands as raw validation strings.
 
@@ -293,6 +330,7 @@ The planning pass is done only when:
 - contract-bound PRs declare `required_contracts`, `contract_guardrails`, and `contract_done_when`
 - the wave guide is sufficient for human coordination without duplicating YAML
 - the execution index states reading order and authority clearly
+- the root README gives a concise summary for each phase under `$PHASE_DOCS_ROOT`
 - prompts can be derived from the schema without hand-maintained prompt docs
 - validators pass or any accepted warning is explicitly explained
 
@@ -300,7 +338,7 @@ For partial-output mode, the task is done only when:
 - the requested artifacts are internally consistent
 - any applicable validators pass
 - omitted artifacts and skipped validators are explicitly called out
-- if the strict four-file set is incomplete after this pass, state that execution via `$phase-execute` requires completing the remaining artifacts
+- if the per-phase strict four-file set is incomplete after this pass, state that execution via `$phase-execute` requires completing the remaining artifacts
 
 ## Composition
 

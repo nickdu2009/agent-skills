@@ -95,8 +95,8 @@ Score these dimensions for every scenario:
 
 ### `phase-plan`
 
-- Pass: the execution schema is the authority and the strict four-file doc set is produced with validators run.
-- Fail: Markdown redefines YAML-owned fields, extra planning docs are created, or validators are skipped.
+- Pass: the execution schema is the authority, the per-phase strict four-file doc set is produced, the phase-root README is maintained, and validators run.
+- Fail: Markdown redefines YAML-owned fields, extra phase-local planning docs are created, the phase-root README is missing, or validators are skipped.
 
 ### `phase-execute`
 

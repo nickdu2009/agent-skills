@@ -66,8 +66,8 @@ SKILL_RUBRICS: dict[str, tuple[str, ...]] = {
         "Fail if conflicting findings are flattened into one answer without adjudication.",
     ),
     "phase-plan": (
-        "Pass if the execution schema is the authority and the strict four-file doc set is produced with validators run.",
-        "Fail if Markdown redefines YAML-owned fields, extra planning docs are created, or validators are skipped.",
+        "Pass if the execution schema is the authority, the per-phase strict four-file doc set is produced, the phase-root README is maintained, and validators run.",
+        "Fail if Markdown redefines YAML-owned fields, extra phase-local planning docs are created, the phase-root README is missing, or validators are skipped.",
     ),
     "phase-execute": (
         "Pass if execution reads from the accepted schema, respects lane isolation, and reports wave state per contract.",
@@ -175,8 +175,9 @@ EXAMPLE_CASES: tuple[ExampleCase, ...] = (
             "plan-before-action",
         ),
         expectations=(
-            "phase1-plan.yaml is the execution authority, not Markdown",
-            "the strict four-file doc set is produced without extra planning docs",
+            "docs/phases/phase1/plan.yaml is the execution authority, not Markdown",
+            "the per-phase strict four-file doc set is produced without extra phase-local planning docs",
+            "docs/phases/README.md includes a concise summary for phase1",
             "validators run immediately after YAML is produced",
             "hotspot ownership is explicit in the plan",
         ),

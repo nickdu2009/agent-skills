@@ -17,12 +17,27 @@ from typing import Any
 
 import yaml
 
-from _shared_phase_tools import Issue, PHASE_FILES, phase_doc_paths, resolve_phase_root
+from _shared_phase_tools import (
+    Issue,
+    PHASE_FILES,
+    PHASE_ROOT_README,
+    PHASE_SUMMARIES_HEADING,
+    PHASE_SUMMARY_LINE_RE,
+    VALID_PHASE_STATUSES,
+    discover_phase_ids,
+    normalize_phase_id,
+    phase_doc_paths,
+    phase_root_readme_path,
+    phase_sort_key,
+    resolve_phase_root,
+)
 
 
 PR_ID_RE = re.compile(r"\bP\d+-\d+\b")
 WAVE_HEADING_RE = re.compile(r"^## Wave (\d+):\s*(.+)$", re.MULTILINE)
 WAVE_SUMMARY_ROW_RE = re.compile(r"^\|\s*Wave (\d+)\s*\|.*\|\s*(P\d+-\d+)\s*\|$", re.MULTILINE)
+SUMMARY_LABEL_RE = re.compile(r"(goal|scope|status):", re.IGNORECASE)
+SUMMARY_PHASE_RE = re.compile(r"^\-\s+`?(?P<phase>[^`:\s]+)`?\s*:\s*(?P<body>.*)$", re.IGNORECASE)
 
 
 def parse_args() -> argparse.Namespace:
@@ -74,22 +89,246 @@ def section_text(text: str, heading: str) -> str:
     return match.group(1).strip() if match else ""
 
 
+def summary_section_lines(text: str) -> tuple[int | None, list[tuple[int, str]]]:
+    heading_line = None
+    lines: list[tuple[int, str]] = []
+    in_section = False
+    for idx, raw_line in enumerate(text.splitlines(), start=1):
+        stripped = raw_line.strip()
+        if stripped == PHASE_SUMMARIES_HEADING:
+            heading_line = idx
+            in_section = True
+            continue
+        if in_section and stripped.startswith("## "):
+            break
+        if in_section and stripped:
+            lines.append((idx, raw_line.rstrip()))
+    return heading_line, lines
+
+
+def validate_root_readme(
+    errors: list[Issue],
+    phase_root: Path,
+    target_phase: str,
+    root_readme_path: Path,
+) -> None:
+    if not root_readme_path.exists():
+        add_issue(
+            errors,
+            PHASE_ROOT_README,
+            "required phase-root summary doc is missing.",
+            expected=PHASE_ROOT_README,
+            location=str(root_readme_path),
+            repair=f"create `{PHASE_ROOT_README}` at the phase root so each phase has a summarized entry",
+        )
+        return
+
+    root_readme_text = read_text(root_readme_path).strip()
+    if not root_readme_text:
+        add_issue(
+            errors,
+            "README.empty",
+            "phase-root summary README is empty.",
+            expected=f"non-empty `{PHASE_ROOT_README}` with one summary per phase",
+            location=str(root_readme_path),
+            repair=f"add a short summary entry for `{target_phase}` to `{PHASE_ROOT_README}`",
+        )
+        return
+    if not root_readme_text.startswith("# "):
+        add_issue(
+            errors,
+            "README.title",
+            "phase-root summary README is missing a top-level title.",
+            expected="start the file with a markdown H1 such as `# Phase Index`",
+            location=str(root_readme_path),
+            repair=f"add an H1 title to `{PHASE_ROOT_README}` before the summaries section",
+        )
+        return
+
+    heading_line, summary_lines = summary_section_lines(root_readme_text)
+    if heading_line is None:
+        add_issue(
+            errors,
+            "README.phase-summaries-section",
+            "phase-root summary README is missing the `## Phase Summaries` section.",
+            expected=f"include `{PHASE_SUMMARIES_HEADING}` before listing phase summaries",
+            location=str(root_readme_path),
+            repair=f"add `{PHASE_SUMMARIES_HEADING}` and place one bullet summary per phase under it",
+        )
+        return
+
+    actual_phases = discover_phase_ids(phase_root)
+    actual_phase_set = set(actual_phases)
+    seen_lines: dict[str, int] = {}
+    ordered_phases: list[str] = []
+
+    for line_no, raw_line in summary_lines:
+        stripped = raw_line.strip()
+        location = f"{root_readme_path}:{line_no}"
+        summary_match = SUMMARY_PHASE_RE.match(stripped)
+        if not summary_match:
+            add_issue(
+                errors,
+                "README.phase-summary.format",
+                "phase summary line must use bullet form.",
+                expected="a line like `- `phaseN`: goal: ...; scope: ...; status: ...`",
+                location=location,
+                repair="rewrite the line as a bullet summary with phase id and ordered goal, scope, and status fields",
+            )
+            continue
+
+        phase_id = normalize_phase_id(summary_match.group("phase"))
+        body = summary_match.group("body").strip()
+        labels = [match.group(1).lower() for match in SUMMARY_LABEL_RE.finditer(body)]
+        missing_labels = [label for label in ("goal", "scope", "status") if label not in labels]
+        for label in missing_labels:
+            add_issue(
+                errors,
+                f"README.phase-summary.{label}",
+                f"phase summary for `{phase_id}` is missing the `{label}` field.",
+                expected=f"include `{label}: ...` in the summary line for `{phase_id}`",
+                location=location,
+                repair=f"rewrite the summary line for `{phase_id}` so it includes `{label}`",
+            )
+        if len(labels) == 3 and labels != ["goal", "scope", "status"]:
+            add_issue(
+                errors,
+                "README.phase-summary.field-order",
+                f"phase summary for `{phase_id}` does not use `goal`, `scope`, `status` in that order.",
+                expected="goal -> scope -> status",
+                location=location,
+                repair=f"rewrite the summary line for `{phase_id}` so the fields appear as goal, scope, then status",
+            )
+
+        parsed = PHASE_SUMMARY_LINE_RE.match(stripped)
+        if not parsed:
+            if not missing_labels:
+                add_issue(
+                    errors,
+                    "README.phase-summary.format",
+                    f"phase summary for `{phase_id}` does not match the canonical summary format.",
+                    expected=f"`- `{phase_id}`: goal: ...; scope: ...; status: ...`",
+                    location=location,
+                    repair=f"rewrite the summary line for `{phase_id}` using the canonical goal/scope/status format",
+                )
+            continue
+
+        ordered_phases.append(phase_id)
+        if phase_id in seen_lines:
+            add_issue(
+                errors,
+                "README.phase-summary.duplicate",
+                f"duplicate phase summary entry for `{phase_id}`.",
+                expected="one summary entry per phase",
+                location=location,
+                repair=f"remove the duplicate `{phase_id}` line so the README lists each phase once",
+            )
+        else:
+            seen_lines[phase_id] = line_no
+
+        goal = parsed.group("goal").strip()
+        scope = parsed.group("scope").strip()
+        status = parsed.group("status").strip().lower()
+        if not goal:
+            add_issue(
+                errors,
+                "README.phase-summary.goal",
+                f"phase summary for `{phase_id}` has an empty `goal` value.",
+                expected="a concise goal string",
+                location=location,
+                repair=f"replace the empty goal for `{phase_id}` with a concise one-line goal",
+            )
+        if not scope:
+            add_issue(
+                errors,
+                "README.phase-summary.scope",
+                f"phase summary for `{phase_id}` has an empty `scope` value.",
+                expected="a concise scope string",
+                location=location,
+                repair=f"replace the empty scope for `{phase_id}` with a concise current scope boundary",
+            )
+        if not status:
+            add_issue(
+                errors,
+                "README.phase-summary.status",
+                f"phase summary for `{phase_id}` has an empty `status` value.",
+                expected=f"one of {list(VALID_PHASE_STATUSES)}",
+                location=location,
+                repair=f"set the `{phase_id}` status to one of {', '.join(VALID_PHASE_STATUSES)}",
+            )
+        elif status not in VALID_PHASE_STATUSES:
+            add_issue(
+                errors,
+                "README.phase-summary.status-enum",
+                f"phase summary for `{phase_id}` uses invalid status `{status}`.",
+                expected=f"one of {list(VALID_PHASE_STATUSES)}",
+                location=location,
+                repair=f"set the `{phase_id}` status to one of {', '.join(VALID_PHASE_STATUSES)}",
+            )
+
+        if actual_phase_set and phase_id not in actual_phase_set:
+            add_issue(
+                errors,
+                "README.phase-summary.unknown-phase",
+                f"phase summary entry `{phase_id}` does not match any phase directory under the phase root.",
+                expected=f"one of {actual_phases}",
+                location=location,
+                repair=f"remove `{phase_id}` or create the matching phase directory and plan files",
+            )
+
+    expected_order = sorted(ordered_phases, key=phase_sort_key)
+    if ordered_phases and ordered_phases != expected_order:
+        add_issue(
+            errors,
+            "README.phase-summary.order",
+            f"phase summaries are out of order: {ordered_phases}.",
+            expected=f"{expected_order}",
+            location=f"{root_readme_path}:{heading_line}",
+            repair="sort the phase summaries in ascending phase order",
+        )
+
+    for phase_id in actual_phases:
+        if phase_id not in seen_lines:
+            add_issue(
+                errors,
+                "README.phase-summary.missing-phase",
+                f"phase-root summary README is missing an entry for `{phase_id}`.",
+                expected=f"include `{phase_id}` in `{PHASE_ROOT_README}`",
+                location=f"{root_readme_path}:{heading_line}",
+                repair=f"add a summary line for `{phase_id}` under `{PHASE_SUMMARIES_HEADING}`",
+            )
+
+    normalized_target_phase = normalize_phase_id(target_phase)
+    if normalized_target_phase not in seen_lines and normalized_target_phase not in actual_phase_set:
+        add_issue(
+            errors,
+            "README.phase-summary.target-phase",
+            f"phase-root summary README does not contain an entry for requested phase `{normalized_target_phase}`.",
+            expected=f"include `{normalized_target_phase}` in `{PHASE_ROOT_README}`",
+            location=f"{root_readme_path}:{heading_line}",
+            repair=f"add a summary line for `{normalized_target_phase}` under `{PHASE_SUMMARIES_HEADING}`",
+        )
+
+
 def validate_doc_set(phase_root: Path, phase: str) -> tuple[list[Issue], list[Issue]]:
     errors: list[Issue] = []
     warnings: list[Issue] = []
 
     phase_paths = phase_doc_paths(phase_root, phase)
     phase_path = phase_paths["plan"].parent
+    root_readme_path = phase_root_readme_path(phase_root)
     roadmap_path = phase_paths["roadmap"]
     plan_path = phase_paths["plan"]
     wave_guide_path = phase_paths["wave_guide"]
     index_path = phase_paths["execution_index"]
 
+    validate_root_readme(errors, phase_root, phase, root_readme_path)
+
     required = [roadmap_path, plan_path, wave_guide_path, index_path]
     allowed_names = {path.name for path in required}
     for path in required:
         if not path.exists():
-            add_issue(errors, path.name, "required phase doc is missing.", expected=path.name, location=str(path), repair=f"create `{path.name}` so the strict four-file set is complete")
+            add_issue(errors, path.name, "required phase doc is missing.", expected=path.name, location=str(path), repair=f"create `{path.name}` so the per-phase strict four-file set is complete")
     if errors:
         return errors, warnings
 
@@ -99,7 +338,7 @@ def validate_doc_set(phase_root: Path, phase: str) -> tuple[list[Issue], list[Is
         add_issue(
             errors,
             "doc-set.extra-files",
-            f"found extra phase docs outside the strict four-file model: {extra_phase_files}.",
+            f"found extra phase-local docs outside the per-phase strict four-file model: {extra_phase_files}.",
             expected=f"only {sorted(allowed_names)}",
             location=str(phase_path),
             repair="delete the extra phase files or fold their content into roadmap, plan.yaml, wave-guide, or execution-index",

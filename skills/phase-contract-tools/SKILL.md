@@ -17,7 +17,8 @@ It owns the stable contract for:
 
 - `$PHASE_DOCS_ROOT/phaseN/plan.yaml`
 - external contract authority declarations consumed through `plan.yaml`
-- the strict four-file phase doc set
+- the per-phase strict four-file doc set under `$PHASE_DOCS_ROOT/phaseN/`
+- the phase-root summary file `$PHASE_DOCS_ROOT/README.md`
 - prompt derivation from schema
 - wave lane handoff artifacts
 - wave-state vocabulary
@@ -73,6 +74,7 @@ Use these scripts from the skill bundle:
 
 - `uv run scripts/validate_phase_execution_schema.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml`
 - `uv run scripts/validate_phase_doc_set.py --phase-root /path/to/repo/docs/phases --phase phaseN`
+- `uv run scripts/render_phase_root_readme.py --phase-root /path/to/repo/docs/phases --write /path/to/repo/docs/phases/README.md`
 - `uv run scripts/render_agent_prompt.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --pr P13-10`
 - `uv run scripts/render_wave_kickoff.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --wave 3`
 - `uv run scripts/preflight_phase_execution.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml --phase-root /path/to/repo/docs/phases --phase phaseN --wave 1`
@@ -94,6 +96,18 @@ Use these scripts from the skill bundle:
 5. State and status vocabularies must stay stable across planning and execution.
 6. Contract helpers must be deterministic and minimally inferential.
 7. Do not split the contract across sibling skills or alternate entrypoint paths.
+
+`$PHASE_DOCS_ROOT/README.md` is a phase-root navigation and summary file. It is required by the contract, but it is not part of any per-phase four-file execution set and it never overrides `plan.yaml`.
+
+The default README contract is intentionally lightweight:
+
+- a top-level heading such as `# Phase Index`
+- a `## Phase Summaries` section
+- one bullet per phase in the form `- `phaseN`: goal: ...; scope: ...; status: ...`
+- the summary fields must appear in that order so validators can check them deterministically
+- `status` must be one of `proposed`, `active`, `blocked`, or `done`
+- the README must cover all actual phase directories under `$PHASE_DOCS_ROOT` in ascending phase order with no duplicates or unknown phase ids
+- prefer `render_phase_root_readme.py` to refresh this file instead of hand-maintaining it
 
 ## Scope
 
@@ -123,6 +137,10 @@ When validating a plan:
 When rendering a prompt or handoff:
 - read: external-contract-authority.md, prompt-derivation-from-schema.md, handoff-manifest.schema.md
 - run: `uv run scripts/render_agent_prompt.py` or `uv run scripts/render_lane_handoff.py` with arguments as in **Use these scripts from the skill bundle** below
+
+When rendering or refreshing the phase-root README:
+- read: machine-execution-schema.md, contract-authority-and-migration.md
+- run: `uv run scripts/render_phase_root_readme.py --phase-root ... --write ...`
 
 When verifying execution state:
 - read: contract-alignment-checklist.md, wave-state-model.md, wave-status-snapshot.schema.md, schema-consumption-rules.md
@@ -154,6 +172,6 @@ The smoke fixture set lives in `fixtures/smoke/`. The golden output files live i
 
 Use this skill together with:
 
-- `$phase-plan` to author the strict four-file phase doc set against this contract
+- `$phase-plan` to author the per-phase strict four-file phase doc set plus the phase-root README against this contract
 - `$phase-plan-review` to review upstream intent alignment, plan quality, and execution readiness before wave execution begins
 - `$phase-execute` to execute accepted waves by consuming this contract and its helpers

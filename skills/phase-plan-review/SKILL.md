@@ -47,6 +47,8 @@ Use these shared contract scripts:
 
 Unless the user or environment says otherwise, treat `PHASE_DOCS_ROOT` as the phase-doc root and default it to `docs/phases`.
 
+`$PHASE_DOCS_ROOT/README.md` may also exist at the phase-doc root. It is a required repository-level summary file, but it is not part of any `phaseN/` four-file execution set and does not affect execution authority.
+
 ## Core Principles
 
 1. Review "are we doing the right thing?" before "can we execute it?"
@@ -69,6 +71,8 @@ Unless the user or environment says otherwise, treat `PHASE_DOCS_ROOT` as the ph
   - `$PHASE_DOCS_ROOT/phaseN/plan.yaml`
   - `$PHASE_DOCS_ROOT/phaseN/wave-guide.md`
   - `$PHASE_DOCS_ROOT/phaseN/execution-index.md`
+- the phase-doc root README must exist:
+  - `$PHASE_DOCS_ROOT/README.md`
 
 If any of the four files is missing, the review FAILS immediately without proceeding to deeper checks.
 
@@ -104,7 +108,7 @@ This layer covers Dimensions 1 through 5.
 
 ### Layer 2: Plan Quality
 
-Check whether the strict four-file phase doc set is complete, coherent, scoped correctly, contract-aligned, and structurally executable.
+Check whether the per-phase strict four-file phase doc set is complete, coherent, scoped correctly, contract-aligned, and structurally executable, and whether the phase-doc root README is present as the repository-level summary.
 
 This layer covers Dimensions 6 through 10.
 
@@ -239,7 +243,9 @@ Applicable in: all review modes.
 
 Review whether:
 
-- the strict four-file set is present when the plan claims execution readiness
+- the per-phase strict four-file set is present when the plan claims execution readiness
+- `$PHASE_DOCS_ROOT/README.md` exists and does not claim execution authority
+- the README summary for the reviewed phase does not materially contradict `roadmap.md` or `plan.yaml` on goal, scope, or status
 - partial-output mode is explicitly declared when applicable
 - `plan.yaml` remains the execution authority
 - Markdown does not redefine YAML-owned fields
@@ -252,7 +258,7 @@ Review whether:
 Validator-covered checks (already handled by `validate_phase_doc_set.py` — do not re-check manually):
 
 - no deprecated doc names (e.g., `phaseN-pr-delivery-plan.md`) are referenced in any file
-- no extra `phaseN-*` files exist in the docs directory beyond the strict four-file set
+- no extra phase-local files exist in `$PHASE_DOCS_ROOT/phaseN/` beyond the strict four-file set
 
 Applicable in: all review modes.
 
@@ -265,7 +271,7 @@ Run the validators first. Their output covers structural checks; this dimension 
 Validator-covered checks (do not re-check manually — trust the validator output):
 
 - schema validation has run via `uv run ../phase-contract-tools/scripts/validate_phase_execution_schema.py --plan /path/to/repo/docs/phases/phaseN/plan.yaml` — this covers: `owner` resolves to `team[].id`, `depends_on` resolves to declared PR, `ref_kind: pr` points to same-wave PR, `ref_kind: role` points to same-wave role, `control_pr` belongs to its wave, `merge_order` covers same PR set as `waves[].prs`, every lane has `start_condition`
-- doc-set validation has run via `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --phase-root /path/to/repo/docs/phases --phase phaseN` — this covers: deprecated doc name references, extra phase-local files, `control_pr` consistency across index and plan
+- doc-set validation has run via `uv run ../phase-contract-tools/scripts/validate_phase_doc_set.py --phase-root /path/to/repo/docs/phases --phase phaseN` — this covers: presence of `$PHASE_DOCS_ROOT/README.md`, deprecated doc name references, extra phase-local files, `control_pr` consistency across index and plan
 - wave preflight has run when a specific wave is under review
 - any skipped validation is explained with concrete residual risk
 
@@ -349,7 +355,7 @@ Normally blocking:
 - a key requirement has no traceable execution mapping
 - wave breakdown conflicts with real dependency structure
 - `done_when` does not prove the stated objective is complete
-- the strict four-file set is incomplete while the plan still claims execution readiness
+- the per-phase strict four-file set is incomplete while the plan still claims execution readiness
 - YAML and Markdown conflict on execution fields
 - validators or preflight report hard errors
 - the plan creates an obvious rollback or release-control gap
@@ -457,7 +463,7 @@ Do not load all references at once. Load only the set that matches the current t
 - do not treat a pass verdict as a substitute for per-wave preflight in `$phase-execute`
 - do not produce additional planning artifacts
 - do not run full test suites or builds; this is a document review, not an execution check
-- do not add a fifth default phase planning document
+- do not add a fifth default planning document inside any `phaseN/` directory; `$PHASE_DOCS_ROOT/README.md` is the only allowed root-level summary file in this model
 
 ## Composition
 

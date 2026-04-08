@@ -68,6 +68,12 @@ def main() -> int:
         )
         assert_match("render_wave_kickoff", kickoff, golden_dir / "render_wave_kickoff_wave1.txt")
 
+        phase_root_readme = run(
+            ["uv", "run", "scripts/render_phase_root_readme.py", "--phase-root", str(fixture_phase_root)],
+            root,
+        )
+        assert_match("render_phase_root_readme", phase_root_readme, golden_dir / "render_phase_root_readme.txt")
+
         snapshot = run(
             ["uv", "run", "scripts/render_wave_status_snapshot.py", "--plan", str(fixture_plan), "--wave", "1"],
             root,

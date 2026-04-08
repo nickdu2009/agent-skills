@@ -45,6 +45,12 @@ The standard phase set is:
 3. `$PHASE_DOCS_ROOT/phaseN/wave-guide.md`
 4. `$PHASE_DOCS_ROOT/phaseN/execution-index.md`
 
+The phase-doc root also carries:
+
+- `$PHASE_DOCS_ROOT/README.md` as the repository-level phase index
+
+This root README is validator-covered but it is not part of the per-phase strict four-file execution set.
+
 Do not add extra `phaseN-*` planning docs in the strict model.
 
 If more text is needed for humans, derive it from the schema or answer inline instead of adding another phase artifact.

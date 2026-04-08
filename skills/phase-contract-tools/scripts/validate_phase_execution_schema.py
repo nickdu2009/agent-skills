@@ -18,7 +18,7 @@ from typing import Any
 import yaml
 from yaml.nodes import MappingNode, Node, ScalarNode, SequenceNode
 
-from _shared_phase_tools import Issue, PHASE_FILES, infer_phase
+from _shared_phase_tools import Issue, PHASE_FILES, VALID_PHASE_STATUSES, infer_phase
 
 
 TOP_LEVEL_REQUIRED = {
@@ -344,6 +344,30 @@ def validate_schema(plan_path: Path) -> tuple[list[Issue], list[Issue]]:
                 expected=key,
                 repair=f"add `{key}` at the top level of the plan schema",
             )
+
+    status = data.get("status")
+    if isinstance(status, str):
+        normalized_status = status.strip().lower()
+        if normalized_status not in VALID_PHASE_STATUSES:
+            add_issue(
+                errors,
+                plan_path,
+                line_map,
+                ("status",),
+                f"invalid top-level phase status `{status}`.",
+                expected=f"one of {list(VALID_PHASE_STATUSES)}",
+                repair=f"set status to one of {', '.join(VALID_PHASE_STATUSES)}",
+            )
+    elif status is not None:
+        add_issue(
+            errors,
+            plan_path,
+            line_map,
+            ("status",),
+            "top-level phase status must be a string.",
+            expected=f"one of {list(VALID_PHASE_STATUSES)}",
+            repair=f"set status to one of {', '.join(VALID_PHASE_STATUSES)}",
+        )
 
     phase_name = infer_phase(plan_path, data)
     allowed_phase_docs = {

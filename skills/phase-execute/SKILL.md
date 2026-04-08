@@ -16,6 +16,10 @@ The accepted execution doc set is:
 
 Unless the user or environment says otherwise, treat `PHASE_DOCS_ROOT` as the phase-doc root and default it to `docs/phases`.
 
+`$PHASE_DOCS_ROOT/README.md` is a required phase-root summary file. It is for navigation and cross-phase summaries only; execution still consumes the accepted four-file set inside `phaseN/`.
+
+If a phase status change must be written back to repository docs after execution, do that only as an explicit follow-up document maintenance step. Keep `plan.yaml` authoritative and keep `$PHASE_DOCS_ROOT/README.md` aligned with it.
+
 Do not require or recreate:
 
 - `phaseN-pr-delivery-plan.md`
@@ -132,6 +136,7 @@ Build an execution cursor from objective state before acting.
 Always check:
 
 - current phase doc set exists and matches the accepted four-file model
+- `$PHASE_DOCS_ROOT/README.md` exists, but does not override the execution authority
 - requested wave id exists in `waves`
 - `control_pr`, `prs`, `merge_order`, and `lane_setup` are present for the wave
 - required external contracts are declared for any contract-bound PRs in the wave
@@ -300,6 +305,7 @@ Do not invent additional state labels unless the user explicitly asks for a diff
 - never call a wave contract-complete when `contract_done_when` is unmet or a blocking contract gap remains
 - never use fail-closed or adapter-unavailable behavior as proof of contract completion
 - never deviate from the sole shared contract files in `../phase-contract-tools`
+- never rewrite `$PHASE_DOCS_ROOT/README.md` opportunistically during execution; if the user explicitly wants a status write-back, update `plan.yaml` and the root README together in a controlled follow-up step
 
 ## Output Contract
 
