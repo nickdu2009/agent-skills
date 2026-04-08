@@ -65,6 +65,7 @@ FULL_PROFILE = Profile(
     phase_skills=(
         "phase-contract-tools",
         "phase-plan",
+        "phase-plan-review",
         "phase-execute",
     ),
     inject_multi_agent_only=False,
@@ -536,7 +537,7 @@ def build_parser(entrypoint_name: str) -> argparse.ArgumentParser:
     parser.add_argument(
         "--include-phase",
         action="store_true",
-        help="Also install phase-contract-tools, phase-plan, phase-execute (full profile only).",
+        help="Also install phase-contract-tools, phase-plan, phase-plan-review, phase-execute (full profile only).",
     )
 
     parser.epilog = "\n".join(
@@ -677,7 +678,7 @@ def main(argv: list[str] | None = None) -> int:
                     exec_count += 1
             if include_phase:
                 for skill in profile.phase_skills:
-                    if skill in {"phase-plan", "phase-execute"}:
+                    if skill in {"phase-plan", "phase-plan-review", "phase-execute"}:
                         warn_phase_contract_if_missing(platform, skill)
                     if install_skill(skill, platform, force=args.force):
                         phase_count += 1

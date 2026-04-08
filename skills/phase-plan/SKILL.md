@@ -305,4 +305,5 @@ For partial-output mode, the task is done only when:
 Use this skill together with:
 
 - `$phase-contract-tools` for the sole schema, validator, renderer, handoff, and cutover contract
+- `$phase-plan-review` when the accepted doc set should be independently reviewed before execution begins
 - `$phase-execute` after the accepted doc set exists and execution can consume the contract-defined artifacts

@@ -1,4 +1,4 @@
 interface:
   display_name: "Phase Execute"
   short_description: "Execute accepted phase waves by resolving gates, launching lanes, integrating results, and reporting wave status"
-  default_prompt: "Use $phase-execute to implement an accepted phase wave: preflight from phaseN-plan.yaml, resolve wave gates, launch serial or parallel lanes, integrate results, and report wave status. Use after $phase-plan has produced the execution docs and a specific wave is ready to implement."
+  default_prompt: "Use $phase-execute to implement an accepted phase wave: preflight from phaseN-plan.yaml, resolve wave gates, launch serial or parallel lanes, integrate results, and report wave status. Use after $phase-plan has produced the execution docs (optionally reviewed through $phase-plan-review) and a specific wave is ready to implement."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Phase Plan Review"
+  short_description: "Review whether the phase plan faithfully carries upstream intent, is internally complete, and is ready for safe execution"
+  default_prompt: "Use $phase-plan-review to review the phase doc set produced by $phase-plan. Checks upstream intent alignment, plan quality, and execution readiness across three layers. Emits one of three verdicts: ready-for-execute, ready-with-followups, or needs-repair. Use between $phase-plan and $phase-execute."

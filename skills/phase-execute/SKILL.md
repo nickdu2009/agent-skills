@@ -61,6 +61,8 @@ Use these shared contract scripts:
 - `uv run ../phase-contract-tools/scripts/render_lane_handoff.py --plan /path/to/docs/phaseN-plan.yaml --wave 1 --lane backend`
 - `uv run ../phase-contract-tools/scripts/verify_lane_handoff.py --plan /path/to/docs/phaseN-plan.yaml --handoff /tmp/wave1-backend.md --strict`
 - `uv run ../phase-contract-tools/scripts/render_wave_status_snapshot.py --plan /path/to/docs/phaseN-plan.yaml --wave 1`
+- `uv run ../phase-contract-tools/scripts/validate_handoff_manifest.py --handoff /tmp/wave1-backend.md` (validate a handoff manifest before trusting lane output)
+- `uv run ../phase-contract-tools/scripts/validate_wave_status_snapshot.py --snapshot /tmp/wave1-status.yaml` (validate a status snapshot before reporting wave state)
 
 ## Core Principles
 
@@ -315,5 +317,6 @@ Return:
 Use this skill together with:
 
 - `$phase-contract-tools` for the sole schema, renderer, handoff, snapshot, and validation contract
+- `$phase-plan-review` when the user wants a pre-execution quality gate before the first wave launch
 - `$phase-plan` when the phase doc set must be repaired, re-rendered, or re-scoped
 - `$conflict-resolution` when merge or evidence conflicts exceed the circuit-breaker threshold

@@ -8,6 +8,33 @@ from typing import Any
 import yaml
 
 
+class Issue:
+    """Structured validation finding used by all contract validators."""
+
+    def __init__(
+        self,
+        path: str,
+        message: str,
+        expected: str | None,
+        location: str,
+        repair: str | None = None,
+    ) -> None:
+        self.path = path
+        self.message = message
+        self.expected = expected
+        self.location = location
+        self.repair = repair
+
+    def render(self, level: str) -> str:
+        lines = [f"{level} {self.path}: {self.message}"]
+        if self.expected:
+            lines.append(f"expected: {self.expected}")
+        if self.repair:
+            lines.append(f"repair: {self.repair}")
+        lines.append(f"location: {self.location}")
+        return "\n".join(lines)
+
+
 def load_plan(path: Path) -> dict[str, Any]:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
