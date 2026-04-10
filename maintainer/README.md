@@ -26,3 +26,6 @@ For multi-turn Claude acceptance work, use the fixture-backed interactive plan i
 [`docs/maintainer/claude-interactive-test-implementation-plan.md`](../docs/maintainer/claude-interactive-test-implementation-plan.md)
 together with the checklist in
 [`docs/maintainer/claude-interactive-test-checklist.md`](../docs/maintainer/claude-interactive-test-checklist.md).
+
+For retained upstream authoring guidance, see
+[`docs/maintainer/claude-skill-authoring-best-practices.md`](../docs/maintainer/claude-skill-authoring-best-practices.md).

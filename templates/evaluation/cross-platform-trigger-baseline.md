@@ -6,15 +6,26 @@
 
 ## Purpose
 
-Record trigger accuracy across platforms to establish a quantitative baseline. Run after changing skill `description` fields, `When to Use` / `When Not to Use` sections, or after adding or removing skills.
+Record trigger accuracy across platforms to establish a quantitative baseline.
+Run after changing skill `description` fields, `When to Use` / `When Not to Use`
+sections, after adding or removing skills, or after changing the model lineup
+used for trigger evaluation.
 
 ## Platforms Tested
 
-| Platform | Version | Notes |
-|----------|---------|-------|
-| Cursor   |         |       |
-| Codex    |         |       |
-| Claude Code |      |       |
+| Platform | Version | Model | Notes |
+|----------|---------|-------|-------|
+| Cursor   |         |       |       |
+| Codex    |         |       |       |
+| Claude Code |      |       |       |
+
+## Description Checks
+
+Record any `description` changes that may affect trigger behavior:
+
+- Uses third-person phrasing
+- Includes both what the skill does and when to use it
+- Includes specific trigger terms instead of vague wording
 
 ## Test Cases
 
@@ -60,6 +71,7 @@ Prompt: <paste from trigger_test_data.py>
 ## Observations
 
 - Platform-specific differences:
+- Model-specific differences:
 - Skills with lowest trigger accuracy:
 - Recommended description changes:
 
