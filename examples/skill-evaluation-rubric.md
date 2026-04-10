@@ -108,6 +108,21 @@ Score these dimensions for every scenario:
 - Pass: contract authority stays centralized and smoke checks pass after any script change.
 - Fail: contract rules are duplicated in sibling skills or golden files drift without update.
 
+### `impact-analysis`
+
+- Pass: traces outward from edit point, produces structured impact summary with blast radius, stops at framework boundaries or 8-file threshold.
+- Fail: skips impact assessment and goes directly to planning, or reads the entire repo during impact analysis.
+
+### `incremental-delivery`
+
+- Pass: splits plan into 2–4 mergeable increments with explicit dependencies and acceptance criteria; each increment keeps the system runnable; correctly escalates to phase-plan when thresholds are exceeded.
+- Fail: creates increments with implicit dependencies, allows non-runnable intermediate states, or stays at incremental-delivery when phase-plan is clearly needed.
+
+### `self-review`
+
+- Pass: reviews diff before testing, catches debug residuals and out-of-scope changes, uses severity grading (blocking vs warning), fixes blocking issues before proceeding to validation.
+- Fail: skips diff review and goes directly to testing, or treats all issues as equal severity, or leaves debug code in the diff.
+
 ## Trigger Accuracy
 
 Trigger accuracy measures whether the agent loaded the correct skills before execution. Score these separately from execution behavior.

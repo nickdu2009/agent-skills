@@ -9,11 +9,16 @@ It is not a language tutorial, framework guide, product-specific prompt pack, or
 ```mermaid
 flowchart TD
     T[Task] --> S[scoped-tasking]
-    S --> P[plan-before-action]
-    P --> M[minimal-change-strategy]
-    M --> V[targeted-validation]
-    P --> C[context-budget-awareness]
     S --> R[read-and-locate]
+    S --> IA[impact-analysis]
+    R --> P[plan-before-action]
+    IA --> P
+    P --> ID[incremental-delivery]
+    ID -->|exceeds threshold| PP[phase-plan]
+    P --> M[minimal-change-strategy]
+    M --> SR[self-review]
+    SR --> V[targeted-validation]
+    P --> C[context-budget-awareness]
     M --> F[safe-refactor]
     S --> B[bugfix-workflow]
     P --> O[multi-agent-protocol]
@@ -48,6 +53,9 @@ Included execution skills:
 - `read-and-locate`
 - `safe-refactor`
 - `bugfix-workflow`
+- `impact-analysis`
+- `self-review`
+- `incremental-delivery`
 
 ### Orchestration Skills
 
@@ -113,6 +121,25 @@ Add `conflict-resolution` when:
 - multiple subagents report overlapping or conflicting conclusions
 - evidence must be compared and merged before acting
 - uncertainty should be preserved instead of collapsed too early
+
+Add `impact-analysis` when:
+
+- the change touches shared interfaces or public APIs
+- the function or type being changed has 3 or more callers
+- read-and-locate produced 3 or more tentative leads
+- you need to estimate blast radius before planning
+
+Add `self-review` when:
+
+- edits are complete and span multiple files
+- you want to catch debug residuals, scope violations, and anti-patterns before running tests
+- the user asks for a diff review before testing
+
+Add `incremental-delivery` when:
+
+- the plan spans 2–4 PRs across 1–2 modules
+- each increment can be merged and validated independently
+- the task is too large for a single PR but too small for the phase system
 
 ### Phase Skills
 
@@ -221,6 +248,9 @@ skills/
   read-and-locate/
   safe-refactor/
   bugfix-workflow/
+  impact-analysis/
+  self-review/
+  incremental-delivery/
   multi-agent-protocol/
   conflict-resolution/
 templates/
@@ -434,6 +464,9 @@ Recommended examples:
 - `examples/context-budgeted-debugging.md`
 - `examples/multi-agent-root-cause-analysis.md`
 - `examples/phased-migration-planning.md`
+- `examples/impact-analysis.md`
+- `examples/self-review.md`
+- `examples/incremental-delivery.md`
 
 When testing, evaluate behavior rather than only the final answer. For example:
 

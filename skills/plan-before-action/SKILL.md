@@ -73,6 +73,9 @@ Return:
 - Do not hide uncertainty; surface it as an assumption or open question.
 - Do not let progress updates collapse into vague status language.
 - Keep the plan short enough to execute, not so broad that it becomes a project document.
+- If the plan involves adding or upgrading dependencies, note the dependency change in the plan and recommend running the project's dependency audit tool (npm audit / pip-audit / cargo audit or equivalent).
+- If a lock file shows large-scale changes, flag it in the plan and assess the impact before proceeding.
+- Do not silently introduce new dependencies during implementation — all new dependencies must be declared in the plan.
 
 # Common Anti-Patterns
 

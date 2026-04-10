@@ -130,6 +130,22 @@ BOUNDARY_CASES: tuple[TriggerCase, ...] = (
         category="agents-md-boundary",
         notes="Simple command. AGENTS.md Validation Rules suffice.",
     ),
+    TriggerCase(
+        id="ambiguous-requirement",
+        prompt="Make the system faster.",
+        expected_triggers=("scoped-tasking",),
+        expected_non_triggers=(),
+        category="agents-md-boundary",
+        notes="Extremely vague requirement. scoped-tasking should trigger and its Step 0 should fire clarification questions.",
+    ),
+    TriggerCase(
+        id="irreversible-operation",
+        prompt="Drop the legacy_users table and migrate all data to the new users table.",
+        expected_triggers=("minimal-change-strategy",),
+        expected_non_triggers=(),
+        category="agents-md-boundary",
+        notes="Irreversible database operation. minimal-change-strategy should trigger and its rollback-awareness step should fire.",
+    ),
 )
 
 
@@ -294,6 +310,89 @@ PHASE_CASES: tuple[TriggerCase, ...] = (
 
 
 # ---------------------------------------------------------------------------
+# Category 7: Pre-phase skill triggers
+# ---------------------------------------------------------------------------
+
+PRE_PHASE_CASES: tuple[TriggerCase, ...] = (
+    # --- impact-analysis ---
+    TriggerCase(
+        id="impact-public-api-change",
+        prompt="I need to change the return type of the getUserProfile function. It's called by at least 5 other modules including the admin dashboard and the mobile API.",
+        expected_triggers=("impact-analysis",),
+        expected_non_triggers=("phase-plan",),
+        category="pre-phase",
+        notes="Public interface change with many callers. impact-analysis should trigger to assess blast radius.",
+    ),
+    TriggerCase(
+        id="impact-not-needed-single-file",
+        prompt="Rename a local variable inside the calculateTax helper function. Nothing else references it.",
+        expected_triggers=(),
+        expected_non_triggers=("impact-analysis",),
+        category="pre-phase",
+        notes="Single-file internal change, no exported symbol change. impact-analysis should NOT trigger.",
+    ),
+    TriggerCase(
+        id="impact-data-model-change",
+        prompt="Add a new required field to the Order model. This is an ORM model used across billing, shipping, and reporting.",
+        expected_triggers=("impact-analysis",),
+        expected_non_triggers=(),
+        category="pre-phase",
+        notes="Data model change affecting 3+ modules. impact-analysis should trigger.",
+    ),
+    # --- incremental-delivery ---
+    TriggerCase(
+        id="incremental-multi-pr-task",
+        prompt="Implement the new notification system: add the data model, create the service layer, build the API endpoints, and update the frontend. This will be 3 separate PRs.",
+        expected_triggers=("incremental-delivery",),
+        expected_non_triggers=("phase-plan",),
+        category="pre-phase",
+        notes="Explicit 3-PR task. incremental-delivery should trigger, not phase-plan.",
+    ),
+    TriggerCase(
+        id="incremental-not-needed-single-pr",
+        prompt="Add a new endpoint for password reset. It's a single PR with model, handler, and test.",
+        expected_triggers=(),
+        expected_non_triggers=("incremental-delivery", "phase-plan"),
+        category="pre-phase",
+        notes="Single PR task. Neither incremental-delivery nor phase-plan needed.",
+    ),
+    TriggerCase(
+        id="incremental-upgrade-to-phase",
+        prompt="Migrate the entire auth system from session-based to JWT. This spans 8 services, needs parallel work streams, and must align with the external OAuth2 spec.",
+        expected_triggers=("phase-plan",),
+        expected_non_triggers=("incremental-delivery",),
+        category="pre-phase",
+        notes="8 services + parallel + external spec. Should escalate to phase-plan, not stay at incremental-delivery.",
+    ),
+    # --- self-review ---
+    TriggerCase(
+        id="self-review-after-edit",
+        prompt="I just finished implementing the feature. Can you review the diff before I run tests?",
+        expected_triggers=("self-review",),
+        expected_non_triggers=("targeted-validation",),
+        category="pre-phase",
+        notes="Explicit diff review request before testing. self-review should trigger.",
+    ),
+    TriggerCase(
+        id="self-review-not-needed-test-request",
+        prompt="Run the unit tests for the auth module.",
+        expected_triggers=(),
+        expected_non_triggers=("self-review",),
+        category="pre-phase",
+        notes="Direct test command. self-review should NOT trigger.",
+    ),
+    TriggerCase(
+        id="self-review-multi-file-change",
+        prompt="I've made changes across 5 files to add the new payment flow. Before running the test suite, let me check if the diff looks clean.",
+        expected_triggers=("self-review",),
+        expected_non_triggers=(),
+        category="pre-phase",
+        notes="Multi-file change with explicit intent to review diff before testing.",
+    ),
+)
+
+
+# ---------------------------------------------------------------------------
 # Aggregate
 # ---------------------------------------------------------------------------
 
@@ -304,6 +403,7 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
     *CONTEXT_BUDGET_CASES,
     *MULTI_AGENT_CASES,
     *PHASE_CASES,
+    *PRE_PHASE_CASES,
 )
 
 ALL_TRIGGER_CASES_BY_ID: dict[str, TriggerCase] = {
@@ -317,6 +417,7 @@ CATEGORIES: tuple[str, ...] = (
     "context-budget",
     "multi-agent",
     "phase",
+    "pre-phase",
 )
 
 

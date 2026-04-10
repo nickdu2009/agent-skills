@@ -41,6 +41,7 @@
 - If a compatibility boundary must change, always explain impact, migration, and rollback first.
 - Never overwrite or revert unrelated changes.
 - Escalate to `minimal-change-strategy` when: the diff is growing beyond what the task requires, multiple edit strategies compete, or surrounding code tempts drive-by cleanup.
+- Escalate to `impact-analysis` when: the change touches a function or interface with 3+ callers, involves a public API or shared type, modifies a data model used across multiple modules, or read-and-locate produced 3+ tentative leads.
 
 ## Multi-Agent Rules
 
@@ -68,6 +69,9 @@ Multi-agent execution has two tiers. Full operational protocol is in the `multi-
 - Drop `plan-before-action` once execution is underway and no re-planning is needed.
 - Drop `context-budget-awareness` after a successful compression if the session is now compact.
 - Keep `minimal-change-strategy` and `targeted-validation` active until the task is complete.
+- Drop `impact-analysis` after plan-before-action produces the plan.
+- Drop `self-review` after the diff review passes with no blocking issues.
+- Drop `incremental-delivery` after the increment list is finalized — it provides structure, not ongoing execution guidance.
 - If the task phase changes (e.g., from diagnosis to implementation), re-evaluate which skills are still providing signal.
 - Never carry more than 4 active skills simultaneously without explicit justification.
 
@@ -93,11 +97,13 @@ Multi-agent execution has two tiers. Full operational protocol is in the `multi-
 - Always prioritize compatibility impact when presenting results.
 - Always prioritize validation results when presenting results.
 - Never paste large repository code blocks unless necessary.
+- Escalate to `incremental-delivery` when: the plan from plan-before-action spans 2–4 PRs across 1–2 modules and can be delivered serially.
 
 ## Validation Rules
 
 - Always start with the smallest sufficient validation.
 - For every unvalidated area, always state the reason and the risk.
+- When testing skills, always create a temporary directory, initialize a test project there (`git init`), and use `manage-governance.py --project <temp-dir>` to sync skills into it. Run all skill validation against the temp project. Clean up after testing. Never test skills directly in the agent-skills repo or any real project.
 - Escalate to `targeted-validation` when: multiple validation options exist and the cheapest meaningful check needs deliberate selection, validation is expensive and the change is local enough for a narrower check, or a validation failure needs diagnosis before broadening coverage.
 
 ## Done Criteria
@@ -116,6 +122,7 @@ Multi-agent execution has two tiers. Full operational protocol is in the `multi-
 - Always check for unclear module responsibilities.
 - Always check whether the solution can be simplified further.
 - Always check for hidden boundary condition issues.
+- Escalate to `self-review` when: edits span multiple files and are complete, or the user requests a diff review before testing.
 
 ## Review Rules
 

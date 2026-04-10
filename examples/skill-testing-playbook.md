@@ -53,6 +53,9 @@ python3 maintainer/scripts/install/manage-governance.py --sync-local cursor
 | `context-budgeted-debugging.md` | context compression and restart | stale hypotheses dropped, compressed summary, focused next step |
 | `multi-agent-root-cause-analysis.md` | justified parallelism | low-coupling split, clear subagent assignments, merge and adjudication discipline |
 | `phased-migration-planning.md` | schema-first phase planning | YAML is execution authority, strict four-file doc set, validators run after YAML, hotspot ownership explicit |
+| `impact-analysis.md` | blast radius assessment before planning | outward tracing from edit point, structured impact summary, stop at framework boundaries, result feeds into plan |
+| `incremental-delivery.md` | 2–4 PR split with upgrade/downgrade | increments keep system runnable, dependencies explicit, correctly escalates to phase-plan or downgrades to plan-before-action |
+| `self-review.md` | diff quality check before testing | reviews diff before running tests, catches debug residuals, severity grading, fixes blocking issues first |
 
 ## Core Acceptance Checklist
 
@@ -64,6 +67,11 @@ python3 maintainer/scripts/install/manage-governance.py --sync-local cursor
 - Validation was narrow and relevant to the affected surface.
 - Uncertainty was preserved when evidence was incomplete.
 - Follow-up work was clearly separated from the main task.
+- Impact was assessed before planning when the change affects shared interfaces.
+- The diff was reviewed for quality issues before testing.
+- Multi-PR tasks were split into runnable increments with explicit dependencies.
+- Irreversible operations were identified and rollback strategies were stated.
+- Ambiguous requirements triggered clarification before scoping.
 
 For a scored review, use `examples/skill-evaluation-rubric.md` together with this playbook. The playbook tells you how to run the test; the rubric tells you how to score it.
 

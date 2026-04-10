@@ -38,6 +38,14 @@ Keep edits small, local, and reviewable. The skill favors the narrowest patch th
 1. Define the required behavior change or defect correction.
 2. Identify the narrowest edit point that can produce that outcome.
 3. Compare options and choose the one that touches the fewest files, changes the fewest interfaces, and affects the fewest downstream consumers.
+3.5. Assess reversibility.
+   - If the change only involves code logic (function bodies, control flow, local variables) — git revert is sufficient, proceed to step 4.
+   - If the change involves any of the following, state a rollback strategy and request confirmation before proceeding:
+     - database schema or persistent storage format changes
+     - external API calls or webhook registrations
+     - file or directory deletions or renames
+     - permission, authentication, or encryption configuration changes
+   - The rollback strategy must answer: Is git revert sufficient? Is a data migration rollback needed? How are already-triggered external side effects handled?
 4. Make the patch without broad restructuring.
 5. Validate only the affected area first.
 6. Record any intentional non-fixes that were observed but deferred.
@@ -73,6 +81,8 @@ Return:
 - Do not rename symbols unless the rename is part of the required fix.
 - If the smallest patch is unsafe or too brittle, state why and escalate deliberately to a slightly larger change.
 - Keep diffs easy to review and easy to revert.
+- For irreversible operations (database schema, external APIs, file deletions, permission changes), state a rollback strategy before editing.
+- Do not assume all changes can be undone with git revert — changes with external side effects need an explicit rollback plan.
 
 # Common Anti-Patterns
 

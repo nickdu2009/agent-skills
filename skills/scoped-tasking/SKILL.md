@@ -16,6 +16,7 @@ Force the agent to define the minimum useful task boundary before doing work. Th
 - When multiple modules, files, or systems are mentioned but the real change target is unclear.
 - When a task is expanding faster than evidence justifies.
 - When the agent is about to explore the repository without a clear starting point.
+- When the task description is vague or ambiguous and needs clarification before scoping can begin.
 
 # When Not to Use
 
@@ -35,6 +36,12 @@ Force the agent to define the minimum useful task boundary before doing work. Th
 
 # Execution Pattern
 
+0. Check requirement clarity before scoping.
+   - If the task description includes specific file names, function names, or error messages — skip to step 1.
+   - If the task description is under 2 sentences and has 3 or more possible interpretations — trigger clarification.
+   - If the task involves multiple stakeholders with potentially different requirements — trigger clarification.
+   - If the user explicitly says "help me understand the requirements first" — trigger clarification.
+   - Clarification action: list confirmation questions ("My understanding is X — is that correct?"), distinguish must-have from nice-to-have, and establish acceptance criteria before proceeding to step 1.
 1. Restate the objective in one sentence.
 2. Propose the initial boundary: files, modules, interfaces, and validation surface.
 3. Inspect only that boundary.
