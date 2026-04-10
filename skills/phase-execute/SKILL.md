@@ -328,3 +328,54 @@ Use this skill together with:
 - `$phase-plan-review` when the user wants a pre-execution quality gate before the first wave launch
 - `$phase-plan` when the phase doc set must be repaired, re-rendered, or re-scoped
 - `$conflict-resolution` when merge or evidence conflicts exceed the circuit-breaker threshold
+
+## Artifact Contract
+
+### Preconditions
+
+- An accepted phase doc set already exists.
+- The phase id, wave id, and parallel authorization state are all resolved.
+- Preflight has run, or a manual fallback has been declared explicitly.
+
+### Execution Outputs
+
+- `status: completed` includes `wave_status`, `lane_results`, `gate_outcomes`, and `rollback_state`.
+- The execution report names the resolved wave, execution mode, current lane states, validation state, and resulting wave state.
+- Status output follows the shared wave-status vocabulary rather than ad hoc labels.
+
+### Invariants
+
+- `plan.yaml` remains the execution authority during the entire wave.
+- Lane instructions are passed unchanged from the schema-derived source.
+- Execution does not reopen planning while claiming to implement an accepted wave.
+
+## Gate Contract
+
+- Wave execution may start only when the selected wave exists and its `start_condition` gates are satisfied.
+- Blocking contract gaps or preflight failures stop execution immediately.
+- A wave can advance only after required lane validation and seam validation are satisfied according to the plan.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- A wave gate is unsatisfied.
+- Parallel lanes collide in the same hotspot or trigger the circuit breaker.
+- Validation retries are exhausted for a lane.
+
+### Retry Policy
+
+- Default maximum is 3 validation-fix attempts per active lane.
+- On retry exhaustion, preserve the failing state and report the blocker instead of guessing.
+
+### Fallback
+
+- Return to `phase-plan` when the doc set or wave split is no longer executable as written.
+- Use `conflict-resolution` for non-trivial merge or evidence conflicts.
+- Use `phase-contract-tools` helpers for preflight, handoff, and status validation instead of inventing substitutes.
+
+## Lifecycle
+
+- Activate when a specific accepted wave is ready to execute.
+- Deactivate when the wave reaches a terminal reported state or is blocked pending plan repair.
+- Deactivate if the task shifts back into review or planning rather than execution.

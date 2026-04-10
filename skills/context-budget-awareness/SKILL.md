@@ -203,3 +203,83 @@ next_step: compare serializer output between initial enqueue and retry enqueue f
 ```
 
 Do not carry the full terminal history, every rejected hypothesis, and every unrelated worker module into the next pass.
+
+## Contract
+
+### Preconditions
+
+- The session is long, noisy, or clearly at risk of context sprawl.
+- The agent can name the current objective, working set, and active hypotheses.
+- At least one compression or restart decision can be justified from observable session state.
+
+### Postconditions
+
+- `status: completed` includes `current_state`, `dropped_hypotheses`, and `open_questions`.
+- A ledger or compressed-state output makes the active context observable.
+- The next step is narrower than the pre-compression state.
+
+### Invariants
+
+- Working-state accounting stays explicit rather than implicit.
+- Threshold breaches do not continue with `action: continue`.
+- Stale hypotheses are either ranked, deferred, or dropped.
+
+### Downstream Signals
+
+- `current_state` gives downstream skills the compressed summary they should continue from.
+- `dropped_hypotheses` prevents old dead ends from silently re-entering scope.
+- `open_questions` defines the next focused investigation target.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The agent cannot summarize the live scope because the session never externalized its state.
+- Too many hypotheses remain active with no evidence to rank them.
+- The user wants a broad historical recap rather than a compact working summary.
+
+### Retry Policy
+
+- Allow one compression pass to rebuild the ledger from current evidence.
+- If the state still cannot be compressed usefully, recommend a restart from the compressed summary instead of continuing the bloated session.
+
+### Fallback
+
+- Hand off to `scoped-tasking` when the compressed state shows the objective itself is too broad.
+- Resume `plan-before-action` once the working set is compact again.
+- Ask the user whether a broad recap is wanted when concise compression conflicts with their goal.
+
+### Low Confidence Handling
+
+- Mark weak hypotheses as open questions rather than carrying them as likely causes.
+- Prefer restart over continued accumulation when the compressed state is still noisy.
+
+## Output Example
+
+```yaml
+[skill-output: context-budget-awareness]
+status: completed
+confidence: medium
+outputs:
+  current_state:
+    objective: "find root cause of worker failure on retry path"
+    live:
+      - "retry_scheduler.py"
+      - "payload_serializer.py"
+  dropped_hypotheses:
+    - "queue connection timeout"
+    - "credential expiry"
+  open_questions:
+    - "does serializer output differ between initial enqueue and retry enqueue?"
+signals:
+  action: "compress"
+recommendations:
+  next_step: "compare serializer output across the two enqueue paths"
+[/skill-output]
+```
+
+## Deactivation Trigger
+
+- Deactivate once the working set is back under control and a downstream skill has consumed the compressed state.
+- Deactivate when the user explicitly chooses a broad recap instead of focused continuation.
+- Deactivate after a restart handoff has been produced and the old session state is no longer active.

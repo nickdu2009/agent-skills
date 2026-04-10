@@ -105,3 +105,85 @@ Plan:
   - Done: mapped current call path.
   - Not done: implement retry and verify no duplicate side effects.
   - Next: patch the wrapper and run the targeted tests.
+
+## Contract
+
+### Preconditions
+
+- The task needs multi-step execution, multiple files, or explicit sequencing.
+- Enough evidence exists to name a working set and a next action.
+- Edits are allowed now, or the plan is being produced explicitly for later execution.
+
+### Postconditions
+
+- `status: completed` includes `assumptions`, `working_set`, `sequence`, and `validation_boundary`.
+- The plan names the intended files or modules before implementation starts.
+- Progress can be reported as done / not done / next without reopening discovery.
+
+### Invariants
+
+- Execution does not begin while the working set is still fuzzy.
+- Only one coherent objective is active at a time.
+- New dependencies or irreversible operations are surfaced in the plan instead of being introduced silently.
+
+### Downstream Signals
+
+- `assumptions` tell implementers what must still be rechecked.
+- `working_set` names the approved edit surface.
+- `sequence` gives the execution order for edits and validation.
+- `validation_boundary` defines the first targeted check after the patch.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- Discovery is incomplete, so the intended file list is still unstable.
+- Hidden assumptions change the task shape mid-plan.
+- The task combines unrelated objectives that should be split first.
+
+### Retry Policy
+
+- Allow one re-plan when new evidence invalidates a stated assumption.
+- If the working set remains unstable after the second pass, stop and return to discovery or scoping.
+
+### Fallback
+
+- Return to `scoped-tasking` or `read-and-locate` when the edit surface is still uncertain.
+- Hand off to `design-before-plan` when design choices, not execution order, are the real blocker.
+- Escalate to the user when plan alternatives require product or policy decisions.
+
+### Low Confidence Handling
+
+- Mark uncertain steps as assumptions and keep the first edit narrow.
+- Require downstream execution to restate any unresolved assumption before editing.
+
+## Output Example
+
+```yaml
+[skill-output: plan-before-action]
+status: completed
+confidence: high
+outputs:
+  assumptions:
+    - "Only the payment client wrapper is affected."
+  working_set:
+    - "payment_client.py"
+    - "payment_client_test.py"
+  sequence:
+    - "add bounded retry logic"
+    - "update focused tests"
+    - "run targeted validation"
+  validation_boundary:
+    - "payment client unit tests"
+signals:
+  execution_ready: true
+recommendations:
+  next_step: "patch the client wrapper before touching broader payment flows"
+[/skill-output]
+```
+
+## Deactivation Trigger
+
+- Deactivate once execution starts and no re-planning is required.
+- Deactivate when a new assumption failure forces the task back into scoping or design.
+- Deactivate after the plan has been consumed by downstream implementation and validation work.

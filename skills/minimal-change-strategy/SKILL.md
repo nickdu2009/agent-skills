@@ -112,3 +112,82 @@ Avoid:
 - rewriting the exception hierarchy
 - reformatting the surrounding file
 - bundling unrelated error-handling cleanup into the same change
+
+## Contract
+
+### Preconditions
+
+- A concrete behavior change or defect correction is already known.
+- Multiple edit options exist, or the current diff is drifting beyond the requested outcome.
+- Compatibility boundaries that must stay stable are known or can be named.
+
+### Postconditions
+
+- `status: completed` includes `change_boundary`, `scope_guardrails`, and `stop_conditions`.
+- The output states which interfaces or behaviors are intentionally preserved.
+- Any deferred cleanup is recorded explicitly instead of being silently bundled into the patch.
+
+### Invariants
+
+- The chosen patch remains the smallest safe option that satisfies the request.
+- Unrelated cleanup, renaming, or style normalization stays out of scope.
+- Reversibility and rollback sensitivity are considered before irreversible changes.
+
+### Downstream Signals
+
+- `change_boundary` tells implementation where edits may occur.
+- `scope_guardrails` constrain follow-on edits and reviews.
+- `stop_conditions` tell the agent when to stop editing instead of continuing cleanup.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The smallest local patch is too brittle or unsafe to preserve behavior.
+- Hidden compatibility constraints make the minimal edit unclear.
+- The user request implicitly requires a larger redesign than the current boundary allows.
+
+### Retry Policy
+
+- Allow one boundary revision when new evidence proves the smallest patch unsafe.
+- Do not iterate endlessly on cosmetic reshaping; after one revision, either commit to the slightly larger safe change or escalate.
+
+### Fallback
+
+- Escalate to `design-before-plan` if preserving the current interface may itself be wrong.
+- Combine with `impact-analysis` when a supposedly local change affects multiple callers or contracts.
+- Ask the user for confirmation when rollback requires more than a simple revert.
+
+### Low Confidence Handling
+
+- State the preserved interfaces as assumptions, not guarantees.
+- Require downstream validation to target the riskiest preserved behavior first.
+
+## Output Example
+
+```yaml
+[skill-output: minimal-change-strategy]
+status: completed
+confidence: high
+outputs:
+  change_boundary:
+    - "request handler null-check branch"
+  scope_guardrails:
+    - "do not rename helpers"
+    - "do not reformat unrelated imports"
+  stop_conditions:
+    - "stop after the 404 behavior and focused validation both pass"
+signals:
+  preserved_interfaces:
+    - "handler signature"
+    - "existing exception hierarchy"
+recommendations:
+  validation_focus: "profile-missing request path"
+[/skill-output]
+```
+
+## Deactivation Trigger
+
+- Deactivate when the patch has been applied and the guarded boundary is no longer needed.
+- Deactivate when the task escalates into a larger design or impact-analysis exercise.
+- Deactivate after validation confirms the requested outcome without needing further scope restraint.

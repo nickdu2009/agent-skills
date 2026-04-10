@@ -104,3 +104,81 @@ A disciplined bugfix flow is:
 - validation: run the retry-focused test or reproduction, not the entire notification stack
 
 Residual uncertainty may remain if no deterministic reproduction exists; state that explicitly.
+
+## Contract
+
+### Preconditions
+
+- A bug symptom or unexpected behavior has been reported.
+- The root cause is not yet confirmed.
+- The agent can gather evidence from code, logs, tests, or reproduction steps before editing.
+
+### Postconditions
+
+- `status: completed` includes `symptom`, `repro`, `fault_domain`, and `fix_hypothesis`.
+- The chosen fix is backed by direct evidence or a reproducible path rather than speculation alone.
+- Validation is tied back to the original symptom.
+
+### Invariants
+
+- Diagnosis precedes editing.
+- Confirmed causes remain distinct from ranked but unconfirmed hypotheses.
+- The fix stays scoped to the confirmed failure path.
+
+### Downstream Signals
+
+- `symptom` preserves the user-visible failure to verify later.
+- `repro` gives downstream validation the exact failure path to re-check.
+- `fault_domain` narrows where edits may happen.
+- `fix_hypothesis` documents the confirmed cause and chosen repair direction.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The symptom cannot be reproduced or evidenced with the available information.
+- Multiple plausible fault domains remain and none can be confirmed.
+- The bug appears intermittent and validation cannot fully prove the fix.
+
+### Retry Policy
+
+- Allow one additional evidence-gathering pass when the first hypothesis cannot be confirmed.
+- If no hypothesis can be confirmed after the second pass, stop patching and report the residual uncertainty.
+
+### Fallback
+
+- Use `read-and-locate` when the failure path is still unknown.
+- Use `context-budget-awareness` when diagnosis is spinning across too many files or hypotheses.
+- Escalate to the user when reproduction depends on unavailable environment state or missing logs.
+
+### Low Confidence Handling
+
+- State clearly that the fix remains a best-supported hypothesis.
+- Keep validation narrow but explicitly note which intermittent behaviors remain unproven.
+
+## Output Example
+
+```yaml
+[skill-output: bugfix-workflow]
+status: completed
+confidence: medium
+outputs:
+  symptom: "duplicate email on retry only"
+  repro:
+    - "run the retry-focused notification scenario"
+  fault_domain:
+    - "retry scheduler"
+    - "idempotency marker preservation"
+  fix_hypothesis: "retry path drops the idempotency marker before enqueue"
+signals:
+  minimal_fix_ready: true
+recommendations:
+  downstream_skill: "minimal-change-strategy"
+[/skill-output]
+```
+
+## Deactivation Trigger
+
+- Deactivate once the root cause has been confirmed and handed off to implementation.
+- Deactivate when the task becomes a purely mechanical patch with no remaining diagnosis work.
+- Deactivate if the investigation must pause for user-supplied reproduction data or logs.

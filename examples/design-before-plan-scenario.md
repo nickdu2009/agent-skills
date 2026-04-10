@@ -176,3 +176,78 @@ Correct approach: During design phase, explicitly check implicit requirements tr
 - ✅ Agent derives acceptance criteria from requirements (not from implementation details)
 - ✅ Agent flags architectural constraints (rate limiter, database locking)
 - ✅ Agent outputs a structured design brief consumed by plan-before-action
+
+## Skill Protocol v1 Trace
+
+```yaml
+[task-input-validation]
+task: "Design batch API support before implementation planning."
+checks:
+  clarity:
+    status: PASS
+    reason: "The design problem and desired outcome are explicit."
+  scope:
+    status: PASS
+    reason: "This pass is bounded to design and acceptance criteria."
+  safety:
+    status: PASS
+    reason: "No implementation is requested at this stage."
+  skill_match:
+    status: PASS
+    reason: "design-before-plan is the direct fit."
+result: PASS
+action: proceed
+[/task-input-validation]
+
+[trigger-evaluation]
+task: "Choose a batch API design."
+evaluated:
+  - scoped-tasking: ✓ TRIGGER
+  - design-before-plan: ✓ TRIGGER
+  - plan-before-action: ⏸ DEFER
+activated_now: [scoped-tasking, design-before-plan]
+deferred: [plan-before-action]
+[/trigger-evaluation]
+
+[precondition-check: design-before-plan]
+checks:
+  - alternatives_exist: ✓ PASS
+  - acceptance_criteria_unfrozen: ✓ PASS
+result: PASS
+[/precondition-check]
+
+[skill-output: design-before-plan]
+status: completed
+confidence: high
+outputs:
+  requirements:
+    - "Support batch create and update up to 100 items."
+  alternatives:
+    - "Single batch endpoint"
+    - "Extend existing endpoint"
+    - "GraphQL mutation"
+  chosen_design:
+    approach: "POST /items/batch"
+    rationale: "Clear contract separation with smallest acceptable blast radius"
+  acceptance_criteria:
+    - "Per-item partial failure details are returned"
+    - "Batches of 10 finish within 2 seconds p95"
+signals:
+  planning_ready: true
+recommendations:
+  downstream_skill: "plan-before-action"
+[/skill-output]
+
+[output-validation: design-before-plan]
+checks:
+  - outputs.alternatives: ✓ PASS
+  - outputs.acceptance_criteria: ✓ PASS
+result: PASS
+[/output-validation]
+
+[skill-deactivation: design-before-plan]
+reason: "The design brief is complete enough for planning."
+outputs_consumed_by: [plan-before-action]
+remaining_active: [plan-before-action]
+[/skill-deactivation]
+```

@@ -49,6 +49,7 @@ sys.path.insert(0, str(DATA_DIR))
 
 from skill_test_data import ALL_SKILLS
 from trigger_test_data import TriggerCase, resolve_trigger_case
+from skill_protocol_v1 import validate_protocol_text
 
 
 CaseStrategy = Literal["auto", "slash"]
@@ -101,6 +102,9 @@ class CaseResult:
     matched_patterns: list[str]
     forbidden_hits: list[str]
     mentioned_skills: list[str]
+    protocol_status: CaseStatus
+    protocol_blocks: list[str]
+    protocol_issues: list[str]
     notes: str
     workspace: str | None
     stdout: str
@@ -108,6 +112,13 @@ class CaseResult:
 
 
 REPRESENTATIVE_CASES: tuple[SmokeCase, ...] = (
+    SmokeCase(
+        id="design-before-plan",
+        skill="design-before-plan",
+        strategy="auto",
+        source_case_id="design-multiple-approaches",
+        expected_patterns=(r"design-before-plan", r"\balternatives?\b", r"\btrade-?offs?\b", r"\bdesign\b", r"\bcaching\b"),
+    ),
     SmokeCase(
         id="bugfix-workflow",
         skill="bugfix-workflow",
@@ -166,6 +177,20 @@ REPRESENTATIVE_CASES: tuple[SmokeCase, ...] = (
         notes="Uses slash invocation because single-turn auto-trigger lacks genuine session history.",
     ),
     SmokeCase(
+        id="impact-analysis",
+        skill="impact-analysis",
+        strategy="auto",
+        source_case_id="impact-public-api-change",
+        expected_patterns=(r"impact-analysis", r"\bcallers?\b", r"\bcontract", r"\bcompat"),
+    ),
+    SmokeCase(
+        id="incremental-delivery",
+        skill="incremental-delivery",
+        strategy="auto",
+        source_case_id="incremental-multi-pr-task",
+        expected_patterns=(r"incremental-delivery", r"\bincrements?\b", r"\bmerge order\b", r"\bgates?\b"),
+    ),
+    SmokeCase(
         id="multi-agent-protocol",
         skill="multi-agent-protocol",
         strategy="slash",
@@ -188,6 +213,13 @@ REPRESENTATIVE_CASES: tuple[SmokeCase, ...] = (
         expected_patterns=(r"\bwave\b", r"\bphase\b", r"\bparallel\b", r"phase1-plan\.yaml"),
     ),
     SmokeCase(
+        id="phase-plan-review",
+        skill="phase-plan-review",
+        strategy="auto",
+        source_case_id="review-phase-plan",
+        expected_patterns=(r"phase-plan-review", r"\balignment\b", r"\bblocking\b", r"\bapproval\b"),
+    ),
+    SmokeCase(
         id="phase-execute",
         skill="phase-execute",
         strategy="auto",
@@ -200,6 +232,13 @@ REPRESENTATIVE_CASES: tuple[SmokeCase, ...] = (
         strategy="auto",
         source_case_id="contract-tools-direct",
         expected_patterns=(r"\bvalidator\b", r"validation error", r"\bschema\b", r"validate_phase_execution_schema"),
+    ),
+    SmokeCase(
+        id="self-review",
+        skill="self-review",
+        strategy="auto",
+        source_case_id="self-review-after-edit",
+        expected_patterns=(r"self-review", r"\bfindings?\b", r"\bresidual\b", r"\bscope\b"),
     ),
     SmokeCase(
         id="no-trigger-control",
@@ -292,7 +331,7 @@ def mentioned_skills(text: str) -> list[str]:
     return hits
 
 
-def classify_result(case: SmokeCase, returncode: int, output_text: str) -> tuple[CaseStatus, list[str], list[str], list[str]]:
+def classify_result(case: SmokeCase, returncode: int, output_text: str) -> tuple[CaseStatus, list[str], list[str], list[str], CaseStatus, list[str], list[str]]:
     matched_patterns = [
         pattern for pattern in case.expected_patterns
         if re.search(pattern, output_text, re.IGNORECASE | re.DOTALL)
@@ -302,24 +341,31 @@ def classify_result(case: SmokeCase, returncode: int, output_text: str) -> tuple
         if re.search(pattern, output_text, re.IGNORECASE | re.DOTALL)
     ]
     skill_hits = mentioned_skills(output_text)
+    protocol = validate_protocol_text(output_text)
+    protocol_blocks = [block.raw_tag for block in protocol.blocks]
+    protocol_status: CaseStatus = "pass" if protocol.status == "pass" else "fail"
+    protocol_issues = list(protocol.issues)
 
     if returncode != 0:
-        return "fail", matched_patterns, forbidden_hits, skill_hits
+        return "fail", matched_patterns, forbidden_hits, skill_hits, protocol_status, protocol_blocks, protocol_issues
 
     if forbidden_hits:
-        return "fail", matched_patterns, forbidden_hits, skill_hits
+        return "fail", matched_patterns, forbidden_hits, skill_hits, protocol_status, protocol_blocks, protocol_issues
+
+    if protocol_status == "fail":
+        return "fail", matched_patterns, forbidden_hits, skill_hits, protocol_status, protocol_blocks, protocol_issues
 
     if case.skill is None:
         if matched_patterns and not skill_hits:
-            return "pass", matched_patterns, forbidden_hits, skill_hits
+            return "pass", matched_patterns, forbidden_hits, skill_hits, protocol_status, protocol_blocks, protocol_issues
         if matched_patterns:
-            return "warn", matched_patterns, forbidden_hits, skill_hits
-        return "warn", matched_patterns, forbidden_hits, skill_hits
+            return "warn", matched_patterns, forbidden_hits, skill_hits, protocol_status, protocol_blocks, protocol_issues
+        return "warn", matched_patterns, forbidden_hits, skill_hits, protocol_status, protocol_blocks, protocol_issues
 
     if matched_patterns:
-        return "pass", matched_patterns, forbidden_hits, skill_hits
+        return "pass", matched_patterns, forbidden_hits, skill_hits, protocol_status, protocol_blocks, protocol_issues
 
-    return "warn", matched_patterns, forbidden_hits, skill_hits
+    return "warn", matched_patterns, forbidden_hits, skill_hits, protocol_status, protocol_blocks, protocol_issues
 
 
 def create_workspace(root: Path, keep: bool) -> tuple[Path, str | None]:
@@ -387,7 +433,15 @@ def run_case(claude_path: str, case: SmokeCase, model: str | None, timeout_overr
             shutil.rmtree(workspace, ignore_errors=True)
 
     output_text = stdout if stdout.strip() else stderr
-    status, matched, forbidden_hits, skill_hits = classify_result(case, returncode, output_text)
+    (
+        status,
+        matched,
+        forbidden_hits,
+        skill_hits,
+        protocol_status,
+        protocol_blocks,
+        protocol_issues,
+    ) = classify_result(case, returncode, output_text)
 
     return CaseResult(
         id=case.id,
@@ -401,6 +455,9 @@ def run_case(claude_path: str, case: SmokeCase, model: str | None, timeout_overr
         matched_patterns=matched,
         forbidden_hits=forbidden_hits,
         mentioned_skills=skill_hits,
+        protocol_status=protocol_status,
+        protocol_blocks=protocol_blocks,
+        protocol_issues=protocol_issues,
         notes=case.notes or (case.trigger_case().notes if case.trigger_case() else ""),
         workspace=workspace_hint,
         stdout=stdout,
@@ -429,7 +486,7 @@ def print_summary(results: list[CaseResult], output_path: Path) -> None:
         print(
             f"[{result.status}] {result.id:24} "
             f"skill={label:24} strategy={result.strategy:5} rc={result.returncode:3} "
-            f"time={result.elapsed_seconds:6.2f}s"
+            f"time={result.elapsed_seconds:6.2f}s protocol={result.protocol_status}"
         )
 
     print()

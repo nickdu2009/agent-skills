@@ -109,3 +109,80 @@ Apply this skill by starting with the smallest plausible boundary:
 - the failing export test or command
 
 Do not scan every reporting module. If the service delegates to a shared query builder and the evidence shows the delay comes from there, expand scope to the query builder and explain that the original boundary could not account for query generation time.
+
+## Contract
+
+### Preconditions
+
+- The task is broad, ambiguous, or at risk of expanding beyond evidence.
+- There is at least one concrete clue, likely entry point, or user objective to anchor the first boundary.
+- The agent can distinguish the requested objective from adjacent cleanup or curiosity-driven exploration.
+
+### Postconditions
+
+- `status: completed` includes `objective`, `analysis_boundary`, and `excluded_areas`.
+- The final output states the next action that remains inside the chosen boundary.
+- Any scope expansion is justified against the previously insufficient boundary.
+
+### Invariants
+
+- Repository-wide exploration is not the default.
+- The active working set stays tied to the stated objective and validation surface.
+- Possible leads remain separate from confirmed in-scope areas.
+
+### Downstream Signals
+
+- `objective` gives downstream skills the current task target.
+- `analysis_boundary` tells `read-and-locate` or `plan-before-action` where work may continue.
+- `excluded_areas` protects `minimal-change-strategy` and `targeted-validation` from drift.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The task is too vague to identify a stable action/target pair.
+- The user request is truly global, so a narrow boundary would be misleading.
+- Early clues are contradictory and no initial boundary can be defended yet.
+
+### Retry Policy
+
+- Allow one clarification round when the objective or target surface is unclear.
+- After one failed clarification cycle, stop narrowing and escalate the ambiguity to the user.
+
+### Fallback
+
+- Use `read-and-locate` once the boundary is known but the edit point is still unknown.
+- Hand off to `design-before-plan` if the boundary is known but design choices remain open.
+- Escalate to the user when no bounded interpretation is defensible.
+
+### Low Confidence Handling
+
+- Mark the boundary as provisional and require downstream skills to re-check assumptions before editing.
+- Prefer another read-only narrowing pass over silent scope expansion.
+
+## Output Example
+
+```yaml
+[skill-output: scoped-tasking]
+status: completed
+confidence: high
+outputs:
+  objective: "Fix the timeout regression in invoice export."
+  analysis_boundary:
+    - "invoice_export_controller"
+    - "export_service"
+    - "failing export command"
+  excluded_areas:
+    - "unrelated reporting modules"
+signals:
+  next_action: "inspect the export service call path inside the boundary"
+recommendations:
+  downstream_skill: "plan-before-action"
+[/skill-output]
+```
+
+## Deactivation Trigger
+
+- Deactivate once `plan-before-action`, `read-and-locate`, or another downstream skill has consumed the boundary.
+- Deactivate immediately if the task is confirmed to be globally scoped rather than narrowable.
+- Deactivate when the task is complete or when a new clarification round resets the objective.

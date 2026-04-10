@@ -289,3 +289,60 @@ Combine with:
 - `plan-before-action` — to design the overall decomposition plan before delegating.
 - `targeted-validation` — to choose the cheapest meaningful validation after synthesis.
 - `context-budget-awareness` — to compress multi-branch reasoning into a usable merged state.
+
+## Delegation Contract
+
+### Preconditions
+
+- The task can be split into 2-4 independent lanes with clear scope boundaries.
+- Merge cost is lower than the expected time saved.
+- Write scopes are disjoint, or the work is strictly read-only.
+
+### Required Outputs
+
+- `status: completed` includes `split_dimension`, `lanes`, and `integration_plan`.
+- Each lane declares its objective, scope, exclusions, edit permission, and validation boundary.
+- Tier 2 launches emit the required `[delegate: <count> | split: <dimension> | risk: <level>]` gate first.
+
+### Invariants
+
+- No overlapping write scopes without an explicit collision-management plan.
+- The primary agent does not duplicate subagent work.
+- Lane instructions are passed unchanged from the canonical source.
+
+## Synthesis Contract
+
+- Synthesis must collect each lane's findings and evidence before drawing conclusions.
+- The final synthesis output includes `split_dimension`, `lanes`, `integration_plan`, and `synthesis`.
+- Conflicting findings remain explicit until resolved; use `conflict-resolution` when disagreement is non-trivial.
+- Integration validation runs at the seam after lane results are merged.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The split axis is unclear, so lanes would overlap materially.
+- A subagent needs excluded scope or exhausts its retry budget.
+- Merge conflicts or shared hotspots break lane isolation.
+
+### Retry Policy
+
+- Allow up to 3 validation/fix retries per delegated lane.
+- If a lane exhausts retries or hits a scope conflict, stop the lane and return control to the primary agent.
+
+### Fallback
+
+- Stay serial when the task cannot be split cleanly.
+- Use `conflict-resolution` when returned findings disagree materially.
+- Escalate to the user when merge conflicts require policy or product judgment.
+
+### Low Confidence Handling
+
+- Preserve uncertainty in the final synthesis instead of flattening it into a forced conclusion.
+- Prefer a targeted adjudication step over a weak merge decision.
+
+## Deactivation Trigger
+
+- Deactivate once all lane outputs have been synthesized into a single conclusion.
+- Deactivate when the task is reclassified as serial work.
+- Deactivate after conflicts are handed off to `conflict-resolution` or the user for resolution.

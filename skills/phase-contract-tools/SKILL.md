@@ -175,3 +175,54 @@ Use this skill together with:
 - `$phase-plan` to author the per-phase strict four-file phase doc set plus the phase-root README against this contract
 - `$phase-plan-review` to review upstream intent alignment, plan quality, and execution readiness before wave execution begins
 - `$phase-execute` to execute accepted waves by consuming this contract and its helpers
+
+## Artifact Contract
+
+### Preconditions
+
+- The task is about schema semantics, validators, renderers, handoff contracts, or phase contract stability.
+- Contract authority remains centralized in this skill and its bundled references/scripts.
+- Target repository paths can be passed explicitly to helpers.
+
+### Outputs
+
+- `status: completed` includes `schema_checks`, `rendered_views`, and `contract_issues`.
+- Schema checks identify which validator or contract rule passed or failed.
+- Rendered outputs stay derivable from schema-owned fields rather than hand-maintained prose.
+
+### Invariants
+
+- This skill is the sole contract authority for phase schema semantics and helper behavior.
+- Sibling skills do not redefine field meanings locally.
+- Helper outputs stay deterministic enough for smoke testing and golden comparisons.
+
+## Gate Contract
+
+- Contract changes are only acceptable when validators and smoke checks remain coherent.
+- A failing validator, renderer, or smoke check is a blocking contract issue until repaired or explicitly accepted.
+- Downstream phase skills may consume outputs only after the relevant contract issue is cleared.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- A schema or renderer change breaks bundled smoke fixtures.
+- Contract rules drift between this skill and sibling phase skills.
+- A direct phase task tries to use this skill as a planning or execution substitute.
+
+### Retry Policy
+
+- Allow one focused repair pass after a failing validator or smoke check.
+- If contract stability still fails after that pass, stop and report the exact contract issue rather than broadening unrelated scope.
+
+### Fallback
+
+- Hand phase authoring back to `phase-plan`.
+- Hand execution back to `phase-execute`.
+- Use repository-local smoke and validator evidence to justify any accepted contract change.
+
+## Lifecycle
+
+- Activate when maintaining contract scripts, schema references, or renderers directly.
+- Activate alongside one primary phase skill only when that phase skill needs contract validation or rendering support.
+- Deactivate once contract issues have been consumed by the requesting phase skill or the direct tools-maintenance task is complete.

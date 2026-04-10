@@ -27,3 +27,103 @@ These rules define when base-level CLAUDE.md rules are insufficient and the agen
 - Keep `minimal-change-strategy` and `targeted-validation` active until the task is complete.
 - If the task phase changes (e.g., from diagnosis to implementation), re-evaluate which skills are still providing signal.
 - Never carry more than 4 active skills simultaneously without explicit justification.
+
+## Skill Protocol v1
+
+Use the following protocol blocks literally when a task requires skill-driven execution:
+
+1. `[task-input-validation]`
+2. `[trigger-evaluation]`
+3. `[precondition-check: <skill-name>]`
+4. `[skill-output: <skill-name>]`
+5. `[output-validation: <skill-name>]`
+6. `[skill-deactivation: <skill-name>]` when the skill leaves the active set
+
+Insert `[loop-detected: <skill-name>]` before any repeated activation when the same skill is being retried without materially new evidence.
+
+Keep the default block order above. Do not emit `[skill-output: <skill-name>]` without a matching `[output-validation: <skill-name>]`.
+
+### Task Input Validation
+
+The protocol is language-agnostic. Do not rely on English word counts, English verbs, or English regexes.
+
+Evaluate every new task with these checks:
+
+- `clarity`: can identify an action and a target object
+- `scope`: clearly bounded, or can be narrowed by `scoped-tasking`
+- `safety`: no unguarded destructive or out-of-scope request
+- `skill_match`: at least one skill family can take the task
+
+Set:
+
+- `result: PASS` and `action: proceed` when all required checks pass
+- `result: WARN` and `action: ask_clarification` when the task can likely be recovered through clarification or scoping
+- `result: REJECT` and `action: reject` when the task is unsafe or cannot be matched to the skill library
+
+### Minimum Block Shape
+
+```yaml
+[task-input-validation]
+task: "<user request verbatim>"
+checks:
+  clarity:
+    status: PASS | FAIL
+    reason: "<why>"
+  scope:
+    status: PASS | WARN | FAIL
+    reason: "<why>"
+  safety:
+    status: PASS | FAIL
+    reason: "<why>"
+  skill_match:
+    status: PASS | WARN | FAIL
+    reason: "<why>"
+result: PASS | WARN | REJECT
+action: proceed | ask_clarification | reject
+[/task-input-validation]
+
+[trigger-evaluation]
+task: "<one-line task summary>"
+evaluated:
+  - scoped-tasking: ✓ TRIGGER | ✗ SKIP | ⏸ DEFER
+activated_now: [...]
+deferred: [...]
+[/trigger-evaluation]
+
+[precondition-check: <skill-name>]
+checks:
+  - <field>: ✓ PASS | ✗ FAIL
+result: PASS | FAIL
+[/precondition-check]
+
+[skill-output: <skill-name>]
+status: completed | failed | partial
+confidence: high | medium | low
+outputs: {...}
+signals: {...}
+recommendations: {...}
+[/skill-output]
+
+[output-validation: <skill-name>]
+checks:
+  - outputs.<field>: ✓ PASS | ✗ FAIL
+result: PASS | FAIL
+[/output-validation]
+
+[skill-deactivation: <skill-name>]
+reason: "<why>"
+outputs_consumed_by: [...]
+remaining_active: [...]
+[/skill-deactivation]
+```
+
+## Skill Family Concurrency Budgets
+
+Track active skills by family, not by one global count:
+
+- Execution: at most 4 active at once
+- Orchestration: at most 1 active at once
+- Primary Phase: at most 1 active at once
+- `phase-contract-tools`: may coexist only with one primary phase skill, or run alone when directly maintaining phase contract assets
+
+All skills must be explicitly deactivated. Do not rely on silent or implicit retirement when outputs have been consumed, the phase changed, the family budget would overflow, or fallback / clarification has taken over.

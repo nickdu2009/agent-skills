@@ -112,3 +112,80 @@ Apply impact-analysis:
 - Invariants: all callers must destructure the new return shape; no caller should compare the result to true/false directly.
 
 Hand off the summary to plan-before-action. Do not start editing.
+
+## Contract
+
+### Preconditions
+
+- A planned edit point, symbol, or contract surface is already known.
+- The change may affect shared callers, types, schemas, or public interfaces.
+- Tracing outward can still stay within the bounded depth and file-count guardrails.
+
+### Postconditions
+
+- `status: completed` includes `affected_callers`, `contracts`, and `compatibility_risks`.
+- The blast radius is described concretely enough for planning and sequencing.
+- The analysis stops at declared framework boundaries instead of drifting into full-repo tracing.
+
+### Invariants
+
+- Outward tracing stays limited to affected consumers, not every textual mention.
+- Depth and file-count limits remain explicit.
+- Compatibility-sensitive contracts are recorded before planning begins.
+
+### Downstream Signals
+
+- `affected_callers` tells planning which modules or layers must be coordinated.
+- `contracts` records the public or shared surfaces that may need migration.
+- `compatibility_risks` identifies where rollback, phased rollout, or caller updates matter.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The supposed edit point is still ambiguous or moves during tracing.
+- Reachability is mistaken for actual impact, inflating the blast radius.
+- The blast radius exceeds bounded tracing limits before a reliable summary is formed.
+
+### Retry Policy
+
+- Allow one narrowed tracing pass when the first pass overestimates affected callers.
+- If the impact still exceeds bounded analysis after the second pass, stop and report the overflow instead of continuing to scan.
+
+### Fallback
+
+- Return to `read-and-locate` when the true edit point is not stable.
+- Escalate to `phase-plan` or `design-before-plan` when contract migration becomes multi-stage or externally constrained.
+- Ask the user for confirmation when compatibility trade-offs exceed the original task scope.
+
+### Low Confidence Handling
+
+- Mark uncertain callers as tentative rather than affected.
+- Require planning to preserve extra rollback margin when compatibility risk remains medium or high.
+
+## Output Example
+
+```yaml
+[skill-output: impact-analysis]
+status: completed
+confidence: high
+outputs:
+  affected_callers:
+    - "auth/middleware"
+    - "admin dashboard route handlers"
+  contracts:
+    - "validateToken() return shape"
+  compatibility_risks:
+    - "boolean comparisons must be migrated before rollout"
+signals:
+  blast_radius: "8 files across 2 modules"
+recommendations:
+  downstream_skill: "plan-before-action"
+[/skill-output]
+```
+
+## Deactivation Trigger
+
+- Deactivate once `plan-before-action` has absorbed the impact summary.
+- Deactivate when the change is downgraded to a local internal edit with no shared-contract impact.
+- Deactivate if broader contract work escalates into a phase-planning exercise.

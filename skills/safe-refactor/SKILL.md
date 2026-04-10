@@ -97,3 +97,81 @@ Possible invariants:
 - error messages stay unchanged
 
 Apply the refactor by extracting one shared helper, switching one handler at a time if needed, and validating the affected handlers rather than running every API test in the repository.
+
+## Contract
+
+### Preconditions
+
+- The requested work is structural rather than behavioral.
+- Stable interfaces or invariants can be named before editing.
+- The refactor can be decomposed into small reversible steps.
+
+### Postconditions
+
+- `status: completed` includes `behavior_invariants`, `refactor_boundary`, and `rollback_notes`.
+- The structural steps preserve signatures, outputs, and externally visible behavior unless the user requested otherwise.
+- Residual risk or deferred cleanup is stated explicitly.
+
+### Invariants
+
+- Behavior and interface contracts stay stable throughout the refactor.
+- Structural steps remain reviewable and reversible.
+- Validation stays aligned with the touched structural seam.
+
+### Downstream Signals
+
+- `behavior_invariants` define what later validation must preserve.
+- `refactor_boundary` limits the structural change surface.
+- `rollback_notes` document how to revert if an invariant breaks.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The proposed extraction or move changes behavior in hidden ways.
+- The true refactor scope is larger than the local boundary suggests.
+- Stable invariants cannot be stated with confidence.
+
+### Retry Policy
+
+- Allow one smaller-step revision when a planned refactor step proves too large.
+- If invariants still cannot be preserved locally, stop and escalate to redesign or bugfix handling.
+
+### Fallback
+
+- Return to `minimal-change-strategy` when only a local cleanup is justified.
+- Escalate to `design-before-plan` if the structural change also implies interface redesign.
+- Use `read-and-locate` if ownership seams are still unclear.
+
+### Low Confidence Handling
+
+- Treat unstated invariants as blockers, not assumptions.
+- Require targeted validation after each meaningful structural step.
+
+## Output Example
+
+```yaml
+[skill-output: safe-refactor]
+status: completed
+confidence: high
+outputs:
+  behavior_invariants:
+    - "handler signatures stay unchanged"
+    - "normalized output shape stays unchanged"
+  refactor_boundary:
+    - "request normalization helper extraction"
+  rollback_notes:
+    - "revert the helper extraction commit if output shape changes"
+signals:
+  validation_boundary:
+    - "affected handler tests only"
+recommendations:
+  next_step: "extract one shared helper without changing handler call sites"
+[/skill-output]
+```
+
+## Deactivation Trigger
+
+- Deactivate when the structural goal is met and invariants remain intact.
+- Deactivate when hidden behavior changes force the task into bugfix or redesign territory.
+- Deactivate after downstream validation has consumed the invariant list.

@@ -104,3 +104,81 @@ A good discovery sequence is:
 - confirm where persistence happens
 
 Stop once the generation path and serialization boundary are clear. Do not survey every billing file just because they look related.
+
+## Contract
+
+### Preconditions
+
+- The relevant edit point is not yet known.
+- The task has at least one strong clue that can anchor a narrow discovery path.
+- Simple exact lookup is not sufficient to finish discovery.
+
+### Postconditions
+
+- `status: completed` includes `entry_points`, `candidate_files`, and `edit_points`.
+- Confirmed locations are separated from tentative leads.
+- The validation surface is clear enough to hand off to planning or diagnosis.
+
+### Invariants
+
+- Discovery remains local to the traced runtime, data, ownership, or configuration path.
+- Curiosity-driven browsing stops once the next action is clear.
+- Tentative leads are never presented as confirmed edit locations.
+
+### Downstream Signals
+
+- `entry_points` tell downstream skills where the traced path starts.
+- `candidate_files` narrows the remaining search surface.
+- `edit_points` identify the likely mutation or review surface for the next skill.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The strongest clue is too weak to establish a reliable path.
+- Adjacent paths branch too widely to keep discovery local.
+- A direct symbol/path lookup would have been sufficient but was not available at first.
+
+### Retry Policy
+
+- Allow one shift to the next-best clue when the first clue dead-ends.
+- If the second clue still fails to produce likely edit points, stop and request stronger input.
+
+### Fallback
+
+- Hand off to `scoped-tasking` if the discovery surface itself is too broad.
+- Hand off to `bugfix-workflow` when the real goal is to isolate a fault domain rather than locate an edit point.
+- Escalate to the user for a stronger clue when discovery would otherwise become repo-wide.
+
+### Low Confidence Handling
+
+- Mark files as tentative and require downstream confirmation before editing.
+- Prefer a short list of uncertain candidates over an inflated list of weak leads.
+
+## Output Example
+
+```yaml
+[skill-output: read-and-locate]
+status: completed
+confidence: medium
+outputs:
+  entry_points:
+    - "invoice generation endpoint"
+  candidate_files:
+    - "billing/invoice_service.py"
+    - "billing/invoice_serializer.py"
+  edit_points:
+    - "InvoiceSerializer.build_payload"
+signals:
+  validation_surface:
+    - "invoice generation test fixture"
+recommendations:
+  downstream_skill: "plan-before-action"
+[/skill-output]
+```
+
+## Deactivation Trigger
+
+- Deactivate once a downstream skill has consumed the likely edit points.
+- Deactivate when discovery concludes that the exact symbol lookup or user clarification is now sufficient.
+- Deactivate when the task shifts from discovery to planning, diagnosis, or editing.

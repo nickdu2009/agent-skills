@@ -56,3 +56,75 @@ Break the migration into a phased plan:
 - The agent should not implement the actual migration SQL or code changes.
 - The agent should not create `phase1-pr-delivery-plan.md` or other non-standard planning docs.
 - The agent should not skip validation because "it looks correct."
+
+## Skill Protocol v1 Trace
+
+```yaml
+[task-input-validation]
+task: "Create a phased migration plan for renaming user_id to account_id without downtime."
+checks:
+  clarity:
+    status: PASS
+    reason: "The planning objective, hotspot, and non-goal are explicit."
+  scope:
+    status: PASS
+    reason: "The work is bounded to planning artifacts, not implementation."
+  safety:
+    status: PASS
+    reason: "Schema-first planning is read/write only within phase docs."
+  skill_match:
+    status: PASS
+    reason: "phase-plan and phase-contract-tools clearly apply."
+result: PASS
+action: proceed
+[/task-input-validation]
+
+[trigger-evaluation]
+task: "Produce the phase1 planning artifact set."
+evaluated:
+  - phase-plan: ✓ TRIGGER
+  - phase-contract-tools: ⏸ DEFER
+  - phase-plan-review: ⏸ DEFER
+activated_now: [phase-plan]
+deferred: [phase-contract-tools, phase-plan-review]
+[/trigger-evaluation]
+
+[precondition-check: phase-plan]
+checks:
+  - baseline_identified: ✓ PASS
+  - contract_authority_known: ✓ PASS
+result: PASS
+[/precondition-check]
+
+[skill-output: phase-plan]
+status: completed
+confidence: high
+outputs:
+  plan_artifacts:
+    - "docs/phases/phase1/roadmap.md"
+    - "docs/phases/phase1/plan.yaml"
+    - "docs/phases/phase1/wave-guide.md"
+    - "docs/phases/phase1/execution-index.md"
+    - "docs/phases/README.md"
+  waves: ["phase1 wave sequencing for three services"]
+  gates: ["schema validation", "doc-set validation"]
+  ownership: ["users table hotspot ownership is explicit"]
+signals:
+  review_ready: true
+recommendations:
+  downstream_skill: "phase-plan-review"
+[/skill-output]
+
+[output-validation: phase-plan]
+checks:
+  - outputs.plan_artifacts: ✓ PASS
+  - outputs.gates: ✓ PASS
+result: PASS
+[/output-validation]
+
+[skill-deactivation: phase-plan]
+reason: "The planning artifacts are complete enough for review."
+outputs_consumed_by: [phase-plan-review]
+remaining_active: [phase-plan-review]
+[/skill-deactivation]
+```

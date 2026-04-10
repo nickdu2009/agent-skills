@@ -66,6 +66,22 @@ TASK_TYPE_CASES: tuple[TriggerCase, ...] = (
         category="task-type",
         notes="Pure additive feature. Neither bugfix nor refactor skills should trigger.",
     ),
+    TriggerCase(
+        id="bug-production-critical",
+        prompt="Users can't log in! The auth service is returning 401 for every request since 10 minutes ago. We need to fix this immediately.",
+        expected_triggers=("bugfix-workflow",),
+        expected_non_triggers=("safe-refactor", "design-before-plan"),
+        category="task-type",
+        notes="High-urgency production incident. bugfix-workflow should trigger; no time for design or refactoring.",
+    ),
+    TriggerCase(
+        id="refactor-frontend",
+        prompt="Extract the user profile display logic from the Dashboard component into a reusable ProfileCard component. Keep the same props interface.",
+        expected_triggers=("safe-refactor",),
+        expected_non_triggers=("bugfix-workflow",),
+        category="task-type",
+        notes="Frontend component extraction refactor. safe-refactor should trigger for structural cleanup.",
+    ),
 )
 
 
@@ -145,6 +161,22 @@ BOUNDARY_CASES: tuple[TriggerCase, ...] = (
         expected_non_triggers=(),
         category="agents-md-boundary",
         notes="Irreversible database operation. minimal-change-strategy should trigger and its rollback-awareness step should fire.",
+    ),
+    TriggerCase(
+        id="validation-failure-diagnosis",
+        prompt="The checkout integration test failed after my change. I could re-run the full suite, run just the checkout unit tests, or manually test the payment step. What should I do first to narrow it down?",
+        expected_triggers=("targeted-validation",),
+        expected_non_triggers=(),
+        category="agents-md-boundary",
+        notes="Multiple validation options after a failure. targeted-validation should trigger to select the cheapest diagnostic path.",
+    ),
+    TriggerCase(
+        id="minimal-competing-strategies",
+        prompt="I need to add input sanitization to the form handler. I could modify the handler directly, add a middleware, or use a decorator. Each approach touches different files. Which is the smallest safe change?",
+        expected_triggers=("minimal-change-strategy",),
+        expected_non_triggers=(),
+        category="agents-md-boundary",
+        notes="Multiple edit strategies competing. minimal-change-strategy should trigger to select the smallest viable approach.",
     ),
 )
 
@@ -234,6 +266,38 @@ CONTEXT_BUDGET_CASES: tuple[TriggerCase, ...] = (
         category="context-budget",
         notes="Medium-length session but focused and progressing. No context compression needed.",
     ),
+    TriggerCase(
+        id="context-multi-hypothesis",
+        prompt="The login failure could be a database connection timeout, a Redis session expiry bug, an OAuth token validation issue, or a firewall rule blocking the callback. I haven't gathered evidence to rule any of them out yet.",
+        expected_triggers=("context-budget-awareness",),
+        expected_non_triggers=(),
+        category="context-budget",
+        notes="4 active hypotheses without evidence ranking. Matches the '3+ hypotheses active without ranking evidence' trigger.",
+    ),
+    TriggerCase(
+        id="context-stalled-actions",
+        prompt="I just read auth.ts again — nothing new. Then I checked the session log — no relevant errors. Then I re-read auth.ts a third time and still have no leads. I feel like I'm going in circles.",
+        expected_triggers=("context-budget-awareness",),
+        expected_non_triggers=(),
+        category="context-budget",
+        notes="Last 3+ actions did not advance the stated objective. Matches the 'last 3 actions did not advance' trigger.",
+    ),
+    TriggerCase(
+        id="context-7-files-no-trigger",
+        prompt="I've looked at 7 files so far tracing this request path. I think I'm getting close — the middleware chain is auth.ts, session.ts, rate-limit.ts, cors.ts, logger.ts, validator.ts, and router.ts.",
+        expected_triggers=(),
+        expected_non_triggers=("context-budget-awareness",),
+        category="context-budget",
+        notes="7 files is below the 8-file threshold. context-budget-awareness should NOT trigger while still making progress.",
+    ),
+    TriggerCase(
+        id="context-9-files-trigger",
+        prompt="I've now read through 9 files tracing this request lifecycle and I'm still not sure where the latency spike originates. Each file I open raises new questions.",
+        expected_triggers=("context-budget-awareness",),
+        expected_non_triggers=(),
+        category="context-budget",
+        notes="9 files exceeds the 8-file threshold without convergence. context-budget-awareness SHOULD trigger.",
+    ),
 )
 
 
@@ -274,6 +338,14 @@ MULTI_AGENT_CASES: tuple[TriggerCase, ...] = (
         category="multi-agent",
         notes="Explicit conflicting findings. conflict-resolution should trigger even standalone.",
     ),
+    TriggerCase(
+        id="conflicting-hypotheses",
+        prompt="The payment timeout could be caused by network latency or a database deadlock. Both explanations fit the logs equally well but they lead to completely different fixes. How do I decide?",
+        expected_triggers=("conflict-resolution",),
+        expected_non_triggers=(),
+        category="multi-agent",
+        notes="Two competing hypotheses with equal evidence. conflict-resolution should trigger for arbitration.",
+    ),
 )
 
 
@@ -299,12 +371,28 @@ PHASE_CASES: tuple[TriggerCase, ...] = (
         notes="Explicit wave execution. phase-execute only.",
     ),
     TriggerCase(
+        id="review-phase-plan",
+        prompt="Review the accepted phase 2 plan before execution starts. I need blocking issues, alignment findings, and an approval decision.",
+        expected_triggers=("phase-plan-review",),
+        expected_non_triggers=("phase-plan", "phase-execute", "phase-contract-tools"),
+        category="phase",
+        notes="Plan review before execution. phase-plan-review should trigger on its own.",
+    ),
+    TriggerCase(
         id="contract-tools-direct",
         prompt="Fix a validation error in the phase schema validator script.",
         expected_triggers=("phase-contract-tools",),
         expected_non_triggers=("phase-plan", "phase-execute"),
         category="phase",
         notes="Working on the tools themselves. Only case where phase-contract-tools should trigger directly.",
+    ),
+    TriggerCase(
+        id="phase-review-not-needed",
+        prompt="Review my one-file change to the user profile handler before I run tests.",
+        expected_triggers=(),
+        expected_non_triggers=("phase-plan-review", "phase-plan"),
+        category="phase",
+        notes="Small single-file review. self-review may apply but phase-plan-review should NOT trigger for non-phase work.",
     ),
 )
 
@@ -314,6 +402,63 @@ PHASE_CASES: tuple[TriggerCase, ...] = (
 # ---------------------------------------------------------------------------
 
 PRE_PHASE_CASES: tuple[TriggerCase, ...] = (
+    # --- design-before-plan ---
+    TriggerCase(
+        id="design-multiple-approaches",
+        prompt="Add caching to the product recommendation engine. We could use Redis, Memcached, or an in-memory LRU cache. Each has different trade-offs for our scale and consistency requirements.",
+        expected_triggers=("design-before-plan",),
+        expected_non_triggers=("plan-before-action",),
+        category="pre-phase",
+        notes="Multiple implementation approaches with explicit trade-offs. design-before-plan should trigger to compare alternatives before planning.",
+    ),
+    TriggerCase(
+        id="design-api-contract",
+        prompt="Design a new webhook API for third-party integrations. We need to define the payload format, authentication scheme, retry semantics, and versioning strategy before implementation.",
+        expected_triggers=("design-before-plan",),
+        expected_non_triggers=("plan-before-action",),
+        category="pre-phase",
+        notes="Public API design with contract decisions. design-before-plan should trigger to establish interface contracts.",
+    ),
+    TriggerCase(
+        id="design-unclear-acceptance",
+        prompt="Make the checkout flow faster. Users are complaining but we don't have specific performance targets or clear success criteria yet.",
+        expected_triggers=("design-before-plan",),
+        expected_non_triggers=("scoped-tasking",),
+        category="pre-phase",
+        notes="Missing acceptance criteria. design-before-plan should trigger to establish measurable criteria before planning.",
+    ),
+    TriggerCase(
+        id="design-cross-module-contract",
+        prompt="Refactor the authentication layer to support both session-based and token-based auth. This will change the interface between the auth module, API handlers, and frontend.",
+        expected_triggers=("design-before-plan",),
+        expected_non_triggers=(),
+        category="pre-phase",
+        notes="Cross-module contract change. design-before-plan should trigger to define interface contracts.",
+    ),
+    TriggerCase(
+        id="design-not-needed-clear-path",
+        prompt="Add a new field 'emailVerified' (boolean) to the User model and display it on the admin dashboard user detail page.",
+        expected_triggers=(),
+        expected_non_triggers=("design-before-plan",),
+        category="pre-phase",
+        notes="Single clear implementation path with no design alternatives. design-before-plan should NOT trigger.",
+    ),
+    TriggerCase(
+        id="design-not-needed-documented",
+        prompt="Implement the notification preferences API according to the design doc at docs/api/notifications-v2.md. The interface contracts and acceptance criteria are already defined.",
+        expected_triggers=(),
+        expected_non_triggers=("design-before-plan",),
+        category="pre-phase",
+        notes="Design already documented and frozen. design-before-plan should NOT trigger.",
+    ),
+    TriggerCase(
+        id="design-not-needed-bugfix",
+        prompt="Fix the null pointer exception in the email service when the recipient list is empty.",
+        expected_triggers=("bugfix-workflow",),
+        expected_non_triggers=("design-before-plan",),
+        category="pre-phase",
+        notes="Pure bug fix with no design decisions. design-before-plan should NOT trigger.",
+    ),
     # --- impact-analysis ---
     TriggerCase(
         id="impact-public-api-change",
@@ -389,6 +534,184 @@ PRE_PHASE_CASES: tuple[TriggerCase, ...] = (
         category="pre-phase",
         notes="Multi-file change with explicit intent to review diff before testing.",
     ),
+    # --- incremental-delivery / phase-plan PR boundary ---
+    TriggerCase(
+        id="incremental-4pr",
+        prompt="Implement the new analytics pipeline: data ingestion, transformation rules, storage layer, and dashboard integration. Each layer is a separate PR — 4 PRs total.",
+        expected_triggers=("incremental-delivery",),
+        expected_non_triggers=("phase-plan",),
+        category="pre-phase",
+        notes="4 PRs is within the 2-4 PR range. incremental-delivery should trigger, not phase-plan.",
+    ),
+    TriggerCase(
+        id="phase-5pr-boundary",
+        prompt="Modernize the legacy reporting system. This involves migrating 5 services, rewriting the data pipeline, updating the API layer, adding new dashboards, and creating integration tests. Each is its own PR with cross-service dependencies.",
+        expected_triggers=("phase-plan",),
+        expected_non_triggers=("incremental-delivery",),
+        category="pre-phase",
+        notes="5+ PRs with cross-service dependencies exceeds incremental-delivery scope. phase-plan should trigger.",
+    ),
+    # --- chain triggers (skill A output → skill B activation) ---
+    TriggerCase(
+        id="design-after-scoping",
+        prompt="We've narrowed the task to the notification subsystem, but there are still open design questions: should notifications be push-based or pull-based, and what delivery guarantees do we need?",
+        expected_triggers=("design-before-plan",),
+        expected_non_triggers=("scoped-tasking",),
+        category="pre-phase",
+        notes="Scope is already defined but design decisions remain. Matches 'scoped-tasking identified the boundary but design decisions remain open'.",
+    ),
+    TriggerCase(
+        id="locate-then-impact",
+        prompt="read-and-locate found that the pricing logic touches pricing/engine.ts, discount/rules.ts, checkout/summary.ts, and billing/invoice.ts. Now I need to understand which of these will break if I change the base price calculation.",
+        expected_triggers=("impact-analysis",),
+        expected_non_triggers=("read-and-locate",),
+        category="pre-phase",
+        notes="read-and-locate produced 4 candidate files. impact-analysis should now assess the blast radius. Matches 'read-and-locate produced 3+ tentative leads'.",
+    ),
+)
+
+
+# ---------------------------------------------------------------------------
+# Category 8: Baseline control (no skill should trigger)
+# ---------------------------------------------------------------------------
+
+BASELINE_CONTROL_CASES: tuple[TriggerCase, ...] = (
+    TriggerCase(
+        id="doc-only-change",
+        prompt="Update the README to add installation instructions for the new CLI tool.",
+        expected_triggers=(),
+        expected_non_triggers=("design-before-plan", "plan-before-action", "safe-refactor"),
+        category="baseline-control",
+        notes="Pure documentation change. No skill should be required.",
+    ),
+    TriggerCase(
+        id="info-query",
+        prompt="What database does this project use? I see references to both PostgreSQL and Redis in the config.",
+        expected_triggers=(),
+        expected_non_triggers=("read-and-locate", "scoped-tasking", "impact-analysis"),
+        category="baseline-control",
+        notes="Information query with no intent to change code. No skill needed.",
+    ),
+    TriggerCase(
+        id="git-operation",
+        prompt="Commit my current changes and push to the feature branch.",
+        expected_triggers=(),
+        expected_non_triggers=("plan-before-action", "self-review", "targeted-validation"),
+        category="baseline-control",
+        notes="Git housekeeping. Exempt from skill activation.",
+    ),
+)
+
+
+# ---------------------------------------------------------------------------
+# Category 9: Confusion boundary (distinguishing easily confused skills)
+# ---------------------------------------------------------------------------
+
+CONFUSION_BOUNDARY_CASES: tuple[TriggerCase, ...] = (
+    TriggerCase(
+        id="scope-vs-locate",
+        prompt="Users are complaining that search is broken, but I don't know if they mean the product search, the user search, or the log search. Can you help figure out which one?",
+        expected_triggers=("scoped-tasking",),
+        expected_non_triggers=("read-and-locate",),
+        category="confusion-boundary",
+        notes="Ambiguous scope needs narrowing, not code discovery. scoped-tasking should trigger to clarify which subsystem.",
+    ),
+    TriggerCase(
+        id="locate-vs-scope",
+        prompt="Find where the payment webhook handler is defined. I know it exists somewhere in the billing module but I need the exact file.",
+        expected_triggers=("read-and-locate",),
+        expected_non_triggers=("scoped-tasking",),
+        category="confusion-boundary",
+        notes="Clear scope (billing module), unclear location. read-and-locate should trigger, not scoped-tasking.",
+    ),
+    TriggerCase(
+        id="minimal-vs-refactor",
+        prompt="While fixing the null check in the order validator, I noticed 200 lines of dead comments, 3 unused imports, and inconsistent naming. I want to clean it all up but the task is just the null check fix.",
+        expected_triggers=("minimal-change-strategy",),
+        expected_non_triggers=("safe-refactor",),
+        category="confusion-boundary",
+        notes="Cleanup temptation beyond task scope. minimal-change-strategy should constrain, not safe-refactor.",
+    ),
+    TriggerCase(
+        id="refactor-vs-minimal",
+        prompt="Simplify the three duplicate error-handling blocks in the API handlers into a shared middleware. Keep the external interface unchanged.",
+        expected_triggers=("safe-refactor",),
+        expected_non_triggers=("minimal-change-strategy",),
+        category="confusion-boundary",
+        notes="Intentional structural cleanup is a refactor goal. safe-refactor should guide it, not minimal-change-strategy.",
+    ),
+    TriggerCase(
+        id="scope-vs-plan",
+        prompt="The ticket says 'improve error handling across the backend' but that could mean dozens of files. Before we plan anything, what are we actually trying to change here?",
+        expected_triggers=("scoped-tasking",),
+        expected_non_triggers=("plan-before-action",),
+        category="confusion-boundary",
+        notes="Task boundary is undefined — must scope first. plan-before-action is premature until the target is narrowed.",
+    ),
+    TriggerCase(
+        id="plan-vs-scope",
+        prompt="The scope is clear: add retry logic to the three API clients in pkg/http/. I need to figure out the right order of changes and what assumptions to validate first.",
+        expected_triggers=("plan-before-action",),
+        expected_non_triggers=("scoped-tasking",),
+        category="confusion-boundary",
+        notes="Scope is already defined (3 files in pkg/http/). Sequencing and assumptions need a plan, not further scoping.",
+    ),
+)
+
+
+# ---------------------------------------------------------------------------
+# Category 10: Combo triggers (multiple skills should activate together)
+# ---------------------------------------------------------------------------
+
+COMBO_TRIGGER_CASES: tuple[TriggerCase, ...] = (
+    TriggerCase(
+        id="discover-analyze-plan",
+        prompt="I need to modify user authentication in this unfamiliar codebase. I don't know where the auth code lives, the change might affect several modules, and I'll need a plan before I start editing.",
+        expected_triggers=("read-and-locate", "impact-analysis", "plan-before-action"),
+        expected_non_triggers=("phase-plan",),
+        category="combo-trigger",
+        notes="Unfamiliar codebase + multi-module impact + multi-step edit. Three skills should co-activate.",
+    ),
+    TriggerCase(
+        id="refactor-with-constraint",
+        prompt="Clean up the duplicate validation logic across the three form handlers, but don't change any public API signatures and don't touch anything outside the forms directory.",
+        expected_triggers=("safe-refactor", "minimal-change-strategy"),
+        expected_non_triggers=("design-before-plan",),
+        category="combo-trigger",
+        notes="Structural cleanup with explicit scope constraint. Both safe-refactor and minimal-change-strategy should co-activate.",
+    ),
+    TriggerCase(
+        id="design-impact-incremental",
+        prompt="Add a refund capability to the order system. We need to decide between a state-machine approach and an event-sourcing approach, assess which existing payment flows are affected, and deliver it in 3 PRs.",
+        expected_triggers=("design-before-plan", "impact-analysis", "incremental-delivery"),
+        expected_non_triggers=("phase-plan",),
+        category="combo-trigger",
+        notes="Design choice + blast radius assessment + multi-PR delivery. Three skills should co-activate.",
+    ),
+)
+
+
+# ---------------------------------------------------------------------------
+# Category 11: Numeric boundary triggers (threshold precision tests)
+# ---------------------------------------------------------------------------
+
+NUMERIC_BOUNDARY_CASES: tuple[TriggerCase, ...] = (
+    TriggerCase(
+        id="impact-2-callers",
+        prompt="Change the return type of formatDate. It's only called by the UserProfile component and the AdminPanel component — two callers total.",
+        expected_triggers=(),
+        expected_non_triggers=("impact-analysis",),
+        category="numeric-boundary",
+        notes="2 callers is below the 3-caller threshold. impact-analysis should NOT trigger.",
+    ),
+    TriggerCase(
+        id="impact-3-callers",
+        prompt="Change the return type of formatDate. It's called by UserProfile, AdminPanel, and ReportExporter — three separate modules depend on it.",
+        expected_triggers=("impact-analysis",),
+        expected_non_triggers=(),
+        category="numeric-boundary",
+        notes="Exactly 3 callers matches the threshold. impact-analysis SHOULD trigger.",
+    ),
 )
 
 
@@ -404,6 +727,10 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
     *MULTI_AGENT_CASES,
     *PHASE_CASES,
     *PRE_PHASE_CASES,
+    *BASELINE_CONTROL_CASES,
+    *CONFUSION_BOUNDARY_CASES,
+    *COMBO_TRIGGER_CASES,
+    *NUMERIC_BOUNDARY_CASES,
 )
 
 ALL_TRIGGER_CASES_BY_ID: dict[str, TriggerCase] = {
@@ -418,6 +745,10 @@ CATEGORIES: tuple[str, ...] = (
     "multi-agent",
     "phase",
     "pre-phase",
+    "baseline-control",
+    "confusion-boundary",
+    "combo-trigger",
+    "numeric-boundary",
 )
 
 

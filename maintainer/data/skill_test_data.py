@@ -29,6 +29,10 @@ SKILL_RUBRICS: dict[str, tuple[str, ...]] = {
         "Pass if the agent proposes a bounded initial working set and explains each scope expansion.",
         "Fail if the agent drifts into broad repository exploration without evidence.",
     ),
+    "design-before-plan": (
+        "Pass if the agent compares plausible designs, states the chosen design, and freezes acceptance criteria before planning or editing.",
+        "Fail if the agent jumps into implementation while design alternatives or contracts are still unresolved.",
+    ),
     "plan-before-action": (
         "Pass if the goal, assumptions, intended files, and next actions are stated before non-trivial edits.",
         "Fail if editing starts while the plan or file list is still fuzzy.",
@@ -68,6 +72,10 @@ SKILL_RUBRICS: dict[str, tuple[str, ...]] = {
     "phase-plan": (
         "Pass if the execution schema is the authority, the per-phase strict four-file doc set is produced, the phase-root README is maintained, and validators run.",
         "Fail if Markdown redefines YAML-owned fields, extra phase-local planning docs are created, the phase-root README is missing, or validators are skipped.",
+    ),
+    "phase-plan-review": (
+        "Pass if the agent reviews the accepted phase artifacts against alignment, blocking issues, and approval readiness before execution proceeds.",
+        "Fail if execution is allowed to continue without an explicit approval or blocking decision.",
     ),
     "phase-execute": (
         "Pass if execution reads from the accepted schema, respects lane isolation, and reports wave state per contract.",

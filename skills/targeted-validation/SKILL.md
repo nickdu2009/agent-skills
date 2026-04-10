@@ -98,3 +98,80 @@ Prefer validation such as:
 - a file-local type check if relevant
 
 Do not default to the full integration suite unless the adapter change alters a shared parsing contract used elsewhere.
+
+## Contract
+
+### Preconditions
+
+- A bounded code or document change has already been identified.
+- At least one concrete validation mechanism exists, or the lack of automation can be stated explicitly.
+- The affected runtime or behavior surface is narrow enough to justify focused verification first.
+
+### Postconditions
+
+- `status: completed` includes `checks_to_run`, `risks_not_covered`, and `pass_criteria`.
+- The output names the smallest meaningful validation boundary and exact check to run.
+- Broader validation is either justified explicitly or deferred explicitly.
+
+### Invariants
+
+- Full-suite validation is not the default.
+- The first check stays aligned with the changed surface.
+- Targeted failures are diagnosed locally before validation scope is broadened.
+
+### Downstream Signals
+
+- `checks_to_run` tells execution exactly which focused commands or manual checks to use.
+- `risks_not_covered` captures the residual uncertainty after the narrow pass.
+- `pass_criteria` defines when the targeted check is enough and when escalation is needed.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- No focused validation path exists for the changed surface.
+- The change affects a shared contract that a narrow check cannot cover.
+- The targeted check is flaky or fails because the environment is misconfigured.
+
+### Retry Policy
+
+- Allow one focused retry after diagnosing whether the issue is code, test, or setup related.
+- If the same targeted check remains inconclusive, broaden validation deliberately and explain why.
+
+### Fallback
+
+- Use the smallest meaningful manual verification when no automated check exists.
+- Escalate to broader validation when shared-interface risk exceeds the narrow check.
+- Ask the user before running expensive suites if time or cost constraints were previously stated.
+
+### Low Confidence Handling
+
+- Surface uncovered risks explicitly instead of claiming broad confidence.
+- Treat a passing targeted check as local evidence only when contract surface remains wide.
+
+## Output Example
+
+```yaml
+[skill-output: targeted-validation]
+status: completed
+confidence: high
+outputs:
+  checks_to_run:
+    - "pytest tests/payment/test_client.py -k retry"
+  risks_not_covered:
+    - "other payment clients do not share this retry path"
+  pass_criteria:
+    - "retry test passes"
+    - "no duplicate charge side effects appear in the focused fixture"
+signals:
+  broader_validation_recommended: false
+recommendations:
+  next_step: "run the focused retry test before any wider suite"
+[/skill-output]
+```
+
+## Deactivation Trigger
+
+- Deactivate after the chosen targeted check has run and the result is recorded.
+- Deactivate when validation must be escalated into a broader suite or a different skill-owned workflow.
+- Deactivate once downstream review has consumed the residual-risk statement.

@@ -472,3 +472,54 @@ Use this skill together with:
 - `$phase-contract-tools` for the sole schema, validator, renderer, and handoff contract
 - `$phase-plan` when the review finds blocking issues that require plan repair
 - `$phase-execute` after the review passes and execution can consume the accepted artifacts
+
+## Artifact Contract
+
+### Preconditions
+
+- The strict four-file phase doc set and phase-root `README.md` already exist.
+- Review has access to the accepted plan artifacts and any available upstream requirement or design inputs.
+- The review remains read-only.
+
+### Review Outputs
+
+- `status: completed` includes `alignment_findings`, `blocking_issues`, and `approval_status`.
+- Findings are actionable and use the repository's issue / cause / impact / recommendation / blocking format.
+- The overall result states whether execution can proceed or must return to `phase-plan`.
+
+### Invariants
+
+- Review does not rewrite the plan.
+- Missing upstream inputs downgrade review scope explicitly instead of implying full approval.
+- Validator failures are treated as blocking.
+
+## Gate Contract
+
+- Gate passes only when the overall verdict is `ready-for-execute` or `ready-with-followups`.
+- Gate blocks when any blocking finding exists, required artifacts are missing, or validators/preflight fail.
+- Wave-scoped review must still respect the same blocking rules for that selected wave.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The artifact set is incomplete.
+- Upstream intent cannot be reviewed fully because inputs are missing.
+- Schema or doc-set validation fails before manual review can proceed.
+
+### Retry Policy
+
+- Re-run after `phase-plan` repairs the blocking issues.
+- Do not keep reviewing the same broken artifact set without an intervening repair pass.
+
+### Fallback
+
+- Downgrade to limited or artifact-only review only when the missing upstream context is explicit.
+- Return to `phase-plan` when the plan must be repaired.
+- Hand execution forward to `phase-execute` only after approval is explicit.
+
+## Lifecycle
+
+- Activate after `phase-plan` produces or repairs the plan artifacts.
+- Deactivate once an approval or blocking verdict has been delivered.
+- Deactivate when the reviewed artifacts are superseded by a newly repaired plan revision.

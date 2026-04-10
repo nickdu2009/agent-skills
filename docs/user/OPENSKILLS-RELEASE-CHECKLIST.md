@@ -7,10 +7,11 @@ Use this checklist before publishing the repository as an OpenSkills source or c
 ```mermaid
 flowchart TD
     A[Confirm canonical source tree] --> B[Validate skill metadata]
-    B --> C[Run local install smoke test]
-    C --> D[Generate AGENTS.md in a clean test workspace]
-    D --> E[Run scenario-based acceptance checks]
-    E --> F[Record residual risk and release]
+    B --> C[Check Skill Protocol v1 readiness]
+    C --> D[Run local install smoke test]
+    D --> E[Generate AGENTS.md in a clean test workspace]
+    E --> F[Run scenario-based acceptance checks]
+    F --> G[Record residual risk and release]
 ```
 
 ## Scope
@@ -20,6 +21,7 @@ This checklist assumes:
 - `skills/` is the only canonical skill source
 - generated local artifacts are not part of the published source
 - OpenSkills consumers install from the repository root or directly from `skills/`
+- Skill Protocol v1 is the active repository protocol for all skill families
 
 ## 1. Canonical Source Boundary
 
@@ -68,6 +70,22 @@ npx openskills list
 npx openskills read scoped-tasking
 ```
 
+## 3.5. Skill Protocol v1 Readiness
+
+Before release, confirm that the repository-wide protocol is coherent across templates, skills, examples, and evaluation tooling.
+
+- [ ] Every skill under `skills/` includes the required v1 sections for its family
+- [ ] Governance templates describe the seven standard protocol blocks and family budgets
+- [ ] `examples/` show v1 protocol block sequences
+- [ ] Trigger and smoke tooling can report protocol-readiness or protocol-block failures
+
+Recommended checks:
+
+```bash
+python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode report --fail-on-protocol-issues
+python3 -m py_compile maintainer/scripts/evaluation/run_trigger_tests.py maintainer/scripts/evaluation/run_claude_trigger_smoke.py maintainer/scripts/evaluation/skill_protocol_v1.py
+```
+
 Pass criteria:
 
 - [ ] Skills install without duplicate-name confusion
@@ -97,6 +115,7 @@ Recommended minimum:
 - [ ] One single-agent example
 - [ ] One structural refactor example
 - [ ] One multi-agent or conflict-resolution example
+- [ ] One phase-planning example
 
 Suggested source scenarios:
 
@@ -112,6 +131,7 @@ Behavior checks:
 - [ ] Validation stays targeted unless risk justifies expansion
 - [ ] Parallelism is used only when the task is low-coupling
 - [ ] Uncertainty is preserved when evidence is incomplete
+- [ ] Protocol blocks appear in the expected order and skill outputs are paired with output validation
 
 ## 5. Local Tooling Separation
 
@@ -128,6 +148,7 @@ Local convenience layers are allowed, but they must remain clearly outside the p
 Release only when:
 
 - [ ] canonical source is clean
+- [ ] Skill Protocol v1 readiness checks pass
 - [ ] install smoke test passes
 - [ ] scenario acceptance checks pass at the desired confidence level
 - [ ] any residual risk is documented

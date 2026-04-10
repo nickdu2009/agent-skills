@@ -185,3 +185,74 @@ For skills triggered by other skills (`conflict-resolution` via `multi-agent-pro
 - Do not upgrade a `1` to a `2` unless the pass signal is clearly visible in the transcript.
 - If evidence is missing, record uncertainty instead of guessing the score.
 - Do not conflate trigger accuracy with execution quality. A skill that triggered correctly but was followed poorly is a behavior issue, not a trigger issue.
+
+## Skill Protocol v1 Evidence Capture
+
+Use protocol blocks as first-class scoring evidence instead of relying on prose impressions alone.
+
+```yaml
+[task-input-validation]
+task: "Score whether the scenario run actually followed the intended skill behavior."
+checks:
+  clarity:
+    status: PASS
+    reason: "The scoring goal and evidence source are explicit."
+  scope:
+    status: PASS
+    reason: "The review is bounded to the scenario transcript."
+  safety:
+    status: PASS
+    reason: "Transcript scoring is read-only."
+  skill_match:
+    status: PASS
+    reason: "Rubric review can inspect protocol evidence directly."
+result: PASS
+action: proceed
+[/task-input-validation]
+
+[trigger-evaluation]
+task: "Evaluate one scenario transcript."
+evaluated:
+  - scoped-tasking: ✓ TRIGGER
+  - targeted-validation: ✓ TRIGGER
+activated_now: [scoped-tasking, targeted-validation]
+deferred: []
+[/trigger-evaluation]
+
+[precondition-check: targeted-validation]
+checks:
+  - transcript_contains_protocol_blocks: ✓ PASS
+  - expected_skills_known: ✓ PASS
+result: PASS
+[/precondition-check]
+
+[skill-output: targeted-validation]
+status: completed
+confidence: high
+outputs:
+  checks_to_run:
+    - "verify [task-input-validation] appears before [trigger-evaluation]"
+    - "verify each [skill-output] has matching [output-validation]"
+  risks_not_covered:
+    - "transcript may still hide missing internal reasoning"
+  pass_criteria:
+    - "protocol sequence matches the intended scenario"
+signals:
+  scoring_ready: true
+recommendations:
+  next_step: "grade scope, planning, and validation behavior against visible blocks"
+[/skill-output]
+
+[output-validation: targeted-validation]
+checks:
+  - outputs.checks_to_run: ✓ PASS
+  - outputs.pass_criteria: ✓ PASS
+result: PASS
+[/output-validation]
+
+[skill-deactivation: targeted-validation]
+reason: "The transcript scoring checklist has been applied."
+outputs_consumed_by: [scoped-tasking]
+remaining_active: []
+[/skill-deactivation]
+```

@@ -120,3 +120,79 @@ Diff contains 4 changed files:
 - `tests/cache.test.ts` — new tests (in plan) → clean
 
 Result: 1 blocking issue (debug log), 1 warning (scope violation). Fix the console.log, then proceed to targeted-validation.
+
+## Contract
+
+### Preconditions
+
+- Planned edits are complete enough to review as a whole diff.
+- A working set or intended scope exists to compare against the actual diff.
+- Review happens before validation or before a user-requested diff review handoff.
+
+### Postconditions
+
+- `status: completed` includes `findings`, `residual_risks`, and `scope_violations`.
+- Blocking issues are either fixed immediately or reported before validation starts.
+- Warning-level items are recorded without triggering unrelated cleanup.
+
+### Invariants
+
+- Review is diff-focused rather than a fresh redesign pass.
+- Blocking and warning issues are distinguished explicitly.
+- Unexpected file changes are surfaced instead of silently accepted.
+
+### Downstream Signals
+
+- `findings` gives the concrete issues and severities.
+- `residual_risks` tells validation or the user what remains after review.
+- `scope_violations` flags any changes outside the planned boundary.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The planned working set is missing, so scope comparison is weak.
+- The diff is still changing, making review results unstable.
+- The reviewer starts broad cleanup instead of reporting targeted issues.
+
+### Retry Policy
+
+- Re-run once after fixing blocking issues.
+- If the diff keeps changing underneath review, stop and return to execution until a stable review point exists.
+
+### Fallback
+
+- Ask for the intended working set when scope-violation checking is impossible.
+- Hand off to `minimal-change-strategy` when review reveals the patch grew beyond task scope.
+- Continue to `targeted-validation` only after blocking issues are cleared or explicitly waived by the user.
+
+### Low Confidence Handling
+
+- Record uncertain issues as residual risks rather than blockers.
+- Do not invent precision for missing line-level evidence; report the uncertainty directly.
+
+## Output Example
+
+```yaml
+[skill-output: self-review]
+status: completed
+confidence: high
+outputs:
+  findings:
+    - "blocking: debug log left in handler"
+  residual_risks:
+    - "config formatting file changed outside the planned scope"
+  scope_violations:
+    - "src/config.ts"
+signals:
+  blocking_count: 1
+recommendations:
+  next_step: "remove the debug log, then re-run self-review"
+[/skill-output]
+```
+
+## Deactivation Trigger
+
+- Deactivate once the diff is clean enough to hand off to validation.
+- Deactivate when the user explicitly chooses to proceed despite warning-level residual risks.
+- Deactivate if execution resumes to fix newly found blocking issues.

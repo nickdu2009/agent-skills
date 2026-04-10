@@ -259,3 +259,85 @@ After scoped-tasking establishes the boundary (payment client wrapper + tests), 
 - Must preserve idempotency token in retry headers.
 
 Hand off design brief to plan-before-action. Do not start editing.
+
+## Contract
+
+### Preconditions
+
+- The task has unresolved design choices, contract changes, or unclear acceptance criteria.
+- The scoped boundary is already known, or the user explicitly wants requirements/design clarification first.
+- The agent can compare at least two plausible approaches without implementing them.
+
+### Postconditions
+
+- `status: completed` includes `requirements`, `alternatives`, `chosen_design`, and `acceptance_criteria`.
+- Cross-module or public-contract work also records interface expectations and compatibility constraints.
+- The result is specific enough for `plan-before-action` to produce an implementation sequence without reopening design.
+
+### Invariants
+
+- This skill stays read-only and does not prototype implementation.
+- Alternatives are compared before one is selected.
+- Acceptance criteria are requirement-driven, not implementation-driven.
+
+### Downstream Signals
+
+- `requirements` feeds planning and validation boundaries.
+- `alternatives` records rejected options so later phases do not revisit them blindly.
+- `chosen_design` gives the authoritative design direction for planning.
+- `acceptance_criteria` defines the completion gates for implementation and validation.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- Requirements are too incomplete or contradictory to support a design choice.
+- The real blast radius is unknown because impact information is missing.
+- Every viable design depends on an unresolved external constraint.
+
+### Retry Policy
+
+- Allow one clarification pass to resolve missing requirements or decision criteria.
+- If the second pass still cannot eliminate key ambiguity, stop and escalate to the user.
+
+### Fallback
+
+- Run `impact-analysis` first when caller/module impact is still speculative.
+- Return to `scoped-tasking` when the task boundary itself is still unstable.
+- Escalate to the user when the design choice is business- or product-driven.
+
+### Low Confidence Handling
+
+- Keep the chosen design marked provisional and require plan consumers to restate the open risk.
+- Do not convert a low-confidence design brief into an implementation plan without explicit acknowledgment of the uncertainty.
+
+## Output Example
+
+```yaml
+[skill-output: design-before-plan]
+status: completed
+confidence: medium
+outputs:
+  requirements:
+    - "Retry flaky payment-status calls up to 3 times."
+  alternatives:
+    - "Inline retry in payment client"
+    - "Reusable retry wrapper"
+  chosen_design:
+    approach: "Inline retry in payment client"
+    rationale: "Smallest viable change for a single flaky upstream path"
+  acceptance_criteria:
+    - "Retries complete within 10 seconds total"
+    - "Idempotency headers are preserved on every retry"
+signals:
+  planning_ready: true
+recommendations:
+  downstream_skill: "plan-before-action"
+[/skill-output]
+```
+
+## Deactivation Trigger
+
+- Deactivate once `plan-before-action` has consumed the design brief.
+- Deactivate when the user chooses a different design direction and the brief must be regenerated from scratch.
+- Deactivate if the task is reframed into a direct implementation with no remaining design decisions.

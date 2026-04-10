@@ -347,3 +347,54 @@ Use this skill together with:
 - `$phase-contract-tools` for the sole schema, validator, renderer, handoff, and cutover contract
 - `$phase-plan-review` when the accepted doc set should be independently reviewed before execution begins
 - `$phase-execute` after the accepted doc set exists and execution can consume the contract-defined artifacts
+
+## Artifact Contract
+
+### Preconditions
+
+- The task is large enough to require sequenced waves or multi-PR coordination.
+- The baseline, scope, and current constraints can be grounded in repository reality.
+- `phase-contract-tools` remains the sole contract authority for schema and validator semantics.
+
+### Produced Artifacts
+
+- `status: completed` includes `plan_artifacts`, `waves`, `gates`, and `ownership`.
+- The default artifact set is the strict four-file phase doc set plus the phase-root `README.md`.
+- `waves` describe wave ids, lane or PR grouping, dependency order, and merge structure.
+
+### Invariants
+
+- `plan.yaml` remains the execution authority.
+- Extra phase-local planning files are not introduced.
+- Ownership, PR order, and validation profiles are encoded in schema-owned fields, not hidden in prose.
+
+## Gate Contract
+
+- The planning pass is only ready for review when the required artifact set exists or partial-output mode is explicitly declared.
+- Schema validation and doc-set validation are required for the full-doc-set path.
+- Any skipped validator must be explained together with the residual risk.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The baseline is stale or inconsistent with current code reality.
+- External contract authority is unresolved, making the plan structurally incomplete.
+- Validators fail because schema or doc-set fields are missing or contradictory.
+
+### Retry Policy
+
+- Allow one focused repair pass after validator or baseline issues are identified.
+- If the plan still cannot satisfy the contract after the second pass, stop and report the blocking gap instead of emitting partial authority claims.
+
+### Fallback
+
+- Use partial-output mode only when the user explicitly asks for a subset.
+- Hand contract questions to `phase-contract-tools`.
+- Hand acceptance review to `phase-plan-review` before execution starts.
+
+## Lifecycle
+
+- Activate while authoring or repairing the accepted phase artifact set.
+- Deactivate once the artifact set has been handed to `phase-plan-review` or the user accepts the plan.
+- Deactivate immediately if the work escalates into direct maintenance of contract tools rather than phase authoring.

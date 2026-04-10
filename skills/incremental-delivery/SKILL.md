@@ -127,3 +127,84 @@ incremental-delivery splits into 3 increments:
 - Increment 3: API endpoint + integration tests (depends on increment 2 for service)
 
 Each increment keeps the system runnable. If the task also requires aligning payloads with an external OpenAPI spec, escalate to phase-plan instead.
+
+## Contract
+
+### Preconditions
+
+- A concrete plan already exists and appears to span 2-4 mergeable units.
+- The task can be delivered serially without wave-level parallel coordination.
+- Each proposed increment can keep the system runnable after merge.
+
+### Postconditions
+
+- `status: completed` includes `increments`, `merge_order`, and `gates`.
+- Dependencies between increments are explicit rather than implied.
+- The output recommends downgrade or escalation when the task falls outside the 2-4 increment envelope.
+
+### Invariants
+
+- Increment count stays between 2 and 4 unless the output is an explicit downgrade or escalation.
+- Every increment remains independently mergeable and testable.
+- Delivery ordering is concrete enough to avoid broken intermediate states.
+
+### Downstream Signals
+
+- `increments` defines the mergeable delivery slices.
+- `merge_order` states the required sequence.
+- `gates` records what must be true before each increment is considered complete.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The task actually fits in one PR, so splitting adds overhead without value.
+- The task spans too many modules, PRs, or external contracts for increment-only handling.
+- Hidden dependencies mean an increment would leave the system broken after merge.
+
+### Retry Policy
+
+- Allow one re-split when a proposed increment is not independently runnable.
+- If no valid 2-4 increment split exists after that pass, downgrade or escalate explicitly rather than forcing the split.
+
+### Fallback
+
+- Downgrade to `plan-before-action` when one PR suffices.
+- Escalate to `phase-plan` when the task exceeds 4 increments, 2 modules, or needs parallel lanes.
+- Use `targeted-validation` to define validation gates per increment once the split is accepted.
+
+### Low Confidence Handling
+
+- Mark uncertain dependencies as gates that must be checked before the next increment starts.
+- Prefer a smaller number of defensible increments over a more granular but fragile split.
+
+## Output Example
+
+```yaml
+[skill-output: incremental-delivery]
+status: completed
+confidence: high
+outputs:
+  increments:
+    - "Webhook model and migration"
+    - "Delivery service and unit tests"
+    - "API endpoint and integration tests"
+  merge_order:
+    - 1
+    - 2
+    - 3
+  gates:
+    - "migration passes before service work starts"
+    - "service tests pass before endpoint integration"
+signals:
+  escalation: "none"
+recommendations:
+  next_step: "implement increment 1 first"
+[/skill-output]
+```
+
+## Deactivation Trigger
+
+- Deactivate once the increment list and merge order are accepted.
+- Deactivate when the task is downgraded back to a single-PR plan.
+- Deactivate when the work escalates into `phase-plan` for larger coordination.

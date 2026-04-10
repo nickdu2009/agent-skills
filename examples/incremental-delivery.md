@@ -43,3 +43,77 @@ webhook registration, and integration tests. Estimated: 3 PRs.
 - Do not skip dependency declarations between increments.
 - Do not force 3 PRs if 1 PR suffices (check downgrade condition).
 - If upgrade threshold is hit, stop and escalate.
+
+## Skill Protocol v1 Trace
+
+```yaml
+[task-input-validation]
+task: "Split webhook support into mergeable increments."
+checks:
+  clarity:
+    status: PASS
+    reason: "The deliverable is a 3-PR split."
+  scope:
+    status: PASS
+    reason: "The work is bounded to delivery planning, not execution."
+  safety:
+    status: PASS
+    reason: "Increment planning is non-destructive."
+  skill_match:
+    status: PASS
+    reason: "incremental-delivery fits the requested 3-PR split."
+result: PASS
+action: proceed
+[/task-input-validation]
+
+[trigger-evaluation]
+task: "Split a webhook feature into 3 increments."
+evaluated:
+  - plan-before-action: ✓ TRIGGER
+  - incremental-delivery: ✓ TRIGGER
+  - phase-plan: ⏸ DEFER
+activated_now: [plan-before-action, incremental-delivery]
+deferred: [phase-plan]
+[/trigger-evaluation]
+
+[precondition-check: incremental-delivery]
+checks:
+  - plan_exists: ✓ PASS
+  - pr_count_between_2_and_4: ✓ PASS
+result: PASS
+[/precondition-check]
+
+[skill-output: incremental-delivery]
+status: completed
+confidence: high
+outputs:
+  increments:
+    - "Webhook model and migration"
+    - "Delivery service and unit tests"
+    - "Registration endpoint and integration tests"
+  merge_order:
+    - 1
+    - 2
+    - 3
+  gates:
+    - "increment 1 validated before increment 2"
+    - "increment 2 validated before increment 3"
+signals:
+  escalation: "none"
+recommendations:
+  next_step: "start increment 1"
+[/skill-output]
+
+[output-validation: incremental-delivery]
+checks:
+  - outputs.increments: ✓ PASS
+  - outputs.merge_order: ✓ PASS
+result: PASS
+[/output-validation]
+
+[skill-deactivation: incremental-delivery]
+reason: "The mergeable increment list has been accepted."
+outputs_consumed_by: [minimal-change-strategy, targeted-validation]
+remaining_active: [minimal-change-strategy]
+[/skill-deactivation]
+```

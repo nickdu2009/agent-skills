@@ -212,3 +212,78 @@ A false negative (skill should have loaded but didn't) is more serious than a fa
 - Do not score only the final answer; score the execution pattern.
 - Do not widen the scenario during review unless the original prompt is insufficient.
 - If behavior differs from the skill intent, capture the mismatch explicitly instead of averaging it away.
+
+## Skill Protocol v1 Test Harness Trace
+
+```yaml
+[task-input-validation]
+task: "Verify changed skills with repeatable static, trigger, and scenario checks."
+checks:
+  clarity:
+    status: PASS
+    reason: "The testing goal and repository surface are explicit."
+  scope:
+    status: PASS
+    reason: "The playbook is bounded to verification workflows."
+  safety:
+    status: PASS
+    reason: "Checks are validation-only."
+  skill_match:
+    status: PASS
+    reason: "plan-before-action and targeted-validation directly support this flow."
+result: PASS
+action: proceed
+[/task-input-validation]
+
+[trigger-evaluation]
+task: "Run a repeatable skill verification pass."
+evaluated:
+  - plan-before-action: ✓ TRIGGER
+  - targeted-validation: ✓ TRIGGER
+activated_now: [plan-before-action, targeted-validation]
+deferred: []
+[/trigger-evaluation]
+
+[precondition-check: plan-before-action]
+checks:
+  - intended_checks_listed: ✓ PASS
+  - examples_selected: ✓ PASS
+result: PASS
+[/precondition-check]
+
+[skill-output: plan-before-action]
+status: completed
+confidence: high
+outputs:
+  assumptions:
+    - "examples and trigger cases represent the changed skill surface"
+  working_set:
+    - "changed SKILL.md files"
+    - "trigger cases"
+    - "example scenarios"
+  sequence:
+    - "run mirror/static checks"
+    - "run trigger checks"
+    - "run scenario-based acceptance"
+  validation_boundary:
+    - "protocol readiness report"
+    - "selected example scenarios"
+signals:
+  test_harness_ready: true
+recommendations:
+  next_step: "score observed behavior with the rubric"
+[/skill-output]
+
+[output-validation: plan-before-action]
+checks:
+  - outputs.sequence: ✓ PASS
+  - outputs.validation_boundary: ✓ PASS
+result: PASS
+[/output-validation]
+
+[skill-deactivation: plan-before-action]
+reason: "The verification sequence is fixed and ready to execute."
+outputs_consumed_by: [targeted-validation]
+remaining_active: [targeted-validation]
+[/skill-deactivation]
+```

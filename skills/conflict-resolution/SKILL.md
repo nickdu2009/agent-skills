@@ -116,3 +116,60 @@ Possible merge result:
 - Evidence assessment: missing invalidation has direct code-path evidence (priority 1); clock skew has log correlation only (priority 3).
 - Recommendation: inspect the invalidation branch first.
 - Adjudication needed: run one targeted expiry-path check before ruling out clock skew.
+
+## Contract
+
+### Preconditions
+
+- There are at least two non-identical findings or hypotheses to compare.
+- Each claim carries evidence, source, and confidence metadata, or can be normalized into that shape.
+- A downstream decision depends on resolving or preserving the disagreement.
+
+### Postconditions
+
+- `status: completed` includes `claims`, `evidence`, `resolution`, and `residual_uncertainty`.
+- Consensus and disagreement are separated explicitly.
+- The final recommendation is tied to evidence quality rather than tone.
+
+### Invariants
+
+- Unsupported claims are dropped rather than treated as valid evidence.
+- Minority findings with real support are preserved until disproven.
+- Unresolved disagreement is reported as unresolved.
+
+### Downstream Signals
+
+- `claims` captures the normalized positions under review.
+- `evidence` records the basis for comparison.
+- `resolution` states the current best-supported conclusion or adjudication direction.
+- `residual_uncertainty` tells downstream work what remains unproven.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- Claims arrive without enough evidence to compare meaningfully.
+- Two interpretations can both be true at different layers and are incorrectly treated as mutually exclusive.
+- The evidence gap is too large for a confident arbitration.
+
+### Retry Policy
+
+- Allow one normalization/adjudication pass when the first comparison lacks sufficient structure.
+- If evidence still cannot support a decision, stop and recommend the smallest targeted adjudication step.
+
+### Fallback
+
+- Hand unresolved disagreements back to `multi-agent-protocol` synthesis with explicit residual uncertainty.
+- Use `targeted-validation` to design the adjudication check.
+- Escalate to the user when the decision depends on non-technical trade-offs.
+
+### Low Confidence Handling
+
+- Prefer `resolution: unresolved` with a targeted next step over a weak forced verdict.
+- State exactly which claim remains uncertain and why.
+
+## Deactivation Trigger
+
+- Deactivate once a merged resolution or explicit unresolved state has been delivered.
+- Deactivate when the disagreement is absorbed by a downstream targeted check.
+- Deactivate after the primary agent or user consumes the arbitration result.
