@@ -2,65 +2,65 @@
 
 ## Multi-Agent Rules
 
-Multi-agent execution has two tiers. Full operational protocol is in the `multi-agent-protocol` skill.
+Full protocol: `multi-agent-protocol` skill.
 
-**Tier 1 — Explore (read-only):** The agent may launch read-only subagents at any time without pre-declaration. Each subagent must return structured results; the primary agent must synthesize them.
+**Tier 1 (read-only):** Launch read-only subagents anytime. Subagents return structured results; primary agent synthesizes.
 
-**Tier 2 — Delegate (write-capable):** Before launching any subagent that may edit files or run mutating commands, the agent must output: `[delegate: <count 2–4> | split: <dimension> | risk: <low|medium|high>]`. If the task cannot be cleanly split, output `[delegate: 0 | reason: <why>]` and stay serial.
+**Tier 2 (write-capable):** Before launching write-capable subagents, emit: `[delegate: <count 2–4> | split: <dimension> | risk: <low|medium|high>]`. If not cleanly splittable: `[delegate: 0 | reason: <why>]`.
 
-**Exemptions:** No declaration needed for single-file edits, direct answers, single commands, or git housekeeping.
+**Exempt:** Single-file edits, direct answers, single commands, git housekeeping.
 
 ## Skill Activation
 
-Skills activate through two mechanisms:
+Skills activate via:
 
-- **Task-type activation**: `bugfix-workflow`, `safe-refactor`, `scoped-tasking`, `read-and-locate`,
-  and `plan-before-action` activate based on task characteristics recognized during
-  `[trigger-evaluation]`. Their SKILL.md descriptions define when they match.
-- **Mid-task escalation**: The rules below define when base-level governance rules prove insufficient
-  and the agent should load the full skill during execution.
+- **Task-type**: Skills auto-activate during `[trigger-evaluation]` based on SKILL.md triggers.
+- **Mid-task escalation**: Load full skill when base governance rules prove insufficient (see below).
+
+## Governance Fast-Path
+
+**No skill needed** for tasks fully handleable at the governance layer:
+
+- **Direct answers**: Questions requiring no code exploration (concepts, prior context, definitions).
+- **Single commands**: One-off shell/git commands with clear output.
+- **Trivial file reads**: Read 1–2 specific files when path is known.
+- **Status queries**: Git status, file existence, directory listing.
+- **Single-file low-risk edits**: Typo fix, comment update, config tweak in 1 file with no caller impact.
+
+**Skip `[task-input-validation]` and `[trigger-evaluation]`** for fast-path tasks. Proceed directly.
 
 ## Skill Escalation
 
-These rules define when base-level CLAUDE.md rules are insufficient and the agent should load the full skill.
+Escalate when base-level CLAUDE.md rules insufficient:
 
-- Escalate to `design-before-plan` when: the task involves choosing between multiple implementation
-  approaches, the change introduces or modifies a public API or cross-module contract, acceptance
-  criteria are missing or unclear, scoped-tasking identified the boundary but design decisions remain
-  open, or impact-analysis revealed 3+ affected modules requiring contract coordination.
-- Escalate to `minimal-change-strategy` when: the diff is growing beyond what the task requires,
-  multiple edit strategies compete, or surrounding code tempts drive-by cleanup.
-- Escalate to `context-budget-awareness` when: the working set exceeds 8 files, the same file has
-  been read more than twice without a new question, more than 3 hypotheses are active without ranking
-  evidence, or the last 3 actions did not advance the stated objective.
-- Escalate to `targeted-validation` when: multiple validation options exist and the cheapest meaningful
-  check needs deliberate selection, validation is expensive and the change is local enough for a
-  narrower check, or a validation failure needs diagnosis before broadening coverage.
-- Escalate to `impact-analysis` when: the change touches a function or interface with 3+ callers,
-  involves a public API or shared type, modifies a data model used across multiple modules, or
-  read-and-locate produced 3+ tentative leads.
-- Escalate to `self-review` when: edits span multiple files and are complete, or the user requests a
-  diff review before testing.
-- Escalate to `incremental-delivery` when: the plan from plan-before-action spans 2-4 PRs across 1-2
-  modules and can be delivered serially.
+- `design-before-plan`: Multiple implementation approaches, public API/cross-module contract changes, missing acceptance criteria, design decisions remain after scoping, or 3+ modules needing coordination.
+- `minimal-change-strategy`: Diff growing beyond task scope, competing edit strategies, or cleanup temptation.
+- `context-budget-awareness`: Working set >8 files, same file read >2× without new question, >3 unranked hypotheses, or last 3 actions stalled.
+- `targeted-validation`: Multiple validation options, expensive validation for local change, or failure diagnosis needed.
+- `impact-analysis`: Change affects 3+ callers, public API/shared type, data model across modules, or 3+ tentative leads.
+- `self-review`: Multi-file edits complete, or user requests diff review.
+- `incremental-delivery`: Plan spans 2–4 PRs across 1–2 modules, serially deliverable.
 
 ## Skill Lifecycle
 
-- Load the smallest set of skills that fits the current task.
-- Drop `scoped-tasking` and `read-and-locate` once the working set and edit points are confirmed.
-- Drop `plan-before-action` once execution is underway and no re-planning is needed.
-- Drop `context-budget-awareness` after a successful compression if the session is now compact.
-- Keep `minimal-change-strategy` and `targeted-validation` active until the task is complete.
-- Drop `design-before-plan` after the design brief is produced and handed to plan-before-action --
-  it does not stay active during implementation.
-- Drop `bugfix-workflow` once the root cause is confirmed and the fix is handed off to implementation.
-- Drop `safe-refactor` once the structural goal is met and invariants are intact.
-- Drop `impact-analysis` after plan-before-action produces the plan.
-- Drop `self-review` after the diff review passes with no blocking issues.
-- Drop `incremental-delivery` after the increment list is finalized -- it provides structure, not
-  ongoing execution guidance.
-- If the task phase changes (e.g., from diagnosis to implementation), re-evaluate which skills are still providing signal.
-- Never carry more than 4 active skills simultaneously without explicit justification.
+**Load:** Smallest set fitting task.
+
+**Drop when complete:**
+- `scoped-tasking`, `read-and-locate`: working set/edit points confirmed.
+- `plan-before-action`: execution underway, no re-plan needed.
+- `context-budget-awareness`: session compressed successfully.
+- `design-before-plan`: design brief handed to plan-before-action.
+- `bugfix-workflow`: root cause confirmed, fix handed off.
+- `safe-refactor`: structural goal met, invariants intact.
+- `impact-analysis`: plan produced.
+- `self-review`: diff passes review.
+- `incremental-delivery`: increment list finalized.
+
+**Keep active:** `minimal-change-strategy`, `targeted-validation` until task complete.
+
+**Re-evaluate:** When task phase changes (diagnosis → implementation).
+
+**Max:** 4 active skills without justification.
 
 ## Skill Chain Triggers
 
@@ -113,35 +113,33 @@ Parallel:      multi-agent-protocol -> [subagents] -> conflict-resolution (if ne
 
 ## Skill Protocol v1
 
-Use the following protocol blocks literally when a task requires skill-driven execution:
+**Block sequence** for skill-driven tasks:
 
 1. `[task-input-validation]`
 2. `[trigger-evaluation]`
 3. `[precondition-check: <skill-name>]`
 4. `[skill-output: <skill-name>]`
 5. `[output-validation: <skill-name>]`
-6. `[skill-deactivation: <skill-name>]` when the skill leaves the active set
+6. `[skill-deactivation: <skill-name>]`
 
-Insert `[loop-detected: <skill-name>]` before any repeated activation when the same skill is being retried without materially new evidence.
+**Loop guard:** `[loop-detected: <skill-name>]` before retry without new evidence.
 
-Keep the default block order above. Do not emit `[skill-output: <skill-name>]` without a matching `[output-validation: <skill-name>]`.
+**Pairing rule:** Every `[skill-output]` requires matching `[output-validation]`.
 
 ### Task Input Validation
 
-The protocol is language-agnostic. Do not rely on English word counts, English verbs, or English regexes.
+**Language-agnostic.** Do not rely on English-specific patterns.
 
-Evaluate every new task with these checks:
+**Checks:**
+- `clarity`: action + target identifiable
+- `scope`: bounded or scopeable
+- `safety`: no unguarded destruction
+- `skill_match`: at least one skill family applies
 
-- `clarity`: can identify an action and a target object
-- `scope`: clearly bounded, or can be narrowed by `scoped-tasking`
-- `safety`: no unguarded destructive or out-of-scope request
-- `skill_match`: at least one skill family can take the task
-
-Set:
-
-- `result: PASS` and `action: proceed` when all required checks pass
-- `result: WARN` and `action: ask_clarification` when the task can likely be recovered through clarification or scoping
-- `result: REJECT` and `action: reject` when the task is unsafe or cannot be matched to the skill library
+**Results:**
+- `PASS` / `proceed`: all checks pass
+- `WARN` / `ask_clarification`: recoverable via clarification
+- `REJECT` / `reject`: unsafe or unmatchable
 
 ### Minimum Block Shape
 
@@ -200,13 +198,25 @@ remaining_active: [...]
 [/skill-deactivation]
 ```
 
+### Protocol v2 (Compact)
+
+For simple cases, use compact inline format (full spec: `docs/maintainer/protocol-v2-compact.md`):
+
+- `[task-validation: PASS | clarity:✓ scope:✓ safety:✓ skill_match:✓ | action:proceed]`
+- `[triggers: scoped-tasking plan-before-action]`
+- `[precheck: skill-name | PASS]`
+- `[output: skill-name | completed high | <key outputs> | next:next-skill]`
+- `[validate: skill-name | PASS]`
+- `[drop: skill-name | "reason" | active: remaining skills]`
+
+Both v1 (verbose YAML) and v2 (compact inline) are supported. Use v2 for simple pass cases and execution traces; keep v1 for failures requiring detailed diagnosis.
+
 ## Skill Family Concurrency Budgets
 
-Track active skills by family, not by one global count:
+**By family:**
+- Execution: max 4
+- Orchestration: max 1
+- Primary Phase: max 1
+- `phase-contract-tools`: coexist with 1 primary phase skill, or run alone
 
-- Execution: at most 4 active at once
-- Orchestration: at most 1 active at once
-- Primary Phase: at most 1 active at once
-- `phase-contract-tools`: may coexist only with one primary phase skill, or run alone when directly maintaining phase contract assets
-
-All skills must be explicitly deactivated. Do not rely on silent or implicit retirement when outputs have been consumed, the phase changed, the family budget would overflow, or fallback / clarification has taken over.
+**Deactivation:** Explicit only. No silent retirement.

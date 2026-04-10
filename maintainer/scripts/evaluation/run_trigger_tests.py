@@ -100,6 +100,34 @@ def extract_descriptions() -> dict[str, str]:
     return descriptions
 
 
+def load_skill_index() -> dict[str, str]:
+    """Load skill descriptions from compact skill_index.json.
+
+    Falls back to extract_descriptions() if index doesn't exist.
+    Returns dict mapping skill name to description.
+    """
+    skill_index_path = DATA_DIR / "skill_index.json"
+
+    if not skill_index_path.exists():
+        print(f"Warning: Skill index not found at {skill_index_path}", file=sys.stderr)
+        print("Falling back to SKILL.md frontmatter parsing...", file=sys.stderr)
+        return extract_descriptions()
+
+    try:
+        with open(skill_index_path, encoding="utf-8") as f:
+            index_data = json.load(f)
+
+        descriptions: dict[str, str] = {}
+        for skill in index_data.get("skills", []):
+            descriptions[skill["name"]] = skill["description"]
+
+        return descriptions
+    except (json.JSONDecodeError, KeyError) as e:
+        print(f"Warning: Failed to parse skill index: {e}", file=sys.stderr)
+        print("Falling back to SKILL.md frontmatter parsing...", file=sys.stderr)
+        return extract_descriptions()
+
+
 def build_available_skills_block(descriptions: dict[str, str]) -> str:
     lines = []
     for name, desc in sorted(descriptions.items()):
@@ -195,7 +223,21 @@ def mode_report(cases: list[TriggerCase], *, include_protocol_readiness: bool) -
     return 0
 
 
-def mode_prompt(cases: list[TriggerCase], skills_block: str) -> None:
+def calculate_prompt_size(prompt: str) -> dict[str, int]:
+    """Calculate prompt size metrics (characters, tokens estimate, lines)."""
+    chars = len(prompt)
+    # Rough token estimate: ~4 chars per token for English text
+    # This is approximate - actual tokenization varies by model
+    tokens_estimate = chars // 4
+    lines = prompt.count('\n') + 1
+    return {
+        "characters": chars,
+        "tokens_estimate": tokens_estimate,
+        "lines": lines,
+    }
+
+
+def mode_prompt(cases: list[TriggerCase], skills_block: str, *, compact_mode: bool = False) -> None:
     """Print evaluation prompts for manual LLM assessment."""
     batch_prompts: list[dict] = []
     for case in cases:
@@ -209,8 +251,15 @@ def mode_prompt(cases: list[TriggerCase], skills_block: str) -> None:
     for i, bp in enumerate(batch_prompts):
         full_prompt += f"{i+1}. [{bp['id']}] \"{bp['prompt']}\"\n"
 
+    # Calculate and report prompt size
+    size_info = calculate_prompt_size(full_prompt)
+    mode_label = "compact" if compact_mode else "verbose"
+
     print("=" * 60)
     print("  COPY THE PROMPT BELOW INTO ANY LLM")
+    print("=" * 60)
+    print(f"  Mode: {mode_label}")
+    print(f"  Size: {size_info['characters']:,} chars, ~{size_info['tokens_estimate']:,} tokens, {size_info['lines']:,} lines")
     print("=" * 60)
     print()
     print(full_prompt)
@@ -289,6 +338,7 @@ def mode_api(
     api_key: str | None = None,
     extra_body: dict | None = None,
     concurrency: int = 1,
+    compact_mode: bool = False,
 ) -> None:
     """Call LLM API to evaluate trigger accuracy.
 
@@ -337,7 +387,17 @@ def mode_api(
 
     client = OpenAI(**client_kwargs)
 
+    # Calculate and report prompt size for a typical evaluation
+    sample_prompt = build_eval_prompt(cases[0] if cases else TriggerCase(
+        id="sample", category="sample", prompt="sample",
+        expected_triggers=[], expected_non_triggers=[], notes=""
+    ), skills_block)
+    size_info = calculate_prompt_size(sample_prompt)
+    mode_label = "compact" if compact_mode else "verbose"
+
     # Display configuration
+    print(f"  Mode: {mode_label}")
+    print(f"  Prompt size (per case): ~{size_info['tokens_estimate']:,} tokens")
     if base_url:
         print(f"  Base URL: {base_url}")
     print(f"  Model: {model}")
@@ -409,6 +469,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run trigger tests against skill descriptions.")
     parser.add_argument("--mode", choices=["prompt", "api", "report"], default="report")
     parser.add_argument(
+        "--compact-mode",
+        action="store_true",
+        help="Use compact skill_index.json instead of parsing full SKILL.md frontmatter (reduces prompt size by 60-80%%)",
+    )
+    parser.add_argument(
         "--model",
         default=os.environ.get("OPENAI_MODEL", DEFAULT_MODEL),
         help=f"LLM model for --mode api (default: $OPENAI_MODEL or {DEFAULT_MODEL})"
@@ -468,7 +533,12 @@ def main() -> int:
         print("No matching cases found.", file=sys.stderr)
         return 1
 
-    descriptions = extract_descriptions()
+    # Load skill descriptions based on mode
+    if args.compact_mode:
+        descriptions = load_skill_index()
+    else:
+        descriptions = extract_descriptions()
+
     skills_block = build_available_skills_block(descriptions)
     protocol_missing = 0
 
@@ -478,7 +548,7 @@ def main() -> int:
             include_protocol_readiness=not args.skip_protocol_readiness,
         )
     elif args.mode == "prompt":
-        mode_prompt(cases, skills_block)
+        mode_prompt(cases, skills_block, compact_mode=args.compact_mode)
     elif args.mode == "api":
         mode_api(
             cases,
@@ -488,6 +558,7 @@ def main() -> int:
             api_key=args.api_key,
             extra_body=extra_body_dict,
             concurrency=args.concurrency,
+            compact_mode=args.compact_mode,
         )
 
     if args.fail_on_protocol_issues and protocol_missing:

@@ -15,8 +15,16 @@ This directory contains repository-internal tooling and evaluation assets and sh
 
 - `python3 maintainer/scripts/install/run_manage_governance_smoke.py`
 - `python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode report`
+- `python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode api --compact-mode`
 - `python3 maintainer/scripts/evaluation/run_claude_trigger_smoke.py`
 - `python3 maintainer/scripts/evaluation/run_claude_interactive_mainline.py`
+
+## Skill Metadata and Prompt Optimization
+
+- `python3 maintainer/scripts/analysis/generate_skill_index.py` - Generate compact skill metadata index
+- `python3 maintainer/scripts/evaluation/compare_prompt_sizes.py` - Compare verbose vs compact mode
+- See [`docs/prompt-size-optimization.md`](docs/prompt-size-optimization.md) for usage guide
+- See [`docs/prompt-size-measurements.md`](docs/prompt-size-measurements.md) for performance metrics
 
 The Claude smoke runner uses clean temporary workspaces with `.claude/skills/`
 mirrored from the canonical `skills/` tree, so trigger validation is less

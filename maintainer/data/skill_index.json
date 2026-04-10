@@ -1,0 +1,213 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-04-10T19:20:18.044689+00:00",
+  "skills": [
+    {
+      "name": "bugfix-workflow",
+      "description": "Diagnose, narrow, fix, and verify a bug through an evidence-first workflow. Use when a bug or unexpected behavior is reported and the root cause is not yet confirmed.",
+      "directory": "skills/bugfix-workflow",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "efficiency"
+      ]
+    },
+    {
+      "name": "conflict-resolution",
+      "description": "Compare and arbitrate conflicting findings from parallel investigations or competing hypotheses. Typically loaded by the multi-agent-protocol synthesis step when subagent results disagree, or when the agent holds two plausible explanations with different supporting evidence.",
+      "directory": "skills/conflict-resolution",
+      "family": "orchestration",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "efficiency"
+      ]
+    },
+    {
+      "name": "context-budget-awareness",
+      "description": "Compress and refocus the working state when an investigation is stuck or spinning — many files read without convergence, the same areas checked repeatedly without progress, hypotheses accumulating without evidence to rank them, or recent actions not advancing the objective. Uses a structured Context Ledger to make self-monitoring observable and verifiable without platform-specific mechanisms.",
+      "directory": "skills/context-budget-awareness",
+      "family": "execution",
+      "version": "0.2.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "efficiency"
+      ]
+    },
+    {
+      "name": "design-before-plan",
+      "description": "Clarify requirements, compare design alternatives, define interface contracts, and establish acceptance criteria before planning implementation. Use when the task involves design choices, cross-module contracts, or unclear acceptance criteria.",
+      "directory": "skills/design-before-plan",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "design",
+        "requirements"
+      ]
+    },
+    {
+      "name": "impact-analysis",
+      "description": "Assess the blast radius of a planned code change by tracing outward from the edit point to affected callers, dependents, and contracts before planning. Use when the change touches shared interfaces, public APIs, data models, or has 3+ tentative leads from discovery.",
+      "directory": "skills/impact-analysis",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "efficiency"
+      ]
+    },
+    {
+      "name": "incremental-delivery",
+      "description": "Split a multi-step plan into 2-4 independently mergeable increments when the task is too large for a single PR but too small for the full phase system. Use when plan-before-action produces a plan spanning 2-4 PRs across 1-2 modules.",
+      "directory": "skills/incremental-delivery",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "efficiency"
+      ]
+    },
+    {
+      "name": "minimal-change-strategy",
+      "description": "Constrain a code change to the smallest viable patch when the diff is growing beyond the task, cleanup temptation is high, or multiple edit strategies compete. Not needed for simple single-file fixes where AGENTS.md Change Rules suffice.",
+      "directory": "skills/minimal-change-strategy",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "efficiency"
+      ]
+    },
+    {
+      "name": "multi-agent-protocol",
+      "description": "Complete operational protocol for launching, coordinating, and synthesizing parallel subagents. Use when the AGENTS.md multi-agent rules indicate Tier 1 or Tier 2 parallelism and the agent needs the full decision framework, subagent prompt templates, merge checklist, and failure handling procedures.",
+      "directory": "skills/multi-agent-protocol",
+      "family": "orchestration",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "efficiency"
+      ]
+    },
+    {
+      "name": "phase-contract-tools",
+      "description": "Shared contract library for phase planning and execution. Usually loaded by phase-plan or phase-execute, not triggered independently. Use directly only when the task is to fix, extend, or validate the phase contract scripts, schema definitions, or renderers themselves.",
+      "directory": "skills/phase-contract-tools",
+      "family": "phase"
+    },
+    {
+      "name": "phase-execute",
+      "description": "Execute an accepted phase wave by consuming plan.yaml, resolving wave gates, launching serial or parallel lanes, integrating results, and reporting wave status. Use after phase-plan has produced the execution docs and the agent is ready to implement a specific wave.",
+      "directory": "skills/phase-execute",
+      "family": "phase"
+    },
+    {
+      "name": "phase-plan",
+      "description": "Design or update a structured implementation plan that breaks a large task into sequenced waves of parallel work. Use when the agent needs to create plan.yaml and supporting docs for multi-wave execution, or convert a roadmap into an executable plan with PR sequencing and wave ownership.",
+      "directory": "skills/phase-plan",
+      "family": "phase"
+    },
+    {
+      "name": "phase-plan-review",
+      "description": "Review phase plan outputs for upstream intent alignment, plan quality, and execution readiness before wave execution begins. Use after phase-plan has produced its outputs and before phase-execute launches any wave. Acts as a three-layer acceptance gate that can block or approve progression to execution.",
+      "directory": "skills/phase-plan-review",
+      "family": "phase"
+    },
+    {
+      "name": "plan-before-action",
+      "description": "Require a clear plan with scope, assumptions, and intended file list before multi-step or uncertain edits. Use when multiple files are involved, sequencing matters, or the task shape is not yet clear.",
+      "directory": "skills/plan-before-action",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "efficiency"
+      ]
+    },
+    {
+      "name": "read-and-locate",
+      "description": "Find the relevant files, code paths, and edit points in an unfamiliar area of the codebase when the agent must trace a runtime, data, ownership, or configuration path. Do not use when an exact symbol, class, function, or file search is sufficient.",
+      "directory": "skills/read-and-locate",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "efficiency"
+      ]
+    },
+    {
+      "name": "safe-refactor",
+      "description": "Guide small, controlled refactors that improve code structure while keeping behavior and interfaces stable. Use when the task is structural cleanup, extraction, or simplification — not a behavior change.",
+      "directory": "skills/safe-refactor",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "efficiency"
+      ]
+    },
+    {
+      "name": "scoped-tasking",
+      "description": "Narrow a broad or ambiguous task to the smallest useful boundary before exploring or editing. Use when the request is wide but the likely edit surface is small, or when scope is expanding without evidence.",
+      "directory": "skills/scoped-tasking",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "efficiency"
+      ]
+    },
+    {
+      "name": "self-review",
+      "description": "Review the agent's own diff for quality issues, debug residuals, and scope violations before running tests. Use after all edits are complete and before targeted-validation, to catch low-cost issues that testing alone will not surface.",
+      "directory": "skills/self-review",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "efficiency"
+      ]
+    },
+    {
+      "name": "targeted-validation",
+      "description": "Choose the narrowest meaningful test or check that verifies a change without defaulting to a full build or test suite. Use when the agent must decide what to test after a patch — not needed when the user already specifies exactly which tests to run.",
+      "directory": "skills/targeted-validation",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "efficiency"
+      ]
+    }
+  ]
+}
