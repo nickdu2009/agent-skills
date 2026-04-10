@@ -471,7 +471,7 @@ def main() -> int:
     parser.add_argument(
         "--compact-mode",
         action="store_true",
-        help="Use compact skill_index.json instead of parsing full SKILL.md frontmatter (reduces prompt size by 60-80%%)",
+        help="Use compact skill_index.json instead of parsing full SKILL.md frontmatter (reduces prompt size by 60-80%%). RECOMMENDED for CI/CD pipelines.",
     )
     parser.add_argument(
         "--model",

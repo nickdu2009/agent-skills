@@ -1,6 +1,6 @@
 ---
 name: phase-execute
-description: Execute an accepted phase wave by consuming plan.yaml, resolving wave gates, launching serial or parallel lanes, integrating results, and reporting wave status. Use after phase-plan has produced the execution docs and the agent is ready to implement a specific wave.
+description: Execute an accepted phase wave by consuming plan.yaml, resolving wave gates, launching serial or parallel lanes, integrating results, and reporting wave status. Use when phase-plan has produced the execution docs, the accepted wave is ready to execute, and the agent needs to implement a specific wave through schema-driven execution.
 ---
 
 # Phase Execute
@@ -328,6 +328,8 @@ Use this skill together with:
 - `$phase-plan-review` when the user wants a pre-execution quality gate before the first wave launch
 - `$phase-plan` when the phase doc set must be repaired, re-rendered, or re-scoped
 - `$conflict-resolution` when merge or evidence conflicts exceed the circuit-breaker threshold
+
+See also phase-execute usage in phase workflow chain definitions in docs/maintainer/skill-chain-aliases.md.
 
 ## Artifact Contract
 

@@ -39,13 +39,9 @@ Keep edits small, local, and reviewable. The skill favors the narrowest patch th
 2. Identify the narrowest edit point that can produce that outcome.
 3. Compare options and choose the one that touches the fewest files, changes the fewest interfaces, and affects the fewest downstream consumers.
 3.5. Assess reversibility.
-   - If the change only involves code logic (function bodies, control flow, local variables) — git revert is sufficient, proceed to step 4.
-   - If the change involves any of the following, state a rollback strategy and request confirmation before proceeding:
-     - database schema or persistent storage format changes
-     - external API calls or webhook registrations
-     - file or directory deletions or renames
-     - permission, authentication, or encryption configuration changes
-   - The rollback strategy must answer: Is git revert sufficient? Is a data migration rollback needed? How are already-triggered external side effects handled?
+   - Code logic only (function bodies, control flow, local variables) → git revert is sufficient, proceed to step 4
+   - If change involves DB schema, external APIs, file deletions, or permission changes → state rollback strategy and request confirmation
+   - Rollback strategy must answer: Is git revert sufficient? Is data migration rollback needed? How are external side effects handled?
 4. Make the patch without broad restructuring.
 5. Validate only the affected area first.
 6. Record any intentional non-fixes that were observed but deferred.
@@ -91,12 +87,12 @@ Return:
 
 # Composition
 
-Combine with:
+Part of bugfix-standard, refactor, multi-file, and design-first chains. See CLAUDE.md Skill Chain Triggers section.
 
-- `scoped-tasking` to keep the patch boundary honest
-- `plan-before-action` to declare intended edits before changing files
-- `targeted-validation` to verify the patch without paying full-suite cost
-- `bugfix-workflow` when the minimal fix depends on evidence from diagnosis
+Additional composition:
+- Combine with `scoped-tasking` to keep the patch boundary honest
+- Combine with `plan-before-action` to declare intended edits before changing files
+- Combine with `targeted-validation` to verify the patch without paying full-suite cost
 
 # Example
 
@@ -188,6 +184,6 @@ recommendations:
 
 ## Deactivation Trigger
 
-- Deactivate when the task is complete and no further patches need scope constraint.
+- Deactivate when the patch has been applied and the guarded boundary is no longer needed.
 - Deactivate when the task escalates into a larger design or impact-analysis exercise.
 - Deactivate after validation confirms the requested outcome without needing further scope restraint.

@@ -1,6 +1,6 @@
 ---
 name: self-review
-description: Review the agent's own diff for quality issues, debug residuals, and scope violations before running tests. Use after all edits are complete and before targeted-validation, to catch low-cost issues that testing alone will not surface.
+description: Review the agent's own diff for quality issues, debug residuals, and scope violations before running tests. Use when all edits are complete, before targeted-validation, when the diff spans multiple files and manual review would catch issues that tests miss, or when the user explicitly asks for a diff review before testing.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"
@@ -107,6 +107,8 @@ warning_count: 1
 - Precedes `targeted-validation` — review diff quality first, then verify behavior.
 - Consumes the planned working set from `plan-before-action`.
 - Drop after review passes — self-review does not stay active during validation.
+
+Part of `bugfix-standard`, `refactor-safe`, `multi-file-planned`, and `design-first` chains. See full chain definitions in docs/maintainer/skill-chain-aliases.md.
 
 # Example
 

@@ -1,6 +1,6 @@
 ---
 name: context-budget-awareness
-description: Compress and refocus the working state when an investigation is stuck or spinning — many files read without convergence, the same areas checked repeatedly without progress, hypotheses accumulating without evidence to rank them, or recent actions not advancing the objective. Uses a structured Context Ledger to make self-monitoring observable and verifiable without platform-specific mechanisms.
+description: Skill that compresses and refocuses working state when investigation stalls or spins. Triggers when working set exceeds 8 files, same file read 2+ times without new question, 3+ hypotheses lack ranking, or last 3 actions stalled. Uses Context Ledger for observable accounting.
 metadata:
   version: "0.2.0"
   tags: "coding, agents, orchestration, efficiency"
@@ -160,12 +160,12 @@ Return when `action` is `compress` or `restart`:
 
 # Composition
 
-Combine with:
+See CLAUDE.md Skill Chain Triggers for fallback patterns from `bugfix-workflow` and `plan-before-action`.
 
-- `read-and-locate` to keep discovery tight in unfamiliar codebases
-- `bugfix-workflow` when diagnosis is spreading across too many hypotheses
-- `plan-before-action` to keep the next step explicit after compression
-- `multi-agent-protocol` when multiple parallel findings need a compact merge state
+Additional composition:
+- Combine with `read-and-locate` to keep discovery tight in unfamiliar codebases
+- Combine with `plan-before-action` to keep the next step explicit after compression
+- Combine with `multi-agent-protocol` when multiple parallel findings need a compact merge state
 
 # Example
 

@@ -1081,6 +1081,226 @@ See the [Skills overview](/docs/en/agents-and-tools/agent-skills/overview#skill-
 
 Keep SKILL.md body under 500 lines for optimal performance. If your content exceeds this, split it into separate files using the progressive disclosure patterns described earlier. For architectural details, see the [Skills overview](/docs/en/agents-and-tools/agent-skills/overview#how-skills-work).
 
+## Token Efficiency Best Practices
+
+This section provides practical guidance for authoring token-efficient skills while maintaining clarity and usability.
+
+### Target Metrics
+
+- **SKILL.md body**: ≤500 lines for optimal performance
+- **Description field**: 100-200 words (130-260 tokens)
+- **Contract sections**: 30-70 tokens per subsection
+- **Anti-pattern examples**: 40-65 tokens per pattern
+- **Composition prose**: Reference chain aliases instead of repeating full chains
+
+### Use Chain Aliases Instead of Repeated Prose
+
+**Avoid repeating composition chains**:
+
+```markdown
+Combine with:
+
+- `scoped-tasking` to keep diagnosis inside the smallest plausible domain
+- `read-and-locate` to trace the relevant path quickly
+- `minimal-change-strategy` to keep the fix small
+- `targeted-validation` to verify the symptom without paying unnecessary suite cost
+```
+
+Token cost: ~80-120 tokens per instance
+
+**Use canonical chain references instead**:
+
+```markdown
+Combine with:
+
+- Part of `bugfix-standard` chain
+- See full definitions in docs/maintainer/skill-chain-aliases.md
+```
+
+Token cost: ~20-30 tokens per instance  
+**Savings**: ~60-90 tokens per skill
+
+For full chain definitions, see: `docs/maintainer/skill-chain-aliases.md`
+
+### Reference Canonical Templates
+
+Use templates for structure guidance, not runtime normalization:
+
+- **Contract structure**: See `docs/maintainer/skill-contract-template.md` for contract formatting
+- **Anti-pattern format**: See `docs/maintainer/skill-anti-pattern-template.md` for anti-pattern structure
+- **Protocol blocks**: Reference `docs/maintainer/protocol-v2-compact.md` for compact protocol notation
+
+**Note**: Keep actual contract content, anti-patterns, and examples inline in SKILL.md. Only reference templates in maintainer documentation, not in skill files themselves.
+
+### Write Specific Descriptions
+
+The description field is critical for skill discovery. Follow this pattern:
+
+**Format**: [What] + [When] + [Third person]
+
+**Good examples**:
+
+```yaml
+description: Diagnose, narrow, fix, and verify a bug through an evidence-first workflow. Use when a bug or unexpected behavior is reported and the root cause is not yet confirmed.
+```
+
+```yaml
+description: Constrain a code change to the smallest viable patch when the diff is growing beyond the task, cleanup temptation is high, or multiple edit strategies compete. Not needed for simple single-file fixes where AGENTS.md Change Rules suffice.
+```
+
+**Avoid**:
+- Vague descriptions: "Helps with bugs" (no trigger information)
+- First person: "I help you fix bugs" (breaks system prompt integration)
+- Second person: "You can use this to fix bugs" (inconsistent voice)
+- Missing triggers: "Fixes bugs in code" (doesn't say when to activate)
+
+### Keep Reference Structure Shallow
+
+Avoid deeply nested references. Claude may partially read files when they're referenced from other referenced files.
+
+**Good (one level deep)**:
+
+```markdown
+# SKILL.md
+
+**Basic usage**: [instructions in SKILL.md]
+**Advanced features**: See [advanced.md](advanced.md)
+**API reference**: See [reference.md](reference.md)
+```
+
+**Bad (too deep)**:
+
+```markdown
+# SKILL.md
+See [advanced.md](advanced.md)...
+
+# advanced.md
+See [details.md](details.md)...
+
+# details.md
+[actual information]
+```
+
+**Guideline**: All reference files should link directly from SKILL.md.
+
+### Compress Protocol Block Examples
+
+Use protocol v2 compact notation in examples:
+
+**Before (v1 verbose)**:
+
+```yaml
+[task-input-validation]
+task: "Fix auth bug"
+checks:
+  clarity:
+    status: PASS
+    reason: "Clear action and target"
+  scope:
+    status: PASS
+    reason: "Bounded to auth module"
+  safety:
+    status: PASS
+    reason: "No destructive ops"
+  skill_match:
+    status: PASS
+    reason: "bugfix-workflow applies"
+result: PASS
+action: proceed
+[/task-input-validation]
+```
+
+Token cost: ~100-120 tokens
+
+**After (v2 compact)**:
+
+```
+[task-validation: PASS | clarity:✓ scope:✓ safety:✓ skill_match:✓ | action:proceed]
+```
+
+Token cost: ~25-30 tokens  
+**Savings**: ~75-90 tokens per block
+
+See `docs/maintainer/protocol-v2-compact.md` for complete v2 specification.
+
+### Contract Section Efficiency
+
+Follow the canonical contract structure for consistency:
+
+```markdown
+## Contract
+
+### Preconditions
+
+- [Observable condition 1]
+- [Observable condition 2]
+
+### Postconditions
+
+- `status: completed` includes `field1`, `field2`, `field3`.
+- [Guarantee 1]
+- [Guarantee 2]
+
+### Invariants
+
+- [Property that holds throughout execution]
+- [Constraint that is never violated]
+
+### Downstream Signals
+
+- `field_name` [explains consumption purpose]
+```
+
+**Efficiency tips**:
+- Start bullets with observable conditions, not full sentences
+- Use backticks for field names: `field_name` not "the field_name field"
+- Keep explanations specific: "Narrows where edits may happen" vs. "provides context for downstream skills"
+- One concept per bullet; avoid compound sentences
+
+See `docs/maintainer/skill-contract-template.md` for detailed guidance.
+
+### Anti-Pattern Format
+
+Target 30-50 words per anti-pattern:
+
+```markdown
+# Common Anti-Patterns
+
+- **[Pattern name].** [One-sentence description of behavior]. [One-sentence consequence or example].
+```
+
+**Efficiency tips**:
+- Pattern name: 3-5 words maximum
+- Description: 15-25 words
+- Consequence: 15-25 words
+- Use third person: "The agent..." not "You..."
+- Show concrete failure, not vague warnings
+
+See `docs/maintainer/skill-anti-pattern-template.md` for complete format guide.
+
+### Estimated Token Savings
+
+Applying these efficiency techniques across a typical skill:
+
+| Technique | Baseline Tokens | Optimized Tokens | Savings |
+|-----------|----------------|------------------|---------|
+| Chain composition prose → aliases | 100 | 25 | 75 |
+| Protocol blocks verbose → compact | 120 | 30 | 90 |
+| Contract verbose → concise | 234 | 163 | 71 |
+| Total per skill | 454 | 218 | 236 |
+
+For 18 skills: **~4,200 token savings** (52% reduction in these sections)
+
+### Tool References
+
+When building token-efficient skills, use these resources:
+
+- **Chain patterns**: `docs/maintainer/skill-chain-aliases.md`
+- **Contract structure**: `docs/maintainer/skill-contract-template.md`
+- **Anti-pattern format**: `docs/maintainer/skill-anti-pattern-template.md`
+- **Protocol v2**: `docs/maintainer/protocol-v2-compact.md`
+- **Deduplication analysis**: `docs/maintainer/deduplication-analysis.md`
+
 ## Checklist for effective Skills
 
 Before sharing a Skill, verify:
@@ -1096,6 +1316,15 @@ Before sharing a Skill, verify:
 - [ ] File references are one level deep
 - [ ] Progressive disclosure used appropriately
 - [ ] Workflows have clear steps
+
+### Token efficiency
+- [ ] Chain compositions reference aliases instead of repeating full chains
+- [ ] Contract sections follow template structure (see skill-contract-template.md)
+- [ ] Anti-patterns use standard format: 30-50 words each (see skill-anti-pattern-template.md)
+- [ ] Protocol block examples use v2 compact notation where appropriate
+- [ ] Description is 100-200 words with clear triggers
+- [ ] Reference files are one level deep from SKILL.md
+- [ ] No redundant explanations that exist in canonical templates
 
 ### Code and scripts
 - [ ] Scripts solve problems rather than punt to Claude

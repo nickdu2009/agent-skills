@@ -1,6 +1,6 @@
 ---
 name: bugfix-workflow
-description: Diagnose, narrow, fix, and verify a bug through an evidence-first workflow. Use when a bug or unexpected behavior is reported and the root cause is not yet confirmed.
+description: Skill that diagnoses, narrows, fixes, and verifies a bug through an evidence-first workflow. Use when a bug or unexpected behavior is reported and the root cause is not yet confirmed.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"
@@ -84,12 +84,13 @@ Return:
 
 # Composition
 
-Combine with:
+Part of the bugfix-standard chain. See CLAUDE.md Skill Chain Triggers section.
 
-- `scoped-tasking` to keep diagnosis inside the smallest plausible domain
-- `read-and-locate` to trace the relevant path quickly
-- `minimal-change-strategy` to keep the fix small
-- `targeted-validation` to verify the symptom without paying unnecessary suite cost
+Additional composition:
+- Combine with `scoped-tasking` to keep diagnosis inside the smallest plausible domain
+- Combine with `read-and-locate` to trace the relevant path quickly
+- Combine with `minimal-change-strategy` to keep the fix small
+- Combine with `targeted-validation` to verify the symptom without paying unnecessary suite cost
 
 # Example
 

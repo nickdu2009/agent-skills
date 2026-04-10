@@ -121,13 +121,15 @@ With the current skill set (18 skills):
 - **One-off queries**: Running single test cases manually
 - **Index unavailable**: First-time setup or CI environments without pre-generation
 
-### Use Compact Mode When:
+### Use Compact Mode When (RECOMMENDED DEFAULT):
 
+- **CI/CD pipelines**: Pre-generated index ensures fast, consistent evaluation (HIGHLY RECOMMENDED)
 - **Production evaluation**: Running full test suites
-- **Automated testing**: CI/CD pipelines with pre-generated index
 - **Batch processing**: Evaluating many test cases in parallel
 - **Performance critical**: Minimizing startup overhead
 - **Consistency required**: Ensuring identical metadata across runs
+
+**Note**: Compact mode is the recommended default for most automated workflows. It reduces prompt size by 60-80% and eliminates parsing overhead.
 
 ## Integration Points
 

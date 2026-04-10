@@ -1,17 +1,19 @@
 # Token Efficiency Baseline Report
 
 **Date:** 2026-04-11  
-**Purpose:** Establish baseline measurements for token efficiency optimization
+**Purpose:** Establish baseline measurements for token efficiency optimization  
+**Token Counting:** tiktoken cl100k_base (actual token counts)
 
 ## Executive Summary
 
-This baseline captures the prompt surface area across governance templates, skill documentation, and evaluation infrastructure. Total prompt surface measured: **~233KB** text across templates, governance, and skills.
+This baseline captures the prompt surface area across governance templates, skill documentation, and evaluation infrastructure. Total prompt surface measured: **~52,600 tokens** (**~247KB** text) across templates, governance, and skills.
 
 **Key Findings:**
-- 18 skills with average 254 lines/skill
-- 1 skill over 500-line target (phase-plan-review: 521 lines)
+- 18 skills with average 2,341 tokens/skill (~251 lines)
+- 0 skills over 500-line target (max: phase-plan-review at 464 lines)
 - 9/18 skills (50%) pass all quality checks
-- Governance templates inject 264 lines (11.5KB) into every project
+- Governance templates inject 4,556 tokens (444 lines, ~18.9KB) into every project
+- Character-based estimate overestimates by ~17% (use `--actual-tokens` for precision)
 
 ## Measurement Details
 
@@ -19,23 +21,23 @@ This baseline captures the prompt surface area across governance templates, skil
 
 Templates injected into every new project:
 
-| File | Lines | Characters | Bytes |
-|------|-------|------------|-------|
-| AGENTS-template.md | 135 | 6,128 | 6,154 |
-| CLAUDE-template.md | 129 | 5,354 | 5,374 |
-| **Total** | **264** | **11,482** | **11,528** |
+| File | Lines | Characters | Tokens | Bytes |
+|------|-------|------------|--------|-------|
+| AGENTS-template.md | 222 | 9,471 | 2,277 | 9,509 |
+| CLAUDE-template.md | 222 | 9,471 | 2,279 | 9,509 |
+| **Total** | **444** | **18,942** | **4,556** | **19,018** |
 
 ### 2. Generated Governance
 
 Actual governance files in root (includes skill chain triggers and protocol details):
 
-| File | Lines | Characters | Bytes |
-|------|-------|------------|-------|
-| AGENTS.md | 141 | 7,613 | 7,625 |
-| CLAUDE.md | 197 | 11,030 | 11,116 |
-| **Total** | **338** | **18,643** | **18,741** |
+| File | Lines | Characters | Tokens | Bytes |
+|------|-------|------------|--------|-------|
+| AGENTS.md | 321 | 15,515 | 3,358 | 15,559 |
+| CLAUDE.md | 197 | 11,030 | 2,554 | 11,116 |
+| **Total** | **518** | **26,545** | **5,912** | **26,675** |
 
-**Expansion ratio:** Generated governance is 28% larger than templates (338 vs 264 lines).
+**Expansion ratio:** Generated governance is 17% larger than templates (518 vs 444 lines, 5,912 vs 4,556 tokens).
 
 ### 3. Skill Documentation
 
@@ -44,27 +46,30 @@ Actual governance files in root (includes skill chain triggers and protocol deta
 | Metric | Value |
 |--------|-------|
 | Total files | 18 |
-| Total lines | 4,576 |
-| Total characters | 202,931 |
-| Total bytes | 203,185 |
-| Average lines/skill | 254.2 |
-| Max body lines | 521 (phase-plan-review) |
-| Skills over 500 lines | 1 |
+| Total lines | 4,525 |
+| Total characters | 201,773 |
+| Total tokens | 42,139 |
+| Total bytes | 202,009 |
+| Average lines/skill | 251.4 |
+| Average tokens/skill | 2,341 |
+| Max body lines | 464 (phase-plan-review) |
+| Max body tokens | 5,177 (phase-plan-review) |
+| Skills over 500 lines | 0 |
 
-#### Top 10 Skills by Size (Body Lines)
+#### Top 10 Skills by Size (Body Tokens)
 
-| Skill | Body Lines | Over 500? |
-|-------|------------|-----------|
-| phase-plan-review | 521 | ✗ OVER |
-| phase-plan | 396 | ✓ |
-| phase-execute | 377 | ✓ |
-| multi-agent-protocol | 341 | ✓ |
-| design-before-plan | 336 | ✓ |
-| context-budget-awareness | 278 | ✓ |
-| phase-contract-tools | 224 | ✓ |
-| incremental-delivery | 203 | ✓ |
-| self-review | 191 | ✓ |
-| minimal-change-strategy | 186 | ✓ |
+| Skill | Body Lines | Body Tokens | Over 500 Lines? |
+|-------|------------|-------------|-----------------|
+| phase-plan-review | 464 | 5,177 | ✓ |
+| phase-plan | 396 | 4,012 | ✓ |
+| phase-execute | 379 | 3,965 | ✓ |
+| design-before-plan | 336 | 3,547 | ✓ |
+| multi-agent-protocol | 341 | 2,997 | ✓ |
+| context-budget-awareness | 278 | 2,719 | ✓ |
+| phase-contract-tools | 226 | 2,659 | ✓ |
+| incremental-delivery | 203 | 1,701 | ✓ |
+| self-review | 193 | 1,675 | ✓ |
+| impact-analysis | 184 | 1,542 | ✓ |
 
 ### 4. Evaluation Prompts
 
@@ -113,27 +118,54 @@ Trigger test infrastructure:
 ✓ scoped-tasking (181 lines)  
 ✓ targeted-validation (170 lines)
 
+## Token Counting Methodology
+
+This baseline uses **tiktoken** with the `cl100k_base` encoding (used by GPT-4 and Claude 3+) for precise token counts.
+
+### Character vs Token Estimation
+
+**Character-based estimate:** Divide character count by 4 (rough heuristic)  
+**Actual observation:** ~4.69 characters per token (actual ratio)  
+**Accuracy:** Character-based estimate overestimates by ~17%
+
+| Component | Char Estimate | Actual Tokens | Error |
+|-----------|---------------|---------------|-------|
+| Governance templates | 4,735 | 4,556 | +3.9% |
+| Generated governance | 6,636 | 5,912 | +12.2% |
+| Skill files | 50,274 | 42,139 | +19.3% |
+
+**Recommendation:** Use `--actual-tokens` flag for precise measurements and CI baselines. Character-based estimates provide a conservative upper bound for quick checks.
+
+### Baseline Enforcement Thresholds
+
+| Metric | Baseline | Warning (+10%) | Fail (+20%) |
+|--------|----------|----------------|-------------|
+| Governance templates tokens | 4,556 | 5,012 | 5,467 |
+| Average skill tokens | 2,341 | 2,575 | 2,809 |
+| Max skill body tokens | 5,177 | 5,695 | 6,212 |
+| Skills over 500 lines | 0 | 1 | 2 |
+
 ## Token Efficiency Implications
 
 ### Current State
 
-1. **Governance overhead:** Every project gets 338 lines (18.7KB) of governance injected
-2. **Skill activation cost:** Loading a skill adds 170-521 lines depending on which skill
-3. **Average skill cost:** 254 lines per skill loaded
+1. **Governance overhead:** Every project gets 5,912 tokens (518 lines, ~26.5KB) of governance injected
+2. **Skill activation cost:** Loading a skill adds 1,173-5,177 tokens depending on which skill
+3. **Average skill cost:** 2,341 tokens per skill loaded
 4. **Quality variance:** 50% of skills meet quality guidelines, 50% need improvement
 
 ### Optimization Opportunities
 
 Based on this baseline, the following optimization vectors are identified:
 
-1. **Governance compression** - 28% expansion from template to generated (264→338 lines) suggests redundancy
-2. **Skill length reduction** - 1 skill over target, 4 skills near target (336-396 lines)
+1. **Governance compression** - 17% expansion from template to generated (4,556→5,912 tokens) suggests some redundancy
+2. **Skill length reduction** - 0 skills over 500-line target, but 4 skills near 400 lines (phase-plan-review, phase-plan, phase-execute, design-before-plan)
 3. **Description quality** - 9 skills need description improvements
 4. **Structure simplification** - 4 skills have deep nesting that could be flattened
 
-### Measurement Assumptions
+### Measurement Methodology
 
-- **Token approximation:** Using line count and character count as proxy for tokens (actual token count ~1.3× character count ÷ 4)
+- **Token counting:** tiktoken cl100k_base encoding (precise, not estimated)
 - **Generated governance:** Measured from root AGENTS.md/CLAUDE.md, not actual project generation
 - **Prompt surface:** Does not include Claude Code system prompts, only project-specific governance
 - **Quality checks:** Heuristic-based, not semantic analysis
@@ -143,23 +175,23 @@ Based on this baseline, the following optimization vectors are identified:
 ### For Documentation Agent
 
 Use this baseline to prioritize which skills need description and structure improvements:
-- **High priority:** phase-plan-review (over 500 lines + quality issues)
+- **High priority:** phase-plan-review (5,177 tokens, quality issues)
 - **Medium priority:** context-budget-awareness, design-before-plan, minimal-change-strategy (deep structure)
 - **Low priority:** Skills passing all checks
 
 ### For Governance Agent
 
 Use template measurements to optimize governance injection:
-- Current: 264 template lines → 338 generated lines (28% expansion)
+- Current: 4,556 template tokens → 5,912 generated tokens (17% expansion)
 - Target: Reduce expansion ratio by eliminating redundancy
 - Focus: Skill chain triggers section (likely candidate for compression)
 
 ### For Evaluation Agent
 
 Use these baselines as targets:
-- **Governance:** Should not exceed 350 lines after optimization
-- **Average skill:** Target 200 lines (current: 254)
-- **Max skill:** Target 450 lines (current: 521)
+- **Governance:** Should not exceed 6,500 tokens after optimization
+- **Average skill:** Target 2,200 tokens (current: 2,341)
+- **Max skill:** Target 5,000 tokens (current: 5,177)
 - **Quality passing rate:** Target 80% (current: 50%)
 
 ## Validation Commands
@@ -167,14 +199,22 @@ Use these baselines as targets:
 Reproduce these measurements:
 
 ```bash
-# Generate baseline measurements
+# Generate baseline measurements with actual token counts (RECOMMENDED)
+python3 maintainer/scripts/analysis/measure_prompt_surface.py --actual-tokens
+
+# Quick character-based estimate (faster but less accurate)
 python3 maintainer/scripts/analysis/measure_prompt_surface.py
 
 # Check quality metrics
 python3 maintainer/scripts/analysis/check_skill_quality.py
 
+# Compare token counting methods
+python3 maintainer/scripts/analysis/compare_token_methods.py \
+  --estimate metrics_char_estimate.json \
+  --actual metrics_actual_tokens.json
+
 # Get JSON output for programmatic analysis
-python3 maintainer/scripts/analysis/measure_prompt_surface.py --json
+python3 maintainer/scripts/analysis/measure_prompt_surface.py --actual-tokens --json
 python3 maintainer/scripts/analysis/check_skill_quality.py --json
 ```
 

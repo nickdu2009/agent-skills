@@ -1,6 +1,6 @@
 ---
 name: phase-contract-tools
-description: Shared contract library for phase planning and execution. Usually loaded by phase-plan or phase-execute, not triggered independently. Use directly only when the task is to fix, extend, or validate the phase contract scripts, schema definitions, or renderers themselves.
+description: Review and validate phase contract schemas, renderers, and helpers for phase planning and execution. Usually loaded by phase-plan or phase-execute, not triggered independently. Triggers directly when the task is to fix, extend, or validate the phase contract scripts, schema definitions, or renderers themselves.
 ---
 
 # Phase Contract Tools
@@ -175,6 +175,8 @@ Use this skill together with:
 - `$phase-plan` to author the per-phase strict four-file phase doc set plus the phase-root README against this contract
 - `$phase-plan-review` to review upstream intent alignment, plan quality, and execution readiness before wave execution begins
 - `$phase-execute` to execute accepted waves by consuming this contract and its helpers
+
+See also phase-contract-tools usage in phase workflow chain definitions in docs/maintainer/skill-chain-aliases.md.
 
 ## Artifact Contract
 
