@@ -1,14 +1,14 @@
 ---
 name: context-budget-awareness
-description: Compress and refocus the working state when an investigation is stuck or spinning — many files read without convergence, the same areas checked repeatedly without progress, hypotheses accumulating without evidence to rank them, or recent actions not advancing the objective. Use when the session has grown noisy and a fresh focused pass would be cheaper than carrying the full history forward. Extends the AGENTS.md Context Budget rules with a structured compression and rehydration pattern.
+description: Compress and refocus the working state when an investigation is stuck or spinning — many files read without convergence, the same areas checked repeatedly without progress, hypotheses accumulating without evidence to rank them, or recent actions not advancing the objective. Uses a structured Context Ledger to make self-monitoring observable and verifiable without platform-specific mechanisms.
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   tags: "coding, agents, orchestration, efficiency"
 ---
 
 # Purpose
 
-Teach the agent to control context growth. The skill helps avoid bloated sessions, repeated reading, and irrelevant history so that current reasoning stays attached to the live objective instead of accumulated noise.
+Teach the agent to control context growth through an observable, structured accounting mechanism — the Context Ledger. Instead of relying on implicit self-discipline to track file counts and hypothesis budgets, the agent must externalize its working state at defined checkpoints so that both the agent and the user can verify whether budget rules are being followed.
 
 # When to Use
 
@@ -32,25 +32,74 @@ These thresholds (8 files, 2 re-reads, 3 hypotheses, 3 stalled actions) are star
 - Avoid long, bloated sessions when a fresh focused session is better.
 - Avoid repeatedly re-reading large files without need.
 - Avoid injecting excessive policy, logs, or irrelevant history.
-- Summarize and compress state whenever a milestone is reached.
 - Keep active context aligned to the current objective.
 - Distinguish between live context, deferred context, and discarded context.
+- Externalize working state through the Context Ledger at every checkpoint — never rely on implicit internal tracking.
+
+# Context Ledger
+
+The Context Ledger is a structured status block that the agent must output at defined checkpoints. It replaces implicit self-monitoring with observable, auditable state.
+
+## Ledger Format
+
+```
+[context-ledger]
+objective: <one-sentence current objective>
+files_touched: [file_a.py, file_b.py, file_c.py]  (N/8)
+re-reads: file_b.py ×2 (reason: verifying fix)
+hypotheses:
+  - ✓ confirmed hypothesis (evidence: ...)
+  - ✗ ruled-out hypothesis (evidence: ...)
+  - ? pending hypothesis (strength: high|medium|low)
+staleness: N/3
+action: continue | compress | restart
+[/context-ledger]
+```
+
+Field definitions:
+
+- **objective**: the current goal in one sentence. If it has drifted from the original task, note the drift.
+- **files_touched**: every distinct file read or edited in this session, with count against the threshold `(N/8)`.
+- **re-reads**: any file read more than once, with the count and the new question that justified the re-read. A re-read without a stated new question is a violation.
+- **hypotheses**: each hypothesis tagged with one of three states:
+  - `✓` confirmed — has supporting evidence (cited).
+  - `✗` ruled out — has disconfirming evidence (cited).
+  - `?` pending — not yet tested, annotated with estimated strength (high/medium/low).
+- **staleness**: count of consecutive recent actions that did not advance the stated objective `(N/3)`.
+- **action**: the agent's decision based on ledger state — one of `continue`, `compress`, or `restart`.
+
+## Checkpoints (When to Output the Ledger)
+
+Output the Context Ledger at these milestones — not after every tool call:
+
+| Checkpoint | Trigger |
+|------------|---------|
+| New file enters working set | a file not previously in `files_touched` is read or edited |
+| Hypothesis state change | a hypothesis is added, confirmed (`✓`), or ruled out (`✗`) |
+| Edit completed | a file was successfully modified |
+| Stall detected | the agent self-assesses that its last 3 actions did not advance the objective |
+| Subagent results received | parallel investigation results need to be merged into the working state |
+
+## Threshold-Triggered Actions
+
+When a threshold is reached, the ledger `action` field must reflect the required response. The agent must not choose `continue` when a threshold is breached.
+
+| Condition | Required action |
+|-----------|----------------|
+| `files_touched` count ≥ 8 | `action: compress` — classify working set into Live / Deferred / Discarded and drop Discarded files from active context |
+| Same file re-read ≥ 3 times | Must state the new question in `re-reads`. If no new question exists, stop re-reading and work from the existing summary |
+| Pending hypotheses `?` ≥ 4 | Must rank by evidence strength and discard the weakest before adding any new hypothesis |
+| `staleness` ≥ 3 | `action: compress` or `action: restart` — `continue` is not permitted |
 
 # Execution Pattern
 
-1. Track the current objective and working set explicitly.
+1. At session start, state the objective and initialize an empty ledger.
 2. Read only the slices of information needed for the next step.
-3. After each milestone, compress the state using the standard summary template:
-   ```
-   - Symptom / Objective: ...
-   - Confirmed scope: ...
-   - Ruled out: ...
-   - Next step: ...
-   ```
-   A milestone is any of: a file was edited successfully, a hypothesis was confirmed or ruled out, the analysis target shifted to a different module, or a subagent returned results.
-4. Drop stale hypotheses, stale logs, and unused files from the active set.
-5. If the session becomes noisy, restart from the compressed summary instead of carrying everything forward.
-6. Rehydrate only the evidence needed for the next decision.
+3. At each checkpoint (see table above), output the Context Ledger.
+4. If the ledger shows a threshold breach, execute the required action before proceeding.
+5. When `action: compress`, produce a compressed state block (see Output Contract).
+6. When `action: restart`, produce a compressed state block and explicitly discard all context outside that block. Continue from the compressed state only.
+7. Rehydrate only the evidence needed for the next decision — do not reload discarded context.
 
 # Input Contract
 
@@ -68,9 +117,24 @@ Optional but helpful:
 
 # Output Contract
 
-Return:
+Return at every checkpoint:
 
-- the current compressed state (using the standard summary template)
+- the Context Ledger (structured status block, see format above)
+
+Return when `action` is `compress` or `restart`:
+
+- the compressed state using this template:
+  ```
+  [context-compressed]
+  objective: <...>
+  confirmed_scope: [file_a.py:fn_x, file_b.py:class_Y]
+  ruled_out: [file_c.py — reason, file_d.py — reason]
+  live: [files directly needed for the next step]
+  deferred: [files that may matter later but do not block the current step]
+  discarded: [files investigated and found irrelevant]
+  next_step: <specific next action>
+  [/context-compressed]
+  ```
 - the active working set, classified as:
   - **Live**: directly needed for the next step.
   - **Deferred**: may matter in a later phase but does not block the current step.
@@ -79,16 +143,20 @@ Return:
 
 # Guardrails
 
+- The Context Ledger must be output at every checkpoint. Skipping a checkpoint is a skill violation.
+- A re-read without a stated new question in the `re-reads` field is a violation.
+- Choosing `action: continue` when any threshold is breached is a violation.
 - Do not keep huge logs or long file excerpts in active memory when a short summary is enough.
-- Do not re-read the same large file unless a new question requires it.
 - Drop any hypothesis that has no supporting evidence after the most recent investigation pass.
-- If starting fresh would improve clarity, say so explicitly.
-- The compressed summary must include: the current symptom or objective, the confirmed scope, what has been ruled out, and the next intended step.
+- If starting fresh would improve clarity, say so explicitly via `action: restart`.
+- The compressed state must include: the current objective, the confirmed scope, what has been ruled out, and the next intended step.
 
 # Common Anti-Patterns
 
 - **Carrying the entire session history.** The agent re-reads rejected hypotheses, old terminal output, and abandoned file paths into every subsequent step instead of compressing state after each milestone.
 - **Re-reading the same 500-line file for the fourth time.** The agent keeps loading the same large file without a new question driving the re-read, consuming context budget on information that should have been summarized after the first pass.
+- **Silent threshold breach.** The agent internally "knows" it has touched 10 files but never externalizes this count, so neither the agent's own reasoning nor the user can catch the violation. The Context Ledger prevents this by requiring explicit accounting.
+- **Phantom progress.** The agent keeps reading files and running commands but the objective has not advanced. Without the `staleness` counter in the ledger, this can go unnoticed for many steps.
 
 # Composition
 
@@ -103,11 +171,35 @@ Combine with:
 
 Task: "Debug an intermittent worker failure after a long session."
 
-Compressed state (standard summary template):
+Context Ledger at a mid-session checkpoint:
 
-- Symptom / Objective: worker fails only on retry path.
-- Confirmed scope: retry scheduler, payload serializer, retry test fixture.
-- Ruled out: queue connection, credential loading.
-- Next step: inspect serializer differences between initial and retry enqueue.
+```
+[context-ledger]
+objective: find root cause of worker failure on retry path
+files_touched: [retry_scheduler.py, payload_serializer.py, retry_test.py, queue_client.py, credentials.py]  (5/8)
+re-reads: retry_scheduler.py ×2 (reason: checking retry count vs. max_retries after finding serializer issue)
+hypotheses:
+  - ✗ queue connection timeout (evidence: connection logs show successful reconnect)
+  - ✗ credential expiry (evidence: token refresh confirmed in auth middleware)
+  - ? payload serializer drops fields on retry (strength: high)
+  - ? retry count off-by-one (strength: medium)
+staleness: 0/3
+action: continue
+[/context-ledger]
+```
+
+Compressed state when threshold is hit:
+
+```
+[context-compressed]
+objective: find root cause of worker failure on retry path
+confirmed_scope: [retry_scheduler.py:enqueue_retry, payload_serializer.py:serialize]
+ruled_out: [queue_client.py — connection stable, credentials.py — token refresh works]
+live: [retry_scheduler.py, payload_serializer.py]
+deferred: [retry_test.py — update after fix is found]
+discarded: [queue_client.py, credentials.py]
+next_step: compare serializer output between initial enqueue and retry enqueue for field differences
+[/context-compressed]
+```
 
 Do not carry the full terminal history, every rejected hypothesis, and every unrelated worker module into the next pass.
