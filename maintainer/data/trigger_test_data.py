@@ -572,7 +572,79 @@ PRE_PHASE_CASES: tuple[TriggerCase, ...] = (
 
 
 # ---------------------------------------------------------------------------
-# Category 8: Baseline control (no skill should trigger)
+# Category 8: Chain triggers (skill A completion → skill B activation)
+# ---------------------------------------------------------------------------
+
+CHAIN_TRIGGER_CASES: tuple[TriggerCase, ...] = (
+    TriggerCase(
+        id="chain-scope-to-locate",
+        prompt="We've narrowed the task to the auth module, but I don't know which file handles token refresh.",
+        expected_triggers=("read-and-locate",),
+        expected_non_triggers=("scoped-tasking",),
+        category="chain-trigger",
+        notes="Scope is narrowed (auth module) but exact location unknown. Should chain from scoping to read-and-locate.",
+    ),
+    TriggerCase(
+        id="chain-locate-to-plan",
+        prompt="read-and-locate found the edit points: auth/token.ts and auth/session.ts. Now I need a plan for the changes.",
+        expected_triggers=("plan-before-action",),
+        expected_non_triggers=("read-and-locate",),
+        category="chain-trigger",
+        notes="Location discovery complete, now needs sequencing. Should chain from read-and-locate to plan-before-action.",
+    ),
+    TriggerCase(
+        id="chain-bugfix-to-cba",
+        prompt="I've been diagnosing this bug for a while, checked 10 files, and I have 4 competing theories but no evidence to rank them.",
+        expected_triggers=("context-budget-awareness",),
+        expected_non_triggers=("bugfix-workflow",),
+        category="chain-trigger",
+        notes="Bug diagnosis has consumed too much context without convergence. Should chain from bugfix-workflow to context-budget-awareness.",
+    ),
+    TriggerCase(
+        id="chain-review-to-validation",
+        prompt="Self-review is clean -- no blocking issues in the diff. What should I test?",
+        expected_triggers=("targeted-validation",),
+        expected_non_triggers=("self-review",),
+        category="chain-trigger",
+        notes="Review complete, now needs test selection. Should chain from self-review to targeted-validation.",
+    ),
+    TriggerCase(
+        id="chain-plan-to-design",
+        prompt="I tried to plan the implementation but realized I can't sequence the steps because there are two competing design approaches.",
+        expected_triggers=("design-before-plan",),
+        expected_non_triggers=("plan-before-action",),
+        category="chain-trigger",
+        notes="Planning blocked by unresolved design choice. Should escalate from plan-before-action to design-before-plan.",
+    ),
+    TriggerCase(
+        id="chain-minimal-to-impact",
+        prompt="I was making a small fix to the validator, but it turns out 5 other modules import this function.",
+        expected_triggers=("impact-analysis",),
+        expected_non_triggers=("minimal-change-strategy",),
+        category="chain-trigger",
+        notes="Small patch discovered to have wide blast radius. Should escalate from minimal-change-strategy to impact-analysis.",
+    ),
+    TriggerCase(
+        id="chain-refactor-to-design",
+        prompt="I started extracting the shared helper but realized the refactor changes the module's public interface.",
+        expected_triggers=("design-before-plan",),
+        expected_non_triggers=("safe-refactor",),
+        category="chain-trigger",
+        notes="Refactor touches public contract. Should escalate from safe-refactor to design-before-plan.",
+    ),
+    TriggerCase(
+        id="chain-parallel-to-conflict",
+        prompt="Two subagents disagree: one says the timeout is in the client, the other blames the server.",
+        expected_triggers=("conflict-resolution",),
+        expected_non_triggers=("multi-agent-protocol",),
+        category="chain-trigger",
+        notes="Parallel investigation produced conflicting results. Should chain from multi-agent-protocol to conflict-resolution.",
+    ),
+)
+
+
+# ---------------------------------------------------------------------------
+# Category 10: Baseline control (no skill should trigger)
 # ---------------------------------------------------------------------------
 
 BASELINE_CONTROL_CASES: tuple[TriggerCase, ...] = (
@@ -604,7 +676,7 @@ BASELINE_CONTROL_CASES: tuple[TriggerCase, ...] = (
 
 
 # ---------------------------------------------------------------------------
-# Category 9: Confusion boundary (distinguishing easily confused skills)
+# Category 11: Confusion boundary (distinguishing easily confused skills)
 # ---------------------------------------------------------------------------
 
 CONFUSION_BOUNDARY_CASES: tuple[TriggerCase, ...] = (
@@ -660,7 +732,7 @@ CONFUSION_BOUNDARY_CASES: tuple[TriggerCase, ...] = (
 
 
 # ---------------------------------------------------------------------------
-# Category 10: Combo triggers (multiple skills should activate together)
+# Category 12: Combo triggers (multiple skills should activate together)
 # ---------------------------------------------------------------------------
 
 COMBO_TRIGGER_CASES: tuple[TriggerCase, ...] = (
@@ -692,7 +764,7 @@ COMBO_TRIGGER_CASES: tuple[TriggerCase, ...] = (
 
 
 # ---------------------------------------------------------------------------
-# Category 11: Numeric boundary triggers (threshold precision tests)
+# Category 13: Numeric boundary triggers (threshold precision tests)
 # ---------------------------------------------------------------------------
 
 NUMERIC_BOUNDARY_CASES: tuple[TriggerCase, ...] = (
@@ -727,6 +799,7 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
     *MULTI_AGENT_CASES,
     *PHASE_CASES,
     *PRE_PHASE_CASES,
+    *CHAIN_TRIGGER_CASES,
     *BASELINE_CONTROL_CASES,
     *CONFUSION_BOUNDARY_CASES,
     *COMBO_TRIGGER_CASES,
@@ -745,6 +818,7 @@ CATEGORIES: tuple[str, ...] = (
     "multi-agent",
     "phase",
     "pre-phase",
+    "chain-trigger",
     "baseline-control",
     "confusion-boundary",
     "combo-trigger",

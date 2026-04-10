@@ -188,6 +188,6 @@ recommendations:
 
 ## Deactivation Trigger
 
-- Deactivate when the patch has been applied and the guarded boundary is no longer needed.
+- Deactivate when the task is complete and no further patches need scope constraint.
 - Deactivate when the task escalates into a larger design or impact-analysis exercise.
 - Deactivate after validation confirms the requested outcome without needing further scope restraint.
