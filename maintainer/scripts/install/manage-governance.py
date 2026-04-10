@@ -38,13 +38,17 @@ class MirrorTarget:
 
 
 @dataclass(frozen=True)
+class GovernanceSection:
+    heading: str
+    text: str
+
+
+@dataclass(frozen=True)
 class GovernanceTemplate:
     path: Path
     title_line: str
     full_text: str
-    multi_agent_text: str
-    skill_escalation_text: str
-    skill_lifecycle_text: str
+    sections: tuple[GovernanceSection, ...]
 
 
 FULL_PROFILE = Profile(
@@ -200,6 +204,17 @@ def extract_section(path: Path, heading: str) -> str:
     return ensure_trailing_newline("\n".join(lines[start:end]).rstrip("\n"))
 
 
+def extract_sections(path: Path) -> tuple[GovernanceSection, ...]:
+    lines = read_text(path).rstrip("\n").split("\n")
+    headings = [line for line in lines if line.startswith("## ")]
+    if not headings:
+        raise ValueError(f"No governance sections found in {path}")
+    return tuple(
+        GovernanceSection(heading=heading, text=extract_section(path, heading))
+        for heading in headings
+    )
+
+
 def load_governance_template(path: Path) -> GovernanceTemplate:
     full_text = ensure_trailing_newline(read_text(path).rstrip("\n"))
     first_line = full_text.splitlines()[0]
@@ -207,9 +222,7 @@ def load_governance_template(path: Path) -> GovernanceTemplate:
         path=path,
         title_line=first_line,
         full_text=full_text,
-        multi_agent_text=extract_section(path, "## Multi-Agent Rules"),
-        skill_escalation_text=extract_section(path, "## Skill Escalation"),
-        skill_lifecycle_text=extract_section(path, "## Skill Lifecycle"),
+        sections=extract_sections(path),
     )
 
 
@@ -217,15 +230,22 @@ AGENTS_TEMPLATE = load_governance_template(AGENTS_TEMPLATE_PATH)
 CLAUDE_TEMPLATE = load_governance_template(CLAUDE_TEMPLATE_PATH)
 
 
-def create_initial_doc(template: GovernanceTemplate, profile: Profile) -> str:
-    parts = [template.title_line, template.multi_agent_text.rstrip("\n")]
-    if not profile.inject_multi_agent_only:
-        parts.extend(
-            [
-                template.skill_escalation_text.rstrip("\n"),
-                template.skill_lifecycle_text.rstrip("\n"),
-            ]
-        )
+def get_template_section(template: GovernanceTemplate, heading: str) -> GovernanceSection:
+    for section in template.sections:
+        if section.heading == heading:
+            return section
+    raise ValueError(f"Heading {heading!r} not found in {template.path}")
+
+
+def sections_for_profile(template: GovernanceTemplate, profile: Profile) -> tuple[GovernanceSection, ...]:
+    if profile.inject_multi_agent_only:
+        return (get_template_section(template, "## Multi-Agent Rules"),)
+    return template.sections
+
+
+def render_doc(template: GovernanceTemplate, sections: tuple[GovernanceSection, ...]) -> str:
+    parts = [template.title_line]
+    parts.extend(section.text.rstrip("\n") for section in sections)
     return ensure_trailing_newline("\n\n".join(parts))
 
 
@@ -254,12 +274,6 @@ def insert_after_title_or_start(text: str, snippet: str) -> str:
     return ensure_trailing_newline("\n".join(new_lines).rstrip("\n"))
 
 
-def append_block(text: str, snippet: str) -> str:
-    return ensure_trailing_newline(
-        "\n\n".join([text.rstrip("\n"), snippet.rstrip("\n")]).rstrip("\n")
-    )
-
-
 def insert_before_heading(text: str, heading: str, snippet: str) -> str:
     lines = text.rstrip("\n").split("\n")
     bounds = find_section_bounds(lines, heading)
@@ -277,100 +291,96 @@ def insert_before_heading(text: str, heading: str, snippet: str) -> str:
     return ensure_trailing_newline("\n".join(new_lines).rstrip("\n"))
 
 
+def insert_after_heading(text: str, heading: str, snippet: str) -> str:
+    lines = text.rstrip("\n").split("\n")
+    bounds = find_section_bounds(lines, heading)
+    if bounds is None:
+        raise ValueError(f"Heading {heading!r} not present")
+    _, end = bounds
+    snippet_lines = snippet.rstrip("\n").split("\n")
+    new_lines = lines[:end]
+    if new_lines and new_lines[-1] != "":
+        new_lines.append("")
+    new_lines.extend(snippet_lines)
+    if end < len(lines) and snippet_lines and snippet_lines[-1] != "":
+        new_lines.append("")
+    new_lines.extend(lines[end:])
+    return ensure_trailing_newline("\n".join(new_lines).rstrip("\n"))
+
+
 def section_exists(text: str, heading: str) -> bool:
     return find_section_bounds(text.rstrip("\n").split("\n"), heading) is not None
 
 
-def inject_multi_agent_rules(target_file: Path, template: GovernanceTemplate, *, update: bool) -> bool:
+def insert_section_in_order(
+    text: str,
+    section: GovernanceSection,
+    ordered_headings: tuple[str, ...],
+) -> str:
+    idx = ordered_headings.index(section.heading)
+    for later_heading in ordered_headings[idx + 1:]:
+        if section_exists(text, later_heading):
+            return insert_before_heading(text, later_heading, section.text)
+    for earlier_heading in reversed(ordered_headings[:idx]):
+        if section_exists(text, earlier_heading):
+            return insert_after_heading(text, earlier_heading, section.text)
+    return insert_after_title_or_start(text, section.text)
+
+
+def inject_rule_sections(
+    target_file: Path,
+    template: GovernanceTemplate,
+    sections: tuple[GovernanceSection, ...],
+    *,
+    update: bool,
+) -> bool:
     if not target_file.exists():
         print(f"  CREATE: {target_file}")
-        target_file.write_text(create_initial_doc(template, MULTI_AGENT_PROFILE), encoding="utf-8")
+        target_file.write_text(render_doc(template, sections), encoding="utf-8")
         return True
 
     text = read_text(target_file)
     changed = False
-    if section_exists(text, "## Multi-Agent Rules"):
-        if update:
-            print(f"  UPDATE: ## Multi-Agent Rules in {target_file}")
-            text = replace_section(text, "## Multi-Agent Rules", template.multi_agent_text)
-            changed = True
+    ordered_headings = tuple(section.heading for section in template.sections)
+
+    for section in sections:
+        if section_exists(text, section.heading):
+            if update:
+                print(f"  UPDATE: {section.heading} in {target_file}")
+                text = replace_section(text, section.heading, section.text)
+                changed = True
+            else:
+                print(f"  EXISTS: {target_file} already has {section.heading} (use --update to replace)")
+            continue
+
+        if section.heading == "## Multi-Agent Rules":
+            print(f"  INSERT: {section.heading} (after title or at start) -> {target_file}")
         else:
-            print(f"  EXISTS: {target_file} already has ## Multi-Agent Rules (use --update to replace)")
-    else:
-        print(f"  INSERT: ## Multi-Agent Rules (after title or at start) -> {target_file}")
-        text = insert_after_title_or_start(text, template.multi_agent_text)
+            print(f"  INSERT: {section.heading} in template order -> {target_file}")
+        text = insert_section_in_order(text, section, ordered_headings)
         changed = True
 
     if changed:
         target_file.write_text(text, encoding="utf-8")
     return changed
+
+
+def inject_multi_agent_rules(target_file: Path, template: GovernanceTemplate, *, update: bool) -> bool:
+    return inject_rule_sections(
+        target_file,
+        template,
+        sections_for_profile(template, MULTI_AGENT_PROFILE),
+        update=update,
+    )
 
 
 def inject_full_rules(target_file: Path, template: GovernanceTemplate, *, update: bool) -> bool:
-    if not target_file.exists():
-        print(f"  CREATE: {target_file}")
-        target_file.write_text(create_initial_doc(template, FULL_PROFILE), encoding="utf-8")
-        return True
-
-    text = read_text(target_file)
-    changed = False
-
-    if section_exists(text, "## Multi-Agent Rules"):
-        if update:
-            print(f"  UPDATE: ## Multi-Agent Rules in {target_file}")
-            text = replace_section(text, "## Multi-Agent Rules", template.multi_agent_text)
-            changed = True
-        else:
-            print(f"  EXISTS: {target_file} already has ## Multi-Agent Rules (use --update to replace)")
-    else:
-        print(f"  INSERT: ## Multi-Agent Rules (after title or at start) -> {target_file}")
-        text = insert_after_title_or_start(text, template.multi_agent_text)
-        changed = True
-
-    has_escalation = section_exists(text, "## Skill Escalation")
-    has_lifecycle = section_exists(text, "## Skill Lifecycle")
-
-    if not has_escalation and not has_lifecycle:
-        print(f"  APPEND: skill escalation + lifecycle -> {target_file}")
-        text = append_block(
-            text,
-            ensure_trailing_newline(
-                "\n\n".join(
-                    [
-                        template.skill_escalation_text.rstrip("\n"),
-                        template.skill_lifecycle_text.rstrip("\n"),
-                    ]
-                )
-            ),
-        )
-        changed = True
-    elif not has_escalation and has_lifecycle:
-        print(f"  INSERT: ## Skill Escalation before ## Skill Lifecycle in {target_file}")
-        text = insert_before_heading(text, "## Skill Lifecycle", template.skill_escalation_text)
-        changed = True
-    else:
-        if has_escalation:
-            if update:
-                print(f"  UPDATE: ## Skill Escalation in {target_file}")
-                text = replace_section(text, "## Skill Escalation", template.skill_escalation_text)
-                changed = True
-            else:
-                print(f"  EXISTS: {target_file} already has ## Skill Escalation (use --update to replace)")
-        if not has_lifecycle:
-            print(f"  APPEND: ## Skill Lifecycle -> {target_file}")
-            text = append_block(text, template.skill_lifecycle_text)
-            changed = True
-        else:
-            if update:
-                print(f"  UPDATE: ## Skill Lifecycle in {target_file}")
-                text = replace_section(text, "## Skill Lifecycle", template.skill_lifecycle_text)
-                changed = True
-            else:
-                print(f"  EXISTS: {target_file} already has ## Skill Lifecycle (use --update to replace)")
-
-    if changed:
-        target_file.write_text(text, encoding="utf-8")
-    return changed
+    return inject_rule_sections(
+        target_file,
+        template,
+        sections_for_profile(template, FULL_PROFILE),
+        update=update,
+    )
 
 
 def inject_rules(project_dir: Path, platforms: list[str], profile: Profile, *, update: bool) -> None:
