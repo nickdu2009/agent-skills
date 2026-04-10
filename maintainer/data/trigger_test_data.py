@@ -157,10 +157,10 @@ BOUNDARY_CASES: tuple[TriggerCase, ...] = (
     TriggerCase(
         id="irreversible-operation",
         prompt="Drop the legacy_users table and migrate all data to the new users table.",
-        expected_triggers=("minimal-change-strategy",),
+        expected_triggers=("plan-before-action",),
         expected_non_triggers=(),
         category="agents-md-boundary",
-        notes="Irreversible database operation. minimal-change-strategy should trigger and its rollback-awareness step should fire.",
+        notes="Irreversible database operation. plan-before-action should trigger to ensure a staged plan before destructive changes.",
     ),
     TriggerCase(
         id="validation-failure-diagnosis",
@@ -610,19 +610,19 @@ BASELINE_CONTROL_CASES: tuple[TriggerCase, ...] = (
 CONFUSION_BOUNDARY_CASES: tuple[TriggerCase, ...] = (
     TriggerCase(
         id="scope-vs-locate",
-        prompt="Users are complaining that search is broken, but I don't know if they mean the product search, the user search, or the log search. Can you help figure out which one?",
+        prompt="Users are complaining that search is broken across three modules — product search, user search, and log search. I don't know which module is actually affected. Can you help narrow it down?",
         expected_triggers=("scoped-tasking",),
         expected_non_triggers=("read-and-locate",),
         category="confusion-boundary",
-        notes="Ambiguous scope needs narrowing, not code discovery. scoped-tasking should trigger to clarify which subsystem.",
+        notes="Multiple modules mentioned, real target unclear. scoped-tasking should trigger to narrow scope, not read-and-locate.",
     ),
     TriggerCase(
         id="locate-vs-scope",
-        prompt="Find where the payment webhook handler is defined. I know it exists somewhere in the billing module but I need the exact file.",
+        prompt="Trace how the payment webhook flows through the billing module — I need to find the entry point, the validation step, and where it writes to the database.",
         expected_triggers=("read-and-locate",),
         expected_non_triggers=("scoped-tasking",),
         category="confusion-boundary",
-        notes="Clear scope (billing module), unclear location. read-and-locate should trigger, not scoped-tasking.",
+        notes="Path tracing task across multiple steps. read-and-locate should trigger, not scoped-tasking.",
     ),
     TriggerCase(
         id="minimal-vs-refactor",
@@ -666,19 +666,19 @@ CONFUSION_BOUNDARY_CASES: tuple[TriggerCase, ...] = (
 COMBO_TRIGGER_CASES: tuple[TriggerCase, ...] = (
     TriggerCase(
         id="discover-analyze-plan",
-        prompt="I need to modify user authentication in this unfamiliar codebase. I don't know where the auth code lives, the change might affect several modules, and I'll need a plan before I start editing.",
+        prompt="I need to modify user authentication in this unfamiliar codebase. I don't know where the auth code lives, the change touches a shared interface with multiple callers across several modules, and I'll need a plan before I start editing.",
         expected_triggers=("read-and-locate", "impact-analysis", "plan-before-action"),
         expected_non_triggers=("phase-plan",),
         category="combo-trigger",
-        notes="Unfamiliar codebase + multi-module impact + multi-step edit. Three skills should co-activate.",
+        notes="Unfamiliar codebase + shared interface with multiple callers + multi-step edit. Three skills should co-activate.",
     ),
     TriggerCase(
         id="refactor-with-constraint",
         prompt="Clean up the duplicate validation logic across the three form handlers, but don't change any public API signatures and don't touch anything outside the forms directory.",
-        expected_triggers=("safe-refactor", "minimal-change-strategy"),
+        expected_triggers=("safe-refactor",),
         expected_non_triggers=("design-before-plan",),
         category="combo-trigger",
-        notes="Structural cleanup with explicit scope constraint. Both safe-refactor and minimal-change-strategy should co-activate.",
+        notes="Structural cleanup with explicit user-provided scope constraint. safe-refactor should trigger; minimal-change-strategy is not needed because the user already constrains the scope.",
     ),
     TriggerCase(
         id="design-impact-incremental",

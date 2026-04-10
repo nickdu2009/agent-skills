@@ -1,6 +1,6 @@
 ---
 name: incremental-delivery
-description: Split a multi-step plan into 2-4 independently mergeable increments when the task is too large for a single PR but too small for the full phase system. Use when plan-before-action produces a plan spanning 2-4 PRs across 1-2 modules.
+description: Split a multi-step plan into 2-4 independently mergeable increments when the task is too large for a single PR but too small for the full phase system. Use when the task explicitly spans 2-4 PRs. Do not escalate to phase-plan unless the task exceeds 4 PRs or requires wave-level coordination.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"

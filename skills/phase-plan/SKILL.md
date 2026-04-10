@@ -1,6 +1,6 @@
 ---
 name: phase-plan
-description: Design or update a structured implementation plan that breaks a large task into sequenced waves of parallel work. Use when the agent needs to create plan.yaml and supporting docs for multi-wave execution, or convert a roadmap into an executable plan with PR sequencing and wave ownership.
+description: Design or update a structured implementation plan that breaks a large task into sequenced waves of parallel work. Use when the task requires 5 or more PRs with wave-level coordination, or when the agent needs to create plan.yaml and supporting docs for multi-wave execution.
 ---
 
 # Phase Plan

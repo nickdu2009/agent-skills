@@ -1,6 +1,6 @@
 ---
 name: phase-contract-tools
-description: Shared contract library for phase planning and execution. Usually loaded by phase-plan or phase-execute, not triggered independently. Use directly only when the task is to fix, extend, or validate the phase contract scripts, schema definitions, or renderers themselves.
+description: Shared contract library for phase planning and execution. Can be loaded by phase-plan or phase-execute, or triggered directly when the task is to fix, extend, or validate the phase contract scripts, schema definitions, or renderers themselves.
 ---
 
 # Phase Contract Tools
