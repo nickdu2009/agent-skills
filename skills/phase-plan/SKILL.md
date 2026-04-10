@@ -348,6 +348,11 @@ Use this skill together with:
 - `$phase-plan-review` when the accepted doc set should be independently reviewed before execution begins
 - `$phase-execute` after the accepted doc set exists and execution can consume the contract-defined artifacts
 
+# Common Anti-Patterns
+
+- **Markdown owns execution authority.** The agent encodes all PR tasks, lane ownership, and validation rules in prose-heavy `wave-guide.md` paragraphs instead of structured YAML fields. When `phase-execute` tries to consume the plan, it cannot derive lane instructions because the execution authority is scattered across unstructured text.
+- **Duplicating task payloads across files.** The agent copies full PR descriptions into both `plan.yaml` and `wave-guide.md`, inflating the doc set and creating maintenance drift. When a scope change happens, only one file gets updated, leaving conflicting instructions.
+
 ## Artifact Contract
 
 ### Preconditions

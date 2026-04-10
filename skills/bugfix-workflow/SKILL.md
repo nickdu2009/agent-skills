@@ -84,12 +84,14 @@ Return:
 
 # Composition
 
-Combine with:
+Part of the `bugfix-standard` chain (see CLAUDE.md § Skill Chain Triggers).
 
-- `scoped-tasking` to keep diagnosis inside the smallest plausible domain
-- `read-and-locate` to trace the relevant path quickly
-- `minimal-change-strategy` to keep the fix small
-- `targeted-validation` to verify the symptom without paying unnecessary suite cost
+Role: Core diagnostic component. Receives narrowed fault domain from read-and-locate, produces confirmed root cause and fix hypothesis, hands to minimal-change-strategy.
+
+Additional compositions:
+
+- Fallback to `read-and-locate` when failure path is still unknown
+- Fallback to `context-budget-awareness` when diagnosis spans too many files or hypotheses
 
 # Example
 

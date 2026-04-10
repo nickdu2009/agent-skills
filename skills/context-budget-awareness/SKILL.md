@@ -160,12 +160,16 @@ Return when `action` is `compress` or `restart`:
 
 # Composition
 
-Combine with:
+Cross-chain fallback skill. Activates when context budget thresholds are breached during any execution chain (see CLAUDE.md § Skill Escalation).
 
-- `read-and-locate` to keep discovery tight in unfamiliar codebases
-- `bugfix-workflow` when diagnosis is spreading across too many hypotheses
-- `plan-before-action` to keep the next step explicit after compression
-- `multi-agent-protocol` when multiple parallel findings need a compact merge state
+Role: Compress and refocus working state when investigation is stuck or spinning. Produces compressed state that downstream skills can consume.
+
+Typical activations:
+
+- During `bugfix-workflow` when diagnosis spreads across too many hypotheses
+- During `read-and-locate` when discovery exceeds 8 files without convergence
+- During `multi-agent-protocol` synthesis when parallel findings need compact merge
+- After compression, typically hands back to `plan-before-action` to resume with focused state
 
 # Example
 

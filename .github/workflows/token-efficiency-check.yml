@@ -1,0 +1,248 @@
+name: Token Efficiency Check
+
+on:
+  pull_request:
+    paths:
+      - 'skills/**'
+      - 'templates/governance/**'
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+  schedule:
+    # Run weekly audit on Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      create_issue:
+        description: 'Create issue if regressions found'
+        required: false
+        default: 'true'
+
+jobs:
+  check-token-efficiency:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for comparing to baseline
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install tiktoken
+
+      - name: Run quality check
+        id: quality
+        run: |
+          python3 maintainer/scripts/analysis/check_skill_quality.py --json > quality_results.json
+          echo "results<<EOF" >> $GITHUB_OUTPUT
+          cat quality_results.json >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Run token measurement
+        id: tokens
+        run: |
+          python3 maintainer/scripts/analysis/measure_prompt_surface.py --actual-tokens --json > token_results.json
+          echo "results<<EOF" >> $GITHUB_OUTPUT
+          cat token_results.json >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Check cross-references
+        id: crossrefs
+        continue-on-error: true
+        run: |
+          python3 maintainer/scripts/analysis/check_cross_references.py --json > crossref_results.json || true
+          echo "results<<EOF" >> $GITHUB_OUTPUT
+          cat crossref_results.json >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Detect regressions
+        id: regressions
+        continue-on-error: true
+        run: |
+          python3 maintainer/scripts/audit/detect_regressions.py --json > regression_results.json
+          REGRESSION_EXIT=$?
+          echo "exit_code=$REGRESSION_EXIT" >> $GITHUB_OUTPUT
+          echo "results<<EOF" >> $GITHUB_OUTPUT
+          cat regression_results.json >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          exit 0  # Don't fail the step, we'll handle it later
+
+      - name: Generate dashboard
+        id: dashboard
+        run: |
+          python3 maintainer/scripts/audit/token_efficiency_dashboard.py --markdown > dashboard.md
+          echo "dashboard<<EOF" >> $GITHUB_OUTPUT
+          cat dashboard.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Calculate impact summary
+        id: impact
+        run: |
+          python3 - <<'PYTHON_SCRIPT'
+          import json
+          import sys
+
+          # Load results
+          with open('quality_results.json') as f:
+              quality = json.load(f)
+          with open('token_results.json') as f:
+              tokens = json.load(f)
+          with open('regression_results.json') as f:
+              regressions = json.load(f)
+
+          # Calculate summary
+          total_skills = len(quality)
+          passing_skills = sum(1 for s in quality if s.get("overall_pass", False))
+          pass_rate = (passing_skills / total_skills * 100) if total_skills > 0 else 0
+
+          total_tokens = tokens["skill_files"]["total_tokens"]
+          baseline_tokens = 41783
+
+          has_critical = regressions.get("regressions", {}).get("has_regressions", False)
+          has_warnings = regressions.get("regressions", {}).get("has_warnings", False)
+
+          # Generate summary
+          status_emoji = "🔴" if has_critical else ("🟡" if has_warnings else "🟢")
+          status_text = "CRITICAL REGRESSIONS" if has_critical else ("WARNINGS" if has_warnings else "PASS")
+
+          summary = f"""## {status_emoji} Token Efficiency Impact: {status_text}
+
+          ### Summary
+          - **Quality:** {passing_skills}/{total_skills} skills passing ({pass_rate:.0f}%)
+          - **Tokens:** {total_tokens:,} total ({total_tokens - baseline_tokens:+,} from baseline)
+          - **Status:** {status_text}
+
+          """
+
+          # Add regression details
+          if has_critical or has_warnings:
+              summary += "### Issues Detected\n\n"
+              reg_data = regressions.get("regressions", {})
+
+              for reg in reg_data.get("regressions", []):
+                  summary += f"- 🔴 **{reg['type']}**: {reg['message']}\n"
+
+              for warn in reg_data.get("warnings", []):
+                  summary += f"- 🟡 **{warn['type']}**: {warn['message']}\n"
+
+              summary += "\n"
+
+          summary += """### Full Dashboard
+
+          <details>
+          <summary>Click to expand</summary>
+
+          """
+
+          with open('dashboard.md') as f:
+              summary += f.read()
+
+          summary += "\n</details>\n"
+
+          # Write to output
+          with open('impact_summary.md', 'w') as f:
+              f.write(summary)
+
+          print(summary)
+          PYTHON_SCRIPT
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('impact_summary.md', 'utf8');
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Token Efficiency Impact')
+            );
+
+            const commentBody = `${summary}\n\n---\n*Automated token efficiency check*`;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+            }
+
+      - name: Fail PR if critical regressions
+        if: github.event_name == 'pull_request' && steps.regressions.outputs.exit_code == '1'
+        run: |
+          echo "Critical token efficiency regressions detected!"
+          echo "See PR comment for details."
+          exit 1
+
+      - name: Create issue for scheduled run
+        if: github.event_name == 'schedule' && steps.regressions.outputs.exit_code == '1'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('impact_summary.md', 'utf8');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🔴 Token Efficiency Regression Detected',
+              body: `## Weekly Token Efficiency Audit\n\n${summary}\n\n---\n*Automated weekly audit detected regressions*`,
+              labels: ['token-efficiency', 'regression', 'automated']
+            });
+
+      - name: Create issue for manual run
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.create_issue == 'true' && steps.regressions.outputs.exit_code == '1'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('impact_summary.md', 'utf8');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🔴 Token Efficiency Regression Detected (Manual Run)',
+              body: `## Manual Token Efficiency Audit\n\n${summary}\n\n---\n*Manual audit detected regressions*`,
+              labels: ['token-efficiency', 'regression', 'manual']
+            });
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: token-efficiency-results
+          path: |
+            quality_results.json
+            token_results.json
+            crossref_results.json
+            regression_results.json
+            dashboard.md
+            impact_summary.md

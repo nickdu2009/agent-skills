@@ -40,12 +40,7 @@ Force the agent to complete requirements clarification and design decision-makin
 1. **Requirements clarification** (if needed beyond scoped-tasking):
    - Extract functional requirements (what the system must do).
    - Extract non-functional requirements (performance, compatibility, security).
-   - **Identify implicit requirements** (hidden but critical):
-     - Security → authentication, authorization, input validation, data sanitization, encryption at rest/in transit
-     - Performance → acceptable latency (p50/p95/p99), throughput limits, resource constraints (memory/CPU), query optimization
-     - Observability → structured logging, metrics/counters, distributed tracing, error tracking, alerting thresholds
-     - Resilience → error handling strategy, retry logic with backoff, circuit breakers, timeout configuration, graceful degradation
-     - Operability → deployment strategy (blue-green/canary/rolling), configuration management, feature flags, rollback plan
+   - **Identify implicit requirements** (hidden but critical): Security (authentication, authorization, input validation, data sanitization, encryption at rest/in transit); Performance (acceptable latency p50/p95/p99, throughput limits, resource constraints memory/CPU, query optimization); Observability (structured logging, metrics/counters, distributed tracing, error tracking, alerting thresholds); Resilience (error handling strategy, retry logic with backoff, circuit breakers, timeout configuration, graceful degradation); Operability (deployment strategy blue-green/canary/rolling, configuration management, feature flags, rollback plan)
    - Identify stakeholder concerns (user experience, maintainability, extensibility).
    - Confirm edge cases and error scenarios.
 
@@ -68,17 +63,9 @@ Force the agent to complete requirements clarification and design decision-makin
 
 4.5. **Data migration strategy** (if data model or schema changes):
    - Identify schema changes: new fields, type changes, renames, deletions, index modifications.
-   - Design migration path:
-     - Forward migration → old schema to new schema (migration script, data transformation logic)
-     - Backward migration → new schema to old schema (rollback support, restore capability)
-   - Assess migration complexity and risks:
-     - Data volume → < 1M rows (inline migration during deployment), > 1M rows (background job with progress tracking)
-     - Downtime tolerance → zero-downtime required (dual-write period, shadow reads), maintenance window acceptable (stop-the-world migration)
-     - Data loss risk → destructive changes (dropping columns, narrowing types), additive changes (new nullable fields)
-   - Define migration validation:
-     - Row count verification (before vs. after)
-     - Checksum or hash comparison for critical data
-     - Sample verification (spot-check transformed records)
+   - Design migration path: Forward migration (old to new schema via migration script, data transformation logic); Backward migration (new to old schema for rollback support, restore capability)
+   - Assess migration complexity and risks: Data volume (< 1M rows = inline migration during deployment, > 1M rows = background job with progress tracking); Downtime tolerance (zero-downtime = dual-write period + shadow reads, maintenance window = stop-the-world migration); Data loss risk (destructive changes = dropping columns/narrowing types, additive changes = new nullable fields)
+   - Define migration validation: Row count verification (before vs. after); checksum or hash comparison for critical data; sample verification (spot-check transformed records)
    - Note performance impact: lock contention, replication lag, storage growth.
 
 5. **Acceptance criteria derivation**:
@@ -212,11 +199,21 @@ data_migration:
 
 # Composition
 
-- Depends on `scoped-tasking` (task boundary is input).
-- Depends on `impact-analysis` (when blast radius is unclear, run impact-analysis first to understand affected modules).
-- Outputs to `plan-before-action` (design brief becomes the planning input).
-- Combine with `incremental-delivery` when the chosen design spans multiple PRs.
-- Drop after `plan-before-action` produces the implementation plan — design-before-plan does not stay active during editing.
+Entry point for `design-first` and core component of `large-task` chains (see CLAUDE.md § Skill Chain Triggers).
+
+Role: Clarify requirements, compare design alternatives, establish interface contracts before planning. Receives boundary from scoped-tasking, produces design brief, hands to plan-before-action.
+
+Standard forward flow:
+
+- design-first: receives boundary → produces design brief → plan-before-action → minimal-change-strategy → self-review → targeted-validation
+- large-task: receives boundary → produces design brief → impact-analysis → plan-before-action → incremental-delivery
+
+Fallbacks:
+
+- To `impact-analysis` when caller/module impact is speculative
+- To `scoped-tasking` when task boundary itself is unstable
+
+Drop after plan-before-action consumes the design brief.
 
 # Example
 

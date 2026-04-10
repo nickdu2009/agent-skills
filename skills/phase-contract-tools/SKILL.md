@@ -1,6 +1,6 @@
 ---
 name: phase-contract-tools
-description: Review and validate phase contract schemas, renderers, and helpers for phase planning and execution. Usually loaded by phase-plan or phase-execute, not triggered independently. Triggers directly when the task is to fix, extend, or validate the phase contract scripts, schema definitions, or renderers themselves.
+description: Review and validate phase contract schemas, execution docs, and rendering tools. Usually loaded by phase-plan or phase-execute. Use directly when the task is to fix, extend, or validate the phase contract scripts, schema definitions, or renderers themselves.
 ---
 
 # Phase Contract Tools
@@ -176,7 +176,10 @@ Use this skill together with:
 - `$phase-plan-review` to review upstream intent alignment, plan quality, and execution readiness before wave execution begins
 - `$phase-execute` to execute accepted waves by consuming this contract and its helpers
 
-See also phase-contract-tools usage in phase workflow chain definitions in docs/maintainer/skill-chain-aliases.md.
+# Common Anti-Patterns
+
+- **Defining parallel contract rules.** The agent authoring a phase adds custom execution field semantics inside `phase-plan/SKILL.md` instead of using the contract definitions in `phase-contract-tools`. When `phase-execute` tries to consume the plan, it encounters undocumented fields that violate the shared contract, breaking validation and rendering.
+- **Hand-maintaining derived artifacts.** The agent manually writes lane handoff prompts or wave kickoff summaries as standalone planning files instead of deriving them from `plan.yaml` using the contract scripts. When the schema changes, the hand-written files become stale and conflict with the authoritative execution surface.
 
 ## Artifact Contract
 

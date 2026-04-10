@@ -149,12 +149,12 @@ All skills must be explicitly deactivated. Do not rely on silent or implicit ret
 
 ### Common Flow Patterns
 
-- Bug fix: `scoped-tasking` → `read-and-locate` → `bugfix-workflow` → `minimal-change-strategy` → `self-review` → `targeted-validation`
-- Refactor: `scoped-tasking` → `safe-refactor` + `minimal-change-strategy` → `self-review` → `targeted-validation`
-- Multi-file: `scoped-tasking` → `plan-before-action` → `minimal-change-strategy` → `self-review` → `targeted-validation`
-- Design-first: `scoped-tasking` → `design-before-plan` → `plan-before-action` → `minimal-change-strategy` → `self-review` → `targeted-validation`
-- Large task: `scoped-tasking` → `design-before-plan` → `impact-analysis` → `plan-before-action` → `incremental-delivery`
-- Parallel: `multi-agent-protocol` → [subagents] → `conflict-resolution` (if needed) → synthesis
+- **bugfix-standard** (Bug fix): `scoped-tasking` → `read-and-locate` → `bugfix-workflow` → `minimal-change-strategy` → `self-review` → `targeted-validation`
+- **refactor-safe** (Refactor): `scoped-tasking` → `safe-refactor` + `minimal-change-strategy` → `self-review` → `targeted-validation`
+- **multi-file-planned** (Multi-file): `scoped-tasking` → `plan-before-action` → `minimal-change-strategy` → `self-review` → `targeted-validation`
+- **design-first** (Design-first): `scoped-tasking` → `design-before-plan` → `plan-before-action` → `minimal-change-strategy` → `self-review` → `targeted-validation`
+- **large-task** (Large task): `scoped-tasking` → `design-before-plan` → `impact-analysis` → `plan-before-action` → `incremental-delivery`
+- **parallel** (Parallel): `multi-agent-protocol` → [subagents] → `conflict-resolution` (if needed) → synthesis
 
 ### Forward Handoffs
 

@@ -108,11 +108,22 @@ If escalating: `recommendation: "escalate to phase-plan — 6 PRs across 3 modul
 
 # Composition
 
-- Receives input from `plan-before-action` (the plan to split).
-- Escalates to `phase-plan` when thresholds are exceeded.
-- Downgrades to `plan-before-action` when splitting adds no value.
-- Works with `targeted-validation` to validate each increment independently.
-- Drop after the increment list is finalized — the skill provides structure, not ongoing execution guidance.
+Exit point for `large-task` chain (see CLAUDE.md § Skill Chain Triggers).
+
+Role: Split multi-step plan into 2-4 independently mergeable increments. Receives plan from plan-before-action, produces increment list with merge order and dependencies.
+
+Standard forward flow:
+
+- large-task: ... → plan-before-action → incremental-delivery (produces increment list, then exits)
+
+Per-increment validation uses `targeted-validation` to verify each increment independently.
+
+Escalation/downgrade:
+
+- Downgrade to `plan-before-action` when task fits in 1 PR
+- Escalate to `phase-plan` when task exceeds 4 increments, 2 modules, or needs parallel lanes
+
+Drop after increment list is finalized.
 
 # Example
 

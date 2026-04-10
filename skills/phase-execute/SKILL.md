@@ -329,7 +329,10 @@ Use this skill together with:
 - `$phase-plan` when the phase doc set must be repaired, re-rendered, or re-scoped
 - `$conflict-resolution` when merge or evidence conflicts exceed the circuit-breaker threshold
 
-See also phase-execute usage in phase workflow chain definitions in docs/maintainer/skill-chain-aliases.md.
+# Common Anti-Patterns
+
+- **Executing from memory instead of schema.** The agent remembers lane instructions from an earlier planning conversation and starts implementation without re-reading `plan.yaml`. When the plan was updated after that conversation, the agent implements stale instructions, producing work that violates current scope and validation rules.
+- **Mutating the plan during execution.** The agent discovers that the wave split is awkward and rewrites `plan.yaml` fields to fix it mid-execution. This breaks the execution authority contract and leaves the plan out of sync with the accepted review baseline, making rollback and status reporting unreliable.
 
 ## Artifact Contract
 

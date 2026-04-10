@@ -93,10 +93,25 @@ stop_reason: "reached framework boundary at HTTP handler layer"
 
 # Composition
 
-- Depends on `read-and-locate` (edit point and discovery results are input).
-- Outputs to `plan-before-action` (impact summary informs the plan).
-- Outputs to `safe-refactor` (invariants list serves as the preservation contract).
-- Drop after `plan-before-action` produces the plan — impact-analysis does not stay active during editing.
+Core component of `large-task` chain (see CLAUDE.md § Skill Chain Triggers).
+
+Role: Assess blast radius by tracing outward from edit point to affected callers, dependents, and contracts. Receives edit point from read-and-locate or design-before-plan, produces impact summary, hands to plan-before-action.
+
+Standard forward flow:
+
+- large-task: design-before-plan → impact-analysis → plan-before-action → incremental-delivery
+
+Additional compositions:
+
+- Receives input from `read-and-locate` when edit point is discovered
+- Provides invariants to `safe-refactor` as preservation contract
+
+Fallbacks:
+
+- To `read-and-locate` when true edit point is not stable
+- To `phase-plan` when contract migration becomes multi-stage or externally constrained
+
+Drop after plan-before-action consumes the impact summary.
 
 # Example
 
