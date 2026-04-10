@@ -1,6 +1,6 @@
 ---
 name: minimal-change-strategy
-description: Constrain a code change to the smallest viable patch when the diff is growing beyond the task, cleanup temptation is high, choosing between competing implementation approaches, or multiple edit strategies compete. Not needed for simple single-file fixes where AGENTS.md Change Rules suffice.
+description: Constrain a code change to the smallest viable patch when the diff is growing beyond the task, cleanup temptation is high, or multiple edit strategies compete. Not needed for simple single-file fixes where AGENTS.md Change Rules suffice.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"
@@ -188,6 +188,6 @@ recommendations:
 
 ## Deactivation Trigger
 
-- Deactivate when the task is complete and no further patches need scope constraint.
+- Deactivate when the patch has been applied and the guarded boundary is no longer needed.
 - Deactivate when the task escalates into a larger design or impact-analysis exercise.
 - Deactivate after validation confirms the requested outcome without needing further scope restraint.

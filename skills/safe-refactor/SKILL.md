@@ -1,6 +1,6 @@
 ---
 name: safe-refactor
-description: Guide small, controlled refactors that improve code structure while keeping behavior and interfaces stable. Use when the task is structural cleanup, extract duplicate code, consolidate shared logic, or simplification — not a behavior change.
+description: Guide small, controlled refactors that improve code structure while keeping behavior and interfaces stable. Use when the task is structural cleanup, extraction, or simplification — not a behavior change.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"

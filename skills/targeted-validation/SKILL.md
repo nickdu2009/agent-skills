@@ -172,6 +172,6 @@ recommendations:
 
 ## Deactivation Trigger
 
-- Deactivate when the task is complete and no further validation cycles are expected.
+- Deactivate after the chosen targeted check has run and the result is recorded.
 - Deactivate when validation must be escalated into a broader suite or a different skill-owned workflow.
 - Deactivate once downstream review has consumed the residual-risk statement.

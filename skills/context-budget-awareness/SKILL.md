@@ -1,6 +1,6 @@
 ---
 name: context-budget-awareness
-description: Rank, compress, and refocus when multiple hypotheses lack evidence to prioritize them (3+ unranked hypotheses), an investigation is stuck or spinning, 8 or more files read without convergence, the same areas checked repeatedly without progress, or recent actions not advancing the objective. Uses a structured Context Ledger to make self-monitoring observable and verifiable without platform-specific mechanisms.
+description: Compress and refocus the working state when an investigation is stuck or spinning — many files read without convergence, the same areas checked repeatedly without progress, hypotheses accumulating without evidence to rank them, or recent actions not advancing the objective. Uses a structured Context Ledger to make self-monitoring observable and verifiable without platform-specific mechanisms.
 metadata:
   version: "0.2.0"
   tags: "coding, agents, orchestration, efficiency"

@@ -1,6 +1,6 @@
 ---
 name: impact-analysis
-description: Assess the blast radius of a planned code change by tracing outward from the edit point to affected callers, dependents, and contracts before planning. Use when the change touches shared interfaces, public APIs, or data models with 3 or more callers, or has 3+ tentative leads from discovery.
+description: Assess the blast radius of a planned code change by tracing outward from the edit point to affected callers, dependents, and contracts before planning. Use when the change touches shared interfaces, public APIs, data models, or has 3+ tentative leads from discovery.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"
