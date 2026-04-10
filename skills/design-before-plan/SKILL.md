@@ -38,11 +38,16 @@ Force the agent to complete requirements clarification and design decision-makin
 # Execution Pattern
 
 1. **Requirements clarification** (if needed beyond scoped-tasking):
-   - Extract functional requirements (what the system must do)
-   - Extract non-functional requirements (performance, compatibility, security)
-   - Identify implicit requirements (see Guardrails section for security, performance, observability, resilience checks)
-   - Identify stakeholder concerns (user experience, maintainability, extensibility)
-   - Confirm edge cases and error scenarios
+   - Extract functional requirements (what the system must do).
+   - Extract non-functional requirements (performance, compatibility, security).
+   - **Identify implicit requirements** (hidden but critical):
+     - Security → authentication, authorization, input validation, data sanitization, encryption at rest/in transit
+     - Performance → acceptable latency (p50/p95/p99), throughput limits, resource constraints (memory/CPU), query optimization
+     - Observability → structured logging, metrics/counters, distributed tracing, error tracking, alerting thresholds
+     - Resilience → error handling strategy, retry logic with backoff, circuit breakers, timeout configuration, graceful degradation
+     - Operability → deployment strategy (blue-green/canary/rolling), configuration management, feature flags, rollback plan
+   - Identify stakeholder concerns (user experience, maintainability, extensibility).
+   - Confirm edge cases and error scenarios.
 
 2. **Design alternatives enumeration**:
    - List 2-4 candidate approaches (do not implement yet).
@@ -62,11 +67,19 @@ Force the agent to complete requirements clarification and design decision-makin
    - Note contract migration strategy if breaking changes are needed.
 
 4.5. **Data migration strategy** (if data model or schema changes):
-   - Identify schema changes: new fields, type changes, renames, deletions, index modifications
-   - Design forward migration (old → new schema) and backward migration (rollback support)
-   - Assess complexity: data volume (< 1M rows inline, > 1M background job), downtime tolerance, data loss risk
-   - Define validation: row count, checksums for critical data, sample verification
-   - Note performance impact: lock contention, replication lag, storage growth
+   - Identify schema changes: new fields, type changes, renames, deletions, index modifications.
+   - Design migration path:
+     - Forward migration → old schema to new schema (migration script, data transformation logic)
+     - Backward migration → new schema to old schema (rollback support, restore capability)
+   - Assess migration complexity and risks:
+     - Data volume → < 1M rows (inline migration during deployment), > 1M rows (background job with progress tracking)
+     - Downtime tolerance → zero-downtime required (dual-write period, shadow reads), maintenance window acceptable (stop-the-world migration)
+     - Data loss risk → destructive changes (dropping columns, narrowing types), additive changes (new nullable fields)
+   - Define migration validation:
+     - Row count verification (before vs. after)
+     - Checksum or hash comparison for critical data
+     - Sample verification (spot-check transformed records)
+   - Note performance impact: lock contention, replication lag, storage growth.
 
 5. **Acceptance criteria derivation**:
    - Translate requirements into verifiable conditions.
@@ -107,18 +120,10 @@ requirements:
   non_functional:
     - "Maintain < 500ms p95 latency for small uploads"
   implicit:
-    security:
-      - "Validate file MIME type against whitelist (prevent executable upload)"
-      - "Enforce per-user upload quota to prevent abuse"
-    performance:
-      - "Stream processing to avoid OOM for large files"
-      - "Limit concurrent uploads per user (max 3)"
-    observability:
-      - "Log upload start/complete with file size and duration"
-      - "Emit metrics: upload_bytes_total, upload_duration_seconds"
-    resilience:
-      - "Timeout upload after 5 minutes of inactivity"
-      - "Retry S3 upload chunks up to 3 times on transient errors"
+    security: ["MIME type validation", "per-user quota"]
+    performance: ["stream processing (avoid OOM)", "concurrent limit (max 3/user)"]
+    observability: ["log upload events (size, duration)", "metrics (bytes_total, duration_seconds)"]
+    resilience: ["timeout after 5min", "retry S3 chunks (3x)"]
   edge_cases:
     - "Handle network interruption mid-upload (resume support)"
 
@@ -183,20 +188,20 @@ data_migration:
 - If the chosen design requires new dependencies, flag them in the design brief.
 
 **Implicit requirements checks** (triggered by change type):
-- User input / external APIs / file uploads → check security (auth, validation, sanitization, rate limiting)
-- Request handling / data processing / DB queries → check performance (latency p95/p99, query optimization, resource limits)
-- User-facing / critical paths → check observability (structured logging, error tracking, metrics)
-- External dependencies (APIs, DBs, queues) → check resilience (timeouts, retry with backoff, circuit breaker, graceful degradation)
+- If the change involves **user input, external API calls, or file uploads**, explicitly check security requirements: authentication, authorization, input validation, sanitization, rate limiting.
+- If the change affects **request handling, data processing, or database queries**, explicitly check performance requirements: acceptable latency (p95/p99), query optimization (avoid N+1), resource limits (connection pooling, memory usage).
+- If the change is **user-facing or affects critical paths**, explicitly check observability requirements: structured logging with context (user ID, request ID), error tracking with stack traces, metrics for success/failure rates.
+- If the change involves **external dependencies (APIs, databases, queues)**, explicitly check resilience requirements: timeout configuration, retry with exponential backoff, circuit breaker for cascading failures, graceful degradation.
 
 **Data migration checks** (triggered by schema changes):
-- DB schema or data model changes → define migration strategy (forward + backward) before planning
-- Assess data volume (> 1M rows requires background job) and downtime tolerance
-- Destructive changes (drop columns, narrow types, delete indexes) → validate no active dependencies first
+- Schema/model changes → define migration strategy (forward + backward) before implementation
+- Assess data volume (>1M rows = background job) and downtime tolerance (zero-downtime vs. maintenance window)
+- Destructive changes (drop columns/types/indexes) → validate no active dependencies before proceeding
 
 **Technical debt assessment** (lightweight, context-dependent):
-- Note obvious debt (TODOs, deprecated patterns) but do not mix cleanup with feature delivery
-- If debt cleanup significantly simplifies design (reduces blast radius 3+ files), consider as separate increment
-- When in doubt, defer cleanup — follow `minimal-change-strategy` unless load-bearing
+- Obvious debt (TODOs, deprecated patterns, duplication) → note in design brief but avoid mixing cleanup with delivery unless blocking or safety-critical
+- Debt cleanup that simplifies design (reduces blast radius 3+ files, eliminates complex workaround) → consider as separate increment
+- Default: defer debt cleanup per minimal-change-strategy unless load-bearing for current design
 
 # Common Anti-Patterns
 
@@ -207,14 +212,11 @@ data_migration:
 
 # Composition
 
-Part of design-first chain. See CLAUDE.md Skill Chain Triggers section.
-
-Additional composition:
-- Depends on `scoped-tasking` (task boundary is input)
-- Depends on `impact-analysis` when blast radius is unclear
-- Outputs to `plan-before-action` (design brief becomes planning input)
-- Combine with `incremental-delivery` when design spans multiple PRs
-- Drop after `plan-before-action` produces the implementation plan
+- Depends on `scoped-tasking` (task boundary is input).
+- Depends on `impact-analysis` (when blast radius is unclear, run impact-analysis first to understand affected modules).
+- Outputs to `plan-before-action` (design brief becomes the planning input).
+- Combine with `incremental-delivery` when the chosen design spans multiple PRs.
+- Drop after `plan-before-action` produces the implementation plan — design-before-plan does not stay active during editing.
 
 # Example
 

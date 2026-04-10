@@ -1,6 +1,6 @@
 ---
 name: context-budget-awareness
-description: Skill that compresses and refocuses working state when investigation stalls or spins. Triggers when working set exceeds 8 files, same file read 2+ times without new question, 3+ hypotheses lack ranking, or last 3 actions stalled. Uses Context Ledger for observable accounting.
+description: Narrow working state by compressing and refocusing when an investigation is stuck or spinning. Use when many files are read without convergence, the same areas checked repeatedly without progress, hypotheses accumulate without evidence to rank them, or recent actions fail to advance the objective. Uses a structured Context Ledger to make self-monitoring observable and verifiable.
 metadata:
   version: "0.2.0"
   tags: "coding, agents, orchestration, efficiency"
@@ -160,12 +160,12 @@ Return when `action` is `compress` or `restart`:
 
 # Composition
 
-See CLAUDE.md Skill Chain Triggers for fallback patterns from `bugfix-workflow` and `plan-before-action`.
+Combine with:
 
-Additional composition:
-- Combine with `read-and-locate` to keep discovery tight in unfamiliar codebases
-- Combine with `plan-before-action` to keep the next step explicit after compression
-- Combine with `multi-agent-protocol` when multiple parallel findings need a compact merge state
+- `read-and-locate` to keep discovery tight in unfamiliar codebases
+- `bugfix-workflow` when diagnosis is spreading across too many hypotheses
+- `plan-before-action` to keep the next step explicit after compression
+- `multi-agent-protocol` when multiple parallel findings need a compact merge state
 
 # Example
 
@@ -263,14 +263,9 @@ confidence: medium
 outputs:
   current_state:
     objective: "find root cause of worker failure on retry path"
-    live:
-      - "retry_scheduler.py"
-      - "payload_serializer.py"
-  dropped_hypotheses:
-    - "queue connection timeout"
-    - "credential expiry"
-  open_questions:
-    - "does serializer output differ between initial enqueue and retry enqueue?"
+    live: ["retry_scheduler.py", "payload_serializer.py"]
+  dropped_hypotheses: ["queue connection timeout", "credential expiry"]
+  open_questions: ["does serializer output differ between initial enqueue and retry enqueue?"]
 signals:
   action: "compress"
 recommendations:

@@ -80,11 +80,13 @@ Return:
 
 # Composition
 
-Combine with:
+Exit point for most execution chains: receives clean diff from `self-review` and performs behavioral verification (see CLAUDE.md § Skill Chain Triggers).
 
-- `minimal-change-strategy` to keep validation cost aligned with patch size
-- `safe-refactor` to verify structural changes in small steps
-- `bugfix-workflow` to confirm the symptom is actually resolved
+Appears in: `bugfix-standard`, `refactor-safe`, `multi-file-planned`, and `design-first` chains.
+
+Additional compositions:
+
+- `conflict-resolution` when adjudication requires an empirical check
 - `multi-agent-protocol` when separate hypotheses need separate checks
 
 # Example

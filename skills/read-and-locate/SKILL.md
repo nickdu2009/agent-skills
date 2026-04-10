@@ -85,12 +85,13 @@ Return:
 
 # Composition
 
-Combine with:
+Part of the `bugfix-standard` chain (see CLAUDE.md § Skill Chain Triggers).
 
-- `scoped-tasking` to define the discovery boundary
-- `plan-before-action` once likely edit points are identified
-- `context-budget-awareness` to avoid carrying every discovered branch forward
-- `bugfix-workflow` when the discovery goal is to isolate the fault domain
+Standard forward flow: receives boundary from `scoped-tasking`, produces edit points, hands to `plan-before-action` or `bugfix-workflow`.
+
+Additional compositions:
+
+- `context-budget-awareness` to avoid carrying every discovered branch forward when discovery produces too many tentative leads
 
 # Example
 

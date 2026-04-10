@@ -79,17 +79,21 @@ Return:
 
 # Common Anti-Patterns
 
-- **Editing while still discovering.** The agent starts modifying a file before confirming the full set of files that need to change, then backtracks when a dependency surfaces. The plan was never stated.
-- **Vague progress reporting.** The agent says "making progress" or "almost done" instead of reporting concrete done / not done / next items. This hides whether the plan is still on track.
+- **Editing while still discovering.** Starts modifying file before confirming full set of files that need change, backtracks when dependency surfaces. Plan was never stated.
+- **Vague progress reporting.** Says "making progress" or "almost done" instead of reporting concrete done/not done/next items. Hides whether plan is still on track.
+
+See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Combine with:
+Core component of multiple chains: `multi-file-planned`, `design-first`, and `large-task` (see CLAUDE.md § Skill Chain Triggers).
 
-- `scoped-tasking` to establish the initial boundary
-- `minimal-change-strategy` to constrain the edit size
-- `targeted-validation` to pre-decide how confidence will be earned
+Standard forward flow: receives scoped boundary from `scoped-tasking` or edit points from `read-and-locate`, produces plan, hands to `minimal-change-strategy` → `self-review` → `targeted-validation`.
+
+Additional compositions:
+
 - `multi-agent-protocol` when the plan includes parallel analysis
+- `incremental-delivery` when the plan spans 2-4 independently mergeable PRs
 
 # Example
 
@@ -110,28 +114,23 @@ Plan:
 
 ### Preconditions
 
-- The task needs multi-step execution, multiple files, or explicit sequencing.
-- Enough evidence exists to name a working set and a next action.
-- Edits are allowed now, or the plan is being produced explicitly for later execution.
+- Task needs multi-step execution, multiple files, or explicit sequencing; enough evidence to name working set and next action; edits allowed now or plan produced for later execution. See skill-contract-template.md § Preconditions for standard definitions.
 
 ### Postconditions
 
-- `status: completed` includes `assumptions`, `working_set`, `sequence`, and `validation_boundary`.
-- The plan names the intended files or modules before implementation starts.
-- Progress can be reported as done / not done / next without reopening discovery.
+- `status: completed` includes `assumptions`, `working_set`, `sequence`, `validation_boundary`.
+- Plan names intended files/modules before implementation starts; progress reportable as done/not done/next without reopening discovery.
 
 ### Invariants
 
-- Execution does not begin while the working set is still fuzzy.
-- Only one coherent objective is active at a time.
-- New dependencies or irreversible operations are surfaced in the plan instead of being introduced silently.
+- Execution doesn't begin while working set is fuzzy; only one coherent objective active at a time; new dependencies/irreversible operations surfaced in plan vs. introduced silently.
 
 ### Downstream Signals
 
-- `assumptions` tell implementers what must still be rechecked.
-- `working_set` names the approved edit surface.
-- `sequence` gives the execution order for edits and validation.
-- `validation_boundary` defines the first targeted check after the patch.
+- `assumptions`: what must be rechecked
+- `working_set`: approved edit surface
+- `sequence`: execution order for edits and validation
+- `validation_boundary`: first targeted check after patch
 
 ## Failure Handling
 

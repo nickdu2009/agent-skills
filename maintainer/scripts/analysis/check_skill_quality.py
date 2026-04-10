@@ -113,6 +113,13 @@ def check_description_has_what_and_when(description: str) -> dict[str, Any]:
         "execute",
         "design",
         "clarify",
+        "compress",
+        "refocus",
+        "diagnose",
+        "provide",
+        "define",
+        "validate",
+        "verify",
     ]
     has_what = any(indicator in desc_lower for indicator in what_indicators)
 
@@ -132,7 +139,8 @@ def check_third_person_phrasing(description: str) -> dict[str, Any]:
     """Check if description uses third-person phrasing.
 
     Third-person descriptions typically:
-    - Start with verbs (Find, Guide, Force, etc.)
+    - Start with verbs (Find, Guide, Force, etc.) or "Skill that [verb]..."
+    - Use present-tense third-person forms (Provides, Diagnoses, etc.)
     - Avoid first-person (I, we, our)
     - Avoid second-person imperatives directed at agent (you should)
     """
@@ -154,13 +162,33 @@ def check_third_person_phrasing(description: str) -> dict[str, Any]:
     ]
     starts_with_action = any(description.lower().startswith(verb) for verb in action_verbs)
 
-    is_third_person = not has_first_person and starts_with_action
+    # Check for "Skill that [verb]..." pattern (valid third-person)
+    starts_with_skill_that = description.lower().startswith("skill that ")
+
+    # Check for third-person verb forms (Provides, Diagnoses, etc.)
+    third_person_verbs = [
+        "provides", "diagnoses", "compresses", "requires", "guides",
+        "forces", "teaches", "prevents", "assesses", "reviews",
+        "compares", "narrows", "constrains", "chooses", "splits",
+        "executes", "designs", "clarifies", "defines", "ensures",
+        "triggers", "activates", "loads", "validates", "verifies",
+    ]
+    starts_with_third_person_verb = any(
+        description.lower().startswith(verb) for verb in third_person_verbs
+    )
+
+    is_third_person = (
+        not has_first_person
+        and (starts_with_action or starts_with_skill_that or starts_with_third_person_verb)
+    )
 
     return {
         "pass": is_third_person,
         "has_first_person": has_first_person,
         "has_second_person": has_second_person,
         "starts_with_action": starts_with_action,
+        "starts_with_skill_that": starts_with_skill_that,
+        "starts_with_third_person_verb": starts_with_third_person_verb,
     }
 
 
@@ -259,6 +287,11 @@ def main() -> None:
         type=str,
         help="Check only the specified skill",
     )
+    parser.add_argument(
+        "--explain",
+        action="store_true",
+        help="Show detailed explanations for why checks fail with examples",
+    )
     args = parser.parse_args()
 
     if not SKILLS_DIR.exists():
@@ -311,29 +344,74 @@ def main() -> None:
             for result in failing_skills:
                 print(f"  {result['skill_name']}:")
                 checks = result.get("checks", {})
+                description = result.get("description", "")
 
                 if not checks.get("description_what_when", {}).get("pass"):
                     print("    ✗ Description missing 'what' or 'when' triggers")
                     dww = checks["description_what_when"]
                     print(f"      has_what={dww['has_what']}, has_when={dww['has_when']}, "
                           f"length={dww['length']}")
+                    if args.explain:
+                        print()
+                        print("      Explanation:")
+                        print("        'What' = purpose/capability words (find, guide, prevent, etc.)")
+                        print("        'When' = trigger conditions (when, use when, if, trigger, etc.)")
+                        print("        Current description:", description[:100] + "..." if len(description) > 100 else description)
+                        print()
+                        print("      Examples of good descriptions:")
+                        print("        ✓ 'Find relevant files when edit points are unknown'")
+                        print("        ✓ 'Prevent scope creep when diff grows beyond task'")
+                        print()
 
                 if not checks.get("third_person", {}).get("pass"):
                     print("    ✗ Description not in third-person")
                     tp = checks["third_person"]
                     print(f"      has_first_person={tp['has_first_person']}, "
-                          f"starts_with_action={tp['starts_with_action']}")
+                          f"starts_with_action={tp.get('starts_with_action', False)}")
+                    if args.explain:
+                        print()
+                        print("      Explanation:")
+                        print("        Third-person phrasing uses:")
+                        print("          - Action verbs: 'Find...', 'Guide...', 'Prevent...'")
+                        print("          - 'Skill that [verb]...': 'Skill that diagnoses...'")
+                        print("          - Third-person verbs: 'Provides...', 'Diagnoses...', 'Compresses...'")
+                        print("        Current description:", description[:100] + "..." if len(description) > 100 else description)
+                        print()
+                        print("      Examples of valid third-person:")
+                        print("        ✓ 'Find relevant files and edit points' (action verb)")
+                        print("        ✓ 'Skill that diagnoses bugs efficiently' (Skill that...)")
+                        print("        ✓ 'Provides protocol for parallel execution' (third-person verb)")
+                        print()
+                        print("      Examples of INVALID (imperative):")
+                        print("        ✗ 'Diagnose and fix bugs' (imperative, not third-person)")
+                        print("        ✗ 'Review your code for issues' (second-person)")
+                        print()
 
                 if not checks.get("body_length", {}).get("pass"):
                     bl = checks["body_length"]
                     print(f"    ✗ Body over 500 lines: {bl['body_lines']} lines "
                           f"(over by {bl['over_by']})")
+                    if args.explain:
+                        print()
+                        print("      Explanation:")
+                        print("        Target guideline: SKILL.md body should be under 500 lines")
+                        print("        Consider splitting large sections into sidecar files")
+                        print("        Use progressive disclosure: link to details rather than inline")
+                        print()
 
                 if not checks.get("shallow_structure", {}).get("pass"):
                     ss = checks["shallow_structure"]
                     print(f"    ✗ Deep reference structure: "
                           f"max_heading={ss['max_heading_level']}, "
                           f"max_indent={ss['max_bullet_indent']}")
+                    if args.explain:
+                        print()
+                        print("      Explanation:")
+                        print("        Shallow structure guidelines:")
+                        print("          - Heading level ≤ 3 (use #, ##, ### only)")
+                        print("          - Bullet indent ≤ 4 spaces (max one level of nesting)")
+                        print(f"        Current structure: heading={ss['max_heading_level']}, indent={ss['max_bullet_indent']}")
+                        print()
 
                 print()
 

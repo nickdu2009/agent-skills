@@ -86,17 +86,22 @@ Return:
 
 # Common Anti-Patterns
 
-- **Grepping the entire repo before reading the error message.** The agent runs broad searches across every directory instead of starting from the user-provided clue. This wastes context and delays the first useful finding.
-- **Silent scope creep.** The agent discovers a related issue in a neighboring module and begins investigating it without stating that the original boundary was insufficient. The scope expands without an explicit expansion decision.
+- **Grepping the entire repo before reading the error message.** Runs broad searches across every directory instead of starting from user-provided clue. Wastes context and delays first useful finding.
+- **Silent scope creep.** Discovers related issue in neighboring module and investigates without stating original boundary was insufficient. Scope expands without explicit expansion decision.
 
-# Composition 
+See skill-anti-pattern-template.md for format guidelines.
 
-Combine with:
+# Composition
 
-- `plan-before-action` to convert the scoped boundary into a concrete work plan
-- `read-and-locate` when the edit point is not known yet
-- `minimal-change-strategy` once an edit path is clear
-- `targeted-validation` to keep verification aligned to the same boundary
+Entry point for most execution chains: `bugfix-standard`, `refactor-safe`, `multi-file-planned`, `design-first`, and `large-task` (see CLAUDE.md § Skill Chain Triggers).
+
+Standard forward handoffs:
+
+- → `read-and-locate` when boundary is known but edit point is still unknown
+- → `plan-before-action` when boundary is confirmed and ready for implementation planning
+- → `design-before-plan` when boundary is known but design choices remain open
+
+Validation alignment: downstream `targeted-validation` inherits the same boundary to keep verification focused.
 
 # Example
 
@@ -114,27 +119,22 @@ Do not scan every reporting module. If the service delegates to a shared query b
 
 ### Preconditions
 
-- The task is broad, ambiguous, or at risk of expanding beyond evidence.
-- There is at least one concrete clue, likely entry point, or user objective to anchor the first boundary.
-- The agent can distinguish the requested objective from adjacent cleanup or curiosity-driven exploration.
+- Task is broad/ambiguous or at risk of expanding beyond evidence; at least one concrete clue/entry point/user objective to anchor first boundary; can distinguish requested objective from adjacent cleanup/curiosity-driven exploration. See skill-contract-template.md § Preconditions for standard definitions.
 
 ### Postconditions
 
-- `status: completed` includes `objective`, `analysis_boundary`, and `excluded_areas`.
-- The final output states the next action that remains inside the chosen boundary.
-- Any scope expansion is justified against the previously insufficient boundary.
+- `status: completed` includes `objective`, `analysis_boundary`, `excluded_areas`.
+- Final output states next action inside chosen boundary; scope expansion justified against previously insufficient boundary.
 
 ### Invariants
 
-- Repository-wide exploration is not the default.
-- The active working set stays tied to the stated objective and validation surface.
-- Possible leads remain separate from confirmed in-scope areas.
+- Repository-wide exploration not the default; active working set stays tied to stated objective and validation surface; possible leads remain separate from confirmed in-scope areas.
 
 ### Downstream Signals
 
-- `objective` gives downstream skills the current task target.
-- `analysis_boundary` tells `read-and-locate` or `plan-before-action` where work may continue.
-- `excluded_areas` protects `minimal-change-strategy` and `targeted-validation` from drift.
+- `objective`: current task target for downstream skills
+- `analysis_boundary`: where `read-and-locate` or `plan-before-action` may continue
+- `excluded_areas`: protects `minimal-change-strategy` and `targeted-validation` from drift
 
 ## Failure Handling
 

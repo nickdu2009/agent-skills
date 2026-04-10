@@ -98,11 +98,11 @@ Return using this template:
 
 # Composition
 
-Combine with:
+Part of the `parallel` chain (see CLAUDE.md § Skill Chain Triggers).
 
-- `multi-agent-protocol` to normalize incoming outputs
+Additional compositions:
+
 - `bugfix-workflow` when conflicting causes are being weighed
-- `targeted-validation` to design an adjudication check
 - `context-budget-awareness` to compress multi-branch reasoning into a usable merged state
 
 # Example

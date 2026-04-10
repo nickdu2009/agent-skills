@@ -1,6 +1,6 @@
 ---
 name: multi-agent-protocol
-description: Skill that provides complete operational protocol for launching, coordinating, and synthesizing parallel subagents. Defines what parallelism is appropriate (Tier 1 read-only vs. Tier 2 write-capable), when to parallelize (decision framework), and how to execute (templates, merge checklist, failure handling).
+description: Guide parallel subagent launching, coordination, and synthesis through complete operational protocol. Use when the AGENTS.md multi-agent rules indicate Tier 1 or Tier 2 parallelism and the agent needs the full decision framework, subagent prompt templates, merge checklist, and failure handling procedures.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"
@@ -283,13 +283,12 @@ Or if asked explicitly:
 
 ## Composition
 
-Part of parallel chain. See CLAUDE.md Skill Chain Triggers section.
+Combine with:
 
-Additional composition:
-- Combine with `conflict-resolution` when subagent findings disagree or merge conflicts arise
-- Combine with `plan-before-action` to design the overall decomposition plan before delegating
-- Combine with `targeted-validation` to choose the cheapest meaningful validation after synthesis
-- Combine with `context-budget-awareness` to compress multi-branch reasoning into a usable merged state
+- `conflict-resolution` — when subagent findings disagree or merge conflicts arise.
+- `plan-before-action` — to design the overall decomposition plan before delegating.
+- `targeted-validation` — to choose the cheapest meaningful validation after synthesis.
+- `context-budget-awareness` — to compress multi-branch reasoning into a usable merged state.
 
 ## Delegation Contract
 

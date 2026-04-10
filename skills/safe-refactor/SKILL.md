@@ -74,16 +74,20 @@ Return:
 
 # Common Anti-Patterns
 
-- **Combining behavior change with structural cleanup.** The agent extracts a helper function and simultaneously changes its error handling semantics, introducing a behavior change hidden inside what was supposed to be a pure structural refactor.
-- **Doing everything in one step.** The agent renames a function, moves it to a new file, and changes its signature in a single commit instead of performing one structural operation at a time with validation between steps.
+- **Combining behavior change with structural cleanup.** Extracts helper function and simultaneously changes its error handling semantics. Introduces behavior change hidden inside supposed pure structural refactor.
+- **Doing everything in one step.** Renames function, moves it to new file, changes signature in single commit. Should perform one structural operation at a time with validation between steps.
+
+See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Combine with:
+Part of the `refactor-safe` chain (see CLAUDE.md § Skill Chain Triggers).
 
-- `minimal-change-strategy` to keep the structural patch bounded
-- `plan-before-action` to declare invariants and steps before editing
-- `targeted-validation` to validate each step cheaply
+Standard co-activation: runs alongside `minimal-change-strategy` to balance structural improvement with patch size control. Standard completion flow: → `self-review` → `targeted-validation`.
+
+Additional compositions:
+
+- `plan-before-action` to declare invariants and steps before editing (when refactor sequencing is complex)
 - `read-and-locate` when the structural boundaries are not obvious yet
 
 # Example
@@ -102,27 +106,22 @@ Apply the refactor by extracting one shared helper, switching one handler at a t
 
 ### Preconditions
 
-- The requested work is structural rather than behavioral.
-- Stable interfaces or invariants can be named before editing.
-- The refactor can be decomposed into small reversible steps.
+- Work is structural vs. behavioral; stable interfaces/invariants nameable before editing; refactor decomposable into small reversible steps. See skill-contract-template.md § Preconditions for standard definitions.
 
 ### Postconditions
 
-- `status: completed` includes `behavior_invariants`, `refactor_boundary`, and `rollback_notes`.
-- The structural steps preserve signatures, outputs, and externally visible behavior unless the user requested otherwise.
-- Residual risk or deferred cleanup is stated explicitly.
+- `status: completed` includes `behavior_invariants`, `refactor_boundary`, `rollback_notes`.
+- Structural steps preserve signatures, outputs, externally visible behavior unless user requested otherwise; residual risk/deferred cleanup stated explicitly.
 
 ### Invariants
 
-- Behavior and interface contracts stay stable throughout the refactor.
-- Structural steps remain reviewable and reversible.
-- Validation stays aligned with the touched structural seam.
+- Behavior and interface contracts stay stable throughout refactor; structural steps remain reviewable and reversible; validation stays aligned with touched structural seam.
 
 ### Downstream Signals
 
-- `behavior_invariants` define what later validation must preserve.
-- `refactor_boundary` limits the structural change surface.
-- `rollback_notes` document how to revert if an invariant breaks.
+- `behavior_invariants`: what later validation must preserve
+- `refactor_boundary`: limits structural change surface
+- `rollback_notes`: how to revert if invariant breaks
 
 ## Failure Handling
 

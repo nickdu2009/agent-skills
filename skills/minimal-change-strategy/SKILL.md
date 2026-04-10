@@ -82,8 +82,10 @@ Return:
 
 # Common Anti-Patterns
 
-- **"While I'm here" cleanup.** The agent fixes the reported bug in one line, then reformats the surrounding function, renames a variable, and reorders imports — tripling the diff for no task-related reason.
-- **Rewriting instead of patching.** The agent replaces an entire function or class to fix a single branch condition, making the change harder to review and riskier to revert.
+- **"While I'm here" cleanup.** Fixes bug in one line, then reformats surrounding function, renames variable, reorders imports. Triples diff for no task-related reason.
+- **Rewriting instead of patching.** Replaces entire function/class to fix single branch condition. Makes change harder to review and riskier to revert.
+
+See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
@@ -113,27 +115,22 @@ Avoid:
 
 ### Preconditions
 
-- A concrete behavior change or defect correction is already known.
-- Multiple edit options exist, or the current diff is drifting beyond the requested outcome.
-- Compatibility boundaries that must stay stable are known or can be named.
+- Behavior change or defect correction is known; multiple edit options exist or diff is drifting; compatibility boundaries are known or nameable. See skill-contract-template.md § Preconditions for standard definitions.
 
 ### Postconditions
 
-- `status: completed` includes `change_boundary`, `scope_guardrails`, and `stop_conditions`.
-- The output states which interfaces or behaviors are intentionally preserved.
-- Any deferred cleanup is recorded explicitly instead of being silently bundled into the patch.
+- `status: completed` includes `change_boundary`, `scope_guardrails`, `stop_conditions`.
+- States which interfaces/behaviors are intentionally preserved; deferred cleanup is recorded explicitly vs. silently bundled.
 
 ### Invariants
 
-- The chosen patch remains the smallest safe option that satisfies the request.
-- Unrelated cleanup, renaming, or style normalization stays out of scope.
-- Reversibility and rollback sensitivity are considered before irreversible changes.
+- Chosen patch remains smallest safe option; unrelated cleanup/renaming/style stays out of scope; reversibility and rollback sensitivity considered before irreversible changes.
 
 ### Downstream Signals
 
-- `change_boundary` tells implementation where edits may occur.
-- `scope_guardrails` constrain follow-on edits and reviews.
-- `stop_conditions` tell the agent when to stop editing instead of continuing cleanup.
+- `change_boundary`: where edits may occur
+- `scope_guardrails`: constrain follow-on edits and reviews
+- `stop_conditions`: when to stop editing vs. continuing cleanup
 
 ## Failure Handling
 
