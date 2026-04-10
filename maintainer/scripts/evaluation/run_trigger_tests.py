@@ -11,10 +11,11 @@ Modes:
   --mode report   Print the test matrix as a readable checklist (default)
 
 API Configuration:
-  Uses OpenAI SDK with standard environment variables:
-  - OPENAI_API_KEY: Your API key (OpenAI, z.ai, or any OpenAI-compatible service)
-  - OPENAI_BASE_URL: Custom endpoint URL (optional, for non-OpenAI services)
-  - OPENAI_MODEL: Default model name (optional, can be overridden by --model)
+  Uses OpenAI SDK with standard environment variables (can be overridden by CLI args):
+  - OPENAI_API_KEY: Your API key (can be overridden by --api-key)
+  - OPENAI_BASE_URL: Custom endpoint URL (can be overridden by --base-url)
+  - OPENAI_MODEL: Default model name (can be overridden by --model)
+  - OPENAI_EXTRA_BODY: Extra parameters as JSON string (can be overridden by --extra-body)
 
 Filter:
   --category <name>   Run only one category
@@ -24,18 +25,27 @@ Usage Examples:
   # View test matrix
   python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode report
 
-  # Use OpenAI API
-  export OPENAI_API_KEY="sk-..."
+  # Use OpenAI API (from .env)
   python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode api --model gpt-4
 
-  # Use z.ai (OpenAI-compatible)
-  export OPENAI_API_KEY="your-z-ai-key"
-  export OPENAI_BASE_URL="https://api.z.ai/v1"
-  export OPENAI_MODEL="deepseek-chat"
-  python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode api
+  # Override with command line args (no .env changes needed)
+  python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode api \
+    --api-key sk-... \
+    --model gpt-5.4
 
-  # Custom base URL
-  python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode api --base-url https://custom.api.com/v1
+  # Use z.ai with CLI args
+  python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode api \
+    --api-key your-z-ai-key \
+    --base-url https://api.z.ai/v1 \
+    --model GLM-5.1 \
+    --extra-body '{"thinking":{"type":"disabled"}}'
+
+  # Use GLM-5 via aliyun
+  python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode api \
+    --api-key sk-... \
+    --base-url https://dashscope.aliyuncs.com/compatible-mode/v1 \
+    --model glm-5 \
+    --extra-body '{"enable_thinking":false}'
 """
 
 from __future__ import annotations
@@ -217,16 +227,26 @@ def mode_prompt(cases: list[TriggerCase], skills_block: str) -> None:
 DEFAULT_MODEL = "gpt-5.4"
 
 
-def _eval_single_case(client, model: str, case: TriggerCase, skills_block: str) -> dict:
+def _eval_single_case(
+    client,
+    model: str,
+    case: TriggerCase,
+    skills_block: str,
+    *,
+    extra_body: dict | None = None,
+) -> dict:
     """Evaluate a single trigger case against the LLM. Thread-safe."""
     prompt = build_eval_prompt(case, skills_block)
     try:
-        response = client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0,
-            response_format={"type": "json_object"},
-        )
+        create_kwargs: dict = {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0,
+            "response_format": {"type": "json_object"},
+        }
+        if extra_body:
+            create_kwargs["extra_body"] = extra_body
+        response = client.chat.completions.create(**create_kwargs)
         raw = response.choices[0].message.content or "{}"
     except Exception as e:
         raw = "{}"
@@ -266,15 +286,20 @@ def mode_api(
     *,
     model: str = DEFAULT_MODEL,
     base_url: str | None = None,
+    api_key: str | None = None,
+    extra_body: dict | None = None,
     concurrency: int = 1,
 ) -> None:
     """Call LLM API to evaluate trigger accuracy.
 
-    Uses OpenAI SDK with standard environment variables:
-    - OPENAI_API_KEY: API key (required)
-    - OPENAI_BASE_URL: Custom endpoint (optional, for z.ai or other OpenAI-compatible services)
+    Uses OpenAI SDK with standard environment variables (can be overridden by CLI args):
+    - OPENAI_API_KEY: API key (required, or use --api-key)
+    - OPENAI_BASE_URL: Custom endpoint (optional, or use --base-url)
+    - OPENAI_EXTRA_BODY: Optional JSON for provider-specific fields (or use --extra-body)
     """
-    api_key = os.environ.get("OPENAI_API_KEY")
+    # Use command line argument if provided, otherwise fall back to env var
+    if api_key is None:
+        api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         print("Error: OPENAI_API_KEY not set. Use --mode prompt instead.", file=sys.stderr)
         print("\nSet your API key:", file=sys.stderr)
@@ -295,6 +320,16 @@ def mode_api(
     if base_url is None:
         base_url = os.environ.get("OPENAI_BASE_URL")
 
+    # Parse extra_body from command line argument or OPENAI_EXTRA_BODY env var
+    if extra_body is None:
+        extra_body_str = os.environ.get("OPENAI_EXTRA_BODY")
+        if extra_body_str:
+            try:
+                extra_body = json.loads(extra_body_str)
+            except json.JSONDecodeError as e:
+                print(f"Warning: Failed to parse OPENAI_EXTRA_BODY: {e}", file=sys.stderr)
+                extra_body = None
+
     # Create client - OpenAI SDK handles env vars natively
     client_kwargs = {"api_key": api_key}
     if base_url:
@@ -306,6 +341,8 @@ def mode_api(
     if base_url:
         print(f"  Base URL: {base_url}")
     print(f"  Model: {model}")
+    if extra_body:
+        print(f"  extra_body: {json.dumps(extra_body)}")
     if concurrency > 1:
         print(f"  Concurrency: {concurrency}")
     print()
@@ -318,7 +355,9 @@ def mode_api(
     if concurrency <= 1:
         # Serial execution
         for case in cases:
-            result = _eval_single_case(client, model, case, skills_block)
+            result = _eval_single_case(
+                client, model, case, skills_block, extra_body=extra_body
+            )
             results.append(result)
             verdict = result["verdict"]
             if verdict == "pass":
@@ -337,7 +376,14 @@ def mode_api(
         total = len(cases)
         with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency) as executor:
             future_to_case = {
-                executor.submit(_eval_single_case, client, model, case, skills_block): case
+                executor.submit(
+                    _eval_single_case,
+                    client,
+                    model,
+                    case,
+                    skills_block,
+                    extra_body=extra_body,
+                ): case
                 for case in cases
             }
             for future in concurrent.futures.as_completed(future_to_case):
@@ -372,6 +418,16 @@ def main() -> int:
         default=None,
         help="Custom API base URL (overrides $OPENAI_BASE_URL)",
     )
+    parser.add_argument(
+        "--api-key",
+        default=None,
+        help="API key (overrides $OPENAI_API_KEY)",
+    )
+    parser.add_argument(
+        "--extra-body",
+        default=None,
+        help="Extra body JSON string (overrides $OPENAI_EXTRA_BODY), e.g. '{\"enable_thinking\":false}'",
+    )
     parser.add_argument("--category", choices=list(CATEGORIES), default=None)
     parser.add_argument("--case", default=None)
     parser.add_argument(
@@ -391,6 +447,15 @@ def main() -> int:
         help="Return a non-zero exit code when a skill document is missing required v1 sections.",
     )
     args = parser.parse_args()
+
+    # Parse --extra-body JSON string if provided
+    extra_body_dict = None
+    if args.extra_body:
+        try:
+            extra_body_dict = json.loads(args.extra_body)
+        except json.JSONDecodeError as e:
+            print(f"Error: Invalid JSON for --extra-body: {e}", file=sys.stderr)
+            return 1
 
     if args.case:
         cases = [resolve_trigger_case(args.case)]
@@ -420,6 +485,8 @@ def main() -> int:
             skills_block,
             model=args.model,
             base_url=args.base_url,
+            api_key=args.api_key,
+            extra_body=extra_body_dict,
             concurrency=args.concurrency,
         )
 
