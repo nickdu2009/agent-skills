@@ -75,19 +75,15 @@ def assert_not_contains(path: Path, snippet: str) -> None:
 
 
 def test_full_install_with_phase(module) -> None:
-    with tempfile.TemporaryDirectory(prefix="install-home-") as home_dir, tempfile.TemporaryDirectory(
-        prefix="install-project-"
-    ) as project_dir:
-        home = Path(home_dir)
+    with tempfile.TemporaryDirectory(prefix="install-project-") as project_dir:
         project = Path(project_dir)
 
         run_cli(
             ["--project", str(project), "--platform", "claude-code", "--include-phase", "--force"],
-            home=home,
         )
 
         for skill in (*module.FULL_PROFILE.skills, *module.FULL_PROFILE.phase_skills):
-            assert_exists(home / ".claude" / "skills" / skill / "SKILL.md")
+            assert_exists(project / ".claude" / "skills" / skill / "SKILL.md")
 
         claude_md = project / "CLAUDE.md"
         assert_exists(claude_md)
@@ -98,21 +94,17 @@ def test_full_install_with_phase(module) -> None:
 
 
 def test_multi_agent_install(module) -> None:
-    with tempfile.TemporaryDirectory(prefix="install-home-") as home_dir, tempfile.TemporaryDirectory(
-        prefix="install-project-"
-    ) as project_dir:
-        home = Path(home_dir)
+    with tempfile.TemporaryDirectory(prefix="install-project-") as project_dir:
         project = Path(project_dir)
 
         run_cli(
             ["--profile", "multi-agent", "--project", str(project), "--platform", "claude-code", "--force"],
-            home=home,
         )
 
         for skill in module.MULTI_AGENT_PROFILE.skills:
-            assert_exists(home / ".claude" / "skills" / skill / "SKILL.md")
+            assert_exists(project / ".claude" / "skills" / skill / "SKILL.md")
 
-        assert_missing(home / ".claude" / "skills" / "scoped-tasking")
+        assert_missing(project / ".claude" / "skills" / "scoped-tasking")
 
         claude_md = project / "CLAUDE.md"
         assert_exists(claude_md)
@@ -125,7 +117,7 @@ def test_agents_template_selection() -> None:
     with tempfile.TemporaryDirectory(prefix="install-project-") as project_dir:
         project = Path(project_dir)
 
-        run_cli(["--rules-only", str(project), "--platform", "codex"])
+        run_cli(["--project", str(project), "--rules-only", "--platform", "codex"])
 
         agents_md = project / "AGENTS.md"
         assert_exists(agents_md)
@@ -152,13 +144,13 @@ def test_local_mirror_sync_and_check(module) -> None:
             assert_exists(mirror_target.target_dir / "phase-contract-tools" / "scripts")
             assert_missing(mirror_target.target_dir / "scoped-tasking" / "scripts")
 
-            if module.main(["--check-local", "cursor"]) != 0:
+            if module.main(["--sync-local", "cursor", "--check"]) != 0:
                 fail("expected local mirror check to pass after sync")
 
             skill_file = mirror_target.target_dir / "scoped-tasking" / "SKILL.md"
             skill_file.write_text(skill_file.read_text(encoding="utf-8") + "\n# drift\n", encoding="utf-8")
 
-            if module.main(["--check-local", "cursor"]) != 1:
+            if module.main(["--sync-local", "cursor", "--check"]) != 1:
                 fail("expected local mirror check to detect drift")
         finally:
             module.LOCAL_MIRROR_TARGETS = original_targets

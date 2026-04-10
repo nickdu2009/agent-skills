@@ -32,6 +32,7 @@ ALLOWED_TOP_LEVEL_NAMES = frozenset({
     "LICENSE",
     "SECURITY.md",
     "AGENTS.md",
+    "CLAUDE.md",
     ".gitignore",
     "phase-toolchain-optimization-zh.md",
 })
