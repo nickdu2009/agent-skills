@@ -2,7 +2,6 @@
 /.cursor/
 /.agent/
 /.claude/
-/AGENTS.md
 .DS_Store
 __pycache__/
 *.py[cod]
