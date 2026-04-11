@@ -14,7 +14,7 @@ Full protocol: `multi-agent-protocol` skill.
 
 Skills activate via:
 
-- **Task-type**: Skills auto-activate during `[trigger-evaluation]` based on SKILL.md triggers.
+- **Task-type**: Skills auto-activate during `[triggers]` evaluation based on SKILL.md triggers.
 - **Mid-task escalation**: Load full skill when base governance rules prove insufficient (see below).
 
 ## Governance Fast-Path
@@ -27,7 +27,7 @@ Skills activate via:
 - **Status queries**: Git status, file existence, directory listing.
 - **Single-file low-risk edits**: Typo fix, comment update, config tweak in 1 file with no caller impact.
 
-**Skip `[task-input-validation]` and `[trigger-evaluation]`** for fast-path tasks. Proceed directly.
+**Skip `[task-validation]` and `[triggers]`** for fast-path tasks. Proceed directly.
 
 ## Skill Escalation
 

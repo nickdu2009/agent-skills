@@ -14,7 +14,7 @@ Multi-agent execution has two tiers. Full operational protocol is in the `multi-
 
 Skills activate through two mechanisms:
 
-- **Task-type activation**: `bugfix-workflow`, `safe-refactor`, `scoped-tasking`, `read-and-locate`, and `plan-before-action` activate based on task characteristics recognized during `[trigger-evaluation]`. Their SKILL.md descriptions define when they match.
+- **Task-type activation**: `bugfix-workflow`, `safe-refactor`, `scoped-tasking`, `read-and-locate`, and `plan-before-action` activate based on task characteristics recognized during `[triggers]` evaluation. Their SKILL.md descriptions define when they match.
 - **Mid-task escalation**: The rules below define when base-level governance rules prove insufficient and the agent should load the full skill during execution.
 
 ## Skill Escalation
