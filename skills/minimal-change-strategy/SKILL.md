@@ -1,6 +1,6 @@
 ---
 name: minimal-change-strategy
-description: Constrain a code change to the smallest viable patch. Use when (1) user says "don't change X" or "keep Y unchanged" WITHOUT refactor verbs like "simplify/extract/consolidate", (2) multiple implementation approaches exist and smallest must be chosen, (3) diff is growing beyond task scope, (4) operation is irreversible (database drop, force push), or (5) cleanup temptation is high. Do NOT use when task has explicit refactor intent like "simplify/extract/consolidate". Not needed for simple edits.
+description: Constrain a code change to the smallest viable patch when the diff is growing beyond the task, cleanup temptation is high, choosing between competing implementation approaches, or multiple edit strategies compete. Use when user requests minimal change, operation is irreversible, or surrounding code tempts drive-by fixes. Not needed for simple single-file fixes where CLAUDE.md Change Rules suffice.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"
@@ -82,19 +82,14 @@ Return:
 
 # Common Anti-Patterns
 
-- **"While I'm here" cleanup.** Fixes bug in one line, then reformats surrounding function, renames variable, reorders imports. Triples diff for no task-related reason.
-- **Rewriting instead of patching.** Replaces entire function/class to fix single branch condition. Makes change harder to review and riskier to revert.
+- **"While I'm here" cleanup.** The agent fixes the reported bug in one line, then reformats the surrounding function, renames a variable, and reorders imports — tripling the diff for no task-related reason.
+- **Rewriting instead of patching.** The agent replaces an entire function or class to fix a single branch condition. This makes the change harder to review and riskier to revert.
 
 See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Part of bugfix-standard, refactor, multi-file, and design-first chains. See CLAUDE.md Skill Chain Triggers section.
-
-Additional composition:
-- Combine with `scoped-tasking` to keep the patch boundary honest
-- Combine with `plan-before-action` to declare intended edits before changing files
-- Combine with `targeted-validation` to verify the patch without paying full-suite cost
+Part of `bugfix-standard`, `refactor-safe`, `multi-file-planned`, and `design-first` chains. See docs/maintainer/skill-chain-aliases.md for full definitions.
 
 # Example
 
@@ -115,22 +110,27 @@ Avoid:
 
 ### Preconditions
 
-- Behavior change or defect correction is known; multiple edit options exist or diff is drifting; compatibility boundaries are known or nameable. See skill-contract-template.md § Preconditions for standard definitions.
+- Behavior change or defect correction is known.
+- Multiple edit options exist or diff is drifting beyond task scope.
+- Compatibility boundaries are known or nameable.
 
 ### Postconditions
 
 - `status: completed` includes `change_boundary`, `scope_guardrails`, `stop_conditions`.
-- States which interfaces/behaviors are intentionally preserved; deferred cleanup is recorded explicitly vs. silently bundled.
+- States which interfaces or behaviors are intentionally preserved.
+- Deferred cleanup is recorded explicitly rather than silently bundled.
 
 ### Invariants
 
-- Chosen patch remains smallest safe option; unrelated cleanup/renaming/style stays out of scope; reversibility and rollback sensitivity considered before irreversible changes.
+- Chosen patch remains smallest safe option.
+- Unrelated cleanup, renaming, or style changes stay out of scope.
+- Reversibility and rollback sensitivity are considered before irreversible changes.
 
 ### Downstream Signals
 
-- `change_boundary`: where edits may occur
-- `scope_guardrails`: constrain follow-on edits and reviews
-- `stop_conditions`: when to stop editing vs. continuing cleanup
+- `change_boundary` defines where edits may occur.
+- `scope_guardrails` constrain follow-on edits and reviews.
+- `stop_conditions` specify when to stop editing versus continuing cleanup.
 
 ## Failure Handling
 

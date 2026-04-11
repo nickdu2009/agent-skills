@@ -181,6 +181,8 @@ Use this skill together with:
 - **Defining parallel contract rules.** The agent authoring a phase adds custom execution field semantics inside `phase-plan/SKILL.md` instead of using the contract definitions in `phase-contract-tools`. When `phase-execute` tries to consume the plan, it encounters undocumented fields that violate the shared contract, breaking validation and rendering.
 - **Hand-maintaining derived artifacts.** The agent manually writes lane handoff prompts or wave kickoff summaries as standalone planning files instead of deriving them from `plan.yaml` using the contract scripts. When the schema changes, the hand-written files become stale and conflict with the authoritative execution surface.
 
+See skill-anti-pattern-template.md for format guidelines.
+
 ## Artifact Contract
 
 ### Preconditions

@@ -1,6 +1,6 @@
 ---
 name: read-and-locate
-description: Find files and edit points in unfamiliar code BEFORE making changes. Use when (1) "Find where X is defined/located/implemented", (2) module known but exact file unknown (e.g. "somewhere in billing module"), (3) must trace runtime/data path to find edit point. Pattern "Find where" or "I know it exists in X but need exact file" triggers this. Do NOT use for (1) "Find all callers/references/usages" (use grep instead), or (2) pure information queries without edit intent.
+description: Find the relevant files, code paths, and edit points in an unfamiliar area of the codebase when the agent must trace a runtime, data, ownership, or configuration path. Use when module is known but exact file is unknown, or must locate where a feature is implemented. Triggers on "Find where", "locate implementation", or "somewhere in X module" patterns. Do not use for reference searches or pure information queries without edit intent.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"
@@ -82,6 +82,8 @@ Return:
 
 - **Reading every file in the directory.** The agent opens all files in `src/billing/` sequentially instead of starting from the invoice generation entry point and tracing one call path. Most files turn out to be irrelevant.
 - **Continuing to explore after the edit point is clear.** The agent already identified the serializer boundary but keeps browsing neighboring modules "just in case," wasting context on files that will not be touched.
+
+See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 

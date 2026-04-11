@@ -1,6 +1,6 @@
 ---
 name: safe-refactor
-description: Guide small, controlled refactors that improve code structure while keeping behavior and interfaces stable. Use when the task is structural cleanup, extraction, or simplification — not a behavior change.
+description: Guide small, controlled refactors that improve code structure while keeping behavior and interfaces stable. Use when the task is structural cleanup (extract duplicate code, consolidate similar functions, simplify tangled logic), pre-refactor for a feature, or local improvement is needed without behavior change. Triggers on "refactor", "extract", "consolidate", "simplify", or "cleanup" keywords.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"
@@ -74,8 +74,8 @@ Return:
 
 # Common Anti-Patterns
 
-- **Combining behavior change with structural cleanup.** Extracts helper function and simultaneously changes its error handling semantics. Introduces behavior change hidden inside supposed pure structural refactor.
-- **Doing everything in one step.** Renames function, moves it to new file, changes signature in single commit. Should perform one structural operation at a time with validation between steps.
+- **Combining behavior change with structural cleanup.** The agent extracts a helper function and simultaneously changes its error handling semantics. This introduces a behavior change hidden inside what should be a pure structural refactor.
+- **Doing everything in one step.** The agent renames a function, moves it to a new file, and changes its signature in a single commit. It should perform one structural operation at a time with validation between steps.
 
 See skill-anti-pattern-template.md for format guidelines.
 
@@ -106,22 +106,27 @@ Apply the refactor by extracting one shared helper, switching one handler at a t
 
 ### Preconditions
 
-- Work is structural vs. behavioral; stable interfaces/invariants nameable before editing; refactor decomposable into small reversible steps. See skill-contract-template.md § Preconditions for standard definitions.
+- Work is structural rather than behavioral.
+- Stable interfaces or invariants can be named before editing.
+- Refactor is decomposable into small reversible steps.
 
 ### Postconditions
 
 - `status: completed` includes `behavior_invariants`, `refactor_boundary`, `rollback_notes`.
-- Structural steps preserve signatures, outputs, externally visible behavior unless user requested otherwise; residual risk/deferred cleanup stated explicitly.
+- Structural steps preserve signatures, outputs, and externally visible behavior unless user requested otherwise.
+- Residual risk or deferred cleanup is stated explicitly.
 
 ### Invariants
 
-- Behavior and interface contracts stay stable throughout refactor; structural steps remain reviewable and reversible; validation stays aligned with touched structural seam.
+- Behavior and interface contracts stay stable throughout the refactor.
+- Structural steps remain reviewable and reversible.
+- Validation stays aligned with the touched structural seam.
 
 ### Downstream Signals
 
-- `behavior_invariants`: what later validation must preserve
-- `refactor_boundary`: limits structural change surface
-- `rollback_notes`: how to revert if invariant breaks
+- `behavior_invariants` defines what later validation must preserve.
+- `refactor_boundary` limits the structural change surface.
+- `rollback_notes` explains how to revert if an invariant breaks.
 
 ## Failure Handling
 

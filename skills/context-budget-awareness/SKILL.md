@@ -158,6 +158,8 @@ Return when `action` is `compress` or `restart`:
 - **Silent threshold breach.** The agent internally "knows" it has touched 10 files but never externalizes this count, so neither the agent's own reasoning nor the user can catch the violation. The Context Ledger prevents this by requiring explicit accounting.
 - **Phantom progress.** The agent keeps reading files and running commands but the objective has not advanced. Without the `staleness` counter in the ledger, this can go unnoticed for many steps.
 
+See skill-anti-pattern-template.md for format guidelines.
+
 # Composition
 
 Cross-chain fallback skill. Activates when context budget thresholds are breached during any execution chain (see CLAUDE.md § Skill Escalation).

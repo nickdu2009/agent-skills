@@ -1,6 +1,6 @@
 ---
 name: bugfix-workflow
-description: Guide bug diagnosis, narrowing, fixing, and verification through an evidence-first workflow. Use when a bug or unexpected behavior is reported and the root cause is not yet confirmed.
+description: Diagnose, narrow, fix, and verify bugs through an evidence-first workflow. Use when a bug or unexpected behavior is reported, test failures need investigation, intermittent issues surface in production, or the root cause is not yet confirmed. Triggers on "broken", "failing", "error", "bug", or "unexpected behavior" keywords.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"
@@ -81,6 +81,8 @@ Return:
 
 - **Patching before diagnosing.** The agent sees something that looks wrong and immediately edits it without confirming the code path is related to the reported symptom. The "fix" turns out to be for a different issue entirely.
 - **Treating correlation as causation.** A recent commit touched the same file where the bug manifests, so the agent assumes it is the cause and reverts part of it — without tracing the actual failure path or checking whether the symptom existed before that commit.
+
+See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 

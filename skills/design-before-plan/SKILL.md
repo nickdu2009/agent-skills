@@ -192,10 +192,12 @@ data_migration:
 
 # Common Anti-Patterns
 
-- **Choosing the first approach without comparison.** The agent picks the minimal-change approach reflexively without considering whether it meets non-functional requirements (performance, maintainability, extensibility). Design alternatives were never enumerated.
+- **Choosing the first approach without comparison.** The agent picks the minimal-change approach reflexively without considering whether it meets non-functional requirements like performance, maintainability, or extensibility. Design alternatives were never enumerated or compared.
 - **Deriving acceptance criteria from implementation.** The agent states "tests pass" or "no linter errors" as acceptance criteria instead of deriving observable success conditions from requirements. The acceptance criteria cannot be verified without looking at the implementation.
 - **Skipping interface contract definition for cross-module changes.** The agent plans to modify a shared utility function used by 5 modules without defining the new function signature first. Callers are patched reactively during implementation instead of proactively during design.
 - **Ignoring implicit security/performance/observability requirements.** The agent designs a file upload endpoint without considering: input validation (allowing executable uploads), performance limits (no protection against OOM for large files), or observability (no logging/metrics for debugging failures). These omissions surface as production incidents rather than being caught during design.
+
+See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 

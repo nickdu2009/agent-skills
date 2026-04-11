@@ -91,6 +91,8 @@ stop_reason: "reached framework boundary at HTTP handler layer"
 - **Full-repo grep instead of call tracing.** The agent greps for the function name across all files instead of tracing the actual call graph. This finds mentions in comments, strings, and unrelated code, inflating the blast radius.
 - **Tracing beyond framework boundaries.** The agent follows callers past the HTTP handler into the test infrastructure and client code, treating the entire stack as "affected" when the real impact stops at the API surface.
 
+See skill-anti-pattern-template.md for format guidelines.
+
 # Composition
 
 Core component of `large-task` chain (see CLAUDE.md § Skill Chain Triggers).

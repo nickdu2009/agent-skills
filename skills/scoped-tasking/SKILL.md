@@ -86,8 +86,8 @@ Return:
 
 # Common Anti-Patterns
 
-- **Grepping the entire repo before reading the error message.** Runs broad searches across every directory instead of starting from user-provided clue. Wastes context and delays first useful finding.
-- **Silent scope creep.** Discovers related issue in neighboring module and investigates without stating original boundary was insufficient. Scope expands without explicit expansion decision.
+- **Grepping the entire repo before reading the error message.** The agent runs broad searches across every directory instead of starting from the user-provided clue. This wastes context and delays the first useful finding.
+- **Silent scope creep.** The agent discovers a related issue in a neighboring module and investigates it without stating that the original boundary was insufficient. Scope expands without an explicit expansion decision.
 
 See skill-anti-pattern-template.md for format guidelines.
 
@@ -119,22 +119,27 @@ Do not scan every reporting module. If the service delegates to a shared query b
 
 ### Preconditions
 
-- Task is broad/ambiguous or at risk of expanding beyond evidence; at least one concrete clue/entry point/user objective to anchor first boundary; can distinguish requested objective from adjacent cleanup/curiosity-driven exploration. See skill-contract-template.md § Preconditions for standard definitions.
+- Task is broad, ambiguous, or at risk of expanding beyond evidence.
+- At least one concrete clue, entry point, or user objective exists to anchor the first boundary.
+- Agent can distinguish the requested objective from adjacent cleanup or curiosity-driven exploration.
 
 ### Postconditions
 
 - `status: completed` includes `objective`, `analysis_boundary`, `excluded_areas`.
-- Final output states next action inside chosen boundary; scope expansion justified against previously insufficient boundary.
+- Final output states the next action inside the chosen boundary.
+- Any scope expansion is justified against the previously insufficient boundary.
 
 ### Invariants
 
-- Repository-wide exploration not the default; active working set stays tied to stated objective and validation surface; possible leads remain separate from confirmed in-scope areas.
+- Repository-wide exploration is not the default.
+- Active working set stays tied to the stated objective and validation surface.
+- Possible leads remain separate from confirmed in-scope areas.
 
 ### Downstream Signals
 
-- `objective`: current task target for downstream skills
-- `analysis_boundary`: where `read-and-locate` or `plan-before-action` may continue
-- `excluded_areas`: protects `minimal-change-strategy` and `targeted-validation` from drift
+- `objective` defines the current task target for downstream skills.
+- `analysis_boundary` specifies where `read-and-locate` or `plan-before-action` may continue.
+- `excluded_areas` protects `minimal-change-strategy` and `targeted-validation` from drift.
 
 ## Failure Handling
 

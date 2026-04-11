@@ -76,7 +76,9 @@ Return:
 # Common Anti-Patterns
 
 - **"Run all tests" as the default.** The agent runs the full test suite after a one-line change in a single adapter, spending minutes on unrelated tests while the targeted adapter test would have taken seconds.
-- **Skipping validation entirely.** The agent declares "looks correct" after editing without running any check, leaving the change unverified because it "seemed simple."
+- **Skipping validation entirely.** The agent declares "looks correct" after editing without running any check at all, leaving the change completely unverified because it "seemed simple" or "obviously correct" based on inspection alone.
+
+See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 

@@ -1,6 +1,6 @@
 ---
 name: conflict-resolution
-description: Compare and arbitrate conflicting findings from parallel investigations or competing hypotheses. Typically loaded by the multi-agent-protocol synthesis step when subagent results disagree, or when the agent holds two plausible explanations with different supporting evidence.
+description: Compare and arbitrate conflicting findings from parallel investigations or competing hypotheses. Typically loaded by multi-agent-protocol synthesis step when subagent results disagree, or when the agent holds two plausible explanations with different supporting evidence. Use for merge conflicts, disagreements between investigation paths, or overlapping findings from parallel work. Triggers on "conflicting", "disagree", "contradictory", or synthesis with 2+ divergent conclusions.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"
@@ -95,6 +95,8 @@ Return using this template:
 
 - **Loudest voice wins.** One subagent reports with "high confidence" while another says "medium confidence." The agent picks the high-confidence claim without comparing evidence quality — the medium-confidence claim had direct code-path evidence while the high-confidence claim relied on log correlation only.
 - **Collapsing disagreement into false consensus.** Two subagents contradict each other, and the agent silently drops the minority finding instead of presenting both with their evidence and labeling the disagreement.
+
+See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 

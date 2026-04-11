@@ -353,6 +353,8 @@ Use this skill together with:
 - **Markdown owns execution authority.** The agent encodes all PR tasks, lane ownership, and validation rules in prose-heavy `wave-guide.md` paragraphs instead of structured YAML fields. When `phase-execute` tries to consume the plan, it cannot derive lane instructions because the execution authority is scattered across unstructured text.
 - **Duplicating task payloads across files.** The agent copies full PR descriptions into both `plan.yaml` and `wave-guide.md`, inflating the doc set and creating maintenance drift. When a scope change happens, only one file gets updated, leaving conflicting instructions.
 
+See skill-anti-pattern-template.md for format guidelines.
+
 ## Artifact Contract
 
 ### Preconditions

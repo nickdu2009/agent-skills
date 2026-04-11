@@ -106,6 +106,8 @@ If escalating: `recommendation: "escalate to phase-plan — 6 PRs across 3 modul
 - **Splitting for the sake of splitting.** The agent creates 3 increments for a task that cleanly fits in one PR, adding merge overhead and dependency tracking for no benefit.
 - **Implicit dependencies.** The agent declares increments as independent when increment 2 actually imports a type defined in increment 1. The second PR will fail CI if merged out of order.
 
+See skill-anti-pattern-template.md for format guidelines.
+
 # Composition
 
 Exit point for `large-task` chain (see CLAUDE.md § Skill Chain Triggers).

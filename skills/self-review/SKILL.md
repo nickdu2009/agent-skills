@@ -98,8 +98,10 @@ warning_count: 1
 
 # Common Anti-Patterns
 
-- **Skipping straight to tests.** The agent finishes editing and immediately runs the test suite, missing a console.log that will ship to production and a config file that was accidentally modified.
-- **Treating warnings as blocking.** The agent refuses to proceed because of a minor style inconsistency, wasting time on issues that do not affect correctness.
+- **Skipping straight to tests.** The agent finishes editing and immediately runs the test suite, missing a console.log statement that will ship to production and a config file that was accidentally modified.
+- **Treating warnings as blocking.** The agent refuses to proceed because of a minor style inconsistency or formatting issue, wasting time on cosmetic problems that do not affect functional correctness or execution safety.
+
+See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
