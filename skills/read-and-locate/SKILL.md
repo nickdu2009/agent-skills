@@ -1,6 +1,6 @@
 ---
 name: read-and-locate
-description: Find files and edit points in unfamiliar code BEFORE making changes. Use when (1) "Find where X is defined/located/implemented", (2) module known but exact file unknown (e.g. "somewhere in billing module"), (3) must trace runtime/data path to find edit point. Pattern "Find where" or "I know it exists in X but need exact file" triggers this. Do NOT use for pure information queries without edit intent.
+description: Find files and edit points in unfamiliar code BEFORE making changes. Use when (1) "Find where X is defined/located/implemented", (2) module known but exact file unknown (e.g. "somewhere in billing module"), (3) must trace runtime/data path to find edit point. Pattern "Find where" or "I know it exists in X but need exact file" triggers this. Do NOT use for (1) "Find all callers/references/usages" (use grep instead), or (2) pure information queries without edit intent.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"

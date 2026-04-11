@@ -1,6 +1,6 @@
 {
   "schema_version": "0.1.0",
-  "generated_at": "2026-04-11T02:41:36.225466+00:00",
+  "generated_at": "2026-04-11T02:56:32.252096+00:00",
   "skills": [
     {
       "name": "bugfix-workflow",
@@ -43,7 +43,7 @@
     },
     {
       "name": "design-before-plan",
-      "description": "Clarify requirements, compare design alternatives, define interface contracts, and establish acceptance criteria before planning implementation. Use when the task involves design choices, cross-module contracts, or unclear acceptance criteria.",
+      "description": "Clarify requirements, compare design alternatives, define interface contracts, and establish acceptance criteria before planning implementation. Use when (1) task involves choosing between multiple approaches, (2) mentions \"changes the public interface\" or \"touches contract\", (3) cross-module contracts need coordination, or (4) acceptance criteria are unclear.",
       "directory": "skills/design-before-plan",
       "family": "execution",
       "version": "0.1.0",
@@ -57,7 +57,7 @@
     },
     {
       "name": "impact-analysis",
-      "description": "Assess blast radius of code changes. Use when (1) function/API has 3+ callers across modules, (2) modifies public API or shared interface, (3) changes data model used by 3+ modules, or (4) read-and-locate found 3+ tentative leads. Do NOT use for 2 or fewer callers in single module.",
+      "description": "Assess blast radius of code changes. Use when (1) function/API has 3+ callers across modules, (2) modifies public API or shared interface, (3) changes data model used by 3+ modules, (4) mentions \"might/may/could affect multiple modules/areas\", or (5) read-and-locate found 3+ tentative leads. Do NOT use for 2 or fewer callers in single module.",
       "directory": "skills/impact-analysis",
       "family": "execution",
       "version": "0.1.0",
@@ -83,7 +83,7 @@
     },
     {
       "name": "minimal-change-strategy",
-      "description": "Constrain a code change to the smallest viable patch. Use when (1) user says \"don't change X\" or \"keep Y unchanged\", (2) multiple implementation approaches exist and smallest must be chosen, (3) diff is growing beyond task scope, (4) operation is irreversible (database drop, force push), or (5) cleanup temptation is high. Not needed for simple edits.",
+      "description": "Constrain a code change to the smallest viable patch. Use when (1) user says \"don't change X\" or \"keep Y unchanged\" WITHOUT refactor verbs like \"simplify/extract/consolidate\", (2) multiple implementation approaches exist and smallest must be chosen, (3) diff is growing beyond task scope, (4) operation is irreversible (database drop, force push), or (5) cleanup temptation is high. Do NOT use when task has explicit refactor intent like \"simplify/extract/consolidate\". Not needed for simple edits.",
       "directory": "skills/minimal-change-strategy",
       "family": "execution",
       "version": "0.1.0",
@@ -146,7 +146,7 @@
     },
     {
       "name": "read-and-locate",
-      "description": "Find files and edit points in unfamiliar code BEFORE making changes. Use when (1) \"Find where X is defined/located/implemented\", (2) module known but exact file unknown (e.g. \"somewhere in billing module\"), (3) must trace runtime/data path to find edit point. Pattern \"Find where\" or \"I know it exists in X but need exact file\" triggers this. Do NOT use for pure information queries without edit intent.",
+      "description": "Find files and edit points in unfamiliar code BEFORE making changes. Use when (1) \"Find where X is defined/located/implemented\", (2) module known but exact file unknown (e.g. \"somewhere in billing module\"), (3) must trace runtime/data path to find edit point. Pattern \"Find where\" or \"I know it exists in X but need exact file\" triggers this. Do NOT use for (1) \"Find all callers/references/usages\" (use grep instead), or (2) pure information queries without edit intent.",
       "directory": "skills/read-and-locate",
       "family": "execution",
       "version": "0.1.0",

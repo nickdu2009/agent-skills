@@ -1,6 +1,6 @@
 ---
 name: design-before-plan
-description: Clarify requirements, compare design alternatives, define interface contracts, and establish acceptance criteria before planning implementation. Use when the task involves design choices, cross-module contracts, or unclear acceptance criteria.
+description: Clarify requirements, compare design alternatives, define interface contracts, and establish acceptance criteria before planning implementation. Use when (1) task involves choosing between multiple approaches, (2) mentions "changes the public interface" or "touches contract", (3) cross-module contracts need coordination, or (4) acceptance criteria are unclear.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, design, requirements"

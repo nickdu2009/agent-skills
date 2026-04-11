@@ -1,6 +1,6 @@
 ---
 name: impact-analysis
-description: Assess blast radius of code changes. Use when (1) function/API has 3+ callers across modules, (2) modifies public API or shared interface, (3) changes data model used by 3+ modules, or (4) read-and-locate found 3+ tentative leads. Do NOT use for 2 or fewer callers in single module.
+description: Assess blast radius of code changes. Use when (1) function/API has 3+ callers across modules, (2) modifies public API or shared interface, (3) changes data model used by 3+ modules, (4) mentions "might/may/could affect multiple modules/areas", or (5) read-and-locate found 3+ tentative leads. Do NOT use for 2 or fewer callers in single module.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"
