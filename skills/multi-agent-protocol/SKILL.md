@@ -1,6 +1,6 @@
 ---
 name: multi-agent-protocol
-description: Guide parallel subagent launching, coordination, and synthesis through complete operational protocol. Use when the AGENTS.md multi-agent rules indicate Tier 1 or Tier 2 parallelism and the agent needs the full decision framework, subagent prompt templates, merge checklist, and failure handling procedures.
+description: Launch and coordinate parallel subagents. Use when (1) user explicitly says "in parallel", (2) task describes 3+ independent investigation areas owned by different teams/modules, or (3) AGENTS.md rules indicate Tier 2 parallelism. Implicit parallel opportunity example "understand X system, Y service, and Z pipeline" equals 3 independent areas.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"

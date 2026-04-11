@@ -1,6 +1,6 @@
 ---
 name: context-budget-awareness
-description: Narrow working state by compressing and refocusing when an investigation is stuck or spinning. Use when many files are read without convergence, the same areas checked repeatedly without progress, hypotheses accumulate without evidence to rank them, or recent actions fail to advance the objective. Uses a structured Context Ledger to make self-monitoring observable and verifiable.
+description: Compress working state when investigation is stuck. Use when (1) 8+ files read without convergence, (2) same file read 3+ times without new leads, (3) 4+ competing hypotheses without evidence ranking, or (4) last 3+ actions didn't advance the goal. Do NOT trigger for 7 or fewer files if progress is steady.
 metadata:
   version: "0.2.0"
   tags: "coding, agents, orchestration, efficiency"

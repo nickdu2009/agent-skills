@@ -1,6 +1,6 @@
 ---
 name: phase-contract-tools
-description: Review and validate phase contract schemas, execution docs, and rendering tools. Usually loaded by phase-plan or phase-execute. Use directly when the task is to fix, extend, or validate the phase contract scripts, schema definitions, or renderers themselves.
+description: Maintain phase system infrastructure. Use ONLY when (1) task explicitly mentions "fix phase schema validator", "update plan.yaml contract", or "repair phase rendering", (2) working on phase-contract-tools directory itself, or (3) validating phase plan format. Do NOT use for regular phase planning or execution.
 ---
 
 # Phase Contract Tools

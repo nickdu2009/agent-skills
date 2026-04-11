@@ -150,10 +150,63 @@ SYSTEM_TEMPLATE = textwrap.dedent("""\
 
 
 def build_eval_prompt(case: TriggerCase, skills_block: str) -> str:
+    """Legacy function for backward compatibility (--mode prompt)."""
     return (
         SYSTEM_TEMPLATE.format(skills_block=skills_block)
         + f"\nUser prompt: \"{case.prompt}\"\n"
     )
+
+
+def build_eval_messages(
+    case: TriggerCase,
+    skills_block: str,
+    *,
+    enable_cache: bool = False,
+) -> list[dict]:
+    """Build structured messages for Chat Completions API.
+
+    Args:
+        case: Test case containing the user prompt
+        skills_block: Formatted skill descriptions
+        enable_cache: If True, add cache_control to system message (for explicit caching)
+
+    Returns:
+        List of message dicts with proper role separation
+    """
+    system_content = SYSTEM_TEMPLATE.format(skills_block=skills_block)
+
+    if enable_cache:
+        # Explicit caching format (OpenAI-compatible)
+        messages = [
+            {
+                "role": "system",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": system_content,
+                        "cache_control": {"type": "ephemeral"}
+                    }
+                ]
+            },
+            {
+                "role": "user",
+                "content": f'User prompt: "{case.prompt}"'
+            }
+        ]
+    else:
+        # Standard format (implicit caching)
+        messages = [
+            {
+                "role": "system",
+                "content": system_content
+            },
+            {
+                "role": "user",
+                "content": f'User prompt: "{case.prompt}"'
+            }
+        ]
+
+    return messages
 
 
 def score_result(
@@ -283,13 +336,26 @@ def _eval_single_case(
     skills_block: str,
     *,
     extra_body: dict | None = None,
+    enable_cache: bool = False,
 ) -> dict:
-    """Evaluate a single trigger case against the LLM. Thread-safe."""
-    prompt = build_eval_prompt(case, skills_block)
+    """Evaluate a single trigger case against the LLM. Thread-safe.
+
+    Args:
+        client: OpenAI client instance
+        model: Model name
+        case: Test case to evaluate
+        skills_block: Formatted skill descriptions
+        extra_body: Extra API parameters (e.g., thinking control)
+        enable_cache: Whether to use explicit caching (requires compatible model)
+
+    Returns:
+        Dict with verdict, actual triggers, and metadata
+    """
+    messages = build_eval_messages(case, skills_block, enable_cache=enable_cache)
     try:
         create_kwargs: dict = {
             "model": model,
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": messages,
             "temperature": 0,
             "response_format": {"type": "json_object"},
         }
@@ -339,6 +405,7 @@ def mode_api(
     extra_body: dict | None = None,
     concurrency: int = 1,
     compact_mode: bool = False,
+    enable_cache: bool = False,
 ) -> None:
     """Call LLM API to evaluate trigger accuracy.
 
@@ -346,6 +413,9 @@ def mode_api(
     - OPENAI_API_KEY: API key (required, or use --api-key)
     - OPENAI_BASE_URL: Custom endpoint (optional, or use --base-url)
     - OPENAI_EXTRA_BODY: Optional JSON for provider-specific fields (or use --extra-body)
+
+    Args:
+        enable_cache: Enable explicit caching (requires compatible model like qwen3-coder-plus)
     """
     # Use command line argument if provided, otherwise fall back to env var
     if api_key is None:
@@ -403,6 +473,10 @@ def mode_api(
     print(f"  Model: {model}")
     if extra_body:
         print(f"  extra_body: {json.dumps(extra_body)}")
+    if enable_cache:
+        print(f"  Caching: explicit (cache_control enabled)")
+    else:
+        print(f"  Caching: implicit (auto)")
     if concurrency > 1:
         print(f"  Concurrency: {concurrency}")
     print()
@@ -416,7 +490,9 @@ def mode_api(
         # Serial execution
         for case in cases:
             result = _eval_single_case(
-                client, model, case, skills_block, extra_body=extra_body
+                client, model, case, skills_block,
+                extra_body=extra_body,
+                enable_cache=enable_cache
             )
             results.append(result)
             verdict = result["verdict"]
@@ -443,6 +519,7 @@ def mode_api(
                     case,
                     skills_block,
                     extra_body=extra_body,
+                    enable_cache=enable_cache,
                 ): case
                 for case in cases
             }
@@ -511,6 +588,11 @@ def main() -> int:
         action="store_true",
         help="Return a non-zero exit code when a skill document is missing required v1 sections.",
     )
+    parser.add_argument(
+        "--enable-cache",
+        action="store_true",
+        help="Enable explicit caching (adds cache_control to system message). Requires compatible models like qwen3-coder-plus. GLM models only support implicit caching.",
+    )
     args = parser.parse_args()
 
     # Parse --extra-body JSON string if provided
@@ -559,6 +641,7 @@ def main() -> int:
             extra_body=extra_body_dict,
             concurrency=args.concurrency,
             compact_mode=args.compact_mode,
+            enable_cache=args.enable_cache,
         )
 
     if args.fail_on_protocol_issues and protocol_missing:

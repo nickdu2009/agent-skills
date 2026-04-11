@@ -1,6 +1,6 @@
 ---
 name: minimal-change-strategy
-description: Constrain a code change to the smallest viable patch when the diff is growing beyond the task, cleanup temptation is high, or multiple edit strategies compete. Not needed for simple single-file fixes where AGENTS.md Change Rules suffice.
+description: Constrain a code change to the smallest viable patch. Use when (1) user says "don't change X" or "keep Y unchanged", (2) multiple implementation approaches exist and smallest must be chosen, (3) diff is growing beyond task scope, (4) operation is irreversible (database drop, force push), or (5) cleanup temptation is high. Not needed for simple edits.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"

@@ -1,6 +1,6 @@
 ---
 name: scoped-tasking
-description: Narrow a broad or ambiguous task to the smallest useful boundary before exploring or editing. Use when the request is wide but the likely edit surface is small, or when scope is expanding without evidence.
+description: Narrow broad/ambiguous tasks to smallest boundary. Use when (1) request mentions multiple systems but target unclear (e.g. "search is broken" - which search?), (2) task is expanding without evidence, (3) user request has no clear action or target. Do NOT use when (1) scope is clear but location unknown (use read-and-locate), (2) scope is clear but design choices remain (use design-before-plan).
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"

@@ -1,6 +1,6 @@
 ---
 name: read-and-locate
-description: Find the relevant files, code paths, and edit points in an unfamiliar area of the codebase when the agent must trace a runtime, data, ownership, or configuration path. Do not use when an exact symbol, class, function, or file search is sufficient.
+description: Find files and edit points in unfamiliar code BEFORE making changes. Use when (1) user wants to modify code but location is unknown, (2) must trace runtime/data/ownership path to find where to edit. Do NOT use for (1) information queries with no edit intent, (2) exact symbol search with known name, (3) questions about existing code without modification plans.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"

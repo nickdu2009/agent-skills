@@ -1,10 +1,10 @@
 {
   "schema_version": "0.1.0",
-  "generated_at": "2026-04-10T19:20:18.044689+00:00",
+  "generated_at": "2026-04-11T02:21:49.498622+00:00",
   "skills": [
     {
       "name": "bugfix-workflow",
-      "description": "Diagnose, narrow, fix, and verify a bug through an evidence-first workflow. Use when a bug or unexpected behavior is reported and the root cause is not yet confirmed.",
+      "description": "Guide bug diagnosis, narrowing, fixing, and verification through an evidence-first workflow. Use when a bug or unexpected behavior is reported and the root cause is not yet confirmed.",
       "directory": "skills/bugfix-workflow",
       "family": "execution",
       "version": "0.1.0",
@@ -30,7 +30,7 @@
     },
     {
       "name": "context-budget-awareness",
-      "description": "Compress and refocus the working state when an investigation is stuck or spinning — many files read without convergence, the same areas checked repeatedly without progress, hypotheses accumulating without evidence to rank them, or recent actions not advancing the objective. Uses a structured Context Ledger to make self-monitoring observable and verifiable without platform-specific mechanisms.",
+      "description": "Compress working state when investigation is stuck. Use when (1) 8+ files read without convergence, (2) same file read 3+ times without new leads, (3) 4+ competing hypotheses without evidence ranking, or (4) last 3+ actions didn't advance the goal. Do NOT trigger for 7 or fewer files if progress is steady.",
       "directory": "skills/context-budget-awareness",
       "family": "execution",
       "version": "0.2.0",
@@ -57,7 +57,7 @@
     },
     {
       "name": "impact-analysis",
-      "description": "Assess the blast radius of a planned code change by tracing outward from the edit point to affected callers, dependents, and contracts before planning. Use when the change touches shared interfaces, public APIs, data models, or has 3+ tentative leads from discovery.",
+      "description": "Assess blast radius of code changes. Use when (1) function/API has 3+ callers across modules, (2) modifies public API or shared interface, (3) changes data model used by 3+ modules, or (4) read-and-locate found 3+ tentative leads. Do NOT use for 2 or fewer callers in single module.",
       "directory": "skills/impact-analysis",
       "family": "execution",
       "version": "0.1.0",
@@ -70,7 +70,7 @@
     },
     {
       "name": "incremental-delivery",
-      "description": "Split a multi-step plan into 2-4 independently mergeable increments when the task is too large for a single PR but too small for the full phase system. Use when plan-before-action produces a plan spanning 2-4 PRs across 1-2 modules.",
+      "description": "Split a plan into 2-4 independently mergeable PRs when the task is medium-sized. ONLY use when (1) explicitly mentions \"3 PRs\" or \"4 PRs\", OR (2) spans exactly 1-2 modules without parallel work or external specs. If 5+ PRs, 3+ modules, or needs parallel lanes use phase-plan instead.",
       "directory": "skills/incremental-delivery",
       "family": "execution",
       "version": "0.1.0",
@@ -83,7 +83,7 @@
     },
     {
       "name": "minimal-change-strategy",
-      "description": "Constrain a code change to the smallest viable patch when the diff is growing beyond the task, cleanup temptation is high, or multiple edit strategies compete. Not needed for simple single-file fixes where AGENTS.md Change Rules suffice.",
+      "description": "Constrain a code change to the smallest viable patch. Use when (1) user says \"don't change X\" or \"keep Y unchanged\", (2) multiple implementation approaches exist and smallest must be chosen, (3) diff is growing beyond task scope, (4) operation is irreversible (database drop, force push), or (5) cleanup temptation is high. Not needed for simple edits.",
       "directory": "skills/minimal-change-strategy",
       "family": "execution",
       "version": "0.1.0",
@@ -96,7 +96,7 @@
     },
     {
       "name": "multi-agent-protocol",
-      "description": "Complete operational protocol for launching, coordinating, and synthesizing parallel subagents. Use when the AGENTS.md multi-agent rules indicate Tier 1 or Tier 2 parallelism and the agent needs the full decision framework, subagent prompt templates, merge checklist, and failure handling procedures.",
+      "description": "Launch and coordinate parallel subagents. Use when (1) user explicitly says \"in parallel\", (2) task describes 3+ independent investigation areas owned by different teams/modules, or (3) AGENTS.md rules indicate Tier 2 parallelism. Implicit parallel opportunity example \"understand X system, Y service, and Z pipeline\" equals 3 independent areas.",
       "directory": "skills/multi-agent-protocol",
       "family": "orchestration",
       "version": "0.1.0",
@@ -109,13 +109,13 @@
     },
     {
       "name": "phase-contract-tools",
-      "description": "Shared contract library for phase planning and execution. Usually loaded by phase-plan or phase-execute, not triggered independently. Use directly only when the task is to fix, extend, or validate the phase contract scripts, schema definitions, or renderers themselves.",
+      "description": "Maintain phase system infrastructure. Use ONLY when (1) task explicitly mentions \"fix phase schema validator\", \"update plan.yaml contract\", or \"repair phase rendering\", (2) working on phase-contract-tools directory itself, or (3) validating phase plan format. Do NOT use for regular phase planning or execution.",
       "directory": "skills/phase-contract-tools",
       "family": "phase"
     },
     {
       "name": "phase-execute",
-      "description": "Execute an accepted phase wave by consuming plan.yaml, resolving wave gates, launching serial or parallel lanes, integrating results, and reporting wave status. Use after phase-plan has produced the execution docs and the agent is ready to implement a specific wave.",
+      "description": "Execute an accepted phase wave by consuming plan.yaml, resolving wave gates, launching serial or parallel lanes, integrating results, and reporting wave status. Use when phase-plan has produced the execution docs, the accepted wave is ready to execute, and the agent needs to implement a specific wave through schema-driven execution.",
       "directory": "skills/phase-execute",
       "family": "phase"
     },
@@ -146,7 +146,7 @@
     },
     {
       "name": "read-and-locate",
-      "description": "Find the relevant files, code paths, and edit points in an unfamiliar area of the codebase when the agent must trace a runtime, data, ownership, or configuration path. Do not use when an exact symbol, class, function, or file search is sufficient.",
+      "description": "Find files and edit points in unfamiliar code BEFORE making changes. Use when (1) user wants to modify code but location is unknown, (2) must trace runtime/data/ownership path to find where to edit. Do NOT use for (1) information queries with no edit intent, (2) exact symbol search with known name, (3) questions about existing code without modification plans.",
       "directory": "skills/read-and-locate",
       "family": "execution",
       "version": "0.1.0",
@@ -172,7 +172,7 @@
     },
     {
       "name": "scoped-tasking",
-      "description": "Narrow a broad or ambiguous task to the smallest useful boundary before exploring or editing. Use when the request is wide but the likely edit surface is small, or when scope is expanding without evidence.",
+      "description": "Narrow broad/ambiguous tasks to smallest boundary. Use when (1) request mentions multiple systems but target unclear (e.g. \"search is broken\" - which search?), (2) task is expanding without evidence, (3) user request has no clear action or target. Do NOT use when (1) scope is clear but location unknown (use read-and-locate), (2) scope is clear but design choices remain (use design-before-plan).",
       "directory": "skills/scoped-tasking",
       "family": "execution",
       "version": "0.1.0",
@@ -185,7 +185,7 @@
     },
     {
       "name": "self-review",
-      "description": "Review the agent's own diff for quality issues, debug residuals, and scope violations before running tests. Use after all edits are complete and before targeted-validation, to catch low-cost issues that testing alone will not surface.",
+      "description": "Review the agent's own diff for quality issues, debug residuals, and scope violations before running tests. Use when all edits are complete, before targeted-validation, when the diff spans multiple files and manual review would catch issues that tests miss, or when the user explicitly asks for a diff review before testing.",
       "directory": "skills/self-review",
       "family": "execution",
       "version": "0.1.0",
