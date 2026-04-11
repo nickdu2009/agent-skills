@@ -1,0 +1,160 @@
+  Mode: compact
+  Prompt size (per case): ~1,683 tokens
+  Base URL: https://dashscope.aliyuncs.com/compatible-mode/v1
+  Model: deepseek-v3
+  extra_body: {"enable_thinking": false}
+  Caching: explicit (cache_control enabled)
+  Concurrency: 5
+
+  ✗ [refactor-explicit] fail  (1/82)
+      FALSE NEGATIVE: expected safe-refactor but not triggered
+  ✗ [bug-implicit] fail  (2/82)
+      FALSE NEGATIVE: expected bugfix-workflow but not triggered
+  ✓ [feature-not-bug] pass  (3/82)
+  ✗ [bug-production-critical] fail  (4/82)
+      FALSE NEGATIVE: expected bugfix-workflow but not triggered
+  ✗ [bug-explicit] fail  (5/82)
+      FALSE NEGATIVE: expected bugfix-workflow but not triggered
+  ✓ [simple-one-file-fix] pass  (6/82)
+  ✗ [refactor-frontend] fail  (7/82)
+      FALSE NEGATIVE: expected safe-refactor but not triggered
+  ✗ [multi-file-uncertain] fail  (8/82)
+      FALSE NEGATIVE: expected plan-before-action but not triggered
+  ✗ [broad-request-small-surface] fail  (9/82)
+      FALSE NEGATIVE: expected scoped-tasking but not triggered
+  ✗ [temptation-to-cleanup] fail  (10/82)
+      FALSE NEGATIVE: expected bugfix-workflow but not triggered
+  ✗ [what-to-test-after-patch] fail  (11/82)
+      FALSE NEGATIVE: expected targeted-validation but not triggered
+  ✓ [simple-test-request] pass  (12/82)
+  ✗ [diff-growing-beyond-task] fail  (13/82)
+      FALSE NEGATIVE: expected minimal-change-strategy but not triggered
+  ✗ [ambiguous-requirement] fail  (14/82)
+      FALSE NEGATIVE: expected scoped-tasking but not triggered
+  ✗ [validation-failure-diagnosis] fail  (15/82)
+      FALSE NEGATIVE: expected targeted-validation but not triggered
+  ✗ [irreversible-operation] fail  (16/82)
+      FALSE NEGATIVE: expected minimal-change-strategy but not triggered
+  ✗ [minimal-competing-strategies] fail  (17/82)
+      FALSE NEGATIVE: expected minimal-change-strategy but not triggered
+  ✗ [unfamiliar-codebase] fail  (18/82)
+      FALSE NEGATIVE: expected read-and-locate but not triggered
+  ✓ [known-file] pass  (19/82)
+  ✗ [partial-path-known] fail  (20/82)
+      FALSE NEGATIVE: expected read-and-locate but not triggered
+  ✓ [short-task-no-noise] pass  (21/82)
+  ✗ [long-session-refocus] fail  (22/82)
+      FALSE NEGATIVE: expected context-budget-awareness but not triggered
+  ✗ [many-files-opened] fail  (23/82)
+      FALSE NEGATIVE: expected context-budget-awareness but not triggered
+  ✓ [grep-sufficient] pass  (24/82)
+  ✓ [medium-session-focused] pass  (25/82)
+  ✗ [repeated-hypothesis] fail  (26/82)
+      FALSE NEGATIVE: expected context-budget-awareness but not triggered
+  ✗ [context-stalled-actions] fail  (27/82)
+      FALSE NEGATIVE: expected context-budget-awareness but not triggered
+  ✗ [context-multi-hypothesis] fail  (28/82)
+      FALSE NEGATIVE: expected context-budget-awareness but not triggered
+  ✓ [context-7-files-no-trigger] pass  (29/82)
+  ✗ [context-9-files-trigger] fail  (30/82)
+      FALSE NEGATIVE: expected context-budget-awareness but not triggered
+  ✗ [parallel-investigation] fail  (31/82)
+      FALSE NEGATIVE: expected multi-agent-protocol but not triggered
+  ✗ [conflicting-subagent-results] fail  (32/82)
+      FALSE NEGATIVE: expected conflict-resolution but not triggered
+  ✗ [implicit-parallel-opportunity] fail  (33/82)
+      FALSE NEGATIVE: expected multi-agent-protocol but not triggered
+  ✓ [serial-single-file] pass  (34/82)
+  ✗ [conflicting-hypotheses] fail  (35/82)
+      FALSE NEGATIVE: expected conflict-resolution but not triggered
+  ✗ [plan-large-migration] fail  (36/82)
+      FALSE NEGATIVE: expected phase-plan but not triggered
+  ✗ [contract-tools-direct] fail  (37/82)
+      FALSE NEGATIVE: expected phase-contract-tools but not triggered
+  ✗ [review-phase-plan] fail  (38/82)
+      FALSE NEGATIVE: expected phase-plan-review but not triggered
+  ✗ [execute-wave] fail  (39/82)
+      FALSE NEGATIVE: expected phase-execute but not triggered
+  ✓ [phase-review-not-needed] pass  (40/82)
+  ✗ [design-multiple-approaches] fail  (41/82)
+      FALSE NEGATIVE: expected design-before-plan but not triggered
+  ✗ [design-api-contract] fail  (42/82)
+      FALSE NEGATIVE: expected design-before-plan but not triggered
+  ✗ [design-cross-module-contract] fail  (43/82)
+      FALSE NEGATIVE: expected design-before-plan but not triggered
+  ✓ [design-not-needed-clear-path] pass  (44/82)
+  ✗ [design-unclear-acceptance] fail  (45/82)
+      FALSE NEGATIVE: expected design-before-plan but not triggered
+  ✓ [design-not-needed-documented] pass  (46/82)
+  ✗ [design-not-needed-bugfix] fail  (47/82)
+      FALSE NEGATIVE: expected bugfix-workflow but not triggered
+  ✓ [impact-not-needed-single-file] pass  (48/82)
+  ✗ [impact-public-api-change] fail  (49/82)
+      FALSE NEGATIVE: expected impact-analysis but not triggered
+  ✗ [impact-data-model-change] fail  (50/82)
+      FALSE NEGATIVE: expected impact-analysis but not triggered
+  ✗ [incremental-multi-pr-task] fail  (51/82)
+      FALSE NEGATIVE: expected incremental-delivery but not triggered
+  ✓ [incremental-not-needed-single-pr] pass  (52/82)
+  ✗ [self-review-after-edit] fail  (53/82)
+      FALSE NEGATIVE: expected self-review but not triggered
+  ✓ [self-review-not-needed-test-request] pass  (54/82)
+  ✗ [self-review-multi-file-change] fail  (55/82)
+      FALSE NEGATIVE: expected self-review but not triggered
+  ✗ [incremental-upgrade-to-phase] fail  (56/82)
+      FALSE NEGATIVE: expected phase-plan but not triggered
+  ✗ [incremental-4pr] fail  (57/82)
+      FALSE NEGATIVE: expected incremental-delivery but not triggered
+  ✗ [locate-then-impact] fail  (58/82)
+      FALSE NEGATIVE: expected impact-analysis but not triggered
+  ✗ [design-after-scoping] fail  (59/82)
+      FALSE NEGATIVE: expected design-before-plan but not triggered
+  ✗ [chain-scope-to-locate] fail  (60/82)
+      FALSE NEGATIVE: expected read-and-locate but not triggered
+  ✗ [chain-locate-to-plan] fail  (61/82)
+      FALSE NEGATIVE: expected plan-before-action but not triggered
+  ✗ [phase-5pr-boundary] fail  (62/82)
+      FALSE NEGATIVE: expected phase-plan but not triggered
+  ✗ [chain-review-to-validation] fail  (63/82)
+      FALSE NEGATIVE: expected targeted-validation but not triggered
+  ✗ [chain-bugfix-to-cba] fail  (64/82)
+      FALSE NEGATIVE: expected context-budget-awareness but not triggered
+  ✗ [chain-minimal-to-impact] fail  (65/82)
+      FALSE NEGATIVE: expected impact-analysis but not triggered
+  ✗ [chain-refactor-to-design] fail  (66/82)
+      FALSE NEGATIVE: expected design-before-plan but not triggered
+  ✗ [chain-plan-to-design] fail  (67/82)
+      FALSE NEGATIVE: expected design-before-plan but not triggered
+  ✗ [chain-parallel-to-conflict] fail  (68/82)
+      FALSE NEGATIVE: expected conflict-resolution but not triggered
+  ✓ [doc-only-change] pass  (69/82)
+  ✓ [info-query] pass  (70/82)
+  ✓ [git-operation] pass  (71/82)
+  ✗ [locate-vs-scope] fail  (72/82)
+      FALSE NEGATIVE: expected read-and-locate but not triggered
+  ✗ [scope-vs-locate] fail  (73/82)
+      FALSE NEGATIVE: expected scoped-tasking but not triggered
+  ✗ [minimal-vs-refactor] fail  (74/82)
+      FALSE NEGATIVE: expected minimal-change-strategy but not triggered
+  ✗ [scope-vs-plan] fail  (75/82)
+      FALSE NEGATIVE: expected scoped-tasking but not triggered
+  ✗ [refactor-vs-minimal] fail  (76/82)
+      FALSE NEGATIVE: expected safe-refactor but not triggered
+  ✗ [plan-vs-scope] fail  (77/82)
+      FALSE NEGATIVE: expected plan-before-action but not triggered
+  ✗ [discover-analyze-plan] fail  (78/82)
+      FALSE NEGATIVE: expected read-and-locate but not triggered
+      FALSE NEGATIVE: expected impact-analysis but not triggered
+      FALSE NEGATIVE: expected plan-before-action but not triggered
+  ✗ [refactor-with-constraint] fail  (79/82)
+      FALSE NEGATIVE: expected safe-refactor but not triggered
+      FALSE NEGATIVE: expected minimal-change-strategy but not triggered
+  ✓ [impact-2-callers] pass  (80/82)
+  ✗ [design-impact-incremental] fail  (81/82)
+      FALSE NEGATIVE: expected design-before-plan but not triggered
+      FALSE NEGATIVE: expected impact-analysis but not triggered
+      FALSE NEGATIVE: expected incremental-delivery but not triggered
+  ✗ [impact-3-callers] fail  (82/82)
+      FALSE NEGATIVE: expected impact-analysis but not triggered
+
+Results: 19 pass, 0 partial, 63 fail out of 82

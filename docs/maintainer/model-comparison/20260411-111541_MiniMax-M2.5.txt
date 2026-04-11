@@ -1,0 +1,174 @@
+  Mode: compact
+  Prompt size (per case): ~1,683 tokens
+  Base URL: https://dashscope.aliyuncs.com/compatible-mode/v1
+  Model: MiniMax-M2.5
+  extra_body: {"enable_thinking": false}
+  Caching: explicit (cache_control enabled)
+  Concurrency: 5
+
+  ✗ [bug-production-critical] fail  (1/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-9aab734c-fac3-9769-a1e9-2510ff4ce76b', 'request_id': '9aab734c-fac3-9769-a1e9-2510ff4ce76b'}
+  ✗ [bug-implicit] fail  (2/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-cfbaabf4-e3de-9256-8013-0961364b81b5', 'request_id': 'cfbaabf4-e3de-9256-8013-0961364b81b5'}
+  ✗ [bug-explicit] fail  (3/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-a9d55e2f-2cd1-901f-a9ff-0003ca215c35', 'request_id': 'a9d55e2f-2cd1-901f-a9ff-0003ca215c35'}
+  ✗ [refactor-explicit] fail  (4/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-47874297-a2d6-9142-b30e-6bfdcb58ce07', 'request_id': '47874297-a2d6-9142-b30e-6bfdcb58ce07'}
+  ✗ [feature-not-bug] fail  (5/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-6894d64f-b2ba-974d-8ef6-dab247fe766d', 'request_id': '6894d64f-b2ba-974d-8ef6-dab247fe766d'}
+  ✗ [refactor-frontend] fail  (6/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-1f3fb6f5-96a3-96f0-8fae-057fa61c2348', 'request_id': '1f3fb6f5-96a3-96f0-8fae-057fa61c2348'}
+  ✗ [simple-one-file-fix] fail  (7/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-9c0b0112-2982-9fdf-9373-1dcd59624e2a', 'request_id': '9c0b0112-2982-9fdf-9373-1dcd59624e2a'}
+  ✗ [multi-file-uncertain] fail  (8/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-cf7ea5ea-0794-903b-8f06-23af1fb87f20', 'request_id': 'cf7ea5ea-0794-903b-8f06-23af1fb87f20'}
+  ✗ [temptation-to-cleanup] fail  (9/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-eebf3166-7c40-9ebb-bc6b-6a1c2b0a0bd9', 'request_id': 'eebf3166-7c40-9ebb-bc6b-6a1c2b0a0bd9'}
+  ✗ [diff-growing-beyond-task] fail  (10/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-30cbc5cb-f963-9f13-94b5-a740f17b7c1d', 'request_id': '30cbc5cb-f963-9f13-94b5-a740f17b7c1d'}
+  ✗ [broad-request-small-surface] fail  (11/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-ee8d243b-6dc4-99c2-83d5-05b35100101e', 'request_id': 'ee8d243b-6dc4-99c2-83d5-05b35100101e'}
+  ✗ [ambiguous-requirement] fail  (12/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-617b75e2-6e34-965f-9b23-49c68f59f392', 'request_id': '617b75e2-6e34-965f-9b23-49c68f59f392'}
+  ✗ [what-to-test-after-patch] fail  (13/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-ffce3861-bf96-9fc6-875a-84abb07eb2f0', 'request_id': 'ffce3861-bf96-9fc6-875a-84abb07eb2f0'}
+  ✗ [irreversible-operation] fail  (14/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-b059966a-a2ff-9cf7-b9b8-11d3584e5b51', 'request_id': 'b059966a-a2ff-9cf7-b9b8-11d3584e5b51'}
+  ✗ [simple-test-request] fail  (15/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-118b0601-78c8-940f-b6bf-ef36ec4cf842', 'request_id': '118b0601-78c8-940f-b6bf-ef36ec4cf842'}
+  ✗ [validation-failure-diagnosis] fail  (16/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-c77a39eb-c0f3-9258-941b-b8f310cddb3b', 'request_id': 'c77a39eb-c0f3-9258-941b-b8f310cddb3b'}
+  ✗ [unfamiliar-codebase] fail  (17/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-0b991677-1bc4-9339-97b2-a0ace3a17f4d', 'request_id': '0b991677-1bc4-9339-97b2-a0ace3a17f4d'}
+  ✗ [known-file] fail  (18/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-97d6193e-bfa1-9c28-bfc4-fe848f7b76c2', 'request_id': '97d6193e-bfa1-9c28-bfc4-fe848f7b76c2'}
+  ✗ [minimal-competing-strategies] fail  (19/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-de76cde6-3b02-9d35-9920-fc30492d6f3f', 'request_id': 'de76cde6-3b02-9d35-9920-fc30492d6f3f'}
+  ✗ [long-session-refocus] fail  (20/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-9602aa75-a745-9ac3-9c8c-c8265e5a3441', 'request_id': '9602aa75-a745-9ac3-9c8c-c8265e5a3441'}
+  ✗ [partial-path-known] fail  (21/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-e5fd5203-43cd-97d7-a0e4-dca703ae2225', 'request_id': 'e5fd5203-43cd-97d7-a0e4-dca703ae2225'}
+  ✗ [short-task-no-noise] fail  (22/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-ed59af6c-4ea4-9322-9474-4235780b1af1', 'request_id': 'ed59af6c-4ea4-9322-9474-4235780b1af1'}
+  ✗ [grep-sufficient] fail  (23/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-476dfec8-847c-9219-b343-6549ba1958b7', 'request_id': '476dfec8-847c-9219-b343-6549ba1958b7'}
+  ✗ [many-files-opened] fail  (24/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-2337a568-9b47-9dcf-b9db-013f602c41e4', 'request_id': '2337a568-9b47-9dcf-b9db-013f602c41e4'}
+  ✗ [medium-session-focused] fail  (25/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-53314206-1a89-97cd-8264-263baf0fe93c', 'request_id': '53314206-1a89-97cd-8264-263baf0fe93c'}
+  ✗ [context-stalled-actions] fail  (26/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-70d984ac-cf3c-9a59-9752-73efc283d07e', 'request_id': '70d984ac-cf3c-9a59-9752-73efc283d07e'}
+  ✗ [context-multi-hypothesis] fail  (27/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-6b68d1fb-a505-9fe7-a09c-db989a05225d', 'request_id': '6b68d1fb-a505-9fe7-a09c-db989a05225d'}
+  ✗ [repeated-hypothesis] fail  (28/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-ae60cac3-01d0-9847-8eda-8579fee4c455', 'request_id': 'ae60cac3-01d0-9847-8eda-8579fee4c455'}
+  ✗ [context-7-files-no-trigger] fail  (29/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-d326d88b-23d8-9607-810a-33486ca2c28d', 'request_id': 'd326d88b-23d8-9607-810a-33486ca2c28d'}
+  ✗ [implicit-parallel-opportunity] fail  (30/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-fca3f8f0-3287-9ce9-ad04-42679966ca8b', 'request_id': 'fca3f8f0-3287-9ce9-ad04-42679966ca8b'}
+  ✗ [parallel-investigation] fail  (31/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-aa6204aa-ce3f-9d08-bfa8-647a10ee54ae', 'request_id': 'aa6204aa-ce3f-9d08-bfa8-647a10ee54ae'}
+  ✗ [serial-single-file] fail  (32/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-7532bfae-d6c1-9d6d-9183-eb5b4ee7acb4', 'request_id': '7532bfae-d6c1-9d6d-9183-eb5b4ee7acb4'}
+  ✗ [conflicting-subagent-results] fail  (33/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-f6b7c7ec-b43d-9899-ad6d-d021d536287e', 'request_id': 'f6b7c7ec-b43d-9899-ad6d-d021d536287e'}
+  ✗ [context-9-files-trigger] fail  (34/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-2915f174-b71c-9845-9cdb-f8c4f88b891b', 'request_id': '2915f174-b71c-9845-9cdb-f8c4f88b891b'}
+  ✗ [conflicting-hypotheses] fail  (35/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-8b9b2549-17fb-91e1-a0d0-00f65c296f2b', 'request_id': '8b9b2549-17fb-91e1-a0d0-00f65c296f2b'}
+  ✗ [plan-large-migration] fail  (36/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-87c77548-aa36-97b5-a9d4-7eac924b27ad', 'request_id': '87c77548-aa36-97b5-a9d4-7eac924b27ad'}
+  ✗ [contract-tools-direct] fail  (37/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-af092cf5-2282-96ab-983d-55e054720170', 'request_id': 'af092cf5-2282-96ab-983d-55e054720170'}
+  ✗ [review-phase-plan] fail  (38/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-d060d24c-adb1-9724-8c52-d02292891bab', 'request_id': 'd060d24c-adb1-9724-8c52-d02292891bab'}
+  ✗ [design-multiple-approaches] fail  (39/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-f0602d0b-443c-95e7-932d-f31ed7613af9', 'request_id': 'f0602d0b-443c-95e7-932d-f31ed7613af9'}
+  ✗ [execute-wave] fail  (40/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-127e12cc-de04-9329-ae35-8cadba8def3d', 'request_id': '127e12cc-de04-9329-ae35-8cadba8def3d'}
+  ✗ [phase-review-not-needed] fail  (41/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-9f33d5a6-a026-9401-bb70-62403777720f', 'request_id': '9f33d5a6-a026-9401-bb70-62403777720f'}
+  ✗ [design-unclear-acceptance] fail  (42/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-72b22321-3dcd-943f-be99-31f97617596e', 'request_id': '72b22321-3dcd-943f-be99-31f97617596e'}
+  ✗ [design-api-contract] fail  (43/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-65e4a008-6bb7-955b-af4b-64112563441b', 'request_id': '65e4a008-6bb7-955b-af4b-64112563441b'}
+  ✗ [design-not-needed-documented] fail  (44/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-4d296ae0-fd3a-9a3a-9c28-a2e410413b3e', 'request_id': '4d296ae0-fd3a-9a3a-9c28-a2e410413b3e'}
+  ✗ [design-cross-module-contract] fail  (45/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-cf519909-23f6-9ff9-8e75-cf2aded452ba', 'request_id': 'cf519909-23f6-9ff9-8e75-cf2aded452ba'}
+  ✗ [design-not-needed-bugfix] fail  (46/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-3f669992-01fd-96c2-acb7-04b37f03b69f', 'request_id': '3f669992-01fd-96c2-acb7-04b37f03b69f'}
+  ✗ [design-not-needed-clear-path] fail  (47/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-477227b9-96f0-97ac-829f-2eec5efa7131', 'request_id': '477227b9-96f0-97ac-829f-2eec5efa7131'}
+  ✗ [impact-public-api-change] fail  (48/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-489964a2-8f9f-99b1-9df2-eb8faa8bfdaf', 'request_id': '489964a2-8f9f-99b1-9df2-eb8faa8bfdaf'}
+  ✗ [incremental-multi-pr-task] fail  (49/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-6b443ecd-844b-946a-9a07-d7584a77ee3e', 'request_id': '6b443ecd-844b-946a-9a07-d7584a77ee3e'}
+  ✗ [impact-not-needed-single-file] fail  (50/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-0e8e9603-8eca-99a1-aaad-063d05ecfa93', 'request_id': '0e8e9603-8eca-99a1-aaad-063d05ecfa93'}
+  ✗ [impact-data-model-change] fail  (51/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-811280fe-6feb-9b4b-90f5-0f867eee6bb0', 'request_id': '811280fe-6feb-9b4b-90f5-0f867eee6bb0'}
+  ✗ [self-review-after-edit] fail  (52/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-e54198b5-d77d-92ef-b0f0-55f573ef1ae8', 'request_id': 'e54198b5-d77d-92ef-b0f0-55f573ef1ae8'}
+  ✗ [incremental-not-needed-single-pr] fail  (53/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-c37c0ff0-072c-9ebb-95f8-017b62decc2e', 'request_id': 'c37c0ff0-072c-9ebb-95f8-017b62decc2e'}
+  ✗ [self-review-multi-file-change] fail  (54/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-1b70f2b2-1cda-991c-8d7b-43170482c0f9', 'request_id': '1b70f2b2-1cda-991c-8d7b-43170482c0f9'}
+  ✗ [incremental-upgrade-to-phase] fail  (55/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-500b2a92-b271-93d8-8d53-fffe2632e682', 'request_id': '500b2a92-b271-93d8-8d53-fffe2632e682'}
+  ✗ [self-review-not-needed-test-request] fail  (56/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-079cb64a-91da-9d90-9598-9a8e5ddd9730', 'request_id': '079cb64a-91da-9d90-9598-9a8e5ddd9730'}
+  ✗ [locate-then-impact] fail  (57/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-9aa54a4a-8142-9ed1-8433-c776fe1f4b72', 'request_id': '9aa54a4a-8142-9ed1-8433-c776fe1f4b72'}
+  ✗ [phase-5pr-boundary] fail  (58/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-4427004b-2fd5-95df-961a-04cbee100498', 'request_id': '4427004b-2fd5-95df-961a-04cbee100498'}
+  ✗ [design-after-scoping] fail  (59/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-a784c051-f510-9e04-afd6-4574de57d89e', 'request_id': 'a784c051-f510-9e04-afd6-4574de57d89e'}
+  ✗ [incremental-4pr] fail  (60/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-1ca08cb3-dcb3-9378-a73a-9769e09662ec', 'request_id': '1ca08cb3-dcb3-9378-a73a-9769e09662ec'}
+  ✗ [chain-scope-to-locate] fail  (61/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-a635e902-fff2-9bd2-95d0-fb6ca7d71fcb', 'request_id': 'a635e902-fff2-9bd2-95d0-fb6ca7d71fcb'}
+  ✗ [chain-bugfix-to-cba] fail  (62/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-1eae2061-e96f-9b5e-85de-fd0dcf3120ab', 'request_id': '1eae2061-e96f-9b5e-85de-fd0dcf3120ab'}
+  ✗ [chain-minimal-to-impact] fail  (63/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-fa6a87ae-eb90-943c-a176-6ef2b41a0a95', 'request_id': 'fa6a87ae-eb90-943c-a176-6ef2b41a0a95'}
+  ✗ [chain-locate-to-plan] fail  (64/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-c610bbe8-cc45-92a2-a473-3cccff7eba68', 'request_id': 'c610bbe8-cc45-92a2-a473-3cccff7eba68'}
+  ✗ [chain-review-to-validation] fail  (65/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-73c3bdfb-63b9-9350-a77b-7e0b059f5830', 'request_id': '73c3bdfb-63b9-9350-a77b-7e0b059f5830'}
+  ✗ [chain-plan-to-design] fail  (66/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-b1264731-0835-957c-9a46-0a69c3b04ced', 'request_id': 'b1264731-0835-957c-9a46-0a69c3b04ced'}
+  ✗ [chain-refactor-to-design] fail  (67/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-00c8669b-c2de-92b2-8acb-573acb9feab3', 'request_id': '00c8669b-c2de-92b2-8acb-573acb9feab3'}
+  ✗ [info-query] fail  (68/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-54978f75-9c39-91bc-b408-d3d05d1f872b', 'request_id': '54978f75-9c39-91bc-b408-d3d05d1f872b'}
+  ✗ [chain-parallel-to-conflict] fail  (69/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-b85cad45-6347-99b5-92cd-45508f0f82a5', 'request_id': 'b85cad45-6347-99b5-92cd-45508f0f82a5'}
+  ✗ [git-operation] fail  (70/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-4d277ab3-e7b3-9cea-a388-94998a136604', 'request_id': '4d277ab3-e7b3-9cea-a388-94998a136604'}
+  ✗ [doc-only-change] fail  (71/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-9fb7a66d-d8f7-9714-b719-07afa4b31b8e', 'request_id': '9fb7a66d-d8f7-9714-b719-07afa4b31b8e'}
+  ✗ [refactor-vs-minimal] fail  (72/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-8bf2a47b-cc06-93e7-a316-2b2a0aa098d0', 'request_id': '8bf2a47b-cc06-93e7-a316-2b2a0aa098d0'}
+  ✗ [scope-vs-locate] fail  (73/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-e64042bf-ab4c-9332-91b6-f7c7f3c48614', 'request_id': 'e64042bf-ab4c-9332-91b6-f7c7f3c48614'}
+  ✗ [locate-vs-scope] fail  (74/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-dc4d48f5-3680-9478-b3ef-7c4693eb06b6', 'request_id': 'dc4d48f5-3680-9478-b3ef-7c4693eb06b6'}
+  ✗ [minimal-vs-refactor] fail  (75/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-872926d5-cd58-98b2-bcaf-904c1b3b2255', 'request_id': '872926d5-cd58-98b2-bcaf-904c1b3b2255'}
+  ✗ [discover-analyze-plan] fail  (76/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-69148583-3c27-9c27-94cb-2441c7e1343d', 'request_id': '69148583-3c27-9c27-94cb-2441c7e1343d'}
+  ✗ [scope-vs-plan] fail  (77/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-7b74e2a7-7376-95f3-a4fa-7f5fd639e5d7', 'request_id': '7b74e2a7-7376-95f3-a4fa-7f5fd639e5d7'}
+  ✗ [refactor-with-constraint] fail  (78/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-14625c80-36e7-9b19-bc12-2ff7830991cb', 'request_id': '14625c80-36e7-9b19-bc12-2ff7830991cb'}
+  ✗ [plan-vs-scope] fail  (79/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-93d4d4b9-54d8-9ca8-9135-4424dddd0c55', 'request_id': '93d4d4b9-54d8-9ca8-9135-4424dddd0c55'}
+  ✗ [impact-2-callers] fail  (80/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-c2e393cb-e318-98a1-b4b7-738f0f2d5577', 'request_id': 'c2e393cb-e318-98a1-b4b7-738f0f2d5577'}
+  ✗ [impact-3-callers] fail  (81/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-3f41448f-59f2-94de-b728-007d5ca76d2a', 'request_id': '3f41448f-59f2-94de-b728-007d5ca76d2a'}
+  ✗ [design-impact-incremental] fail  (82/82)
+      API error: Error code: 400 - {'error': {'message': '<400> InternalError.Algo.InvalidParameter: The value of the enable_thinking parameter is restricted to True.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_parameter_error'}, 'id': 'chatcmpl-d30646c8-f6dd-96d7-834b-0d13b95e2035', 'request_id': 'd30646c8-f6dd-96d7-834b-0d13b95e2035'}
+
+Results: 0 pass, 0 partial, 82 fail out of 82
