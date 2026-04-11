@@ -87,7 +87,7 @@ See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Part of the `bugfix-standard` chain (see CLAUDE.md § Skill Chain Triggers).
+Part of the `bugfix-standard` chain (see the project governance file § Skill Chain Triggers).
 
 Standard forward flow: receives boundary from `scoped-tasking`, produces edit points, hands to `plan-before-action` or `bugfix-workflow`.
 

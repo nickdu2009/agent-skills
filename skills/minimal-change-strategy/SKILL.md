@@ -89,7 +89,7 @@ See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Part of `bugfix-standard`, `refactor-safe`, `multi-file-planned`, and `design-first` chains. See docs/maintainer/skill-chain-aliases.md for full definitions.
+Part of `bugfix-standard`, `refactor-safe`, `multi-file-planned`, and `design-first` chains. See the project governance file § Skill Chain Triggers.
 
 # Example
 

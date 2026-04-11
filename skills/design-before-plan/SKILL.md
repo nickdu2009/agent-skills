@@ -201,7 +201,7 @@ See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Entry point for `design-first` and core component of `large-task` chains (see CLAUDE.md § Skill Chain Triggers).
+Entry point for `design-first` and core component of `large-task` chains (see the project governance file § Skill Chain Triggers).
 
 Role: Clarify requirements, compare design alternatives, establish interface contracts before planning. Receives boundary from scoped-tasking, produces design brief, hands to plan-before-action.
 

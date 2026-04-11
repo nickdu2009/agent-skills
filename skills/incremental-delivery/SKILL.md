@@ -110,7 +110,7 @@ See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Exit point for `large-task` chain (see CLAUDE.md § Skill Chain Triggers).
+Exit point for `large-task` chain (see the project governance file § Skill Chain Triggers).
 
 Role: Split multi-step plan into 2-4 independently mergeable increments. Receives plan from plan-before-action, produces increment list with merge order and dependencies.
 

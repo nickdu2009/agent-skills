@@ -86,7 +86,7 @@ See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Core component of multiple chains: `multi-file-planned`, `design-first`, and `large-task` (see CLAUDE.md § Skill Chain Triggers).
+Core component of multiple chains: `multi-file-planned`, `design-first`, and `large-task` (see the project governance file § Skill Chain Triggers).
 
 Standard forward flow: receives scoped boundary from `scoped-tasking` or edit points from `read-and-locate`, produces plan, hands to `minimal-change-strategy` → `self-review` → `targeted-validation`.
 

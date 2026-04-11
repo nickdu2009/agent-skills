@@ -82,7 +82,7 @@ See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Exit point for most execution chains: receives clean diff from `self-review` and performs behavioral verification (see CLAUDE.md § Skill Chain Triggers).
+Exit point for most execution chains: receives clean diff from `self-review` and performs behavioral verification (see the project governance file § Skill Chain Triggers).
 
 Appears in: `bugfix-standard`, `refactor-safe`, `multi-file-planned`, and `design-first` chains.
 

@@ -200,7 +200,7 @@ remaining_active: [...]
 
 ### Protocol v2 (Compact)
 
-For simple cases, use compact inline format (full spec: `docs/maintainer/protocol-v2-compact.md`):
+For simple cases, use compact inline format:
 
 - `[task-validation: PASS | clarity:✓ scope:✓ safety:✓ skill_match:✓ | action:proceed]`
 - `[triggers: scoped-tasking plan-before-action]`

@@ -86,7 +86,7 @@ See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Part of the `bugfix-standard` chain (see CLAUDE.md § Skill Chain Triggers).
+Part of the `bugfix-standard` chain (see the project governance file § Skill Chain Triggers).
 
 Role: Core diagnostic component. Receives narrowed fault domain from read-and-locate, produces confirmed root cause and fix hypothesis, hands to minimal-change-strategy.
 

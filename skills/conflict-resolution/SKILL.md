@@ -100,7 +100,7 @@ See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Part of the `parallel` chain (see CLAUDE.md § Skill Chain Triggers).
+Part of the `parallel` chain (see the project governance file § Skill Chain Triggers).
 
 Additional compositions:
 

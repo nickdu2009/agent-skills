@@ -95,7 +95,7 @@ See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Core component of `large-task` chain (see CLAUDE.md § Skill Chain Triggers).
+Core component of `large-task` chain (see the project governance file § Skill Chain Triggers).
 
 Role: Assess blast radius by tracing outward from edit point to affected callers, dependents, and contracts. Receives edit point from read-and-locate or design-before-plan, produces impact summary, hands to plan-before-action.
 

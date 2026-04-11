@@ -74,6 +74,23 @@ def assert_not_contains(path: Path, snippet: str) -> None:
         fail(f"expected {path} not to contain {snippet!r}")
 
 
+FORBIDDEN_RUNTIME_SNIPPETS = (
+    "see CLAUDE.md § Skill Chain Triggers",
+    "docs/maintainer/skill-chain-aliases.md",
+    "docs/maintainer/protocol-v2-compact.md",
+)
+
+
+def assert_no_forbidden_runtime_references(project: Path, governance_file: Path) -> None:
+    assert_exists(governance_file)
+    for snippet in FORBIDDEN_RUNTIME_SNIPPETS:
+        assert_not_contains(governance_file, snippet)
+
+    for skill_file in project.rglob("SKILL.md"):
+        for snippet in FORBIDDEN_RUNTIME_SNIPPETS:
+            assert_not_contains(skill_file, snippet)
+
+
 def test_project_install_installs_all_skills(module) -> None:
     with tempfile.TemporaryDirectory(prefix="install-project-") as project_dir:
         project = Path(project_dir)
@@ -91,18 +108,20 @@ def test_project_install_installs_all_skills(module) -> None:
         assert_contains(claude_md, "## Skill Escalation")
         assert_contains(claude_md, "## Skill Lifecycle")
         assert_contains(claude_md, "## Skill Family Concurrency Budgets")
+        assert_no_forbidden_runtime_references(project, claude_md)
 
 
 def test_agents_template_selection() -> None:
     with tempfile.TemporaryDirectory(prefix="install-project-") as project_dir:
         project = Path(project_dir)
 
-        run_cli(["--project", str(project), "--rules-only", "--platform", "codex"])
+        run_cli(["--project", str(project), "--platform", "codex", "--force"])
 
         agents_md = project / "AGENTS.md"
         assert_exists(agents_md)
         assert_contains(agents_md, "base-level AGENTS.md rules")
         assert_not_contains(agents_md, "base-level CLAUDE.md rules")
+        assert_no_forbidden_runtime_references(project, agents_md)
 
 
 def test_local_mirror_sync_and_check(module) -> None:

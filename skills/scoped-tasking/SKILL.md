@@ -93,7 +93,7 @@ See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Entry point for most execution chains: `bugfix-standard`, `refactor-safe`, `multi-file-planned`, `design-first`, and `large-task` (see CLAUDE.md § Skill Chain Triggers).
+Entry point for most execution chains: `bugfix-standard`, `refactor-safe`, `multi-file-planned`, `design-first`, and `large-task` (see the project governance file § Skill Chain Triggers).
 
 Standard forward handoffs:
 

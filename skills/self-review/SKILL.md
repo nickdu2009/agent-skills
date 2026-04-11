@@ -110,7 +110,7 @@ See skill-anti-pattern-template.md for format guidelines.
 - Consumes the planned working set from `plan-before-action`.
 - Drop after review passes — self-review does not stay active during validation.
 
-Part of `bugfix-standard`, `refactor-safe`, `multi-file-planned`, and `design-first` chains. See full chain definitions in docs/maintainer/skill-chain-aliases.md.
+Part of `bugfix-standard`, `refactor-safe`, `multi-file-planned`, and `design-first` chains. See the project governance file § Skill Chain Triggers.
 
 # Example
 

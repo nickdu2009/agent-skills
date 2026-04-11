@@ -81,7 +81,7 @@ See skill-anti-pattern-template.md for format guidelines.
 
 # Composition
 
-Part of the `refactor-safe` chain (see CLAUDE.md § Skill Chain Triggers).
+Part of the `refactor-safe` chain (see the project governance file § Skill Chain Triggers).
 
 Standard co-activation: runs alongside `minimal-change-strategy` to balance structural improvement with patch size control. Standard completion flow: → `self-review` → `targeted-validation`.
 
