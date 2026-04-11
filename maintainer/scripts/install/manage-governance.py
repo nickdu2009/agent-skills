@@ -21,16 +21,6 @@ CLAUDE_TEMPLATE_PATH = REPO_ROOT / "templates" / "governance" / "CLAUDE-template
 
 
 @dataclass(frozen=True)
-class Profile:
-    key: str
-    display_name: str
-    skills: tuple[str, ...]
-    phase_skills: tuple[str, ...]
-    inject_multi_agent_only: bool
-    supports_phase: bool
-
-
-@dataclass(frozen=True)
 class MirrorTarget:
     key: str
     display_name: str
@@ -51,47 +41,7 @@ class GovernanceTemplate:
     sections: tuple[GovernanceSection, ...]
 
 
-FULL_PROFILE = Profile(
-    key="full",
-    display_name="Skill Governance Setup",
-    skills=(
-        "scoped-tasking",
-        "plan-before-action",
-        "minimal-change-strategy",
-        "targeted-validation",
-        "context-budget-awareness",
-        "read-and-locate",
-        "safe-refactor",
-        "bugfix-workflow",
-        "multi-agent-protocol",
-        "conflict-resolution",
-    ),
-    phase_skills=(
-        "phase-contract-tools",
-        "phase-plan",
-        "phase-plan-review",
-        "phase-execute",
-    ),
-    inject_multi_agent_only=False,
-    supports_phase=True,
-)
-
-MULTI_AGENT_PROFILE = Profile(
-    key="multi-agent",
-    display_name="Multi-Agent Governance Setup",
-    skills=(
-        "multi-agent-protocol",
-        "conflict-resolution",
-    ),
-    phase_skills=(),
-    inject_multi_agent_only=True,
-    supports_phase=False,
-)
-
-PROFILES = {
-    FULL_PROFILE.key: FULL_PROFILE,
-    MULTI_AGENT_PROFILE.key: MULTI_AGENT_PROFILE,
-}
+INSTALL_DISPLAY_NAME = "Skill Governance Setup"
 
 LOCAL_MIRROR_TARGETS = {
     "cursor": MirrorTarget(
@@ -230,16 +180,7 @@ AGENTS_TEMPLATE = load_governance_template(AGENTS_TEMPLATE_PATH)
 CLAUDE_TEMPLATE = load_governance_template(CLAUDE_TEMPLATE_PATH)
 
 
-def get_template_section(template: GovernanceTemplate, heading: str) -> GovernanceSection:
-    for section in template.sections:
-        if section.heading == heading:
-            return section
-    raise ValueError(f"Heading {heading!r} not found in {template.path}")
-
-
-def sections_for_profile(template: GovernanceTemplate, profile: Profile) -> tuple[GovernanceSection, ...]:
-    if profile.inject_multi_agent_only:
-        return (get_template_section(template, "## Multi-Agent Rules"),)
+def all_template_sections(template: GovernanceTemplate) -> tuple[GovernanceSection, ...]:
     return template.sections
 
 
@@ -365,25 +306,16 @@ def inject_rule_sections(
     return changed
 
 
-def inject_multi_agent_rules(target_file: Path, template: GovernanceTemplate, *, update: bool) -> bool:
-    return inject_rule_sections(
-        target_file,
-        template,
-        sections_for_profile(template, MULTI_AGENT_PROFILE),
-        update=update,
-    )
-
-
 def inject_full_rules(target_file: Path, template: GovernanceTemplate, *, update: bool) -> bool:
     return inject_rule_sections(
         target_file,
         template,
-        sections_for_profile(template, FULL_PROFILE),
+        all_template_sections(template),
         update=update,
     )
 
 
-def inject_rules(project_dir: Path, platforms: list[str], profile: Profile, *, update: bool) -> None:
+def inject_rules(project_dir: Path, platforms: list[str], *, update: bool) -> None:
     seen_targets: set[Path] = set()
     for platform in platforms:
         if platform in {"codex", "cursor", "cursor-cli"}:
@@ -399,10 +331,7 @@ def inject_rules(project_dir: Path, platforms: list[str], profile: Profile, *, u
             continue
         seen_targets.add(target)
 
-        if profile.inject_multi_agent_only:
-            inject_multi_agent_rules(target, template, update=update)
-        else:
-            inject_full_rules(target, template, update=update)
+        inject_full_rules(target, template, update=update)
 
 
 def install_skill(skill_name: str, platform: str, *, force: bool, project_dir: Path | None = None) -> bool:
@@ -510,12 +439,6 @@ def sync_local_mirror(skill_dirs: list[Path], target: MirrorTarget) -> int:
     return 0
 
 
-def warn_phase_contract_if_missing(platform: str, skill_name: str, project_dir: Path | None = None) -> None:
-    target_dir = get_skill_target_dir("phase-contract-tools", platform, project_dir)
-    if target_dir is not None and not target_dir.exists():
-        print(f"  WARNING: {skill_name} expects phase-contract-tools at {target_dir} (missing); continuing.")
-
-
 def build_parser(entrypoint_name: str) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog=entrypoint_name,
@@ -559,20 +482,9 @@ def build_parser(entrypoint_name: str) -> argparse.ArgumentParser:
     )
 
     # --- Options ---
-    parser.add_argument(
-        "--profile",
-        choices=tuple(PROFILES),
-        default=FULL_PROFILE.key,
-        help="Governance profile: 'full' (default) or 'multi-agent'.",
-    )
     parser.add_argument("--platform", help="Force platform: codex, cursor, cursor-cli, claude-code (auto-detected by default)")
     parser.add_argument("--force", action="store_true", help="Overwrite existing skill installations")
     parser.add_argument("--update", action="store_true", help="Replace existing rule sections instead of skipping")
-    parser.add_argument(
-        "--include-phase",
-        action="store_true",
-        help="Also install phase-contract-tools, phase-plan, phase-plan-review, phase-execute (full profile only).",
-    )
 
     parser.epilog = "\n".join(
         [
@@ -580,7 +492,6 @@ def build_parser(entrypoint_name: str) -> argparse.ArgumentParser:
             f"  python3 maintainer/scripts/install/{entrypoint_name} --project /path/to/my-repo",
             f"  python3 maintainer/scripts/install/{entrypoint_name} --project /path/to/my-repo --rules-only",
             f"  python3 maintainer/scripts/install/{entrypoint_name} --project /path/to/my-repo --check",
-            f"  python3 maintainer/scripts/install/{entrypoint_name} --project /path/to/my-repo --include-phase",
             f"  python3 maintainer/scripts/install/{entrypoint_name} --global",
             f"  python3 maintainer/scripts/install/{entrypoint_name} --global --check",
             f"  python3 maintainer/scripts/install/{entrypoint_name} --sync-local cursor",
@@ -629,19 +540,12 @@ def validate_mode(args: argparse.Namespace) -> tuple[str, Path | None]:
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     args = parse_args(argv)
-    profile = PROFILES[args.profile]
     mode, project_dir = validate_mode(args)
 
     # --- sync-local / check-local ---
     if mode in {"sync-local", "check-local"}:
         if args.platform:
             print("ERROR: --platform does not apply to local mirror modes")
-            return 1
-        if args.include_phase:
-            print("ERROR: --include-phase does not apply to local mirror modes")
-            return 1
-        if args.profile != FULL_PROFILE.key:
-            print("ERROR: --profile does not apply to local mirror modes")
             return 1
 
         target_key = args.sync_local
@@ -667,10 +571,6 @@ def main(argv: list[str] | None = None) -> int:
 
     # --- check-global / check-project ---
     if mode in {"check-global", "check-project"}:
-        if args.include_phase and not profile.supports_phase:
-            print("ERROR: --include-phase is only supported with the 'full' profile")
-            return 1
-
         platforms = [args.platform] if args.platform else detect_platforms()
         if not platforms:
             print("No supported platform detected. Install Cursor, Codex, or Claude Code first.")
@@ -678,7 +578,8 @@ def main(argv: list[str] | None = None) -> int:
 
         check_dir = project_dir if mode == "check-project" else None
         location = f"project ({project_dir})" if check_dir else "global"
-        include_phase = bool(args.include_phase)
+        skill_dirs = discover_source_skills()
+        skill_names = tuple(skill_dir.name for skill_dir in skill_dirs)
 
         print("")
         print(f"=== Verifying Skills ({location}) ===")
@@ -687,13 +588,9 @@ def main(argv: list[str] | None = None) -> int:
         failed = 0
         for platform in platforms:
             print(f"Platform: {platform}")
-            for skill in profile.skills:
+            for skill in skill_names:
                 if not check_skill(skill, platform, check_dir):
                     failed += 1
-            if include_phase:
-                for skill in profile.phase_skills:
-                    if not check_skill(skill, platform, check_dir):
-                        failed += 1
             print("")
         if failed:
             print(f"Check failed: {failed} issue(s).")
@@ -702,12 +599,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     # --- install modes: global, project, skills-project, rules ---
-    if args.include_phase and not profile.supports_phase:
-        print("ERROR: --include-phase is only supported with the 'full' profile")
-        return 1
-
     print("")
-    print(f"=== {profile.display_name} ===")
+    print(f"=== {INSTALL_DISPLAY_NAME} ===")
     print("")
 
     platforms = [args.platform] if args.platform else detect_platforms()
@@ -718,28 +611,22 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Detected platforms: {' '.join(platforms)}")
     print("")
 
-    include_phase = bool(args.include_phase)
+    skill_dirs = discover_source_skills()
+    skill_names = tuple(skill_dir.name for skill_dir in skill_dirs)
     do_install_skills = mode in {"global", "project", "skills-project"}
     do_inject_rules = mode in {"project", "rules"}
     skill_target_dir = project_dir if mode in {"project", "skills-project"} else None
 
-    exec_count = 0
-    phase_count = 0
+    installed_count = 0
 
     if do_install_skills:
         location = f"project ({project_dir})" if skill_target_dir else "global"
         print(f"--- Installing skills ({location}) ---")
         for platform in platforms:
             print(f"Platform: {platform}")
-            for skill in profile.skills:
+            for skill in skill_names:
                 if install_skill(skill, platform, force=args.force, project_dir=skill_target_dir):
-                    exec_count += 1
-            if include_phase:
-                for skill in profile.phase_skills:
-                    if skill in {"phase-plan", "phase-plan-review", "phase-execute"}:
-                        warn_phase_contract_if_missing(platform, skill, skill_target_dir)
-                    if install_skill(skill, platform, force=args.force, project_dir=skill_target_dir):
-                        phase_count += 1
+                    installed_count += 1
             print("")
 
     if do_inject_rules:
@@ -748,15 +635,13 @@ def main(argv: list[str] | None = None) -> int:
             print(f"ERROR: {project_dir} is not a directory")
             return 1
         print(f"--- Injecting rules into {project_dir} ---")
-        inject_rules(project_dir, platforms, profile, update=args.update)
+        inject_rules(project_dir, platforms, update=args.update)
         print("")
 
     print("=== Summary ===")
     if do_install_skills:
         location = f"project ({project_dir})" if skill_target_dir else "global"
-        print(f"Installed {exec_count} execution/orchestration skill(s) ({location})")
-        if include_phase:
-            print(f"Installed {phase_count} phase skill(s)")
+        print(f"Installed {installed_count} skill(s) ({location})")
     if do_inject_rules:
         print("Injected rules into AGENTS.md/CLAUDE.md")
     print("")
@@ -767,10 +652,7 @@ def main(argv: list[str] | None = None) -> int:
     if do_install_skills:
         print("  - Restart your agent (Cursor/Codex/Claude Code) to pick up new skills")
     if do_inject_rules:
-        if profile.inject_multi_agent_only:
-            print("  - Review the Multi-Agent Rules section in your AGENTS.md/CLAUDE.md")
-        else:
-            print("  - Review governance sections in AGENTS.md/CLAUDE.md")
+        print("  - Review governance sections in AGENTS.md/CLAUDE.md")
     print("")
     return 0
 

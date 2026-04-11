@@ -74,15 +74,14 @@ def assert_not_contains(path: Path, snippet: str) -> None:
         fail(f"expected {path} not to contain {snippet!r}")
 
 
-def test_full_install_with_phase(module) -> None:
+def test_project_install_installs_all_skills(module) -> None:
     with tempfile.TemporaryDirectory(prefix="install-project-") as project_dir:
         project = Path(project_dir)
 
-        run_cli(
-            ["--project", str(project), "--platform", "claude-code", "--include-phase", "--force"],
-        )
+        run_cli(["--project", str(project), "--platform", "claude-code", "--force"])
 
-        for skill in (*module.FULL_PROFILE.skills, *module.FULL_PROFILE.phase_skills):
+        for skill_dir in module.discover_source_skills():
+            skill = skill_dir.name
             assert_exists(project / ".claude" / "skills" / skill / "SKILL.md")
 
         claude_md = project / "CLAUDE.md"
@@ -91,26 +90,7 @@ def test_full_install_with_phase(module) -> None:
         assert_contains(claude_md, "base-level CLAUDE.md rules")
         assert_contains(claude_md, "## Skill Escalation")
         assert_contains(claude_md, "## Skill Lifecycle")
-
-
-def test_multi_agent_install(module) -> None:
-    with tempfile.TemporaryDirectory(prefix="install-project-") as project_dir:
-        project = Path(project_dir)
-
-        run_cli(
-            ["--profile", "multi-agent", "--project", str(project), "--platform", "claude-code", "--force"],
-        )
-
-        for skill in module.MULTI_AGENT_PROFILE.skills:
-            assert_exists(project / ".claude" / "skills" / skill / "SKILL.md")
-
-        assert_missing(project / ".claude" / "skills" / "scoped-tasking")
-
-        claude_md = project / "CLAUDE.md"
-        assert_exists(claude_md)
-        assert_contains(claude_md, "## Multi-Agent Rules")
-        assert_not_contains(claude_md, "## Skill Escalation")
-        assert_not_contains(claude_md, "## Skill Lifecycle")
+        assert_contains(claude_md, "## Skill Family Concurrency Budgets")
 
 
 def test_agents_template_selection() -> None:
@@ -158,8 +138,7 @@ def test_local_mirror_sync_and_check(module) -> None:
 
 def main() -> int:
     module = load_installer_module()
-    test_full_install_with_phase(module)
-    test_multi_agent_install(module)
+    test_project_install_installs_all_skills(module)
     test_agents_template_selection()
     test_local_mirror_sync_and_check(module)
     print("OK: manage-governance temporary-directory smoke tests passed")

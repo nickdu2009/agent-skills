@@ -179,22 +179,10 @@ This is the primary recommended path for external consumers.
 
 `manage-governance.py` is the single public entrypoint for this repository's governance tooling. It handles skill copy plus `AGENTS.md` / `CLAUDE.md` rule injection in one place.
 
-Install all execution and orchestration skills with AGENTS.md rule injection:
+Install the full skill library with AGENTS.md rule injection:
 
 ```bash
 python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo
-```
-
-Include phase skills for large multi-wave projects:
-
-```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo --include-phase
-```
-
-For multi-agent governance only (2 orchestration skills):
-
-```bash
-python3 maintainer/scripts/install/manage-governance.py --profile multi-agent --project /path/to/my-repo
 ```
 
 ### Local Development Mirrors (this repository only)
@@ -222,8 +210,7 @@ python3 maintainer/scripts/install/manage-governance.py --check-local claude
 | Method | Scope | Target Path | Use When |
 |--------|-------|-------------|----------|
 | OpenSkills | All skills | `.agent/skills/` | External consumer installing into a project |
-| `manage-governance.py` | All skills + rules (`--profile full`) | `$HOME/.cursor/skills/`, `$HOME/.codex/skills/`, or `$HOME/.claude/skills/` | Team adopting the full discipline suite |
-| `manage-governance.py` | 2 orchestration skills + rules (`--profile multi-agent`) | `$HOME/.cursor/skills/`, `$HOME/.codex/skills/`, or `$HOME/.claude/skills/` | Only need multi-agent coordination |
+| `manage-governance.py` | All skills + rules | `$HOME/.cursor/skills/`, `$HOME/.codex/skills/`, or `$HOME/.claude/skills/` | Team adopting the full discipline suite |
 | `manage-governance.py --sync-local <target>` | All skills (mirror) | `$REPO_ROOT/.cursor/skills/` or `$REPO_ROOT/.claude/skills/` | Developing this skill library itself |
 
 ## Design Philosophy
@@ -351,39 +338,33 @@ For release readiness and acceptance checks, use [`docs/user/OPENSKILLS-RELEASE-
 
 The `multi-agent-protocol` skill works best when paired with project-level governance rules. Ready-made platform templates live in `templates/governance/AGENTS-template.md` and `templates/governance/CLAUDE-template.md`.
 
-The complete supported install flow lives in one script: `maintainer/scripts/install/manage-governance.py`. Use `--profile multi-agent` for the light setup, or omit it for the full suite.
+The complete supported install flow lives in one script: `maintainer/scripts/install/manage-governance.py`. The installer has a single install semantic: install the full skill library and inject the matching governance rules.
 
 Install both the governance skills and inject the rules into a project:
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --profile multi-agent --project /path/to/my-repo
+python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo
 ```
 
 Install only the skills (no project file changes):
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --profile multi-agent --skills-only
+python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo --skills-only
 ```
 
 Inject only the rules into an existing `AGENTS.md`:
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --profile multi-agent --rules-only /path/to/my-repo
+python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo --rules-only
 ```
 
 Force a specific platform:
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --profile multi-agent --skills-only --platform codex --force
+python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo --skills-only --platform codex --force
 ```
 
 The script auto-detects installed platforms (Cursor, Codex, Claude Code) and places skills in the appropriate directory.
-
-For the full skill governance suite (all 10 execution and orchestration skills plus lifecycle rules):
-
-```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo
-```
 
 ## Local Mirrors
 
