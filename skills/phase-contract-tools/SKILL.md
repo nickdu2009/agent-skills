@@ -228,6 +228,35 @@ See skill-anti-pattern-template.md for format guidelines.
 - Hand execution back to `phase-execute`.
 - Use repository-local smoke and validator evidence to justify any accepted contract change.
 
+## Output Example
+
+### V1 Format (verbose)
+
+```yaml
+[skill-output: phase-contract-tools]
+status: completed
+confidence: high
+outputs:
+  schema_checks:
+    - "plan.yaml validates against schema v2.1"
+    - "wave dependencies are acyclic"
+  rendered_views:
+    - "execution-index.md rendered from plan.yaml"
+    - "wave-guide.md synchronized with wave definitions"
+  contract_issues: []
+signals:
+  validators_passed: true
+recommendations:
+  next_step: "contract validation complete, return to phase-plan"
+[/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: phase-contract-tools | completed high | schema_checks:"plan.yaml validates against schema v2.1, wave dependencies are acyclic" rendered_views:"execution-index.md rendered from plan.yaml, wave-guide.md synchronized with wave definitions" contract_issues:"none" | next:phase-plan]
+```
+
 ## Lifecycle
 
 - Activate when maintaining contract scripts, schema references, or renderers directly.

@@ -163,6 +163,8 @@ Plan:
 
 ## Output Example
 
+### V1 Format (verbose)
+
 ```yaml
 [skill-output: plan-before-action]
 status: completed
@@ -184,6 +186,12 @@ signals:
 recommendations:
   next_step: "patch the client wrapper before touching broader payment flows"
 [/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: plan-before-action | completed high | assumptions:"Only the payment client wrapper is affected." working_set:"payment_client.py, payment_client_test.py" sequence:"add bounded retry logic → update focused tests → run targeted validation" validation_boundary:"payment client unit tests" | next:minimal-change-strategy]
 ```
 
 ## Deactivation Trigger

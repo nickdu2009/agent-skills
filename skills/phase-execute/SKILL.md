@@ -381,6 +381,36 @@ See skill-anti-pattern-template.md for format guidelines.
 - Use `conflict-resolution` for non-trivial merge or evidence conflicts.
 - Use `phase-contract-tools` helpers for preflight, handoff, and status validation instead of inventing substitutes.
 
+## Output Example
+
+### V1 Format (verbose)
+
+```yaml
+[skill-output: phase-execute]
+status: completed
+confidence: high
+outputs:
+  wave_status: "wave1 completed successfully"
+  lane_results:
+    - "lane1 (schema): PRs merged, tests passed"
+    - "lane2 (migration): data migration complete, validators passed"
+  gate_outcomes:
+    - "pre-wave gate: satisfied"
+    - "post-wave gate: satisfied"
+  rollback_state: "clean (no rollback needed)"
+signals:
+  next_wave_ready: true
+recommendations:
+  next_step: "proceed to wave2"
+[/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: phase-execute | completed high | wave_status:"wave1 completed successfully" lane_results:"lane1 (schema): PRs merged, tests passed; lane2 (migration): data migration complete, validators passed" gate_outcomes:"pre-wave gate: satisfied, post-wave gate: satisfied" rollback_state:"clean (no rollback needed)" | next:wave2]
+```
+
 ## Lifecycle
 
 - Activate when a specific accepted wave is ready to execute.

@@ -89,69 +89,13 @@ Parallelism is not justified if all paths collapse into the same reducer file or
 - Keep final synthesis with the primary agent.
 - Use targeted adjudication rather than forcing certainty from weak evidence.
 
-## Skill Protocol v1 Trace
+## Skill Protocol v2 Trace
 
-```yaml
-[task-input-validation]
-task: "Investigate checkout latency across API, database, and client paths in parallel."
-checks:
-  clarity:
-    status: PASS
-    reason: "The investigation areas and parallel intent are explicit."
-  scope:
-    status: PASS
-    reason: "The three paths form a bounded analysis split."
-  safety:
-    status: PASS
-    reason: "This is read-first orchestration work."
-  skill_match:
-    status: PASS
-    reason: "multi-agent-protocol and conflict-resolution fit directly."
-result: PASS
-action: proceed
-[/task-input-validation]
-
-[trigger-evaluation]
-task: "Run a three-lane latency investigation."
-evaluated:
-  - multi-agent-protocol: ✓ TRIGGER
-  - conflict-resolution: ⏸ DEFER
-  - targeted-validation: ⏸ DEFER
-activated_now: [multi-agent-protocol]
-deferred: [conflict-resolution, targeted-validation]
-[/trigger-evaluation]
-
-[precondition-check: multi-agent-protocol]
-checks:
-  - split_is_low_coupling: ✓ PASS
-  - lane_contracts_defined: ✓ PASS
-result: PASS
-[/precondition-check]
-
-[skill-output: multi-agent-protocol]
-status: completed
-confidence: high
-outputs:
-  split_dimension: "by suspected fault domain"
-  lanes: ["api path", "database path", "client path"]
-  integration_plan: "merge findings, compare evidence, adjudicate only if needed"
-  synthesis: "database timing evidence is strongest but one API-path disagreement remains"
-signals:
-  adjudication_needed: true
-recommendations:
-  downstream_skill: "conflict-resolution"
-[/skill-output]
-
-[output-validation: multi-agent-protocol]
-checks:
-  - outputs.split_dimension: ✓ PASS
-  - outputs.synthesis: ✓ PASS
-result: PASS
-[/output-validation]
-
-[skill-deactivation: multi-agent-protocol]
-reason: "Lane findings have been collected and handed to synthesis."
-outputs_consumed_by: [conflict-resolution]
-remaining_active: [conflict-resolution]
-[/skill-deactivation]
+```
+[task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
+[triggers: multi-agent-protocol:trigger conflict-resolution:defer targeted-validation:defer]
+[precheck: multi-agent-protocol | result:PASS | checks:split_is_low_coupling lane_contracts_defined]
+[output: multi-agent-protocol | status:completed | confidence:high | split_dimension:"by suspected fault domain" | lanes:"api path, database path, client path" | integration_plan:"merge findings, compare evidence, adjudicate only if needed" | synthesis:"database timing evidence is strongest but one API-path disagreement remains" | adjudication_needed:true | next:conflict-resolution]
+[validate: multi-agent-protocol | result:PASS | checks:split_dimension synthesis]
+[drop: multi-agent-protocol | reason:"lane findings collected, handed to synthesis" | active:conflict-resolution]
 ```

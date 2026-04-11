@@ -379,6 +379,34 @@ See skill-anti-pattern-template.md for format guidelines.
 - Return to `phase-plan` when the plan must be repaired.
 - Hand execution forward to `phase-execute` only after approval is explicit.
 
+## Output Example
+
+### V1 Format (verbose)
+
+```yaml
+[skill-output: phase-plan-review]
+status: completed
+confidence: high
+outputs:
+  alignment_findings:
+    - "roadmap aligns with upstream requirement for zero-downtime migration"
+    - "wave dependency order matches stated service rollout constraints"
+  blocking_issues: []
+  approval_status: "ready-for-execute"
+signals:
+  validators_passed: true
+  preflight_passed: true
+recommendations:
+  next_step: "hand off to phase-execute for wave1"
+[/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: phase-plan-review | completed high | alignment_findings:"roadmap aligns with upstream requirement for zero-downtime migration, wave dependency order matches stated service rollout constraints" blocking_issues:"none" approval_status:"ready-for-execute" | next:phase-execute]
+```
+
 ## Lifecycle
 
 - Activate after `phase-plan` produces or repairs the plan artifacts.

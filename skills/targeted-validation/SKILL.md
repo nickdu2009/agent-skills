@@ -155,6 +155,8 @@ Do not default to the full integration suite unless the adapter change alters a 
 
 ## Output Example
 
+### V1 Format (verbose)
+
 ```yaml
 [skill-output: targeted-validation]
 status: completed
@@ -172,6 +174,12 @@ signals:
 recommendations:
   next_step: "run the focused retry test before any wider suite"
 [/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: targeted-validation | completed high | checks_to_run:"pytest tests/payment/test_client.py -k retry" risks_not_covered:"other payment clients do not share this retry path" pass_criteria:"retry test passes, no duplicate charge side effects appear in the focused fixture" | next:done]
 ```
 
 ## Deactivation Trigger

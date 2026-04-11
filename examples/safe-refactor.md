@@ -48,70 +48,13 @@ Three webhook handlers each normalize the same incoming payload shape with sligh
 - If extraction reveals behavior differences between handlers, split that into a follow-up behavior task instead of silently standardizing them.
 - Validate the affected handlers after each meaningful structural step.
 
-## Skill Protocol v1 Trace
+## Skill Protocol v2 Trace
 
-```yaml
-[task-input-validation]
-task: "Extract duplicated webhook payload normalization without changing behavior."
-checks:
-  clarity:
-    status: PASS
-    reason: "Refactor goal and invariants are explicit."
-  scope:
-    status: PASS
-    reason: "The task is limited to three handlers and one helper."
-  safety:
-    status: PASS
-    reason: "Behavior-preserving structural cleanup is bounded."
-  skill_match:
-    status: PASS
-    reason: "safe-refactor and targeted-validation apply directly."
-result: PASS
-action: proceed
-[/task-input-validation]
-
-[trigger-evaluation]
-task: "Perform a behavior-preserving webhook refactor."
-evaluated:
-  - read-and-locate: ✓ TRIGGER
-  - safe-refactor: ✓ TRIGGER
-  - targeted-validation: ⏸ DEFER
-activated_now: [read-and-locate, safe-refactor]
-deferred: [targeted-validation]
-[/trigger-evaluation]
-
-[precondition-check: safe-refactor]
-checks:
-  - invariants_stated: ✓ PASS
-  - structural_goal_bounded: ✓ PASS
-result: PASS
-[/precondition-check]
-
-[skill-output: safe-refactor]
-status: completed
-confidence: high
-outputs:
-  behavior_invariants:
-    - "handler signatures unchanged"
-    - "normalized payload unchanged"
-  refactor_boundary: ["three webhook handlers", "shared normalization helper"]
-  rollback_notes: ["revert helper extraction if output shape changes"]
-signals:
-  next_skill: "targeted-validation"
-recommendations:
-  validation_boundary: "webhook handler tests only"
-[/skill-output]
-
-[output-validation: safe-refactor]
-checks:
-  - outputs.behavior_invariants: ✓ PASS
-  - outputs.refactor_boundary: ✓ PASS
-result: PASS
-[/output-validation]
-
-[skill-deactivation: safe-refactor]
-reason: "The structural extraction boundary is defined and consumed."
-outputs_consumed_by: [targeted-validation]
-remaining_active: [targeted-validation]
-[/skill-deactivation]
+```text
+[task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
+[triggers: read-and-locate:trigger safe-refactor:trigger targeted-validation:defer]
+[precheck: safe-refactor | result:PASS | checks:invariants_stated structural_goal_bounded]
+[output: safe-refactor | status:completed | confidence:high | behavior_invariants:"handler signatures unchanged; normalized payload unchanged" | refactor_boundary:"three webhook handlers, shared normalization helper" | rollback_notes:"revert helper extraction if output shape changes" | validation_boundary:"webhook handler tests only" | next:targeted-validation]
+[validate: safe-refactor | result:PASS | checks:behavior_invariants refactor_boundary]
+[drop: safe-refactor | reason:"The structural extraction boundary is defined and consumed." | active:targeted-validation]
 ```

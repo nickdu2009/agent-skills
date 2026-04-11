@@ -193,6 +193,8 @@ Each increment keeps the system runnable. If the task also requires aligning pay
 
 ## Output Example
 
+### V1 Format (verbose)
+
 ```yaml
 [skill-output: incremental-delivery]
 status: completed
@@ -214,6 +216,12 @@ signals:
 recommendations:
   next_step: "implement increment 1 first"
 [/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: incremental-delivery | completed high | increments:"Webhook model and migration → Delivery service and unit tests → API endpoint and integration tests" merge_order:"1→2→3" gates:"migration passes before service work starts, service tests pass before endpoint integration" | next:execute-increment-1]
 ```
 
 ## Deactivation Trigger

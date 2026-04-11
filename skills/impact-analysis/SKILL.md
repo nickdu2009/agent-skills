@@ -182,6 +182,8 @@ Hand off the summary to plan-before-action. Do not start editing.
 
 ## Output Example
 
+### V1 Format (verbose)
+
 ```yaml
 [skill-output: impact-analysis]
 status: completed
@@ -199,6 +201,12 @@ signals:
 recommendations:
   downstream_skill: "plan-before-action"
 [/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: impact-analysis | completed high | affected_callers:"auth/middleware, admin dashboard route handlers" contracts:"validateToken() return shape" compatibility_risks:"boolean comparisons must be migrated before rollout" | next:plan-before-action]
 ```
 
 ## Deactivation Trigger

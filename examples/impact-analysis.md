@@ -42,72 +42,13 @@ The function is called by 4 route handlers across 2 modules, plus 3 test files.
 - Stop tracing at framework boundaries (HTTP handler, test fixture).
 - If blast radius exceeds 8 files, note but do not keep exploring.
 
-## Skill Protocol v1 Trace
+## Skill Protocol v2 Trace
 
-```yaml
-[task-input-validation]
-task: "Assess the blast radius of changing validateToken() return shape."
-checks:
-  clarity:
-    status: PASS
-    reason: "The edit point and affected surface are explicit."
-  scope:
-    status: PASS
-    reason: "Impact tracing is bounded by call depth and file count."
-  safety:
-    status: PASS
-    reason: "This pass is read-first analysis."
-  skill_match:
-    status: PASS
-    reason: "impact-analysis is the intended pre-planning skill."
-result: PASS
-action: proceed
-[/task-input-validation]
-
-[trigger-evaluation]
-task: "Trace validateToken caller impact."
-evaluated:
-  - read-and-locate: ✓ TRIGGER
-  - impact-analysis: ✓ TRIGGER
-  - plan-before-action: ⏸ DEFER
-activated_now: [read-and-locate, impact-analysis]
-deferred: [plan-before-action]
-[/trigger-evaluation]
-
-[precondition-check: impact-analysis]
-checks:
-  - edit_point_known: ✓ PASS
-  - shared_contract_risk_present: ✓ PASS
-result: PASS
-[/precondition-check]
-
-[skill-output: impact-analysis]
-status: completed
-confidence: high
-outputs:
-  affected_callers:
-    - "4 route handlers"
-    - "3 test files"
-  contracts:
-    - "validateToken() return type"
-  compatibility_risks:
-    - "boolean comparisons must be migrated"
-signals:
-  blast_radius: "8 files across 2 modules"
-recommendations:
-  downstream_skill: "plan-before-action"
-[/skill-output]
-
-[output-validation: impact-analysis]
-checks:
-  - outputs.affected_callers: ✓ PASS
-  - outputs.compatibility_risks: ✓ PASS
-result: PASS
-[/output-validation]
-
-[skill-deactivation: impact-analysis]
-reason: "The impact summary is ready for planning."
-outputs_consumed_by: [plan-before-action]
-remaining_active: [plan-before-action]
-[/skill-deactivation]
+```
+[task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
+[triggers: read-and-locate:trigger impact-analysis:trigger plan-before-action:defer]
+[precheck: impact-analysis | result:PASS | checks:edit_point_known shared_contract_risk_present]
+[output: impact-analysis | status:completed | confidence:high | affected_callers:"4 route handlers, 3 test files" | contracts:"validateToken() return type" | compatibility_risks:"boolean comparisons must be migrated" | blast_radius:"8 files across 2 modules" | next:plan-before-action]
+[validate: impact-analysis | result:PASS | checks:affected_callers compatibility_risks]
+[drop: impact-analysis | reason:"impact summary ready for planning" | active:plan-before-action]
 ```

@@ -162,6 +162,8 @@ Residual uncertainty may remain if no deterministic reproduction exists; state t
 
 ## Output Example
 
+### V1 Format (verbose)
+
 ```yaml
 [skill-output: bugfix-workflow]
 status: completed
@@ -179,6 +181,12 @@ signals:
 recommendations:
   downstream_skill: "minimal-change-strategy"
 [/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: bugfix-workflow | completed medium | symptom:"duplicate email on retry only" repro:"run the retry-focused notification scenario" fault_domain:"retry scheduler, idempotency marker preservation" fix_hypothesis:"retry path drops the idempotency marker before enqueue" | next:minimal-change-strategy]
 ```
 
 ## Deactivation Trigger

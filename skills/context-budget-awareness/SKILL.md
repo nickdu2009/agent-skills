@@ -262,6 +262,8 @@ Do not carry the full terminal history, every rejected hypothesis, and every unr
 
 ## Output Example
 
+### V1 Format (verbose)
+
 ```yaml
 [skill-output: context-budget-awareness]
 status: completed
@@ -277,6 +279,12 @@ signals:
 recommendations:
   next_step: "compare serializer output across the two enqueue paths"
 [/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: context-budget-awareness | completed medium | current_state:"find root cause of worker failure on retry path (live: retry_scheduler.py, payload_serializer.py)" dropped_hypotheses:"queue connection timeout, credential expiry" open_questions:"does serializer output differ between initial enqueue and retry enqueue?" | next:plan-before-action]
 ```
 
 ## Deactivation Trigger

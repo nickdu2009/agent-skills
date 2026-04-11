@@ -304,6 +304,8 @@ Hand off design brief to plan-before-action. Do not start editing.
 
 ## Output Example
 
+### V1 Format (verbose)
+
 ```yaml
 [skill-output: design-before-plan]
 status: completed
@@ -325,6 +327,12 @@ signals:
 recommendations:
   downstream_skill: "plan-before-action"
 [/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: design-before-plan | completed medium | requirements:"Retry flaky payment-status calls up to 3 times." alternatives:"Inline retry in payment client, Reusable retry wrapper" chosen_design:"Inline retry in payment client" acceptance_criteria:"Retries complete within 10 seconds total, Idempotency headers are preserved on every retry" | next:plan-before-action]
 ```
 
 ## Deactivation Trigger

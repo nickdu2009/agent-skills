@@ -48,73 +48,13 @@ Start a fresh focused pass when:
 - Do not preserve stale theories because they were expensive to investigate.
 - Do not widen validation just because the session feels uncertain; target the uncertainty directly.
 
-## Skill Protocol v1 Trace
+## Skill Protocol v2 Trace
 
-```yaml
-[task-input-validation]
-task: "Compress a noisy retry-debugging session and resume from the smallest live fault domain."
-checks:
-  clarity:
-    status: PASS
-    reason: "The objective is to compress and refocus, not keep exploring."
-  scope:
-    status: PASS
-    reason: "The current live scope can be reduced."
-  safety:
-    status: PASS
-    reason: "State compression is non-destructive."
-  skill_match:
-    status: PASS
-    reason: "context-budget-awareness is the right first move."
-result: PASS
-action: proceed
-[/task-input-validation]
-
-[trigger-evaluation]
-task: "Refocus a stalled retry investigation."
-evaluated:
-  - context-budget-awareness: ✓ TRIGGER
-  - bugfix-workflow: ⏸ DEFER
-  - targeted-validation: ⏸ DEFER
-activated_now: [context-budget-awareness]
-deferred: [bugfix-workflow, targeted-validation]
-[/trigger-evaluation]
-
-[precondition-check: context-budget-awareness]
-checks:
-  - noisy_session_detected: ✓ PASS
-  - objective_restated: ✓ PASS
-result: PASS
-[/precondition-check]
-
-[skill-output: context-budget-awareness]
-status: completed
-confidence: medium
-outputs:
-  current_state:
-    objective: "find root cause of retry enqueue failure"
-    live: ["retry scheduler", "payload serializer", "retry fixture"]
-  dropped_hypotheses:
-    - "queue connection failure"
-    - "credential loading problem"
-  open_questions:
-    - "is the idempotency marker missing on retry serialization?"
-signals:
-  action: "compress"
-recommendations:
-  downstream_skill: "bugfix-workflow"
-[/skill-output]
-
-[output-validation: context-budget-awareness]
-checks:
-  - outputs.current_state: ✓ PASS
-  - outputs.open_questions: ✓ PASS
-result: PASS
-[/output-validation]
-
-[skill-deactivation: context-budget-awareness]
-reason: "Compressed state has been handed off to the next diagnosis step."
-outputs_consumed_by: [bugfix-workflow]
-remaining_active: [bugfix-workflow]
-[/skill-deactivation]
+```
+[task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
+[triggers: context-budget-awareness:trigger bugfix-workflow:defer targeted-validation:defer]
+[precheck: context-budget-awareness | result:PASS | checks:noisy_session_detected objective_restated]
+[output: context-budget-awareness | status:completed | confidence:medium | objective:"find root cause of retry enqueue failure" | live_scope:"retry scheduler, payload serializer, retry fixture" | dropped_hypotheses:"queue connection failure, credential loading problem" | open_questions:"is idempotency marker missing on retry serialization?" | next:bugfix-workflow]
+[validate: context-budget-awareness | result:PASS | checks:objective live_scope open_questions]
+[drop: context-budget-awareness | reason:"compressed state handed to diagnosis" | active:bugfix-workflow]
 ```

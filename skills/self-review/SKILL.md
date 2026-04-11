@@ -177,6 +177,8 @@ Result: 1 blocking issue (debug log), 1 warning (scope violation). Fix the conso
 
 ## Output Example
 
+### V1 Format (verbose)
+
 ```yaml
 [skill-output: self-review]
 status: completed
@@ -193,6 +195,12 @@ signals:
 recommendations:
   next_step: "remove the debug log, then re-run self-review"
 [/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: self-review | completed high | findings:"blocking: debug log left in handler" residual_risks:"config formatting file changed outside the planned scope" scope_violations:"src/config.ts" | next:fix-blocking]
 ```
 
 ## Deactivation Trigger

@@ -45,94 +45,58 @@ These rules define when base-level CLAUDE.md rules are insufficient and the agen
 - If the task phase changes (e.g., from diagnosis to implementation), re-evaluate which skills are still providing signal.
 - Never carry more than 4 active skills simultaneously without explicit justification.
 
-## Skill Protocol v1
+## Skill Protocol v2
 
 Use the following protocol blocks literally when a task requires skill-driven execution:
 
-1. `[task-input-validation]`
-2. `[trigger-evaluation]`
-3. `[precondition-check: <skill-name>]`
-4. `[skill-output: <skill-name>]`
-5. `[output-validation: <skill-name>]`
-6. `[skill-deactivation: <skill-name>]` when the skill leaves the active set
+1. `[task-validation: ...]`
+2. `[triggers: ...]`
+3. `[precheck: <skill> | ...]`
+4. `[output: <skill> | ...]`
+5. `[validate: <skill> | ...]`
+6. `[drop: <skill> | ...]`
 
-Insert `[loop-detected: <skill-name>]` before any repeated activation when the same skill is being retried without materially new evidence.
+Insert `[loop: <skill> | "reason"]` before any repeated activation when the same skill is being retried without materially new evidence.
 
-Keep the default block order above. Do not emit `[skill-output: <skill-name>]` without a matching `[output-validation: <skill-name>]`.
+Keep the default block order above. Do not emit `[output: <skill>]` without a matching `[validate: <skill>]`.
 
-### Task Input Validation
+### Task Validation
 
-The protocol is language-agnostic. Do not rely on English word counts, English verbs, or English regexes.
+Language-agnostic (no English word counts, verbs, or regexes):
 
-Evaluate every new task with these checks:
+- `clarity`: can identify an action and a target object → `✓ | ✗ | ⚠`
+- `scope`: clearly bounded, or can be narrowed by `scoped-tasking` → `✓ | ✗ | ⚠`
+- `safety`: no unguarded destructive or out-of-scope request → `✓ | ✗`
+- `skill_match`: at least one skill family can take the task → `✓ | ✗`
 
-- `clarity`: can identify an action and a target object
-- `scope`: clearly bounded, or can be narrowed by `scoped-tasking`
-- `safety`: no unguarded destructive or out-of-scope request
-- `skill_match`: at least one skill family can take the task
+Results: `PASS` (proceed), `WARN` (ask_clarification), `REJECT` (reject)
 
-Set:
+### Standard Block Format
 
-- `result: PASS` and `action: proceed` when all required checks pass
-- `result: WARN` and `action: ask_clarification` when the task can likely be recovered through clarification or scoping
-- `result: REJECT` and `action: reject` when the task is unsafe or cannot be matched to the skill library
-
-### Minimum Block Shape
-
-```yaml
-[task-input-validation]
-task: "<user request verbatim>"
-checks:
-  clarity:
-    status: PASS | FAIL
-    reason: "<why>"
-  scope:
-    status: PASS | WARN | FAIL
-    reason: "<why>"
-  safety:
-    status: PASS | FAIL
-    reason: "<why>"
-  skill_match:
-    status: PASS | WARN | FAIL
-    reason: "<why>"
-result: PASS | WARN | REJECT
-action: proceed | ask_clarification | reject
-[/task-input-validation]
-
-[trigger-evaluation]
-task: "<one-line task summary>"
-evaluated:
-  - scoped-tasking: ✓ TRIGGER | ✗ SKIP | ⏸ DEFER
-activated_now: [...]
-deferred: [...]
-[/trigger-evaluation]
-
-[precondition-check: <skill-name>]
-checks:
-  - <field>: ✓ PASS | ✗ FAIL
-result: PASS | FAIL
-[/precondition-check]
-
-[skill-output: <skill-name>]
-status: completed | failed | partial
-confidence: high | medium | low
-outputs: {...}
-signals: {...}
-recommendations: {...}
-[/skill-output]
-
-[output-validation: <skill-name>]
-checks:
-  - outputs.<field>: ✓ PASS | ✗ FAIL
-result: PASS | FAIL
-[/output-validation]
-
-[skill-deactivation: <skill-name>]
-reason: "<why>"
-outputs_consumed_by: [...]
-remaining_active: [...]
-[/skill-deactivation]
 ```
+[task-validation: PASS | clarity:✓ scope:✓ safety:✓ skill_match:✓ | action:proceed]
+[triggers: scoped-tasking plan-before-action]
+[precheck: skill-name | PASS | checks:field1 field2]
+[output: skill-name | completed high | key:"value" | next:next-skill]
+[validate: skill-name | PASS | checks:field1 field2]
+[drop: skill-name | reason:"completed" | active: remaining skills]
+```
+
+**With failures:**
+```
+[task-validation: WARN | scope:⚠ "spans 3 modules" | action:ask_clarification]
+[validate: skill | FAIL | checks:field1 | failed:field2 "missing detail"]
+```
+
+**Block syntax:**
+- Separator: ` | ` (pipe with spaces)
+- Fields: `name:value` or `name:value1 value2` (space-delimited lists)
+- Quoted values: `"..."` for text with spaces
+- Symbols: `✓` (pass) `✗` (fail) `⚠` (warn) `⏸` (defer)
+
+### Legacy v1 Format
+
+V1 verbose YAML blocks `[block-name]...[/block-name]` remain supported for complex failures. Use v2 compact format for simple cases.
 
 ## Skill Family Concurrency Budgets
 

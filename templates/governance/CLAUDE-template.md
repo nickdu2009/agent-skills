@@ -111,105 +111,61 @@ Parallel:      multi-agent-protocol -> [subagents] -> conflict-resolution (if ne
 | `multi-agent-protocol` | `conflict-resolution` | Subagent findings disagree materially |
 | `conflict-resolution` | `targeted-validation` | Adjudication requires an empirical check |
 
-## Skill Protocol v1
+## Skill Protocol v2
 
-**Block sequence** for skill-driven tasks:
+Compact inline protocol blocks for skill-driven execution.
 
-1. `[task-input-validation]`
-2. `[trigger-evaluation]`
-3. `[precondition-check: <skill-name>]`
-4. `[skill-output: <skill-name>]`
-5. `[output-validation: <skill-name>]`
-6. `[skill-deactivation: <skill-name>]`
+**Block sequence:**
 
-**Loop guard:** `[loop-detected: <skill-name>]` before retry without new evidence.
+1. `[task-validation: ...]`
+2. `[triggers: ...]`
+3. `[precheck: <skill> | ...]`
+4. `[output: <skill> | ...]`
+5. `[validate: <skill> | ...]`
+6. `[drop: <skill> | ...]`
 
-**Pairing rule:** Every `[skill-output]` requires matching `[output-validation]`.
+**Core rules:**
+- Every `[output]` requires matching `[validate]`
+- Every triggered skill must eventually `[drop]`
+- Use `[loop: <skill> | "reason"]` before retry without new evidence
 
-### Task Input Validation
+### Task Validation
 
-**Language-agnostic.** Do not rely on English-specific patterns.
+Language-agnostic checks (no English-only patterns):
+- **clarity**: action + target identifiable → `✓ | ✗ | ⚠`
+- **scope**: bounded or scopeable → `✓ | ✗ | ⚠`
+- **safety**: no unguarded destruction → `✓ | ✗`
+- **skill_match**: at least one skill applies → `✓ | ✗`
 
-**Checks:**
-- `clarity`: action + target identifiable
-- `scope`: bounded or scopeable
-- `safety`: no unguarded destruction
-- `skill_match`: at least one skill family applies
+Results: `PASS` (proceed), `WARN` (ask clarification), `REJECT` (reject)
 
-**Results:**
-- `PASS` / `proceed`: all checks pass
-- `WARN` / `ask_clarification`: recoverable via clarification
-- `REJECT` / `reject`: unsafe or unmatchable
+### Standard Block Format
 
-### Minimum Block Shape
-
-```yaml
-[task-input-validation]
-task: "<user request verbatim>"
-checks:
-  clarity:
-    status: PASS | FAIL
-    reason: "<why>"
-  scope:
-    status: PASS | WARN | FAIL
-    reason: "<why>"
-  safety:
-    status: PASS | FAIL
-    reason: "<why>"
-  skill_match:
-    status: PASS | WARN | FAIL
-    reason: "<why>"
-result: PASS | WARN | REJECT
-action: proceed | ask_clarification | reject
-[/task-input-validation]
-
-[trigger-evaluation]
-task: "<one-line task summary>"
-evaluated:
-  - scoped-tasking: ✓ TRIGGER | ✗ SKIP | ⏸ DEFER
-activated_now: [...]
-deferred: [...]
-[/trigger-evaluation]
-
-[precondition-check: <skill-name>]
-checks:
-  - <field>: ✓ PASS | ✗ FAIL
-result: PASS | FAIL
-[/precondition-check]
-
-[skill-output: <skill-name>]
-status: completed | failed | partial
-confidence: high | medium | low
-outputs: {...}
-signals: {...}
-recommendations: {...}
-[/skill-output]
-
-[output-validation: <skill-name>]
-checks:
-  - outputs.<field>: ✓ PASS | ✗ FAIL
-result: PASS | FAIL
-[/output-validation]
-
-[skill-deactivation: <skill-name>]
-reason: "<why>"
-outputs_consumed_by: [...]
-remaining_active: [...]
-[/skill-deactivation]
+```
+[task-validation: PASS | clarity:✓ scope:✓ safety:✓ skill_match:✓ | action:proceed]
+[triggers: scoped-tasking plan-before-action]
+[precheck: skill-name | PASS | checks:field1 field2]
+[output: skill-name | completed high | key:"value" | next:next-skill]
+[validate: skill-name | PASS | checks:field1 field2]
+[drop: skill-name | reason:"completed" | active: remaining skills]
 ```
 
-### Protocol v2 (Compact)
+**With failures:**
+```
+[task-validation: WARN | scope:⚠ "spans 3 modules" | action:ask_clarification]
+[validate: skill | FAIL | checks:field1 | failed:field2 "missing detail"]
+```
 
-For simple cases, use compact inline format:
+### Block Syntax
 
-- `[task-validation: PASS | clarity:✓ scope:✓ safety:✓ skill_match:✓ | action:proceed]`
-- `[triggers: scoped-tasking plan-before-action]`
-- `[precheck: skill-name | PASS]`
-- `[output: skill-name | completed high | <key outputs> | next:next-skill]`
-- `[validate: skill-name | PASS]`
-- `[drop: skill-name | "reason" | active: remaining skills]`
+- **Separator**: ` | ` (pipe with spaces)
+- **Field format**: `name:value` or `name:value1 value2` (space-delimited lists)
+- **Quoted values**: Use `"..."` for text with spaces or special chars
+- **Status symbols**: `✓` (pass) `✗` (fail) `⚠` (warn) `⏸` (defer)
 
-Both v1 (verbose YAML) and v2 (compact inline) are supported. Use v2 for simple pass cases and execution traces; keep v1 for failures requiring detailed diagnosis.
+### Legacy v1 Format
+
+V1 verbose YAML blocks `[block-name]...[/block-name]` remain supported for complex failure scenarios requiring detailed diagnosis. Use v2 compact format for simple cases and execution traces.
 
 ## Skill Family Concurrency Budgets
 

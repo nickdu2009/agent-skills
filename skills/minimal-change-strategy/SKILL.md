@@ -158,6 +158,8 @@ Avoid:
 
 ## Output Example
 
+### V1 Format (verbose)
+
 ```yaml
 [skill-output: minimal-change-strategy]
 status: completed
@@ -177,6 +179,12 @@ signals:
 recommendations:
   validation_focus: "profile-missing request path"
 [/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: minimal-change-strategy | completed high | change_boundary:"request handler null-check branch" scope_guardrails:"do not rename helpers, do not reformat unrelated imports" stop_conditions:"stop after the 404 behavior and focused validation both pass" | next:targeted-validation]
 ```
 
 ## Deactivation Trigger

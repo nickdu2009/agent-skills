@@ -170,6 +170,36 @@ Possible merge result:
 - Prefer `resolution: unresolved` with a targeted next step over a weak forced verdict.
 - State exactly which claim remains uncertain and why.
 
+## Output Example
+
+### V1 Format (verbose)
+
+```yaml
+[skill-output: conflict-resolution]
+status: completed
+confidence: medium
+outputs:
+  claims:
+    - "Missing invalidation in retry path (subagent-1, high)"
+    - "Clock skew in expiry logic (subagent-2, medium)"
+  evidence:
+    - "Direct code-path evidence in cache.py:112–118 for missing invalidation"
+    - "Timing correlation from logs for clock skew"
+  resolution: "Inspect invalidation branch first (code-path evidence stronger than log correlation)"
+  residual_uncertainty: "Clock skew hypothesis unproven, requires targeted expiry-path check"
+signals:
+  consensus: "stale reads involve cache invalidation path"
+recommendations:
+  adjudication: "run one targeted expiry-path check before ruling out clock skew"
+[/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: conflict-resolution | completed medium | claims:"Missing invalidation in retry path (subagent-1, high), Clock skew in expiry logic (subagent-2, medium)" evidence:"Direct code-path evidence in cache.py:112–118 for missing invalidation, Timing correlation from logs for clock skew" resolution:"Inspect invalidation branch first (code-path evidence stronger than log correlation)" residual_uncertainty:"Clock skew hypothesis unproven, requires targeted expiry-path check" | next:targeted-validation]
+```
+
 ## Deactivation Trigger
 
 - Deactivate once a merged resolution or explicit unresolved state has been delivered.

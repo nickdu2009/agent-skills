@@ -160,6 +160,8 @@ Stop once the generation path and serialization boundary are clear. Do not surve
 
 ## Output Example
 
+### V1 Format (verbose)
+
 ```yaml
 [skill-output: read-and-locate]
 status: completed
@@ -178,6 +180,12 @@ signals:
 recommendations:
   downstream_skill: "plan-before-action"
 [/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: read-and-locate | completed medium | entry_points:"invoice generation endpoint" candidate_files:"billing/invoice_service.py, billing/invoice_serializer.py" edit_points:"InvoiceSerializer.build_payload" | next:plan-before-action]
 ```
 
 ## Deactivation Trigger

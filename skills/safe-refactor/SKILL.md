@@ -154,6 +154,8 @@ Apply the refactor by extracting one shared helper, switching one handler at a t
 
 ## Output Example
 
+### V1 Format (verbose)
+
 ```yaml
 [skill-output: safe-refactor]
 status: completed
@@ -172,6 +174,12 @@ signals:
 recommendations:
   next_step: "extract one shared helper without changing handler call sites"
 [/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: safe-refactor | completed high | behavior_invariants:"handler signatures stay unchanged, normalized output shape stays unchanged" refactor_boundary:"request normalization helper extraction" rollback_notes:"revert the helper extraction commit if output shape changes" | next:targeted-validation]
 ```
 
 ## Deactivation Trigger

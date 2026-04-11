@@ -341,6 +341,38 @@ Combine with:
 - Preserve uncertainty in the final synthesis instead of flattening it into a forced conclusion.
 - Prefer a targeted adjudication step over a weak merge decision.
 
+## Output Example
+
+### V1 Format (verbose)
+
+```yaml
+[skill-output: multi-agent-protocol]
+status: completed
+confidence: high
+outputs:
+  split_dimension: "by module (auth, session, middleware)"
+  lanes:
+    - "lane 1: auth middleware checks"
+    - "lane 2: session storage and invalidation"
+    - "lane 3: middleware registration flow"
+  integration_plan: "synthesize call path from middleware → auth → session store"
+  synthesis:
+    - "auth middleware validates token via validateToken()"
+    - "sessions stored in Redis with TTL-based expiry"
+    - "middleware registered at app init before route handlers"
+signals:
+  parallel_benefit: true
+recommendations:
+  next_step: "validate integrated auth flow"
+[/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: multi-agent-protocol | completed high | split_dimension:"by module (auth, session, middleware)" lanes:"auth middleware checks, session storage and invalidation, middleware registration flow" integration_plan:"synthesize call path from middleware → auth → session store" synthesis:"auth middleware validates token via validateToken(), sessions stored in Redis with TTL-based expiry, middleware registered at app init before route handlers" | next:targeted-validation]
+```
+
 ## Deactivation Trigger
 
 - Deactivate once all lane outputs have been synthesized into a single conclusion.

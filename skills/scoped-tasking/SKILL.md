@@ -167,6 +167,8 @@ Do not scan every reporting module. If the service delegates to a shared query b
 
 ## Output Example
 
+### V1 Format (verbose)
+
 ```yaml
 [skill-output: scoped-tasking]
 status: completed
@@ -184,6 +186,12 @@ signals:
 recommendations:
   downstream_skill: "plan-before-action"
 [/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: scoped-tasking | completed high | objective:"Fix the timeout regression in invoice export." analysis_boundary:"invoice_export_controller, export_service, failing export command" excluded_areas:"unrelated reporting modules" | next:plan-before-action]
 ```
 
 ## Deactivation Trigger

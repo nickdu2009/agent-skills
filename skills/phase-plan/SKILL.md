@@ -400,6 +400,42 @@ See skill-anti-pattern-template.md for format guidelines.
 - Hand contract questions to `phase-contract-tools`.
 - Hand acceptance review to `phase-plan-review` before execution starts.
 
+## Output Example
+
+### V1 Format (verbose)
+
+```yaml
+[skill-output: phase-plan]
+status: completed
+confidence: high
+outputs:
+  plan_artifacts:
+    - "docs/phases/phase1/plan.yaml"
+    - "docs/phases/phase1/roadmap.md"
+    - "docs/phases/phase1/wave-guide.md"
+    - "docs/phases/phase1/execution-index.md"
+  waves:
+    - "wave1: schema migration (3 PRs, serial)"
+    - "wave2: service layer (4 PRs, parallel lanes)"
+  gates:
+    - "wave1 complete before wave2 starts"
+    - "schema validators pass before service implementation"
+  ownership:
+    - "wave1: backend-team"
+    - "wave2: service-team"
+signals:
+  validation_passed: true
+recommendations:
+  next_step: "hand off to phase-plan-review"
+[/skill-output]
+```
+
+### V2 Format (compact)
+
+```
+[output: phase-plan | completed high | plan_artifacts:"docs/phases/phase1/plan.yaml, roadmap.md, wave-guide.md, execution-index.md" waves:"wave1: schema migration (3 PRs, serial) → wave2: service layer (4 PRs, parallel lanes)" gates:"wave1 complete before wave2 starts, schema validators pass before service implementation" ownership:"wave1: backend-team, wave2: service-team" | next:phase-plan-review]
+```
+
 ## Lifecycle
 
 - Activate while authoring or repairing the accepted phase artifact set.
