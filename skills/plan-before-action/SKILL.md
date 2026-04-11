@@ -1,6 +1,6 @@
 ---
 name: plan-before-action
-description: Require a clear plan with scope, assumptions, and intended file list before multi-step or uncertain edits. Use when multiple files are involved, sequencing matters, or the task shape is not yet clear.
+description: Require a clear plan before multi-step or uncertain edits. Use when (1) user says "not sure", "don't know", or "uncertain" about file locations or structure, (2) 3+ files involved with unclear sequencing, (3) task mentions multiple areas that need coordination. Always trigger when uncertainty keywords present.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"

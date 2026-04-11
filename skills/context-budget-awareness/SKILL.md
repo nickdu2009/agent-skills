@@ -1,6 +1,6 @@
 ---
 name: context-budget-awareness
-description: Compress working state when investigation is stuck. Use when (1) 8+ files read without convergence, (2) same file read 3+ times without new leads, (3) 4+ competing hypotheses without evidence ranking, or (4) last 3+ actions didn't advance the goal. Do NOT trigger for 7 or fewer files if progress is steady.
+description: Compress working state when investigation is stuck. Use when (1) 8+ files read without convergence (not 7), (2) same file read 3+ times without new leads, (3) 4+ hypotheses listed with "could be X, Y, Z, or W" pattern without evidence ranking, or (4) last 3+ actions didn't advance the goal. Pattern "could be...or...or...or" with 4+ options triggers this.
 metadata:
   version: "0.2.0"
   tags: "coding, agents, orchestration, efficiency"

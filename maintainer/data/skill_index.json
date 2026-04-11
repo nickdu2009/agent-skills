@@ -1,6 +1,6 @@
 {
   "schema_version": "0.1.0",
-  "generated_at": "2026-04-11T02:21:49.498622+00:00",
+  "generated_at": "2026-04-11T02:41:36.225466+00:00",
   "skills": [
     {
       "name": "bugfix-workflow",
@@ -30,7 +30,7 @@
     },
     {
       "name": "context-budget-awareness",
-      "description": "Compress working state when investigation is stuck. Use when (1) 8+ files read without convergence, (2) same file read 3+ times without new leads, (3) 4+ competing hypotheses without evidence ranking, or (4) last 3+ actions didn't advance the goal. Do NOT trigger for 7 or fewer files if progress is steady.",
+      "description": "Compress working state when investigation is stuck. Use when (1) 8+ files read without convergence (not 7), (2) same file read 3+ times without new leads, (3) 4+ hypotheses listed with \"could be X, Y, Z, or W\" pattern without evidence ranking, or (4) last 3+ actions didn't advance the goal. Pattern \"could be...or...or...or\" with 4+ options triggers this.",
       "directory": "skills/context-budget-awareness",
       "family": "execution",
       "version": "0.2.0",
@@ -133,7 +133,7 @@
     },
     {
       "name": "plan-before-action",
-      "description": "Require a clear plan with scope, assumptions, and intended file list before multi-step or uncertain edits. Use when multiple files are involved, sequencing matters, or the task shape is not yet clear.",
+      "description": "Require a clear plan before multi-step or uncertain edits. Use when (1) user says \"not sure\", \"don't know\", or \"uncertain\" about file locations or structure, (2) 3+ files involved with unclear sequencing, (3) task mentions multiple areas that need coordination. Always trigger when uncertainty keywords present.",
       "directory": "skills/plan-before-action",
       "family": "execution",
       "version": "0.1.0",
@@ -146,7 +146,7 @@
     },
     {
       "name": "read-and-locate",
-      "description": "Find files and edit points in unfamiliar code BEFORE making changes. Use when (1) user wants to modify code but location is unknown, (2) must trace runtime/data/ownership path to find where to edit. Do NOT use for (1) information queries with no edit intent, (2) exact symbol search with known name, (3) questions about existing code without modification plans.",
+      "description": "Find files and edit points in unfamiliar code BEFORE making changes. Use when (1) \"Find where X is defined/located/implemented\", (2) module known but exact file unknown (e.g. \"somewhere in billing module\"), (3) must trace runtime/data path to find edit point. Pattern \"Find where\" or \"I know it exists in X but need exact file\" triggers this. Do NOT use for pure information queries without edit intent.",
       "directory": "skills/read-and-locate",
       "family": "execution",
       "version": "0.1.0",
@@ -172,7 +172,7 @@
     },
     {
       "name": "scoped-tasking",
-      "description": "Narrow broad/ambiguous tasks to smallest boundary. Use when (1) request mentions multiple systems but target unclear (e.g. \"search is broken\" - which search?), (2) task is expanding without evidence, (3) user request has no clear action or target. Do NOT use when (1) scope is clear but location unknown (use read-and-locate), (2) scope is clear but design choices remain (use design-before-plan).",
+      "description": "Narrow broad/ambiguous tasks to smallest boundary. Use when (1) mentions multiple systems (e.g. \"across reporting, billing, notification\") but symptom points to single area, (2) vague target like \"search is broken\" without specifying which search, (3) task expanding without evidence. Pattern \"look into X, Y, Z but users say A is slow\" needs scoping. Do NOT use when scope is clear but location or design unknown.",
       "directory": "skills/scoped-tasking",
       "family": "execution",
       "version": "0.1.0",
