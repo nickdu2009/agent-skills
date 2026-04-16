@@ -1,0 +1,118 @@
+- id: family_mapping
+  category: static
+  prompt: |
+    In the "Skill Family Concurrency Budgets" section, three families
+    are referenced: Execution, Orchestration, Primary Phase.
+    Based ONLY on the governance file's content, list which specific skills
+    are mapped to each family.
+    Respond in JSON only:
+    {"families": {"Execution": [...], "Orchestration": [...], "Primary Phase": [...]}}
+    If a family has no skills listed, use an empty array.
+  judge: 'all(len(v) > 0 for v in d["families"].values())'
+  expect_current: pass
+
+- id: activation_coverage
+  category: static
+  prompt: |
+    1. Collect every skill name (in backticks) referenced anywhere in the governance file.
+    2. Collect every skill that has an explicit activation path:
+       task-type activation, escalation trigger, Forward Handoff "To" column,
+       Fallback "To" column, or starting skill (first position) in a
+       Common Flow Pattern.
+    3. Return skills that appear in (1) but not in (2).
+    Respond in JSON only:
+    {"all_skills": [...], "activated": [...], "orphaned": [...]}
+  judge: 'len(d["orphaned"]) == 0'
+  expect_current: pass
+
+- id: chain_consistency
+  category: static
+  prompt: |
+    1. Parse "Common Flow Patterns" — extract every A→B transition pair.
+    2. Parse "Forward Handoffs" and "Fallbacks" tables — extract every From→To pair.
+    3. Return transitions in (1) that do not appear in (2).
+    Respond in JSON only:
+    {"pattern_transitions": [...], "table_transitions": [...], "undocumented": [...]}
+  judge: 'len(d["undocumented"]) == 0'
+  expect_current: pass
+
+- id: protocol_semantics
+  category: behavioral
+  prompt: |
+    In the "Skill Protocol v2" section,
+    for each block type (task-validation, triggers, precheck, output,
+    validate, drop, loop), answer based ONLY on what the governance file says:
+    1. Does it have a semantic description? (true/false)
+    2. Does it have at least one example? (true/false)
+    3. Does it define what to do on FAIL? (true/false)
+    Respond in JSON only:
+    {"blocks": {"task-validation": {"description": true/false, "example": true/false, "fail_handling": true/false}, ...}}
+  judge: 'all(v for b in d["blocks"].values() for v in b.values())'
+  expect_current: pass
+
+- id: lifecycle_coverage
+  category: static
+  prompt: |
+    1. Collect skills from "Skill Activation" (task-type list)
+       and "Skill Escalation".
+       Also include this synthetic test skill: `phantom-test-skill`.
+    2. Collect skills from "Skill Lifecycle" (drop rules + keep-active rules).
+    3. Return skills in (1) not covered by (2).
+    Respond in JSON only:
+    {"activation_skills": [...], "lifecycle_skills": [...], "uncovered": [...]}
+  judge: 'set(d["uncovered"]) == {"phantom-test-skill"}'
+  expect_current: pass
+
+- id: delegation_bounds
+  category: behavioral
+  prompt: |
+    In the "Multi-Agent Rules" section,
+    a task requires splitting into 7 parallel subagents.
+    Based ONLY on the governance file's rules, what should the agent do?
+    Respond in JSON only:
+    {"action": "description of what to do",
+     "has_escalation_path": true/false,
+     "rule_cited": "exact quote from the file, or null if no rule covers this"}
+  judge: 'd["has_escalation_path"] is True'
+  expect_current: pass
+
+- id: fastpath_testability
+  category: behavioral
+  prompt: |
+    The "Governance Fast-Path" section says to skip [task-validation]
+    and [triggers] for certain tasks.
+    Question: Does the governance file define a formal, enumerated pre-screening
+    mechanism (e.g. a checklist, decision tree, or classifier) that
+    determines whether a task qualifies for fast-path BEFORE running
+    the task-validation checks (clarity, scope, safety, skill_match)?
+    "Use your own judgment" or "common sense" does NOT count as a
+    formal mechanism.
+    Definition: A "bootstrap problem" exists ONLY if the pre-screening
+    mechanism itself requires running the full task-validation checks
+    (clarity, scope, safety, skill_match) to produce a result.
+    If the mechanism uses only surface-level request properties
+    (keywords, file count, command structure) it has NO bootstrap problem.
+    Respond in JSON only:
+    {"explicit_prescreening": true/false,
+     "mechanism": "description or null",
+     "bootstrap_problem": true/false}
+  judge: 'd["explicit_prescreening"] is True and d["bootstrap_problem"] is False'
+  expect_current: pass
+
+- id: max_skills_operability
+  category: behavioral
+  prompt: |
+    The "Bug fix" flow pattern lists 6 skills in sequence.
+    The "Skill Lifecycle" section says max 4 active skills
+    without justification.
+    Based ONLY on what the governance file says:
+    1. Does it define WHEN to drop earlier skills in the bug fix chain
+       so the active count stays ≤4?
+    2. Does it define what constitutes valid "justification"
+       for exceeding 4?
+    Respond in JSON only:
+    {"drop_timing_defined": true/false,
+     "justification_criteria_defined": true/false,
+     "max_concurrent_in_bugfix_chain": number or null}
+  judge: 'd["drop_timing_defined"] is True and d["justification_criteria_defined"] is True'
+  expect_current: pass
