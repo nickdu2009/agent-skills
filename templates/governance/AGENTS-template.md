@@ -1,3 +1,5 @@
+<!-- Governance mirror: keep in sync with CLAUDE-template.md (identical content, different header) -->
+
 # AGENTS.md
 
 ## Multi-Agent Rules
@@ -14,8 +16,26 @@ Full protocol: `multi-agent-protocol` skill.
 
 Skills activate via:
 
-- **Task-type**: Skills auto-activate during `[triggers]` evaluation based on SKILL.md triggers.
+- **Task-type**: `bugfix-workflow`, `safe-refactor`, `scoped-tasking`, `read-and-locate`, and `plan-before-action` auto-activate during `[triggers]` evaluation based on SKILL.md triggers.
 - **Mid-task escalation**: Load full skill when base governance rules prove insufficient (see below).
+
+## Skill Boundary
+
+`AGENTS.md` is the governance and routing layer, not the skill manual.
+
+**Keep here only:**
+
+- Skill trigger/load/defer/drop rules.
+- Skill chain handoffs, concurrency budgets, and protocol syntax.
+- Short routing descriptions needed to decide when a skill applies.
+
+**Do not put here:**
+
+- A skill's internal step-by-step workflow.
+- Skill-specific checklists, examples, edge-case catalogs, or output schemas that belong in `SKILL.md`.
+- Long skill descriptions that duplicate or paraphrase the skill file.
+
+**Source of truth:** Each skill's behavior, procedure, and detailed guidance live in that skill's `SKILL.md`.
 
 ## Governance Fast-Path
 
@@ -31,7 +51,7 @@ Skills activate via:
 
 ## Skill Escalation
 
-Escalate when base-level AGENTS.md rules insufficient:
+Escalate when base-level governance rules insufficient:
 
 - `design-before-plan`: Multiple implementation approaches, public API/cross-module contract changes, missing acceptance criteria, design decisions remain after scoping, or 3+ modules needing coordination.
 - `minimal-change-strategy`: Diff growing beyond task scope, competing edit strategies, or cleanup temptation.
@@ -62,55 +82,6 @@ Escalate when base-level AGENTS.md rules insufficient:
 
 **Max:** 4 active skills without justification.
 
-## Skill Chain Triggers
-
-### Common Flow Patterns
-
-```
-Bug fix:       scoped-tasking -> read-and-locate -> bugfix-workflow -> minimal-change-strategy -> self-review -> targeted-validation
-Refactor:      scoped-tasking -> safe-refactor + minimal-change-strategy -> self-review -> targeted-validation
-Multi-file:    scoped-tasking -> plan-before-action -> minimal-change-strategy -> self-review -> targeted-validation
-Design-first:  scoped-tasking -> design-before-plan -> plan-before-action -> minimal-change-strategy -> self-review -> targeted-validation
-Large task:    scoped-tasking -> design-before-plan -> impact-analysis -> plan-before-action -> incremental-delivery
-Parallel:      multi-agent-protocol -> [subagents] -> conflict-resolution (if needed) -> synthesis
-```
-
-### Forward Handoffs
-
-| From | To | Condition |
-|------|----|-----------|
-| `scoped-tasking` | `read-and-locate` | Boundary known but edit point still unknown |
-| `scoped-tasking` | `plan-before-action` | Boundary confirmed, ready for implementation planning |
-| `read-and-locate` | `plan-before-action` | Edit points identified, ready for sequencing |
-| `design-before-plan` | `plan-before-action` | Design brief produced, ready for implementation planning |
-| `impact-analysis` | `plan-before-action` | Impact summary produced, ready for sequencing |
-| `self-review` | `targeted-validation` | Diff clean of blocking issues, ready for behavioral verification |
-| `plan-before-action` | `incremental-delivery` | Plan spans 2-4 PRs that can be split into independently mergeable increments |
-
-### Fallbacks
-
-| From | To | Condition |
-|------|----|-----------|
-| `bugfix-workflow` | `read-and-locate` | Failure path is still unknown |
-| `bugfix-workflow` | `context-budget-awareness` | Diagnosis is spinning across too many files or hypotheses |
-| `minimal-change-strategy` | `design-before-plan` | Preserving the current interface may itself be the bug |
-| `minimal-change-strategy` | `impact-analysis` | Supposedly local change affects multiple callers or contracts |
-| `safe-refactor` | `design-before-plan` | Structural change implies interface redesign |
-| `safe-refactor` | `minimal-change-strategy` | Only local cleanup is justified, not structural refactoring |
-| `safe-refactor` | `read-and-locate` | Ownership seams still unclear |
-| `self-review` | `minimal-change-strategy` | Review reveals the patch grew beyond task scope |
-| `context-budget-awareness` | `scoped-tasking` | Compressed state shows the objective itself is too broad |
-| `plan-before-action` | `design-before-plan` | Design choices, not execution order, are the real blocker |
-| `plan-before-action` | `scoped-tasking` / `read-and-locate` | Edit surface still uncertain, return to discovery |
-| `design-before-plan` | `impact-analysis` | Caller or module impact is still speculative |
-| `design-before-plan` | `scoped-tasking` | Task boundary itself is unstable |
-| `impact-analysis` | `read-and-locate` | True edit point is not stable |
-| `impact-analysis` | `phase-plan` | Contract migration becomes multi-stage or externally constrained |
-| `incremental-delivery` | `phase-plan` | Task exceeds 4 increments, 2 modules, or needs parallel lanes |
-| `incremental-delivery` | `plan-before-action` | Downgrade -- task fits in a single PR |
-| `multi-agent-protocol` | `conflict-resolution` | Subagent findings disagree materially |
-| `conflict-resolution` | `targeted-validation` | Adjudication requires an empirical check |
-
 ## Skill Protocol v2
 
 Compact inline protocol blocks for skill-driven execution.
@@ -137,7 +108,7 @@ Language-agnostic checks (no English-only patterns):
 - **safety**: no unguarded destruction → `✓ | ✗`
 - **skill_match**: at least one skill applies → `✓ | ✗`
 
-Results: `PASS` (proceed), `WARN` (ask clarification), `REJECT` (reject)
+Results: `PASS` (proceed), `WARN` (ask_clarification), `REJECT` (reject)
 
 ### Standard Block Format
 
@@ -176,3 +147,56 @@ V1 verbose YAML blocks `[block-name]...[/block-name]` remain supported for compl
 - `phase-contract-tools`: coexist with 1 primary phase skill, or run alone
 
 **Deactivation:** Explicit only. No silent retirement.
+
+## Skill Chain Triggers
+
+### Common Flow Patterns
+
+```
+Bug fix:       scoped-tasking → read-and-locate → bugfix-workflow → minimal-change-strategy → self-review → targeted-validation
+Refactor:      scoped-tasking → safe-refactor + minimal-change-strategy → self-review → targeted-validation
+Multi-file:    scoped-tasking → plan-before-action → minimal-change-strategy → self-review → targeted-validation
+Design-first:  scoped-tasking → design-before-plan → plan-before-action → minimal-change-strategy → self-review → targeted-validation
+Large task:    scoped-tasking → design-before-plan → impact-analysis → plan-before-action → incremental-delivery
+Parallel:      multi-agent-protocol → [subagents] → conflict-resolution (if needed) → synthesis
+```
+
+### Forward Handoffs
+
+| From | To | Condition |
+|------|----|-----------|
+| `scoped-tasking` | `read-and-locate` | Boundary known but edit point still unknown |
+| `scoped-tasking` | `plan-before-action` | Boundary confirmed, ready for implementation planning |
+| `read-and-locate` | `plan-before-action` | Edit points identified, ready for sequencing |
+| `design-before-plan` | `plan-before-action` | Design brief produced, ready for implementation planning |
+| `impact-analysis` | `plan-before-action` | Impact summary produced, ready for sequencing |
+| `self-review` | `targeted-validation` | Diff clean of blocking issues, ready for behavioral verification |
+| `plan-before-action` | `incremental-delivery` | Plan spans 2–4 PRs that can be split into independently mergeable increments |
+
+### Fallbacks
+
+| From | To | Condition |
+|------|----|-----------|
+| `bugfix-workflow` | `read-and-locate` | Failure path is still unknown |
+| `bugfix-workflow` | `context-budget-awareness` | Diagnosis is spinning across too many files or hypotheses |
+| `minimal-change-strategy` | `design-before-plan` | Preserving the current interface may itself be the bug |
+| `minimal-change-strategy` | `impact-analysis` | Supposedly local change affects multiple callers or contracts |
+| `safe-refactor` | `design-before-plan` | Structural change implies interface redesign |
+| `safe-refactor` | `minimal-change-strategy` | Only local cleanup is justified, not structural refactoring |
+| `safe-refactor` | `read-and-locate` | Ownership seams still unclear |
+| `self-review` | `minimal-change-strategy` | Review reveals the patch grew beyond task scope |
+| `context-budget-awareness` | `scoped-tasking` | Compressed state shows the objective itself is too broad |
+| `plan-before-action` | `design-before-plan` | Design choices, not execution order, are the real blocker |
+| `plan-before-action` | `scoped-tasking` / `read-and-locate` | Edit surface still uncertain, return to discovery |
+| `design-before-plan` | `impact-analysis` | Caller or module impact is still speculative |
+| `design-before-plan` | `scoped-tasking` | Task boundary itself is unstable |
+| `impact-analysis` | `read-and-locate` | True edit point is not stable |
+| `impact-analysis` | `phase-plan` | Contract migration becomes multi-stage or externally constrained |
+| `incremental-delivery` | `phase-plan` | Task exceeds 4 increments, 2 modules, or needs parallel lanes |
+| `incremental-delivery` | `plan-before-action` | Downgrade — task fits in a single PR |
+| `multi-agent-protocol` | `conflict-resolution` | Subagent findings disagree materially |
+| `conflict-resolution` | `targeted-validation` | Adjudication requires an empirical check |
+
+### Intentional Exclusions
+
+Phase-internal chains (P1–P7), co-active "combine with" composition edges, and a few low-frequency indirect hops are documented in the relevant SKILL.md files rather than duplicated here.

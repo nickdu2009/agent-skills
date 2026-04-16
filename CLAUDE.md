@@ -17,6 +17,36 @@ Skills activate through two mechanisms:
 - **Task-type activation**: `bugfix-workflow`, `safe-refactor`, `scoped-tasking`, `read-and-locate`, and `plan-before-action` activate based on task characteristics recognized during `[triggers]` evaluation. Their SKILL.md descriptions define when they match.
 - **Mid-task escalation**: The rules below define when base-level governance rules prove insufficient and the agent should load the full skill during execution.
 
+## Skill Boundary
+
+`CLAUDE.md` is the governance and routing layer, not the skill manual.
+
+**Keep here only:**
+
+- Skill trigger/load/defer/drop rules.
+- Skill chain handoffs, concurrency budgets, and protocol syntax.
+- Short routing descriptions needed to decide when a skill applies.
+
+**Do not put here:**
+
+- A skill's internal step-by-step workflow.
+- Skill-specific checklists, examples, edge-case catalogs, or output schemas that belong in `SKILL.md`.
+- Long skill descriptions that duplicate or paraphrase the skill file.
+
+**Source of truth:** Each skill's behavior, procedure, and detailed guidance live in that skill's `SKILL.md`.
+
+## Governance Fast-Path
+
+**No skill needed** for tasks fully handleable at the governance layer:
+
+- **Direct answers**: Questions requiring no code exploration (concepts, prior context, definitions).
+- **Single commands**: One-off shell/git commands with clear output.
+- **Trivial file reads**: Read 1–2 specific files when path is known.
+- **Status queries**: Git status, file existence, directory listing.
+- **Single-file low-risk edits**: Typo fix, comment update, config tweak in 1 file with no caller impact.
+
+**Skip `[task-validation]` and `[triggers]`** for fast-path tasks. Proceed directly.
+
 ## Skill Escalation
 
 These rules define when base-level CLAUDE.md rules are insufficient and the agent should load the full skill.
