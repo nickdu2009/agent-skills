@@ -29,12 +29,16 @@ assert (PROJECT_ROOT / "templates" / "governance").is_dir(), (
 )
 
 # --- Defaults ---
-DEFAULT_MODELS = {"claude": "opus", "cursor": "claude-4.6-opus-high"}
+DEFAULT_MODELS = {
+    "claude": "opus",
+    "cursor": "claude-4.6-opus-high",
+    "codex": "gpt-5.4",
+}
 DEFAULT_RUNS = {"static": 3, "behavioral": 5}
 
 MODEL_MAP = {
-    "opus":   {"claude": "opus",   "cursor": "claude-4.6-opus-high"},
-    "sonnet": {"claude": "sonnet", "cursor": "claude-4.6-sonnet-medium"},
+    "opus":   {"claude": "opus",   "cursor": "claude-4.6-opus-high",   "codex": "gpt-5.4"},
+    "sonnet": {"claude": "sonnet", "cursor": "claude-4.6-sonnet-medium", "codex": "gpt-5.4"},
 }
 
 
@@ -70,6 +74,26 @@ class CursorAgent(CLIDef):
             "--model", self.model,
         ]
 
+class CodexCLI(CLIDef):
+    def build_cmd(self, prompt: str, workspace: Path) -> list[str]:
+        output_file = workspace / ".codex_output.txt"
+        return [
+            "codex", "exec",
+            "--model", self.model,
+            "--sandbox", "read-only",
+            "-o", str(output_file),
+            prompt,
+        ]
+
+    def read_output(self, workspace: Path) -> Optional[str]:
+        """Read the last message written by -o flag."""
+        output_file = workspace / ".codex_output.txt"
+        if output_file.exists():
+            text = output_file.read_text().strip()
+            output_file.unlink()
+            return text
+        return None
+
 
 def build_clis(model_override: Optional[str] = None) -> list:
     if model_override and model_override in MODEL_MAP:
@@ -81,6 +105,8 @@ def build_clis(model_override: Optional[str] = None) -> list:
                    "CLAUDE.md", models["claude"]),
         CursorAgent("cursor", "templates/governance/AGENTS-template.md",
                     "AGENTS.md", models["cursor"]),
+        CodexCLI("codex", "templates/governance/AGENTS-template.md",
+                 "AGENTS.md", models["codex"]),
     ]
 
 
@@ -109,16 +135,37 @@ def teardown_isolated_workspace(ws: Path) -> None:
 # --- Response extraction ---
 
 def extract_response(raw: str) -> str:
-    """Extract agent response text from CLI JSON envelope."""
+    """Extract agent response text from CLI JSON envelope.
+
+    Handles three output formats:
+    - Claude Code: single JSON envelope with "result" key
+    - Cursor Agent: single JSON envelope with "result" key
+    - Codex: newline-delimited JSON events or plain text
+    """
+    # Try single JSON envelope (Claude Code / Cursor)
     try:
         envelope = json.loads(raw)
         text = raw
-        for key in ("result", "content", "text"):
+        for key in ("result", "content", "text", "message"):
             if key in envelope and envelope[key]:
                 text = envelope[key]
                 break
+        # Handle Codex NDJSON: try last event with a message/content field
     except json.JSONDecodeError:
+        # Try NDJSON (Codex --json output): take the last event with content
         text = raw
+        for line in reversed(raw.strip().splitlines()):
+            try:
+                event = json.loads(line)
+                for key in ("message", "content", "text", "result"):
+                    if key in event and event[key]:
+                        text = event[key]
+                        break
+                else:
+                    continue
+                break
+            except json.JSONDecodeError:
+                continue
     # Extract JSON from markdown code fences (handles preamble text before the block)
     m = re.search(r"```(?:json)?\s*\n(.*?)\n```", text, re.DOTALL)
     if m:
@@ -171,6 +218,7 @@ def preflight_check(cli: CLIDef, workspace: Path) -> Optional[str]:
         proc = subprocess.run(
             cli.build_cmd("Respond with exactly: {\"ok\":true}", workspace),
             cwd=workspace, capture_output=True, text=True, timeout=60,
+            stdin=subprocess.DEVNULL,
         )
         err = is_cli_error(proc)
         if err:
@@ -250,6 +298,7 @@ def main():
                             cmd, cwd=ws,
                             capture_output=True, text=True,
                             timeout=TIMEOUT,
+                            stdin=subprocess.DEVNULL,
                         )
                         err = is_cli_error(proc)
                         if err:
@@ -257,7 +306,12 @@ def main():
                             print(f"    [{case_id} run {run_i+1}] CLI error: {err}",
                                   flush=True)
                             continue
-                        content = extract_response(proc.stdout)
+                        # Codex uses -o file; others use stdout
+                        if hasattr(cli, 'read_output'):
+                            file_content = cli.read_output(ws)
+                            content = extract_response(file_content or proc.stdout)
+                        else:
+                            content = extract_response(proc.stdout)
                         if args.verbose:
                             print(f"    [{case_id} run {run_i+1}] extracted: {content[:300]}",
                                   flush=True)
