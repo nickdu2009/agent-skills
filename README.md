@@ -338,6 +338,8 @@ For release readiness and acceptance checks, use [`docs/user/OPENSKILLS-RELEASE-
 
 The `multi-agent-protocol` skill works best when paired with project-level governance rules. Ready-made platform templates live in `templates/governance/AGENTS-template.md` and `templates/governance/CLAUDE-template.md`.
 
+Those governance files are the routing layer, not per-skill manuals: they define when skills activate, how they hand off, and when they retire, while each skill's detailed behavior stays in its own `SKILL.md`.
+
 The complete supported install flow lives in one script: `maintainer/scripts/install/manage-governance.py`. The installer has a single install semantic: install the full skill library and inject the matching governance rules.
 
 Install both the governance skills and inject the rules into a project:
@@ -407,6 +409,8 @@ Use this three-part loop:
 
 Before release, also run an OpenSkills install smoke test using the checklist in [`docs/user/OPENSKILLS-RELEASE-CHECKLIST.md`](docs/user/OPENSKILLS-RELEASE-CHECKLIST.md).
 
+For a quick introduction to skill testing with practical scenarios, see [`docs/user/SKILL-TESTING-QUICK-START.md`](docs/user/SKILL-TESTING-QUICK-START.md).
+
 For high-value Claude Code multi-turn acceptance scenarios, use
 [`docs/maintainer/claude-interactive-test-checklist.md`](docs/maintainer/claude-interactive-test-checklist.md)
 and the fixture-backed execution plan in
@@ -448,6 +452,9 @@ Recommended examples:
 - `examples/impact-analysis.md`
 - `examples/self-review.md`
 - `examples/incremental-delivery.md`
+- `examples/skill-definition-validator.md`
+- `examples/refactor-installation-script.md`
+- `examples/fix-skill-references.md`
 
 When testing, evaluate behavior rather than only the final answer. For example:
 

@@ -148,11 +148,13 @@ A false negative is worse than a false positive. If the agent never loads the sk
 
 For skills that overlap with AGENTS.md rules (`minimal-change-strategy`, `targeted-validation`, `context-budget-awareness`):
 
+Also verify that governance text stays at the routing layer and points detailed skill behavior back to `SKILL.md`, instead of duplicating step-by-step skill procedures.
+
 | Score | Meaning |
 | --- | --- |
-| `2` | Simple tasks used only AGENTS.md rules; complex tasks escalated to the full skill |
-| `1` | The agent always loaded the full skill even for simple tasks (over-triggering) |
-| `0` | The agent never loaded the full skill even for complex tasks (under-triggering) |
+| `2` | Simple tasks used only AGENTS.md rules, complex tasks escalated to the full skill, and governance text stayed at routing level |
+| `1` | The agent always loaded the full skill even for simple tasks, or governance text started to blur into skill-manual detail |
+| `0` | The agent never loaded the full skill even for complex tasks, or governance text effectively replaced the skill manual |
 
 ### Chain Trigger Cases
 

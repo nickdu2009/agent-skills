@@ -76,6 +76,7 @@ Before release, confirm that the repository-wide protocol is coherent across tem
 
 - [ ] Every skill under `skills/` includes the required v1 sections for its family
 - [ ] Governance templates describe the seven standard protocol blocks and family budgets
+- [ ] Governance templates stay at the routing layer and defer per-skill procedures to `SKILL.md`
 - [ ] `examples/` show v1 protocol block sequences
 - [ ] Trigger and smoke tooling can report protocol-readiness or protocol-block failures
 
@@ -91,6 +92,7 @@ Pass criteria:
 - [ ] Skills install without duplicate-name confusion
 - [ ] Install target is `.agent/skills/` when `--universal` is used
 - [ ] `AGENTS.md` is generated successfully
+- [ ] Generated governance remains a routing document, not a duplicated skill manual
 - [ ] `openskills list` shows the expected skills
 - [ ] `openskills read scoped-tasking` returns the expected skill content
 
