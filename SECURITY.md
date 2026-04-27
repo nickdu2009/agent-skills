@@ -8,16 +8,14 @@ This repository contains agent behavior skills (SKILL.md files) and supporting P
 
 If you discover a security issue in this repository, please report it by opening a GitHub issue or contacting the maintainer directly.
 
-For issues related to the OpenSkills CLI or installation toolchain, report to the [OpenSkills repository](https://github.com/numman-ali/openskills/issues).
-
 ## Installation Safety
 
 When installing skills from any source:
 
 - Review both the `maintainer/scripts/install/` entrypoints and any `maintainer/` utilities before running repository tooling
-- Use `npx openskills read <skill-name>` to inspect skill content before use
-- Prefer installing from the canonical `skills/` directory rather than the repository root
-- Verify that installed skills match the expected count and names using `npx openskills list`
+- Prefer the supported installer entrypoints in `maintainer/scripts/install/` over ad hoc copying
+- Prefer the canonical `skills/` directory as the source of truth when auditing published skill content
+- Verify generated installs or mirrors against the canonical source before use
 
 ## Supported Versions
 

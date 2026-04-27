@@ -37,6 +37,14 @@ flowchart TD
 - Not a collection of vendor-specific prompts or UI instructions.
 - Not a substitute for project-specific architecture, domain rules, or coding standards.
 
+## User Manual
+
+If you want a user-oriented guide instead of maintainer or repository-internal documentation, start here:
+
+- [`docs/manual/README.md`](docs/manual/README.md) - `Agent Skills 使用手册`
+- [`docs/manual/QUICK-START.md`](docs/manual/QUICK-START.md) - `快速开始`
+- [`docs/manual/FAQ.md`](docs/manual/FAQ.md) - `常见问题`
+
 ## Skill Types
 
 ### Execution Skills
@@ -162,56 +170,14 @@ When in doubt, start with `plan-before-action` plus `multi-agent-protocol` and e
 
 ## Installation Paths
 
-This repository supports three installation methods. Choose based on your situation.
+For end users, use `manage-governance.py` in one of two modes: global install for personal cross-project use, or project install when a repository should carry both skills and governance rules.
 
-### OpenSkills (recommended for consumers)
+| Mode | Use When | Command |
+|------|----------|---------|
+| Global install | You want personal cross-project skills without changing a project | `python3 maintainer/scripts/install/manage-governance.py --global` |
+| Project install | You want a project to carry skills and governance rules | `python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo` |
 
-Install all skills into any project via the OpenSkills CLI:
-
-```bash
-npx openskills install your-org/agent-skills --universal
-npx openskills sync
-```
-
-This is the primary recommended path for external consumers.
-
-### Full Skill Governance (recommended for teams)
-
-`manage-governance.py` is the single public entrypoint for this repository's governance tooling. It handles skill copy plus `AGENTS.md` / `CLAUDE.md` rule injection in one place.
-
-Install the full skill library with AGENTS.md rule injection:
-
-```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo
-```
-
-### Local Development Mirrors (this repository only)
-
-These mirror operations now run through the same installer script. They are not an end-user install path; they only rebuild repo-local `.cursor/skills/` and `.claude/skills/` mirrors while developing this library.
-
-Generate a project-local tool mirror from the canonical `skills/` tree:
-
-```bash
-python3 maintainer/scripts/install/manage-governance.py --sync-local cursor
-python3 maintainer/scripts/install/manage-governance.py --sync-local claude
-```
-
-These mirrors are project-local (`$REPO_ROOT/.cursor/skills/` and `$REPO_ROOT/.claude/skills/`), ignored by Git, and can be rebuilt at any time. They are not the same as global skill installation.
-
-To verify a mirror is current:
-
-```bash
-python3 maintainer/scripts/install/manage-governance.py --check-local cursor
-python3 maintainer/scripts/install/manage-governance.py --check-local claude
-```
-
-### Path Comparison
-
-| Method | Scope | Target Path | Use When |
-|--------|-------|-------------|----------|
-| OpenSkills | All skills | `.agent/skills/` | External consumer installing into a project |
-| `manage-governance.py` | All skills + rules | `$HOME/.cursor/skills/`, `$HOME/.codex/skills/`, or `$HOME/.claude/skills/` | Team adopting the full discipline suite |
-| `manage-governance.py --sync-local <target>` | All skills (mirror) | `$REPO_ROOT/.cursor/skills/` or `$REPO_ROOT/.claude/skills/` | Developing this skill library itself |
+For a user-oriented walkthrough of how to choose between these modes, what each mode installs, and how to verify the result, see [`Agent Skills 使用手册`](docs/manual/README.md) and [`安装说明`](docs/manual/INSTALLATION.md).
 
 ## Design Philosophy
 
@@ -255,8 +221,12 @@ examples/
   multi-agent-root-cause-analysis.md
   phased-migration-planning.md
 docs/
+  manual/
+    README.md
+    QUICK-START.md
+    INSTALLATION.md
   user/
-    OPENSKILLS-RELEASE-CHECKLIST.md
+    SKILL-TESTING-QUICK-START.md
   maintainer/
     skill-system-evaluation.md
     test-evaluation-repair-plan.md
@@ -276,10 +246,11 @@ Keep each top-level area narrowly scoped:
 
 - `skills/`: the only canonical published skill source.
 - `examples/`: user-visible scenario inputs for behavior testing and documentation.
-- `docs/user/`: user-facing operational and release documentation.
+- `docs/manual/`: the primary end-user manual for installation, skill selection, workflows, and troubleshooting.
+- `docs/user/`: supplemental user-facing scenario and testing guidance.
 - `templates/governance/`: reusable platform-specific governance templates used for installation and rule injection.
 - `templates/evaluation/`: evaluation-only report templates used by the maintainer toolchain.
-- `maintainer/scripts/install/`: stable user-facing entrypoints for installation and local mirror sync.
+- `maintainer/scripts/install/`: the installer entrypoint plus repo-development install helpers.
 - `docs/maintainer/`: maintainer notes, evaluations, and repair plans.
 - `maintainer/data/`: shared evaluation fixtures, rubrics, and trigger matrices.
 - `maintainer/scripts/evaluation/`: maintainer-only scoring, trigger, and report-generation utilities.
@@ -297,44 +268,18 @@ Local tool-specific mirrors and generated install outputs must stay out of the p
 Generated install artifacts in consumer repositories include:
 
 - `.cursor/`
-- `.agent/`
 - `.claude/`
 - `AGENTS.md`
 
 In this repository itself, internal evaluation assets live under `maintainer/` and are not part of the published skill source tree.
 
-## OpenSkills
+## Maintainer And Repo Development
 
-Use `skills/` as the installation source.
+The sections below are for maintaining this repository, validating skills, or developing repo-local tooling. If your goal is simply to install and use the library, start with [`Agent Skills 使用手册`](docs/manual/README.md).
 
-Install all skills from a published repository:
+For a maintainer-oriented entry point, start with [`docs/maintainer/README.md`](docs/maintainer/README.md). For the current skill/governance split and governance template boundaries, see [`docs/maintainer/skill-and-governance-architecture.md`](docs/maintainer/skill-and-governance-architecture.md).
 
-```bash
-npx openskills install your-org/agent-skills --universal
-npx openskills sync
-```
-
-Install one skill directly:
-
-```bash
-npx openskills install your-org/agent-skills/skills/scoped-tasking --universal
-npx openskills sync
-```
-
-For local development against this repository:
-
-```bash
-npx openskills install ./skills --universal
-npx openskills sync
-```
-
-Always install from `./skills`, not from the repository root. Installing from the root causes the OpenSkills scanner to find duplicate skills in generated local directories such as `.agent/skills/`.
-
-`--universal` installs to `.agent/skills/`, which is the safer default for multi-agent setups. If you prefer the default OpenSkills layout, omit `--universal`.
-
-For release readiness and acceptance checks, use [`docs/user/OPENSKILLS-RELEASE-CHECKLIST.md`](docs/user/OPENSKILLS-RELEASE-CHECKLIST.md).
-
-## Governance Setup
+### Governance Setup
 
 The `multi-agent-protocol` skill works best when paired with project-level governance rules. Ready-made platform templates live in `templates/governance/AGENTS-template.md` and `templates/governance/CLAUDE-template.md`.
 
@@ -368,7 +313,7 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 
 The script auto-detects installed platforms (Cursor, Codex, Claude Code) and places skills in the appropriate directory.
 
-## Local Mirrors
+### Local Mirrors
 
 If you want local Cursor or Claude discovery while working in this repository, generate a tool-specific mirror from `skills/`:
 
@@ -388,7 +333,7 @@ python3 maintainer/scripts/install/manage-governance.py --check-local claude
 
 Note: These mirrors copy entire skill directories, including subdirectories such as `scripts/`, `references/`, and `fixtures/` for skills that have them. This ensures that relative path references within skill instructions remain valid.
 
-## How to Test Skills
+### How to Test Skills
 
 Skill testing in this repository is intentionally lightweight. These skills shape agent behavior, so the most useful checks combine one static verification step with one scenario-based behavior review.
 
@@ -406,8 +351,6 @@ Use this three-part loop:
 1. Verify the relevant local mirror is current.
 2. Run one or more example scenarios as acceptance tests.
 3. Record whether the agent behavior matched the intended skill guardrails.
-
-Before release, also run an OpenSkills install smoke test using the checklist in [`docs/user/OPENSKILLS-RELEASE-CHECKLIST.md`](docs/user/OPENSKILLS-RELEASE-CHECKLIST.md).
 
 For a quick introduction to skill testing with practical scenarios, see [`docs/user/SKILL-TESTING-QUICK-START.md`](docs/user/SKILL-TESTING-QUICK-START.md).
 
@@ -489,6 +432,8 @@ The generated report is designed for lightweight regression checks across skill 
 ## How to Use
 
 Use these skills as composable working constraints, not as rigid scripts.
+
+For a user-facing explanation of installation choices, skill selection, workflows, and troubleshooting, see [`Agent Skills 使用手册`](docs/manual/README.md).
 
 1. Start with the smallest set of skills that fits the task.
 2. Add skills only when the task shape justifies them.

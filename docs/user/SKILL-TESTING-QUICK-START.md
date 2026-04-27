@@ -136,7 +136,7 @@ When running a test scenario, expect output similar to:
 2. **Check skills are available:**
    ```bash
    # Verify skills directory exists
-   ls -la .claude/skills/ || ls -la .agent/skills/
+   ls -la .claude/skills/ || ls -la .cursor/skills/
    ```
 
 3. **Explicitly request protocol:**
@@ -154,7 +154,7 @@ When running a test scenario, expect output similar to:
 2. **Check skill availability:**
    ```bash
    # List installed skills
-   ls -1 .claude/skills/ || ls -1 .agent/skills/
+   ls -1 .claude/skills/ || ls -1 .cursor/skills/
    ```
 
 3. **Verify scenario matches trigger conditions:**

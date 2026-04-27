@@ -104,12 +104,12 @@ All automated checks passed:
 - Initial release of 10 agent execution and orchestration skills
 - Execution skills: scoped-tasking, minimal-change-strategy, plan-before-action, targeted-validation, context-budget-awareness, read-and-locate, safe-refactor, bugfix-workflow
 - Orchestration skills: subagent-orchestration, conflict-resolution
-- OpenSkills installation support with `--universal` flag
+- Initial third-party CLI installation path
 - Cursor mirror sync script (`maintainer/scripts/install/sync-cursor-skills.py`)
 - Skill test report generator (`maintainer/scripts/evaluation/generate-skill-test-report.py`)
 - Skill transcript scorer (`maintainer/scripts/evaluation/score-skill-transcript.py`)
 - Example scenarios for single-agent bugfix, safe refactor, read-and-locate, context-budgeted debugging, and multi-agent root cause analysis
-- OpenSkills release checklist under `docs/user/`
+- Initial release-readiness checklist under `docs/user/`
 - GitHub Actions CI for format validation and install smoke testing
 - LICENSE (MIT)
 - SECURITY.md
