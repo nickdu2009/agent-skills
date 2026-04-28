@@ -1,8 +1,13 @@
 #!/bin/bash
 # 检测阿里云 DashScope 可用模型
 
-API_KEY="sk-..."
-BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
+API_KEY="${DASHSCOPE_API_KEY:-${OPENAI_API_KEY:-}}"
+BASE_URL="${DASHSCOPE_BASE_URL:-${OPENAI_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}}"
+
+if [[ -z "$API_KEY" ]]; then
+    echo "Error: set DASHSCOPE_API_KEY or OPENAI_API_KEY before running this script." >&2
+    exit 1
+fi
 
 echo "=================================================="
 echo "  检测阿里云 DashScope 可用模型"
