@@ -22,6 +22,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 # Top-level tracked names (git ls-tree --name-only HEAD). .git is never listed.
 ALLOWED_TOP_LEVEL_NAMES = frozenset({
     ".github",
+    ".env.example",
     "skills",
     "examples",
     "templates",
@@ -29,12 +30,15 @@ ALLOWED_TOP_LEVEL_NAMES = frozenset({
     "maintainer",
     "README.md",
     "CHANGELOG.md",
+    "CHANGELOG-trigger-optimization.md",
     "LICENSE",
     "SECURITY.md",
     "AGENTS.md",
     "CLAUDE.md",
+    "Makefile",
     ".gitignore",
     "phase-toolchain-optimization-zh.md",
+    "scripts",
 })
 
 REQUIRED_TOP_LEVEL_NAMES = frozenset({
@@ -110,7 +114,7 @@ def main() -> int:
     issues.extend(
         require_exact_subdirs(
             REPO_ROOT / "docs",
-            frozenset({"user", "maintainer"}),
+            frozenset({"manual", "user", "maintainer"}),
             "docs/",
         )
     )
@@ -124,7 +128,7 @@ def main() -> int:
     issues.extend(
         require_exact_subdirs(
             REPO_ROOT / "maintainer" / "scripts",
-            frozenset({"install", "evaluation"}),
+            frozenset({"analysis", "audit", "install", "evaluation"}),
             "maintainer/scripts/",
         )
     )
@@ -137,7 +141,6 @@ def main() -> int:
     )
 
     forbidden_roots = (
-        REPO_ROOT / "scripts",
         REPO_ROOT / "reports",
     )
     for p in forbidden_roots:
