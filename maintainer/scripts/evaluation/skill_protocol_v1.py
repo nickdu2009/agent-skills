@@ -18,6 +18,7 @@ EXECUTION_SKILLS: tuple[str, ...] = (
     "impact-analysis",
     "self-review",
     "incremental-delivery",
+    "knowledge-driven-development",
 )
 
 ORCHESTRATION_SKILLS: tuple[str, ...] = (
@@ -83,6 +84,13 @@ SKILL_OUTPUT_FIELDS: dict[str, tuple[str, ...]] = {
     "impact-analysis": ("affected_callers", "contracts", "compatibility_risks"),
     "self-review": ("findings", "residual_risks", "scope_violations"),
     "incremental-delivery": ("increments", "merge_order", "gates"),
+    "knowledge-driven-development": (
+        "knowledge_root",
+        "knowledge_read",
+        "candidate_updates",
+        "promoted_updates",
+        "local_only_notes",
+    ),
     "multi-agent-protocol": ("split_dimension", "lanes", "integration_plan", "synthesis"),
     "conflict-resolution": ("claims", "evidence", "resolution", "residual_uncertainty"),
     "phase-plan": ("plan_artifacts", "waves", "gates", "ownership"),

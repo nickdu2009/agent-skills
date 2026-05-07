@@ -788,6 +788,54 @@ NUMERIC_BOUNDARY_CASES: tuple[TriggerCase, ...] = (
 
 
 # ---------------------------------------------------------------------------
+# Category 14: Knowledge-driven development triggers
+# ---------------------------------------------------------------------------
+
+KNOWLEDGE_DRIVEN_CASES: tuple[TriggerCase, ...] = (
+    TriggerCase(
+        id="knowledge-init-project-kb",
+        prompt="Set up a reusable project knowledge base under docs/knowledge-driven-development so future agent sessions read it before development.",
+        expected_triggers=("knowledge-driven-development",),
+        expected_non_triggers=("phase-plan",),
+        category="knowledge-driven",
+        notes="Explicit request to create the project knowledge root. knowledge-driven-development should trigger.",
+    ),
+    TriggerCase(
+        id="knowledge-capture-runbook",
+        prompt="We just learned the staging API requires a special base path and a keyauth header. Please capture that as reusable project knowledge after the fix is verified.",
+        expected_triggers=("knowledge-driven-development",),
+        expected_non_triggers=("safe-refactor",),
+        category="knowledge-driven",
+        notes="Reusable implementation finding should be captured after verification.",
+    ),
+    TriggerCase(
+        id="knowledge-agents-required",
+        prompt="AGENTS.md says this repo uses docs/knowledge-driven-development. Before changing the payment adapter, read the relevant project knowledge and update the active log if you discover anything reusable.",
+        expected_triggers=("knowledge-driven-development",),
+        expected_non_triggers=("phase-plan",),
+        category="knowledge-driven",
+        notes="Project governance explicitly requires knowledge lookup and possible capture.",
+    ),
+    TriggerCase(
+        id="knowledge-local-private-context",
+        prompt="Record my local staging project IDs and temporary request IDs for this debugging session, but keep them out of shared docs and version control.",
+        expected_triggers=("knowledge-driven-development",),
+        expected_non_triggers=("self-review",),
+        category="knowledge-driven",
+        notes="Local-only knowledge should use local active log, not shared project docs.",
+    ),
+    TriggerCase(
+        id="knowledge-control-simple-question",
+        prompt="What is the difference between project documentation and local notes?",
+        expected_triggers=(),
+        expected_non_triggers=("knowledge-driven-development",),
+        category="knowledge-driven",
+        notes="Conceptual one-off question. No repository knowledge workflow is needed.",
+    ),
+)
+
+
+# ---------------------------------------------------------------------------
 # Aggregate
 # ---------------------------------------------------------------------------
 
@@ -804,6 +852,7 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
     *CONFUSION_BOUNDARY_CASES,
     *COMBO_TRIGGER_CASES,
     *NUMERIC_BOUNDARY_CASES,
+    *KNOWLEDGE_DRIVEN_CASES,
 )
 
 ALL_TRIGGER_CASES_BY_ID: dict[str, TriggerCase] = {
@@ -823,6 +872,7 @@ CATEGORIES: tuple[str, ...] = (
     "confusion-boundary",
     "combo-trigger",
     "numeric-boundary",
+    "knowledge-driven",
 )
 
 

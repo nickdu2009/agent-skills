@@ -61,6 +61,10 @@ SKILL_RUBRICS: dict[str, tuple[str, ...]] = {
         "Pass if the symptom and fault domain are evidenced before the fix is applied.",
         "Fail if the agent patches speculative causes without confirming the failure path.",
     ),
+    "knowledge-driven-development": (
+        "Pass if the agent reads relevant project knowledge before work, separates shared project knowledge from local-only notes, and reports knowledge updates.",
+        "Fail if reusable findings remain only in conversation, local/private details enter shared docs, or assumptions are promoted without evidence.",
+    ),
     "multi-agent-protocol": (
         "Pass if tiered parallelism is used appropriately with clear assignments, Tier 2 gate declarations, and structured merge.",
         "Fail if the task is split despite heavy overlap, the Tier 2 gate is skipped, or write scopes overlap without explicit management.",

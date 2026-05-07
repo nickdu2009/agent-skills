@@ -64,6 +64,7 @@ Included execution skills:
 - `impact-analysis`
 - `self-review`
 - `incremental-delivery`
+- `knowledge-driven-development`
 
 ### Orchestration Skills
 
@@ -149,6 +150,12 @@ Add `incremental-delivery` when:
 - each increment can be merged and validated independently
 - the task is too large for a single PR but too small for the phase system
 
+Add `knowledge-driven-development` when:
+
+- a long-running repository should preserve reusable project knowledge across conversations
+- a project has or needs `docs/knowledge-driven-development/`
+- implementation findings, runbooks, validation evidence, or architecture decisions should be captured and reused
+
 ### Phase Skills
 
 Phase skills provide a schema-first multi-wave execution system for large implementation projects. They are significantly heavier than execution and orchestration skills and should only be introduced when the task warrants structured project-level coordination.
@@ -204,6 +211,7 @@ skills/
   impact-analysis/
   self-review/
   incremental-delivery/
+  knowledge-driven-development/
   multi-agent-protocol/
   conflict-resolution/
 templates/

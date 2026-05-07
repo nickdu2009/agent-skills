@@ -1,10 +1,10 @@
 {
   "schema_version": "0.1.0",
-  "generated_at": "2026-04-11T02:56:32.252096+00:00",
+  "generated_at": "2026-05-07T08:15:48.191455+00:00",
   "skills": [
     {
       "name": "bugfix-workflow",
-      "description": "Guide bug diagnosis, narrowing, fixing, and verification through an evidence-first workflow. Use when a bug or unexpected behavior is reported and the root cause is not yet confirmed.",
+      "description": "Diagnose, narrow, fix, and verify bugs through an evidence-first workflow. Use when a bug or unexpected behavior is reported, test failures need investigation, intermittent issues surface in production, or the root cause is not yet confirmed. Triggers on \"broken\", \"failing\", \"error\", \"bug\", or \"unexpected behavior\" keywords.",
       "directory": "skills/bugfix-workflow",
       "family": "execution",
       "version": "0.1.0",
@@ -17,7 +17,7 @@
     },
     {
       "name": "conflict-resolution",
-      "description": "Compare and arbitrate conflicting findings from parallel investigations or competing hypotheses. Typically loaded by the multi-agent-protocol synthesis step when subagent results disagree, or when the agent holds two plausible explanations with different supporting evidence.",
+      "description": "Compare and arbitrate conflicting findings from parallel investigations or competing hypotheses. Typically loaded by multi-agent-protocol synthesis step when subagent results disagree, or when the agent holds two plausible explanations with different supporting evidence. Use for merge conflicts, disagreements between investigation paths, or overlapping findings from parallel work. Triggers on \"conflicting\", \"disagree\", \"contradictory\", or synthesis with 2+ divergent conclusions.",
       "directory": "skills/conflict-resolution",
       "family": "orchestration",
       "version": "0.1.0",
@@ -82,8 +82,21 @@
       ]
     },
     {
+      "name": "knowledge-driven-development",
+      "description": "Guide agents to preserve and reuse project knowledge across long-running software work. Use when a repository has or needs docs/knowledge-driven-development, when reusable implementation findings should be captured, when validated discoveries should become project runbooks or decisions, or when AGENTS.md requires knowledge lookup before development.",
+      "directory": "skills/knowledge-driven-development",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "knowledge",
+        "workflow"
+      ]
+    },
+    {
       "name": "minimal-change-strategy",
-      "description": "Constrain a code change to the smallest viable patch. Use when (1) user says \"don't change X\" or \"keep Y unchanged\" WITHOUT refactor verbs like \"simplify/extract/consolidate\", (2) multiple implementation approaches exist and smallest must be chosen, (3) diff is growing beyond task scope, (4) operation is irreversible (database drop, force push), or (5) cleanup temptation is high. Do NOT use when task has explicit refactor intent like \"simplify/extract/consolidate\". Not needed for simple edits.",
+      "description": "Constrain a code change to the smallest viable patch when the diff is growing beyond the task, cleanup temptation is high, choosing between competing implementation approaches, or multiple edit strategies compete. Use when user requests minimal change, operation is irreversible, or surrounding code tempts drive-by fixes. Not needed for simple single-file fixes where CLAUDE.md Change Rules suffice.",
       "directory": "skills/minimal-change-strategy",
       "family": "execution",
       "version": "0.1.0",
@@ -146,7 +159,7 @@
     },
     {
       "name": "read-and-locate",
-      "description": "Find files and edit points in unfamiliar code BEFORE making changes. Use when (1) \"Find where X is defined/located/implemented\", (2) module known but exact file unknown (e.g. \"somewhere in billing module\"), (3) must trace runtime/data path to find edit point. Pattern \"Find where\" or \"I know it exists in X but need exact file\" triggers this. Do NOT use for (1) \"Find all callers/references/usages\" (use grep instead), or (2) pure information queries without edit intent.",
+      "description": "Find the relevant files, code paths, and edit points in an unfamiliar area of the codebase when the agent must trace a runtime, data, ownership, or configuration path. Use when module is known but exact file is unknown, or must locate where a feature is implemented. Triggers on \"Find where\", \"locate implementation\", or \"somewhere in X module\" patterns. Do not use for reference searches or pure information queries without edit intent.",
       "directory": "skills/read-and-locate",
       "family": "execution",
       "version": "0.1.0",
@@ -159,7 +172,7 @@
     },
     {
       "name": "safe-refactor",
-      "description": "Guide small, controlled refactors that improve code structure while keeping behavior and interfaces stable. Use when the task is structural cleanup, extraction, or simplification — not a behavior change.",
+      "description": "Guide small, controlled refactors that improve code structure while keeping behavior and interfaces stable. Use when the task is structural cleanup (extract duplicate code, consolidate similar functions, simplify tangled logic), pre-refactor for a feature, or local improvement is needed without behavior change. Triggers on \"refactor\", \"extract\", \"consolidate\", \"simplify\", or \"cleanup\" keywords.",
       "directory": "skills/safe-refactor",
       "family": "execution",
       "version": "0.1.0",
