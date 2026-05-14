@@ -1,4 +1,4 @@
 interface:
   display_name: "Knowledge Driven Development"
-  short_description: "Preserve and reuse project knowledge across long-running development work"
-  default_prompt: "Use $knowledge-driven-development when a repository should consult docs/knowledge-driven-development before work, capture reusable findings while developing, separate shared project knowledge from local-only notes, and promote validated discoveries into durable project docs."
+  short_description: "Bridge legacy KDD docs into Worktrail or fall back to old-format project knowledge"
+  default_prompt: "Use $knowledge-driven-development when a repository still has docs/knowledge-driven-development, should migrate it with worktrail import kdd, or needs a legacy shared/local knowledge fallback because Worktrail is unavailable."

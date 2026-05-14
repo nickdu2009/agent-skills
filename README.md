@@ -153,8 +153,8 @@ Add `incremental-delivery` when:
 Add `knowledge-driven-development` when:
 
 - a long-running repository should preserve reusable project knowledge across conversations
-- a project has or needs `docs/knowledge-driven-development/`
-- implementation findings, runbooks, validation evidence, or architecture decisions should be captured and reused
+- a project still has `docs/knowledge-driven-development/` and needs it read or migrated into Worktrail
+- Worktrail is unavailable and implementation findings, runbooks, validation evidence, or architecture decisions still need a legacy shared/local docs fallback
 
 ### Phase Skills
 

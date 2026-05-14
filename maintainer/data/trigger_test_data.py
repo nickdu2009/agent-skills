@@ -794,27 +794,27 @@ NUMERIC_BOUNDARY_CASES: tuple[TriggerCase, ...] = (
 KNOWLEDGE_DRIVEN_CASES: tuple[TriggerCase, ...] = (
     TriggerCase(
         id="knowledge-init-project-kb",
-        prompt="Set up a reusable project knowledge base under docs/knowledge-driven-development so future agent sessions read it before development.",
+        prompt="This repo still has docs/knowledge-driven-development. Dry-run a migration into Worktrail and tell me what would become pending candidates.",
         expected_triggers=("knowledge-driven-development",),
         expected_non_triggers=("phase-plan",),
         category="knowledge-driven",
-        notes="Explicit request to create the project knowledge root. knowledge-driven-development should trigger.",
+        notes="Explicit request to bridge legacy KDD docs into Worktrail. knowledge-driven-development should trigger.",
     ),
     TriggerCase(
         id="knowledge-capture-runbook",
-        prompt="We just learned the staging API requires a special base path and a keyauth header. Please capture that as reusable project knowledge after the fix is verified.",
+        prompt="Worktrail is not available in this old repo. We just learned the staging API requires a special base path and a keyauth header. Please capture that as reusable project knowledge after the fix is verified.",
         expected_triggers=("knowledge-driven-development",),
         expected_non_triggers=("safe-refactor",),
         category="knowledge-driven",
-        notes="Reusable implementation finding should be captured after verification.",
+        notes="Reusable implementation finding should use the legacy KDD fallback when Worktrail is unavailable.",
     ),
     TriggerCase(
         id="knowledge-agents-required",
-        prompt="AGENTS.md says this repo uses docs/knowledge-driven-development. Before changing the payment adapter, read the relevant project knowledge and update the active log if you discover anything reusable.",
+        prompt="AGENTS.md says this repo uses docs/knowledge-driven-development. Before changing the payment adapter, read the relevant legacy project knowledge and migrate it with worktrail import kdd if the user approves.",
         expected_triggers=("knowledge-driven-development",),
         expected_non_triggers=("phase-plan",),
         category="knowledge-driven",
-        notes="Project governance explicitly requires knowledge lookup and possible capture.",
+        notes="Project governance explicitly references legacy KDD and should trigger the bridge workflow.",
     ),
     TriggerCase(
         id="knowledge-local-private-context",

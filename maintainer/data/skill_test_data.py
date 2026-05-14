@@ -62,8 +62,8 @@ SKILL_RUBRICS: dict[str, tuple[str, ...]] = {
         "Fail if the agent patches speculative causes without confirming the failure path.",
     ),
     "knowledge-driven-development": (
-        "Pass if the agent reads relevant project knowledge before work, separates shared project knowledge from local-only notes, and reports knowledge updates.",
-        "Fail if reusable findings remain only in conversation, local/private details enter shared docs, or assumptions are promoted without evidence.",
+        "Pass if the agent treats legacy KDD as a Worktrail migration bridge, uses worktrail import kdd when available, preserves shared/local separation, and reports pending or promoted knowledge updates.",
+        "Fail if legacy KDD and Worktrail become competing sources of truth, local/private details enter shared docs, or imported assumptions are promoted without evidence and approval.",
     ),
     "multi-agent-protocol": (
         "Pass if tiered parallelism is used appropriately with clear assignments, Tier 2 gate declarations, and structured merge.",

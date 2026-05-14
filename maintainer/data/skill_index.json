@@ -1,6 +1,6 @@
 {
   "schema_version": "0.1.0",
-  "generated_at": "2026-05-07T08:15:48.191455+00:00",
+  "generated_at": "2026-05-14T07:45:07.543223+00:00",
   "skills": [
     {
       "name": "bugfix-workflow",
@@ -83,15 +83,17 @@
     },
     {
       "name": "knowledge-driven-development",
-      "description": "Guide agents to preserve and reuse project knowledge across long-running software work. Use when a repository has or needs docs/knowledge-driven-development, when reusable implementation findings should be captured, when validated discoveries should become project runbooks or decisions, or when AGENTS.md requires knowledge lookup before development.",
+      "description": "Legacy bridge for repositories that still use docs/knowledge-driven-development. Prefer Worktrail for durable project knowledge; use this skill to read existing KDD roots, migrate them with worktrail import kdd, or fall back to the legacy docs workflow when Worktrail is unavailable.",
       "directory": "skills/knowledge-driven-development",
       "family": "execution",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tags": [
         "coding",
         "agents",
         "knowledge",
-        "workflow"
+        "workflow",
+        "worktrail",
+        "migration"
       ]
     },
     {

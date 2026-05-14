@@ -104,7 +104,7 @@ def test_project_install_installs_all_skills(module) -> None:
         claude_md = project / "CLAUDE.md"
         assert_exists(claude_md)
         assert_contains(claude_md, "## Multi-Agent Rules")
-        assert_contains(claude_md, "base-level CLAUDE.md rules")
+        assert_contains(claude_md, "`CLAUDE.md` is the governance and routing layer")
         assert_contains(claude_md, "## Skill Escalation")
         assert_contains(claude_md, "## Skill Lifecycle")
         assert_contains(claude_md, "## Skill Family Concurrency Budgets")
@@ -119,8 +119,8 @@ def test_agents_template_selection() -> None:
 
         agents_md = project / "AGENTS.md"
         assert_exists(agents_md)
-        assert_contains(agents_md, "base-level AGENTS.md rules")
-        assert_not_contains(agents_md, "base-level CLAUDE.md rules")
+        assert_contains(agents_md, "`AGENTS.md` is the governance and routing layer")
+        assert_not_contains(agents_md, "`CLAUDE.md` is the governance and routing layer")
         assert_no_forbidden_runtime_references(project, agents_md)
 
 
