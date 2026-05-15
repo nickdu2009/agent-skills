@@ -53,7 +53,7 @@
 ## 我可以只安装一个技能吗
 <div class="title-en">Can I Install Just One Skill</div>
 
-当前公开支持的安装入口不是“单个技能安装”，而是通过 `manage-governance.py` 安装完整技能库，并按需要选择是否同时注入治理规则。  
+当前公开支持的安装入口不是“单个技能安装”，而是通过 `manage-governance.py` 安装当前支持的技能库，并按需要选择是否同时注入治理规则。Legacy KDD 源码保留在仓库中用于迁移参考，但不再安装。
 
 如果你只是想减少对目标项目的改动，可以使用：
 

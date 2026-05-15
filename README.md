@@ -64,7 +64,6 @@ Included execution skills:
 - `impact-analysis`
 - `self-review`
 - `incremental-delivery`
-- `knowledge-driven-development`
 
 ### Orchestration Skills
 
@@ -150,11 +149,10 @@ Add `incremental-delivery` when:
 - each increment can be merged and validated independently
 - the task is too large for a single PR but too small for the phase system
 
-Add `knowledge-driven-development` when:
-
-- a long-running repository should preserve reusable project knowledge across conversations
-- a project still has `docs/knowledge-driven-development/` and needs it read or migrated into Worktrail
-- Worktrail is unavailable and implementation findings, runbooks, validation evidence, or architecture decisions still need a legacy shared/local docs fallback
+Legacy `knowledge-driven-development` source remains in this repository for old
+KDD migration reference, but it is no longer installed by `manage-governance.py`.
+Use Worktrail for durable project knowledge instead of installing KDD as a live
+skill.
 
 ### Phase Skills
 
@@ -293,7 +291,7 @@ The `multi-agent-protocol` skill works best when paired with project-level gover
 
 Those governance files are the routing layer, not per-skill manuals: they define when skills activate, how they hand off, and when they retire, while each skill's detailed behavior stays in its own `SKILL.md`.
 
-The complete supported install flow lives in one script: `maintainer/scripts/install/manage-governance.py`. The installer has a single install semantic: install the full skill library and inject the matching governance rules.
+The complete supported install flow lives in one script: `maintainer/scripts/install/manage-governance.py`. The installer has a single install semantic: install the supported skill library and inject the matching governance rules. Legacy KDD source is retained in the repo but is not installed.
 
 Install both the governance skills and inject the rules into a project:
 

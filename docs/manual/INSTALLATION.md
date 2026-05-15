@@ -75,8 +75,10 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 
 这条命令的目标是一次性完成两件事：
 
-- 安装完整技能库
+- 安装当前支持的技能库
 - 注入匹配的治理规则
+
+Legacy KDD (`knowledge-driven-development`) 源码仍保留在仓库中用于历史迁移参考，但不再由安装器安装。需要项目知识沉淀时，优先使用 Worktrail。
 
 ### 项目安装变体
 <div class="title-en">Project Variants</div>

@@ -18,6 +18,7 @@ SOURCE_DIR = REPO_ROOT / "skills"
 SKILL_FILE = "SKILL.md"
 AGENTS_TEMPLATE_PATH = REPO_ROOT / "templates" / "governance" / "AGENTS-template.md"
 CLAUDE_TEMPLATE_PATH = REPO_ROOT / "templates" / "governance" / "CLAUDE-template.md"
+NON_INSTALLABLE_SKILLS = frozenset({"knowledge-driven-development"})
 
 
 @dataclass(frozen=True)
@@ -87,6 +88,14 @@ def discover_source_skills() -> list[Path]:
         if child.is_dir() and (child / SKILL_FILE).exists():
             skill_dirs.append(child)
     return skill_dirs
+
+
+def discover_installable_skills() -> list[Path]:
+    return [
+        skill_dir
+        for skill_dir in discover_source_skills()
+        if skill_dir.name not in NON_INSTALLABLE_SKILLS
+    ]
 
 
 def discover_target_skills(target: MirrorTarget) -> list[Path]:
@@ -553,7 +562,7 @@ def main(argv: list[str] | None = None) -> int:
         target = LOCAL_MIRROR_TARGETS[target_key]
 
         try:
-            skill_dirs = discover_source_skills()
+            skill_dirs = discover_installable_skills()
         except FileNotFoundError as exc:
             print(str(exc), file=sys.stderr)
             return 2
@@ -578,7 +587,7 @@ def main(argv: list[str] | None = None) -> int:
 
         check_dir = project_dir if mode == "check-project" else None
         location = f"project ({project_dir})" if check_dir else "global"
-        skill_dirs = discover_source_skills()
+        skill_dirs = discover_installable_skills()
         skill_names = tuple(skill_dir.name for skill_dir in skill_dirs)
 
         print("")
@@ -611,7 +620,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Detected platforms: {' '.join(platforms)}")
     print("")
 
-    skill_dirs = discover_source_skills()
+    skill_dirs = discover_installable_skills()
     skill_names = tuple(skill_dir.name for skill_dir in skill_dirs)
     do_install_skills = mode in {"global", "project", "skills-project"}
     do_inject_rules = mode in {"project", "rules"}

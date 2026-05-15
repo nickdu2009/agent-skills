@@ -91,15 +91,17 @@ def assert_no_forbidden_runtime_references(project: Path, governance_file: Path)
             assert_not_contains(skill_file, snippet)
 
 
-def test_project_install_installs_all_skills(module) -> None:
+def test_project_install_installs_installable_skills(module) -> None:
     with tempfile.TemporaryDirectory(prefix="install-project-") as project_dir:
         project = Path(project_dir)
 
         run_cli(["--project", str(project), "--platform", "claude-code", "--force"])
 
-        for skill_dir in module.discover_source_skills():
+        for skill_dir in module.discover_installable_skills():
             skill = skill_dir.name
             assert_exists(project / ".claude" / "skills" / skill / "SKILL.md")
+        for skill in module.NON_INSTALLABLE_SKILLS:
+            assert_missing(project / ".claude" / "skills" / skill / "SKILL.md")
 
         claude_md = project / "CLAUDE.md"
         assert_exists(claude_md)
@@ -142,6 +144,7 @@ def test_local_mirror_sync_and_check(module) -> None:
 
             assert_exists(mirror_target.target_dir / "phase-contract-tools" / "scripts")
             assert_missing(mirror_target.target_dir / "scoped-tasking" / "scripts")
+            assert_missing(mirror_target.target_dir / "knowledge-driven-development" / "SKILL.md")
 
             if module.main(["--sync-local", "cursor", "--check"]) != 0:
                 fail("expected local mirror check to pass after sync")
@@ -157,7 +160,7 @@ def test_local_mirror_sync_and_check(module) -> None:
 
 def main() -> int:
     module = load_installer_module()
-    test_project_install_installs_all_skills(module)
+    test_project_install_installs_installable_skills(module)
     test_agents_template_selection()
     test_local_mirror_sync_and_check(module)
     print("OK: manage-governance temporary-directory smoke tests passed")

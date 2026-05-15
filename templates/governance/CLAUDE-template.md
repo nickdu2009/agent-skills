@@ -60,30 +60,6 @@ Skills activate via:
 
 **Skip `[task-validation]` and `[triggers]`** for fast-path tasks. Proceed directly.
 
-## Knowledge-Driven Development
-
-Use `knowledge-driven-development` when non-trivial project work should consult, capture, or promote reusable repository knowledge.
-
-Default knowledge root: `docs/knowledge-driven-development/`
-
-**Before implementation:**
-
-- Read the knowledge root README when it exists.
-- Read relevant shared knowledge under `project/`.
-- Read `local/` only when the task depends on local environment, live systems, credentials, or temporary scopes.
-
-**During implementation:**
-
-- Record reusable shared findings in `project/active-knowledge-log.md`.
-- Record current-developer findings in `local/active-knowledge-log.md`.
-- Keep `local/` ignored by version control.
-
-**Before final response:**
-
-- Promote verified shared findings to the right `project/` category when appropriate.
-- Report which knowledge files were read or updated.
-- Never write raw secrets, tokens, cookies, DSNs, or private credentials into shared knowledge.
-
 ## Skill Escalation
 
 Escalate when base-level governance rules insufficient:
@@ -95,7 +71,6 @@ Escalate when base-level governance rules insufficient:
 - `impact-analysis`: Change affects 3+ callers, public API/shared type, data model across modules, or 3+ tentative leads.
 - `self-review`: Multi-file edits complete, or user requests diff review.
 - `incremental-delivery`: Plan spans 2–4 PRs across 1–2 modules, serially deliverable.
-- `knowledge-driven-development`: Long-running project work needs reusable knowledge capture, project runbooks, architecture decisions, validation evidence, or a `docs/knowledge-driven-development/` workflow.
 - `phase-plan`: Task exceeds 4 PRs or requires wave-level coordination with parallel lanes.
 - `phase-execute`: Phase plan accepted and ready for wave implementation.
 - `phase-plan-review`: Phase plan produced and needs acceptance gate before execution.
@@ -115,7 +90,6 @@ Escalate when base-level governance rules insufficient:
 - `impact-analysis`: plan produced.
 - `self-review`: diff passes review.
 - `incremental-delivery`: increment list finalized.
-- `knowledge-driven-development`: knowledge read/capture/promotion reported.
 - `phase-plan`: plan.yaml and wave docs produced.
 - `phase-execute`: wave execution complete and results integrated.
 - `phase-plan-review`: acceptance gate passed or blocked.
@@ -188,7 +162,7 @@ V1 verbose YAML blocks `[block-name]...[/block-name]` remain supported for compl
 ## Skill Family Concurrency Budgets
 
 **By family:**
-- Execution (max 4): `scoped-tasking`, `read-and-locate`, `bugfix-workflow`, `safe-refactor`, `plan-before-action`, `design-before-plan`, `minimal-change-strategy`, `targeted-validation`, `self-review`, `context-budget-awareness`, `impact-analysis`, `incremental-delivery`, `knowledge-driven-development`
+- Execution (max 4): `scoped-tasking`, `read-and-locate`, `bugfix-workflow`, `safe-refactor`, `plan-before-action`, `design-before-plan`, `minimal-change-strategy`, `targeted-validation`, `self-review`, `context-budget-awareness`, `impact-analysis`, `incremental-delivery`
 - Orchestration (max 1): `multi-agent-protocol`, `conflict-resolution`
 - Primary Phase (max 1): `phase-plan`, `phase-execute`, `phase-plan-review`
 - `phase-contract-tools`: coexist with 1 primary phase skill, or run alone
@@ -205,7 +179,6 @@ Refactor:      scoped-tasking → safe-refactor + minimal-change-strategy → se
 Multi-file:    scoped-tasking → plan-before-action → minimal-change-strategy → self-review → targeted-validation
 Design-first:  scoped-tasking → design-before-plan → plan-before-action → minimal-change-strategy → self-review → targeted-validation
 Large task:    scoped-tasking → design-before-plan → impact-analysis → plan-before-action → incremental-delivery
-Knowledge:     knowledge-driven-development → targeted-validation (if evidence is needed)
 Parallel:      multi-agent-protocol → conflict-resolution (if needed)
 ```
 

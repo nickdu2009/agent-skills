@@ -31,6 +31,10 @@
 ## 基础执行技能
 <div class="title-en">Core Execution Skills</div>
 
+Legacy KDD (`knowledge-driven-development`) 源码仍保留在仓库中用于旧
+`docs/knowledge-driven-development/` 迁移参考，但它不属于当前安装技能集，
+`manage-governance.py` 不再安装它。
+
 ### `scoped-tasking`
 
 先把宽泛任务压缩到最小有用边界，避免一上来就读太多文件或把任务做大。
