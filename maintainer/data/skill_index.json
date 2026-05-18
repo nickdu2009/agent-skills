@@ -16,32 +16,6 @@
       ]
     },
     {
-      "name": "conflict-resolution",
-      "description": "Compare and arbitrate conflicting findings from parallel investigations or competing hypotheses. Typically loaded by multi-agent-protocol synthesis step when subagent results disagree, or when the agent holds two plausible explanations with different supporting evidence. Use for merge conflicts, disagreements between investigation paths, or overlapping findings from parallel work. Triggers on \"conflicting\", \"disagree\", \"contradictory\", or synthesis with 2+ divergent conclusions.",
-      "directory": "skills/conflict-resolution",
-      "family": "orchestration",
-      "version": "0.1.0",
-      "tags": [
-        "coding",
-        "agents",
-        "orchestration",
-        "efficiency"
-      ]
-    },
-    {
-      "name": "context-budget-awareness",
-      "description": "Compress working state when investigation is stuck. Use when (1) 8+ files read without convergence (not 7), (2) same file read 3+ times without new leads, (3) 4+ hypotheses listed with \"could be X, Y, Z, or W\" pattern without evidence ranking, or (4) last 3+ actions didn't advance the goal. Pattern \"could be...or...or...or\" with 4+ options triggers this.",
-      "directory": "skills/context-budget-awareness",
-      "family": "execution",
-      "version": "0.2.0",
-      "tags": [
-        "coding",
-        "agents",
-        "orchestration",
-        "efficiency"
-      ]
-    },
-    {
       "name": "design-before-plan",
       "description": "Clarify requirements, compare design alternatives, define interface contracts, and establish acceptance criteria before planning implementation. Use when (1) task involves choosing between multiple approaches, (2) mentions \"changes the public interface\" or \"touches contract\", (3) cross-module contracts need coordination, or (4) acceptance criteria are unclear.",
       "directory": "skills/design-before-plan",
@@ -57,7 +31,7 @@
     },
     {
       "name": "impact-analysis",
-      "description": "Assess blast radius of code changes. Use when (1) function/API has 3+ callers across modules, (2) modifies public API or shared interface, (3) changes data model used by 3+ modules, (4) mentions \"might/may/could affect multiple modules/areas\", or (5) read-and-locate found 3+ tentative leads. Do NOT use for 2 or fewer callers in single module.",
+      "description": "Assess blast radius of code changes. Use when (1) function/API has 3+ callers across modules, (2) modifies public API or shared interface, (3) changes data model used by 3+ modules, (4) mentions \"might/may/could affect multiple modules/areas\", or (5) built-in code search found 3+ tentative leads. Do NOT use for 2 or fewer callers in single module.",
       "directory": "skills/impact-analysis",
       "family": "execution",
       "version": "0.1.0",
@@ -69,44 +43,15 @@
       ]
     },
     {
-      "name": "incremental-delivery",
-      "description": "Split a plan into 2-4 independently mergeable PRs when the task is medium-sized. ONLY use when (1) explicitly mentions \"3 PRs\" or \"4 PRs\", OR (2) spans exactly 1-2 modules without parallel work or external specs. If 5+ PRs, 3+ modules, or needs parallel lanes use phase-plan instead.",
-      "directory": "skills/incremental-delivery",
+      "name": "code-review-loop",
+      "description": "WHAT: Review a code diff, commit, PR, or specified files, classify issues, fix real defects, run the minimum necessary validation, and repeat the review/fix loop until the implementation is issue-free. WHEN: Use after code has been implemented or staged, when the user asks to review a diff, commit, pull request, or completed implementation; or to validate that finished code matches the requested scope, plan, or contract. Do NOT use to review requirements (use requirements-review-loop), design docs / RFCs / ADRs (use design-review-loop), implementation plans (use plan-review-loop), or test cases themselves (use test-review-loop).",
+      "directory": "skills/code-review-loop",
       "family": "execution",
       "version": "0.1.0",
       "tags": [
         "coding",
         "agents",
-        "orchestration",
-        "efficiency"
-      ]
-    },
-    {
-      "name": "knowledge-driven-development",
-      "description": "Legacy bridge for repositories that still use docs/knowledge-driven-development. Prefer Worktrail for durable project knowledge; use this skill to read existing KDD roots, migrate them with worktrail import kdd, or fall back to the legacy docs workflow when Worktrail is unavailable.",
-      "directory": "skills/knowledge-driven-development",
-      "family": "execution",
-      "version": "0.2.0",
-      "tags": [
-        "coding",
-        "agents",
-        "knowledge",
-        "workflow",
-        "worktrail",
-        "migration"
-      ]
-    },
-    {
-      "name": "minimal-change-strategy",
-      "description": "Constrain a code change to the smallest viable patch when the diff is growing beyond the task, cleanup temptation is high, choosing between competing implementation approaches, or multiple edit strategies compete. Use when user requests minimal change, operation is irreversible, or surrounding code tempts drive-by fixes. Not needed for simple single-file fixes where CLAUDE.md Change Rules suffice.",
-      "directory": "skills/minimal-change-strategy",
-      "family": "execution",
-      "version": "0.1.0",
-      "tags": [
-        "coding",
-        "agents",
-        "orchestration",
-        "efficiency"
+        "review"
       ]
     },
     {
@@ -141,12 +86,6 @@
       "family": "phase"
     },
     {
-      "name": "phase-plan-review",
-      "description": "Review phase plan outputs for upstream intent alignment, plan quality, and execution readiness before wave execution begins. Use after phase-plan has produced its outputs and before phase-execute launches any wave. Acts as a three-layer acceptance gate that can block or approve progression to execution.",
-      "directory": "skills/phase-plan-review",
-      "family": "phase"
-    },
-    {
       "name": "plan-before-action",
       "description": "Require a clear plan before multi-step or uncertain edits. Use when (1) user says \"not sure\", \"don't know\", or \"uncertain\" about file locations or structure, (2) 3+ files involved with unclear sequencing, (3) task mentions multiple areas that need coordination. Always trigger when uncertainty keywords present.",
       "directory": "skills/plan-before-action",
@@ -160,16 +99,15 @@
       ]
     },
     {
-      "name": "read-and-locate",
-      "description": "Find the relevant files, code paths, and edit points in an unfamiliar area of the codebase when the agent must trace a runtime, data, ownership, or configuration path. Use when module is known but exact file is unknown, or must locate where a feature is implemented. Triggers on \"Find where\", \"locate implementation\", or \"somewhere in X module\" patterns. Do not use for reference searches or pure information queries without edit intent.",
-      "directory": "skills/read-and-locate",
+      "name": "plan-review-loop",
+      "description": "WHAT: Review and revise project plan files against the actual repository code, docs, configuration, and constraints until the plan is executable and issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize an implementation plan, migration plan, refactor plan, task plan, roadmap, or any plan-like document before coding.",
+      "directory": "skills/plan-review-loop",
       "family": "execution",
       "version": "0.1.0",
       "tags": [
         "coding",
         "agents",
-        "orchestration",
-        "efficiency"
+        "review"
       ]
     },
     {
