@@ -104,37 +104,6 @@
       ]
     },
     {
-      "name": "phase-contract-tools",
-      "description": "Maintain phase system infrastructure. Use ONLY when (1) task explicitly mentions \"fix phase schema validator\", \"update plan.yaml contract\", or \"repair phase rendering\", (2) working on phase-contract-tools directory itself, or (3) validating phase plan format. Do NOT use for regular phase planning or execution.",
-      "directory": "skills/phase-contract-tools",
-      "family": "phase"
-    },
-    {
-      "name": "phase-execute",
-      "description": "Execute an accepted phase wave by consuming plan.yaml, resolving wave gates, launching serial or parallel lanes, integrating results, and reporting wave status. Use when phase-plan has produced the execution docs, the accepted wave is ready to execute, and the agent needs to implement a specific wave through schema-driven execution.",
-      "directory": "skills/phase-execute",
-      "family": "phase"
-    },
-    {
-      "name": "phase-plan",
-      "description": "Design or update a structured implementation plan that breaks a large task into sequenced waves of parallel work. Use when the agent needs to create plan.yaml and supporting docs for multi-wave execution, or convert a roadmap into an executable plan with PR sequencing and wave ownership.",
-      "directory": "skills/phase-plan",
-      "family": "phase"
-    },
-    {
-      "name": "plan-before-action",
-      "description": "Require a clear plan before multi-step or uncertain edits. Use when (1) user says \"not sure\", \"don't know\", or \"uncertain\" about file locations or structure, (2) 3+ files involved with unclear sequencing, (3) task mentions multiple areas that need coordination. Always trigger when uncertainty keywords present.",
-      "directory": "skills/plan-before-action",
-      "family": "execution",
-      "version": "0.1.0",
-      "tags": [
-        "coding",
-        "agents",
-        "orchestration",
-        "efficiency"
-      ]
-    },
-    {
       "name": "plan-review-loop",
       "description": "WHAT: Review and revise project plan files against the actual repository code, docs, configuration, and constraints until the plan is executable and issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize an implementation plan, migration plan, refactor plan, task plan, roadmap, or any plan-like document before coding.",
       "directory": "skills/plan-review-loop",

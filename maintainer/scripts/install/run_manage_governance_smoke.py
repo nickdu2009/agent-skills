@@ -147,7 +147,6 @@ def test_local_mirror_sync_and_check(module) -> None:
             if module.main(["--sync-local", "cursor"]) != 0:
                 fail("expected local mirror sync to succeed")
 
-            assert_exists(mirror_target.target_dir / "phase-contract-tools" / "scripts")
             assert_missing(mirror_target.target_dir / "scoped-tasking" / "scripts")
 
             if module.main(["--sync-local", "cursor", "--check"]) != 0:

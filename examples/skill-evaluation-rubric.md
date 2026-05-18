@@ -85,27 +85,12 @@ Score these dimensions for every scenario:
 - Pass: compares overlapping findings by evidence quality and preserves uncertainty where needed.
 - Fail: collapses conflicting findings into one answer without adjudication or confidence notes.
 
-### `phase-plan`
-
-- Pass: the execution schema is the authority, the per-phase strict four-file doc set is produced, the phase-root README is maintained, and validators run.
-- Fail: Markdown redefines YAML-owned fields, extra phase-local planning docs are created, the phase-root README is missing, or validators are skipped.
-
-### `phase-execute`
-
-- Pass: execution reads from the accepted schema, respects lane isolation, and reports wave state per contract.
-- Fail: the agent reopens planning during execution, paraphrases lane contracts, or skips validation.
-
-### `phase-contract-tools`
-
-- Pass: contract authority stays centralized and smoke checks pass after any script change.
-- Fail: contract rules are duplicated in sibling skills or golden files drift without update.
-
 ### `impact-analysis`
 
 - Pass: traces outward from edit point, produces structured impact summary with blast radius, stops at framework boundaries or 8-file threshold.
 - Fail: skips impact assessment and goes directly to planning, or reads the entire repo during impact analysis.
 
-- Pass: splits plan into 2–4 mergeable increments with explicit dependencies and acceptance criteria; each increment keeps the system runnable; correctly escalates to phase-plan when thresholds are exceeded.
+- Pass: splits plan into 2–4 mergeable increments with explicit dependencies and acceptance criteria; each increment keeps the system runnable; escalates to `design-before-plan` or asks the user when the work outgrows simple incremental delivery.
 
 ### `self-review`
 

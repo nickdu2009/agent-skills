@@ -10,7 +10,7 @@ Full protocol: `multi-agent-protocol` skill.
 
 **Tier 2 (write-capable):** Before launching write-capable subagents, emit: `[delegate: <count 2-4> | split:<dimension> | risk:<low|medium|high>]`. If not cleanly splittable: `[delegate: 0 | reason:<why>]`.
 
-**Overflow:** If the task requires more than 4 parallel subagents, use `phase-plan` to break work into sequential waves.
+**Overflow:** If the task requires more than 4 parallel subagents, split the work into sequential rounds instead of launching all lanes at once.
 
 ## Skill Activation
 
@@ -22,9 +22,6 @@ Mid-task escalation:
 - `impact-analysis`: shared interfaces, public APIs, shared data models, or broad caller impact.
 - `self-review`: multi-file edits complete or user requests diff review.
 - `targeted-validation`: validation choice is non-obvious or expensive.
-- `phase-plan`: work exceeds a single reviewable implementation or needs wave-level coordination.
-- `phase-execute`: accepted phase plan is ready for wave implementation.
-- `phase-contract-tools`: maintaining phase contract scripts, schemas, or renderers.
 
 Review-loop activation (pick by artifact type, mutually exclusive):
 
@@ -46,7 +43,6 @@ Refactor:     scoped-tasking -> safe-refactor -> self-review -> targeted-validat
 Multi-file:   scoped-tasking -> plan-before-action -> self-review -> targeted-validation
 Design-first: scoped-tasking -> design-before-plan -> impact-analysis -> plan-before-action
 Parallel:     multi-agent-protocol -> synthesis
-Phase work:   phase-plan -> phase-execute -> phase-contract-tools
 Review loop:  pick one of requirements-review-loop / design-review-loop / plan-review-loop / code-review-loop / test-review-loop -> revise -> re-review until review_result: clean
 ```
 

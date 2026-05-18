@@ -25,7 +25,6 @@ TASK_TYPE_CASES: tuple[TriggerCase, ...] = (
     ),
         expected_non_triggers=(
         'safe-refactor',
-        'phase-plan',
     ),
         category='task-type',
         notes='Explicit bug report with symptom. bugfix-workflow should trigger immediately.',
@@ -99,7 +98,6 @@ BOUNDARY_CASES: tuple[TriggerCase, ...] = (
         prompt='Change the return status from 500 to 404 in the profile handler.',
         expected_triggers=(),
         expected_non_triggers=(
-        'plan-before-action',
         'scoped-tasking',
     ),
         category='agents-md-boundary',
@@ -109,11 +107,10 @@ BOUNDARY_CASES: tuple[TriggerCase, ...] = (
         id='multi-file-uncertain',
         prompt="Add retry logic to the payment service — I'm not sure if the retry config lives in the service layer or the client wrapper, and the tests will need updating too.",
         expected_triggers=(
-        'plan-before-action',
     ),
         expected_non_triggers=(),
         category='agents-md-boundary',
-        notes='3+ files, uncertainty about structure. plan-before-action should trigger.',
+        notes='3+ files, uncertainty about structure. Implementation should follow AGENTS.md Behavioral Guidelines §4 plan.',
     ),
     TriggerCase(
         id='broad-request-small-surface',
@@ -272,68 +269,7 @@ MULTI_AGENT_CASES: tuple[TriggerCase, ...] = (
 )
 
 
-PHASE_CASES: tuple[TriggerCase, ...] = (
-    TriggerCase(
-        id='plan-large-migration',
-        prompt='Break down this database migration into phases. We need sequenced waves with clear ownership so multiple agents can work in parallel.',
-        expected_triggers=(
-        'phase-plan',
-    ),
-        expected_non_triggers=(
-        'phase-contract-tools',
-    ),
-        category='phase',
-        notes='Large task needing phased execution. phase-plan should trigger; phase-contract-tools should NOT trigger standalone.',
-    ),
-    TriggerCase(
-        id='execute-wave',
-        prompt='Execute wave 2 of the phase 3 plan.',
-        expected_triggers=(
-        'phase-execute',
-    ),
-        expected_non_triggers=(
-        'phase-plan',
-        'phase-contract-tools',
-    ),
-        category='phase',
-        notes='Explicit wave execution. phase-execute only.',
-    ),
-    TriggerCase(
-        id='review-phase-plan',
-        prompt='Review the accepted phase 2 plan before execution starts. I need blocking issues, alignment findings, and an approval decision.',
-        expected_triggers=(),
-        expected_non_triggers=(
-        'phase-plan',
-        'phase-execute',
-        'phase-contract-tools',
-    ),
-        category='phase',
-        notes='Plan review before execution. phase acceptance review should trigger on its own.',
-    ),
-    TriggerCase(
-        id='contract-tools-direct',
-        prompt='Fix a validation error in the phase schema validator script.',
-        expected_triggers=(
-        'phase-contract-tools',
-    ),
-        expected_non_triggers=(
-        'phase-plan',
-        'phase-execute',
-    ),
-        category='phase',
-        notes='Working on the tools themselves. Only case where phase-contract-tools should trigger directly.',
-    ),
-    TriggerCase(
-        id='phase-review-not-needed',
-        prompt='Review my one-file change to the user profile handler before I run tests.',
-        expected_triggers=(),
-        expected_non_triggers=(
-        'phase-plan',
-    ),
-        category='phase',
-        notes='Small single-file review. self-review may apply but phase acceptance review should NOT trigger for non-phase work.',
-    ),
-)
+PHASE_CASES: tuple[TriggerCase, ...] = ()
 
 
 PRE_PHASE_CASES: tuple[TriggerCase, ...] = (
@@ -344,7 +280,6 @@ PRE_PHASE_CASES: tuple[TriggerCase, ...] = (
         'design-before-plan',
     ),
         expected_non_triggers=(
-        'plan-before-action',
     ),
         category='pre-phase',
         notes='Multiple implementation approaches with explicit trade-offs. design-before-plan should trigger to compare alternatives before planning.',
@@ -356,7 +291,6 @@ PRE_PHASE_CASES: tuple[TriggerCase, ...] = (
         'design-before-plan',
     ),
         expected_non_triggers=(
-        'plan-before-action',
     ),
         category='pre-phase',
         notes='Public API design with contract decisions. design-before-plan should trigger to establish interface contracts.',
@@ -422,7 +356,6 @@ PRE_PHASE_CASES: tuple[TriggerCase, ...] = (
         'impact-analysis',
     ),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='pre-phase',
         notes='Public interface change with many callers. impact-analysis should trigger to assess blast radius.',
@@ -452,30 +385,18 @@ PRE_PHASE_CASES: tuple[TriggerCase, ...] = (
         prompt='Implement the new notification system: add the data model, create the service layer, build the API endpoints, and update the frontend. This will be 3 separate PRs.',
         expected_triggers=(),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='pre-phase',
-        notes='Explicit 3-PR task. increment planning should trigger, not phase-plan.',
+        notes='Explicit 3-PR task. Incremental delivery should apply; no phase escalation needed.',
     ),
     TriggerCase(
         id='incremental-not-needed-single-pr',
         prompt="Add a new endpoint for password reset. It's a single PR with model, handler, and test.",
         expected_triggers=(),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='pre-phase',
-        notes='Single PR task. Neither increment planning nor phase-plan needed.',
-    ),
-    TriggerCase(
-        id='incremental-upgrade-to-phase',
-        prompt='Migrate the entire auth system from session-based to JWT. This spans 8 services, needs parallel work streams, and must align with the external OAuth2 spec.',
-        expected_triggers=(
-        'phase-plan',
-    ),
-        expected_non_triggers=(),
-        category='pre-phase',
-        notes='8 services + parallel + external spec. Should escalate to phase-plan, not stay at increment planning.',
+        notes='Single PR task. No incremental delivery or phase planning needed.',
     ),
     TriggerCase(
         id='self-review-after-edit',
@@ -514,20 +435,9 @@ PRE_PHASE_CASES: tuple[TriggerCase, ...] = (
         prompt='Implement the new analytics pipeline: data ingestion, transformation rules, storage layer, and dashboard integration. Each layer is a separate PR — 4 PRs total.',
         expected_triggers=(),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='pre-phase',
-        notes='4 PRs is within the 2-4 PR range. increment planning should trigger, not phase-plan.',
-    ),
-    TriggerCase(
-        id='phase-5pr-boundary',
-        prompt='Modernize the legacy reporting system. This involves migrating 5 services, rewriting the data pipeline, updating the API layer, adding new dashboards, and creating integration tests. Each is its own PR with cross-service dependencies.',
-        expected_triggers=(
-        'phase-plan',
-    ),
-        expected_non_triggers=(),
-        category='pre-phase',
-        notes='5+ PRs with cross-service dependencies exceeds increment planning scope. phase-plan should trigger.',
+        notes='4 PRs is within the 2-4 PR range. Incremental delivery should apply; no phase escalation needed.',
     ),
     TriggerCase(
         id='design-after-scoping',
@@ -569,11 +479,10 @@ CHAIN_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         id='chain-locate-to-plan',
         prompt='built-in code search found the edit points: auth/token.ts and auth/session.ts. Now I need a plan for the changes.',
         expected_triggers=(
-        'plan-before-action',
     ),
         expected_non_triggers=(),
         category='chain-trigger',
-        notes='Location discovery complete, now needs sequencing. Should chain from built-in code search to plan-before-action.',
+        notes='Location discovery complete, now needs sequencing. Implementation follows AGENTS.md Behavioral Guidelines §4 plan.',
     ),
     TriggerCase(
         id='chain-bugfix-to-cba',
@@ -604,10 +513,9 @@ CHAIN_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         'design-before-plan',
     ),
         expected_non_triggers=(
-        'plan-before-action',
     ),
         category='chain-trigger',
-        notes='Planning blocked by unresolved design choice. Should escalate from plan-before-action to design-before-plan.',
+        notes='Planning blocked by unresolved design choice. design-before-plan should trigger.',
     ),
     TriggerCase(
         id='chain-minimal-to-impact',
@@ -651,7 +559,6 @@ BASELINE_CONTROL_CASES: tuple[TriggerCase, ...] = (
         expected_triggers=(),
         expected_non_triggers=(
         'design-before-plan',
-        'plan-before-action',
         'safe-refactor',
     ),
         category='baseline-control',
@@ -673,7 +580,6 @@ BASELINE_CONTROL_CASES: tuple[TriggerCase, ...] = (
         prompt='Commit my current changes and push to the feature branch.',
         expected_triggers=(),
         expected_non_triggers=(
-        'plan-before-action',
         'self-review',
         'targeted-validation',
     ),
@@ -731,16 +637,14 @@ CONFUSION_BOUNDARY_CASES: tuple[TriggerCase, ...] = (
         'scoped-tasking',
     ),
         expected_non_triggers=(
-        'plan-before-action',
     ),
         category='confusion-boundary',
-        notes='Task boundary is undefined — must scope first. plan-before-action is premature until the target is narrowed.',
+        notes='Task boundary is undefined — must scope first.',
     ),
     TriggerCase(
         id='plan-vs-scope',
         prompt='The scope is clear: add retry logic to the three API clients in pkg/http/. I need to figure out the right order of changes and what assumptions to validate first.',
         expected_triggers=(
-        'plan-before-action',
     ),
         expected_non_triggers=(
         'scoped-tasking',
@@ -757,10 +661,8 @@ COMBO_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         prompt="I need to modify user authentication in this unfamiliar codebase. I don't know where the auth code lives, the change might affect several modules, and I'll need a plan before I start editing.",
         expected_triggers=(
         'impact-analysis',
-        'plan-before-action',
     ),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='combo-trigger',
         notes='Unfamiliar codebase + multi-module impact + multi-step edit. Three skills should co-activate.',
@@ -785,7 +687,6 @@ COMBO_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         'impact-analysis',
     ),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='combo-trigger',
         notes='Design choice + blast radius assessment + multi-PR delivery. Three skills should co-activate.',
@@ -823,7 +724,6 @@ KNOWLEDGE_DRIVEN_CASES: tuple[TriggerCase, ...] = (
         prompt='This repo still has docs/durable project knowledge. Dry-run a migration into Worktrail and tell me what would become pending candidates.',
         expected_triggers=(),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='knowledge-driven',
         notes='Explicit request to bridge legacy KDD docs into Worktrail. durable project knowledge should trigger.',
@@ -843,7 +743,6 @@ KNOWLEDGE_DRIVEN_CASES: tuple[TriggerCase, ...] = (
         prompt='AGENTS.md says this repo uses docs/durable project knowledge. Before changing the payment adapter, read the relevant legacy project knowledge and migrate it with worktrail import kdd if the user approves.',
         expected_triggers=(),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='knowledge-driven',
         notes='Project governance explicitly references legacy KDD and should trigger the bridge workflow.',
@@ -878,7 +777,6 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
     ),
         expected_non_triggers=(
         'safe-refactor',
-        'phase-plan',
     ),
         category='task-type',
         notes='Explicit bug report with symptom. bugfix-workflow should trigger immediately.',
@@ -948,7 +846,6 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         prompt='Change the return status from 500 to 404 in the profile handler.',
         expected_triggers=(),
         expected_non_triggers=(
-        'plan-before-action',
         'scoped-tasking',
     ),
         category='agents-md-boundary',
@@ -958,11 +855,10 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         id='multi-file-uncertain',
         prompt="Add retry logic to the payment service — I'm not sure if the retry config lives in the service layer or the client wrapper, and the tests will need updating too.",
         expected_triggers=(
-        'plan-before-action',
     ),
         expected_non_triggers=(),
         category='agents-md-boundary',
-        notes='3+ files, uncertainty about structure. plan-before-action should trigger.',
+        notes='3+ files, uncertainty about structure. Implementation should follow AGENTS.md Behavioral Guidelines §4 plan.',
     ),
     TriggerCase(
         id='broad-request-small-surface',
@@ -1107,73 +1003,12 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         notes='Single-file fix. multi-agent-protocol should NOT trigger (exemption applies).',
     ),
     TriggerCase(
-        id='plan-large-migration',
-        prompt='Break down this database migration into phases. We need sequenced waves with clear ownership so multiple agents can work in parallel.',
-        expected_triggers=(
-        'phase-plan',
-    ),
-        expected_non_triggers=(
-        'phase-contract-tools',
-    ),
-        category='phase',
-        notes='Large task needing phased execution. phase-plan should trigger; phase-contract-tools should NOT trigger standalone.',
-    ),
-    TriggerCase(
-        id='execute-wave',
-        prompt='Execute wave 2 of the phase 3 plan.',
-        expected_triggers=(
-        'phase-execute',
-    ),
-        expected_non_triggers=(
-        'phase-plan',
-        'phase-contract-tools',
-    ),
-        category='phase',
-        notes='Explicit wave execution. phase-execute only.',
-    ),
-    TriggerCase(
-        id='review-phase-plan',
-        prompt='Review the accepted phase 2 plan before execution starts. I need blocking issues, alignment findings, and an approval decision.',
-        expected_triggers=(),
-        expected_non_triggers=(
-        'phase-plan',
-        'phase-execute',
-        'phase-contract-tools',
-    ),
-        category='phase',
-        notes='Plan review before execution. phase acceptance review should trigger on its own.',
-    ),
-    TriggerCase(
-        id='contract-tools-direct',
-        prompt='Fix a validation error in the phase schema validator script.',
-        expected_triggers=(
-        'phase-contract-tools',
-    ),
-        expected_non_triggers=(
-        'phase-plan',
-        'phase-execute',
-    ),
-        category='phase',
-        notes='Working on the tools themselves. Only case where phase-contract-tools should trigger directly.',
-    ),
-    TriggerCase(
-        id='phase-review-not-needed',
-        prompt='Review my one-file change to the user profile handler before I run tests.',
-        expected_triggers=(),
-        expected_non_triggers=(
-        'phase-plan',
-    ),
-        category='phase',
-        notes='Small single-file review. self-review may apply but phase acceptance review should NOT trigger for non-phase work.',
-    ),
-    TriggerCase(
         id='design-multiple-approaches',
         prompt='Add caching to the product recommendation engine. We could use Redis, Memcached, or an in-memory LRU cache. Each has different trade-offs for our scale and consistency requirements.',
         expected_triggers=(
         'design-before-plan',
     ),
         expected_non_triggers=(
-        'plan-before-action',
     ),
         category='pre-phase',
         notes='Multiple implementation approaches with explicit trade-offs. design-before-plan should trigger to compare alternatives before planning.',
@@ -1185,7 +1020,6 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         'design-before-plan',
     ),
         expected_non_triggers=(
-        'plan-before-action',
     ),
         category='pre-phase',
         notes='Public API design with contract decisions. design-before-plan should trigger to establish interface contracts.',
@@ -1251,7 +1085,6 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         'impact-analysis',
     ),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='pre-phase',
         notes='Public interface change with many callers. impact-analysis should trigger to assess blast radius.',
@@ -1281,30 +1114,18 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         prompt='Implement the new notification system: add the data model, create the service layer, build the API endpoints, and update the frontend. This will be 3 separate PRs.',
         expected_triggers=(),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='pre-phase',
-        notes='Explicit 3-PR task. increment planning should trigger, not phase-plan.',
+        notes='Explicit 3-PR task. Incremental delivery should apply; no phase escalation needed.',
     ),
     TriggerCase(
         id='incremental-not-needed-single-pr',
         prompt="Add a new endpoint for password reset. It's a single PR with model, handler, and test.",
         expected_triggers=(),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='pre-phase',
-        notes='Single PR task. Neither increment planning nor phase-plan needed.',
-    ),
-    TriggerCase(
-        id='incremental-upgrade-to-phase',
-        prompt='Migrate the entire auth system from session-based to JWT. This spans 8 services, needs parallel work streams, and must align with the external OAuth2 spec.',
-        expected_triggers=(
-        'phase-plan',
-    ),
-        expected_non_triggers=(),
-        category='pre-phase',
-        notes='8 services + parallel + external spec. Should escalate to phase-plan, not stay at increment planning.',
+        notes='Single PR task. No incremental delivery or phase planning needed.',
     ),
     TriggerCase(
         id='self-review-after-edit',
@@ -1343,20 +1164,9 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         prompt='Implement the new analytics pipeline: data ingestion, transformation rules, storage layer, and dashboard integration. Each layer is a separate PR — 4 PRs total.',
         expected_triggers=(),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='pre-phase',
-        notes='4 PRs is within the 2-4 PR range. increment planning should trigger, not phase-plan.',
-    ),
-    TriggerCase(
-        id='phase-5pr-boundary',
-        prompt='Modernize the legacy reporting system. This involves migrating 5 services, rewriting the data pipeline, updating the API layer, adding new dashboards, and creating integration tests. Each is its own PR with cross-service dependencies.',
-        expected_triggers=(
-        'phase-plan',
-    ),
-        expected_non_triggers=(),
-        category='pre-phase',
-        notes='5+ PRs with cross-service dependencies exceeds increment planning scope. phase-plan should trigger.',
+        notes='4 PRs is within the 2-4 PR range. Incremental delivery should apply; no phase escalation needed.',
     ),
     TriggerCase(
         id='design-after-scoping',
@@ -1394,11 +1204,10 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         id='chain-locate-to-plan',
         prompt='built-in code search found the edit points: auth/token.ts and auth/session.ts. Now I need a plan for the changes.',
         expected_triggers=(
-        'plan-before-action',
     ),
         expected_non_triggers=(),
         category='chain-trigger',
-        notes='Location discovery complete, now needs sequencing. Should chain from built-in code search to plan-before-action.',
+        notes='Location discovery complete, now needs sequencing. Implementation follows AGENTS.md Behavioral Guidelines §4 plan.',
     ),
     TriggerCase(
         id='chain-bugfix-to-cba',
@@ -1429,10 +1238,9 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         'design-before-plan',
     ),
         expected_non_triggers=(
-        'plan-before-action',
     ),
         category='chain-trigger',
-        notes='Planning blocked by unresolved design choice. Should escalate from plan-before-action to design-before-plan.',
+        notes='Planning blocked by unresolved design choice. design-before-plan should trigger.',
     ),
     TriggerCase(
         id='chain-minimal-to-impact',
@@ -1472,7 +1280,6 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         expected_triggers=(),
         expected_non_triggers=(
         'design-before-plan',
-        'plan-before-action',
         'safe-refactor',
     ),
         category='baseline-control',
@@ -1494,7 +1301,6 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         prompt='Commit my current changes and push to the feature branch.',
         expected_triggers=(),
         expected_non_triggers=(
-        'plan-before-action',
         'self-review',
         'targeted-validation',
     ),
@@ -1548,16 +1354,14 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         'scoped-tasking',
     ),
         expected_non_triggers=(
-        'plan-before-action',
     ),
         category='confusion-boundary',
-        notes='Task boundary is undefined — must scope first. plan-before-action is premature until the target is narrowed.',
+        notes='Task boundary is undefined — must scope first.',
     ),
     TriggerCase(
         id='plan-vs-scope',
         prompt='The scope is clear: add retry logic to the three API clients in pkg/http/. I need to figure out the right order of changes and what assumptions to validate first.',
         expected_triggers=(
-        'plan-before-action',
     ),
         expected_non_triggers=(
         'scoped-tasking',
@@ -1570,10 +1374,8 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         prompt="I need to modify user authentication in this unfamiliar codebase. I don't know where the auth code lives, the change might affect several modules, and I'll need a plan before I start editing.",
         expected_triggers=(
         'impact-analysis',
-        'plan-before-action',
     ),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='combo-trigger',
         notes='Unfamiliar codebase + multi-module impact + multi-step edit. Three skills should co-activate.',
@@ -1598,7 +1400,6 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         'impact-analysis',
     ),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='combo-trigger',
         notes='Design choice + blast radius assessment + multi-PR delivery. Three skills should co-activate.',
@@ -1628,7 +1429,6 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         prompt='This repo still has docs/durable project knowledge. Dry-run a migration into Worktrail and tell me what would become pending candidates.',
         expected_triggers=(),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='knowledge-driven',
         notes='Explicit request to bridge legacy KDD docs into Worktrail. durable project knowledge should trigger.',
@@ -1648,7 +1448,6 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         prompt='AGENTS.md says this repo uses docs/durable project knowledge. Before changing the payment adapter, read the relevant legacy project knowledge and migrate it with worktrail import kdd if the user approves.',
         expected_triggers=(),
         expected_non_triggers=(
-        'phase-plan',
     ),
         category='knowledge-driven',
         notes='Project governance explicitly references legacy KDD and should trigger the bridge workflow.',

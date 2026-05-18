@@ -127,7 +127,7 @@ Required semantics:
 ### Precondition Check
 
 ```text
-[precheck: plan-before-action | result:PASS | checks:boundary-known working-set-sized validation-path-chosen]
+[precheck: targeted-validation | result:PASS | checks:changed-surface-known risk-tolerance-stated]
 ```
 
 Required semantics:
@@ -167,7 +167,7 @@ Rules:
 ### Output Validation
 
 ```text
-[validate: plan-before-action | result:PASS | checks:assumptions working_set sequence validation_boundary]
+[validate: targeted-validation | result:PASS | checks:checks_to_run risks_not_covered pass_criteria]
 ```
 
 Required semantics:
@@ -277,8 +277,6 @@ Track active skills by family:
 
 - Execution: at most 4 active at once
 - Orchestration: at most 1 active at once
-- Primary Phase: at most 1 active at once
-- `phase-contract-tools`: may coexist only with one primary phase skill, or run alone for direct contract maintenance
 
 All active skills must be explicitly deactivated.
 
@@ -314,11 +312,11 @@ Phase skills must include:
 ```text
 [task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
 [precheck: scoped-tasking | result:PASS | checks:objective-clear boundary-unknown]
-[output: scoped-tasking | status:completed | confidence:high | objective:"fix timeout regression" | analysis_boundary:"export controller export service failing test" | excluded_areas:"payment flow ui" | next:plan-before-action]
+[output: scoped-tasking | status:completed | confidence:high | objective:"fix timeout regression" | analysis_boundary:"export controller export service failing test" | excluded_areas:"payment flow ui" | next:implementation]
 [validate: scoped-tasking | result:PASS | checks:objective analysis_boundary excluded_areas]
-[drop: scoped-tasking | reason:"boundary consumed by planning" | active:plan-before-action]
-[precheck: plan-before-action | result:PASS | checks:boundary-known working-set-sized validation-path-chosen]
-[validate: plan-before-action | result:PASS | checks:assumptions working_set sequence validation_boundary]
+[drop: scoped-tasking | reason:"boundary consumed by implementation (AGENTS.md §4 plan)" | active:targeted-validation]
+[precheck: targeted-validation | result:PASS | checks:changed-surface-known risk-tolerance-stated]
+[validate: targeted-validation | result:PASS | checks:checks_to_run risks_not_covered pass_criteria]
 ```
 
 ## Differences From v1

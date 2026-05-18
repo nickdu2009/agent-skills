@@ -1,4 +1,0 @@
-interface:
-  display_name: "Phase Contract Tools"
-  short_description: "Shared contract library for phase-plan and phase-execute — not a standalone trigger, loaded by those skills when needed"
-  default_prompt: "Do not use $phase-contract-tools directly unless working on the contract tools themselves. It is loaded automatically by $phase-plan and $phase-execute when they need schema validation, prompt rendering, lane handoff, or wave status snapshots."

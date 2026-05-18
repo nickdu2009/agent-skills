@@ -60,8 +60,6 @@ Track active skills by family:
 
 - Execution: at most 4 active at once
 - Orchestration: at most 1 active at once
-- Primary Phase: at most 1 active at once
-- `phase-contract-tools`: may coexist only with one primary phase skill, or run alone for direct contract maintenance
 
 All active skills must be explicitly deactivated.
 

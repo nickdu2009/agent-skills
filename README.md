@@ -1,6 +1,6 @@
 # Agent Execution Skills
 
-This repository is a reusable skill library for coding agents. It focuses on execution discipline and orchestration patterns that still add signal for modern agents: scoping, design decisions, evidence-first debugging, safe refactoring, impact analysis, validation choice, self-review, and phase-scale coordination.
+This repository is a reusable skill library for coding agents. It focuses on execution discipline and orchestration patterns that still add signal for modern agents: scoping, design decisions, evidence-first debugging, safe refactoring, impact analysis, validation choice, and self-review.
 
 ## Repository Map
 
@@ -16,17 +16,13 @@ flowchart TD
     B --> SR
     SR --> V[targeted-validation]
     P --> O[multi-agent-protocol]
-    P --> PP[phase-plan]
-    PP --> PE[phase-execute]
-    PP --> PCT[phase-contract-tools]
-    PE --> PCT
 ```
 
 ## What This Repository Is
 
 - A behavior library for coding agents working on real repositories.
 - A set of composable skills for bounded work, safer changes, and lower review risk.
-- A practical reference for single-agent, multi-agent, and phase-scale execution.
+- A practical reference for single-agent and multi-agent execution.
 
 ## Skill Types
 
@@ -50,12 +46,6 @@ flowchart TD
 
 - `multi-agent-protocol`
 
-### Phase Skills
-
-- `phase-plan`
-- `phase-execute`
-- `phase-contract-tools`
-
 ## Recommended Starting Composition
 
 For most coding tasks, start with the smallest skill set that fits the work. Add skills only when the task shape justifies them.
@@ -67,7 +57,6 @@ For most coding tasks, start with the smallest skill set that fits the work. Add
 - Use `impact-analysis` for shared interfaces or broad caller impact.
 - Use `self-review` and `targeted-validation` after edits.
 - Use `multi-agent-protocol` when independent subagent lanes are justified.
-- Use phase skills only for multi-wave execution with schema-backed handoff.
 - Use the `*-review-loop` family when the user asks to review/validate/finalize an artifact (requirements / design / plan / code / tests). Pick the loop by artifact type.
 
 ## User Manual
@@ -107,9 +96,6 @@ skills/
   design-review-loop/
   impact-analysis/
   multi-agent-protocol/
-  phase-contract-tools/
-  phase-execute/
-  phase-plan/
   plan-before-action/
   plan-review-loop/
   requirements-review-loop/

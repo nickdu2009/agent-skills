@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed - 2026-05-18: Phase Skill Family Retirement
+
+- Removed the entire phase skill family: `phase-plan`, `phase-execute`, and `phase-contract-tools` (live skills + `.cursor/` and `.claude/` mirrors).
+- Pruned phase references from governance (`AGENTS.md`, `CLAUDE.md`, `templates/governance/{AGENTS,CLAUDE}-template.md`) including Tier-2 Overflow guidance, Mid-task escalation entries, and the Common Flow Patterns table.
+- Updated `README.md` (Mermaid graph, Skill Types section, Repository Layout, Recommended Starting Composition) and `docs/manual/SKILL-INDEX.md` / `SKILL-SELECTION.md` to drop the Phase System Skills group.
+- Removed `phase-plan` fallback from `skills/impact-analysis/SKILL.md` (Composition fallbacks, Failure Handling fallback, Deactivation triggers).
+- Cleaned `docs/user/SKILL-PROTOCOL-V1.md` / `SKILL-PROTOCOL-V2.md` family-budget rules and removed the phase escalation from `docs/maintainer/skill-chain-aliases.md`.
+- Deleted phase-only assets: `examples/phased-migration-planning.md` and root `phase-toolchain-optimization-zh.md`; trimmed phase rows from `examples/skill-testing-playbook.md` and `examples/skill-evaluation-rubric.md`.
+- Removed phase entries from `maintainer/data/{skill_index.json,skill_test_data.py,trigger_test_data.py}` (deleted `PHASE_CASES`, the `incremental-upgrade-to-phase` and `phase-5pr-boundary` boundary cases, and the duplicate copies under `ALL_TRIGGER_CASES`).
+- Removed phase scenarios/cases from `maintainer/scripts/evaluation/{run_claude_trigger_smoke.py,run_claude_interactive_mainline.py,skill_protocol_v1.py}` and the phase fixture assertion in `maintainer/scripts/install/run_manage_governance_smoke.py`; pruned phase-only allowlist entries from `maintainer/scripts/analysis/check_cross_references.py`.
+- Historical analysis reports under `docs/maintainer/` and `maintainer/data/token_efficiency_baseline.md` are intentionally untouched as point-in-time snapshots.
+
 ### Changed - 2026-05-18: Skill Library Modernization
 
 - Removed 7 live skills: read-and-locate, context-budget-awareness, incremental-delivery, minimal-change-strategy, knowledge-driven-development, conflict-resolution, and phase-plan-review.

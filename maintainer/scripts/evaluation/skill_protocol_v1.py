@@ -9,7 +9,6 @@ EXECUTION_SKILLS: tuple[str, ...] = (
     "scoped-tasking",
     "design-before-plan",
     "smallest-change discipline",
-    "plan-before-action",
     "targeted-validation",
     "context discipline",
     "built-in code search",
@@ -26,17 +25,9 @@ ORCHESTRATION_SKILLS: tuple[str, ...] = (
     "multi-agent synthesis",
 )
 
-PHASE_SKILLS: tuple[str, ...] = (
-    "phase-plan",
-    "phase-execute",
-    "phase acceptance review",
-    "phase-contract-tools",
-)
-
 SKILL_FAMILY: dict[str, str] = {
     **{skill: "execution" for skill in EXECUTION_SKILLS},
     **{skill: "orchestration" for skill in ORCHESTRATION_SKILLS},
-    **{skill: "phase" for skill in PHASE_SKILLS},
 }
 
 SKILL_REQUIRED_SECTIONS: dict[str, tuple[str, ...]] = {
@@ -60,22 +51,12 @@ SKILL_REQUIRED_SECTIONS: dict[str, tuple[str, ...]] = {
         "Failure Handling",
         "Deactivation Trigger",
     ),
-    **{
-        skill: (
-            "Artifact Contract",
-            "Gate Contract",
-            "Failure Handling",
-            "Lifecycle",
-        )
-        for skill in PHASE_SKILLS
-    },
 }
 
 SKILL_OUTPUT_FIELDS: dict[str, tuple[str, ...]] = {
     "scoped-tasking": ("objective", "analysis_boundary", "excluded_areas"),
     "design-before-plan": ("requirements", "alternatives", "chosen_design", "acceptance_criteria"),
     "smallest-change discipline": ("change_boundary", "scope_guardrails", "stop_conditions"),
-    "plan-before-action": ("assumptions", "working_set", "sequence", "validation_boundary"),
     "targeted-validation": ("checks_to_run", "risks_not_covered", "pass_criteria"),
     "context discipline": ("current_state", "dropped_hypotheses", "open_questions"),
     "built-in code search": ("entry_points", "candidate_files", "edit_points"),
@@ -93,10 +74,6 @@ SKILL_OUTPUT_FIELDS: dict[str, tuple[str, ...]] = {
     ),
     "multi-agent-protocol": ("split_dimension", "lanes", "integration_plan", "synthesis"),
     "multi-agent synthesis": ("claims", "evidence", "resolution", "residual_uncertainty"),
-    "phase-plan": ("plan_artifacts", "waves", "gates", "ownership"),
-    "phase-execute": ("wave_status", "lane_results", "gate_outcomes", "rollback_state"),
-    "phase acceptance review": ("alignment_findings", "blocking_issues", "approval_status"),
-    "phase-contract-tools": ("schema_checks", "rendered_views", "contract_issues"),
 }
 
 STANDARD_BLOCK_FIELDS: dict[str, tuple[str, ...]] = {
@@ -350,10 +327,6 @@ def _validate_family_budgets(active_skills: set[str]) -> list[str]:
     issues: list[str] = []
     execution_active = sorted(skill for skill in active_skills if SKILL_FAMILY.get(skill) == "execution")
     orchestration_active = sorted(skill for skill in active_skills if SKILL_FAMILY.get(skill) == "orchestration")
-    primary_phase_active = sorted(
-        skill for skill in active_skills if skill in PHASE_SKILLS and skill != "phase-contract-tools"
-    )
-    contract_tool_active = "phase-contract-tools" in active_skills
 
     if len(execution_active) > 4:
         issues.append(
@@ -364,15 +337,6 @@ def _validate_family_budgets(active_skills: set[str]) -> list[str]:
         issues.append(
             "Orchestration family budget exceeded: "
             + ", ".join(orchestration_active)
-        )
-    if len(primary_phase_active) > 1:
-        issues.append(
-            "Primary phase family budget exceeded: "
-            + ", ".join(primary_phase_active)
-        )
-    if contract_tool_active and len(primary_phase_active) > 1:
-        issues.append(
-            "`phase-contract-tools` may coexist with at most one primary phase skill."
         )
 
     return issues

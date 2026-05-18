@@ -22,10 +22,9 @@
 对大多数普通开发任务，最稳的起步组合通常是：
 
 - `scoped-tasking`
-- `plan-before-action`
 - `targeted-validation`
 
-这组组合的作用是先把边界缩小、先计划、控制改动规模，再做最小充分验证。
+这组组合的作用是先把边界缩小、控制改动规模，再做最小充分验证。计划环节由 `AGENTS.md` 行为指南 §4（Goal-Driven Execution）统一规范，无需独立技能。
 
 ## 基础执行技能
 <div class="title-en">Core Execution Skills</div>
@@ -35,12 +34,6 @@
 ### `scoped-tasking`
 
 先把宽泛任务压缩到最小有用边界，避免一上来就读太多文件或把任务做大。
-
-### `plan-before-action`
-
-在多步或不确定任务里，先形成短计划，再进入编辑和验证。
-
-把改动控制在最小可行补丁内，避免顺手清理、顺手重构、顺手扩大范围。
 
 ### `targeted-validation`
 
@@ -109,33 +102,13 @@
 
 把一个中等规模任务拆成 2 到 4 个可独立合并的增量，而不是一次压成一个大改动。
 
-## 阶段系统技能
-<div class="title-en">Phase System Skills</div>
-
-这组技能比普通执行技能重很多，适合多波次、多 PR、跨模块的大型任务。  
-如果你只是处理普通开发任务，通常不需要一开始就启用它们。
-
-### `phase-plan`
-
-把大任务拆成按波次执行的结构化计划，而不是写成一篇松散的规划说明。
-
-在阶段执行前，从意图一致性、计划质量和执行可行性三个角度审查阶段计划。
-
-### `phase-execute`
-
-按已经接受的 phase 执行文档推进具体波次，而不是凭记忆或口头计划执行。
-
-### `phase-contract-tools`
-
-维护 phase 系统共享的 schema、validator、renderer 和合同约束工具，不是普通任务默认会用到的技能。
-
 ## 一页判断法
 <div class="title-en">One-Page Decision Guide</div>
 
 如果你只想快速判断该从哪个技能开始，可以先用这几条：
 
 - 范围太大或太散：`scoped-tasking`
-- 需要先计划：`plan-before-action`
+- 需要先计划：参考 `AGENTS.md` 行为指南 §4（无需独立技能）
 - 是缺陷且根因不明：`bugfix-workflow`
 - 是结构整理：`safe-refactor`
 - 可能影响很多调用方：`impact-analysis`

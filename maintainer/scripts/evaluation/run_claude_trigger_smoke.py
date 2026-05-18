@@ -21,7 +21,7 @@ The goal is not perfect automated scoring. Instead, the script provides:
 Usage:
   python3 maintainer/scripts/evaluation/run_claude_trigger_smoke.py
   python3 maintainer/scripts/evaluation/run_claude_trigger_smoke.py --list-cases
-  python3 maintainer/scripts/evaluation/run_claude_trigger_smoke.py --case phase-execute
+  python3 maintainer/scripts/evaluation/run_claude_trigger_smoke.py --case self-review
 """
 
 from __future__ import annotations
@@ -134,13 +134,6 @@ REPRESENTATIVE_CASES: tuple[SmokeCase, ...] = (
         expected_patterns=(r"safe-refactor", r"\bextract\b", r"\bshared helper\b", r"\bduplicate\b"),
     ),
     SmokeCase(
-        id="plan-before-action",
-        skill="plan-before-action",
-        strategy="auto",
-        source_case_id="multi-file-uncertain",
-        expected_patterns=(r"plan-before-action", r"multiple files", r"\bassum", r"\bplan\b"),
-    ),
-    SmokeCase(
         id="scoped-tasking",
         skill="scoped-tasking",
         strategy="auto",
@@ -204,34 +197,6 @@ REPRESENTATIVE_CASES: tuple[SmokeCase, ...] = (
         strategy="auto",
         source_case_id="conflicting-subagent-results",
         expected_patterns=(r"\bdisagreement\b", r"\bevidence\b", r"\bclaim\b", r"\bsubagent\b"),
-    ),
-    SmokeCase(
-        id="phase-plan",
-        skill="phase-plan",
-        strategy="auto",
-        source_case_id="plan-large-migration",
-        expected_patterns=(r"\bwave\b", r"\bphase\b", r"\bparallel\b", r"phase1-plan\.yaml"),
-    ),
-    SmokeCase(
-        id="phase acceptance review",
-        skill="phase acceptance review",
-        strategy="auto",
-        source_case_id="review-phase-plan",
-        expected_patterns=(r"phase acceptance review", r"\balignment\b", r"\bblocking\b", r"\bapproval\b"),
-    ),
-    SmokeCase(
-        id="phase-execute",
-        skill="phase-execute",
-        strategy="auto",
-        source_case_id="execute-wave",
-        expected_patterns=(r"phase3-plan\.yaml", r"execution framework", r"\bwave 2\b", r"\bplan file\b"),
-    ),
-    SmokeCase(
-        id="phase-contract-tools",
-        skill="phase-contract-tools",
-        strategy="auto",
-        source_case_id="contract-tools-direct",
-        expected_patterns=(r"\bvalidator\b", r"validation error", r"\bschema\b", r"validate_phase_execution_schema"),
     ),
     SmokeCase(
         id="self-review",

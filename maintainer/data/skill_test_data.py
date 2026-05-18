@@ -45,22 +45,6 @@ SKILL_RUBRICS: dict[str, tuple[str, ...]] = {
         'Pass if tiered parallelism is used appropriately with clear assignments, Tier 2 gate declarations, and structured merge.',
         'Fail if the task is split despite heavy overlap, the Tier 2 gate is skipped, or write scopes overlap without explicit management.',
     ),
-    'phase-contract-tools': (
-        'Pass if contract authority stays centralized and smoke checks pass after any script change.',
-        'Fail if contract rules are duplicated in sibling skills or golden files drift without update.',
-    ),
-    'phase-execute': (
-        'Pass if execution reads from the accepted schema, respects lane isolation, and reports wave state per contract.',
-        'Fail if the agent reopens planning during execution, paraphrases lane contracts, or skips validation.',
-    ),
-    'phase-plan': (
-        'Pass if the execution schema is the authority, the per-phase strict four-file doc set is produced, the phase-root README is maintained, and validators run.',
-        'Fail if Markdown redefines YAML-owned fields, extra phase-local planning docs are created, the phase-root README is missing, or validators are skipped.',
-    ),
-    'plan-before-action': (
-        'Pass if the goal, assumptions, intended files, and next actions are stated before non-trivial edits.',
-        'Fail if editing starts while the plan or file list is still fuzzy.',
-    ),
     'plan-review-loop': (
         'Pass if plan issues are revised in the target plan and re-reviewed until executable.',
         'Fail if the agent stops after reporting issues or edits unrelated artifacts.',
@@ -91,7 +75,6 @@ EXAMPLE_CASES: tuple[ExampleCase, ...] = (
         scenario='Diagnose a bounded bug, plan before editing, apply the smallest viable fix, and validate narrowly.',
         skills=(
             'scoped-tasking',
-            'plan-before-action',
             'bugfix-workflow',
             'targeted-validation',
         ),
@@ -108,7 +91,6 @@ EXAMPLE_CASES: tuple[ExampleCase, ...] = (
         scenario='Extract duplicated logic while preserving signatures, output shape, and existing behavior.',
         skills=(
             'scoped-tasking',
-            'plan-before-action',
             'safe-refactor',
             'targeted-validation',
         ),
@@ -124,7 +106,6 @@ EXAMPLE_CASES: tuple[ExampleCase, ...] = (
         scenario='Split a low-coupling investigation into parallel lines of analysis, merge evidence, and preserve uncertainty before recommending action.',
         skills=(
             'scoped-tasking',
-            'plan-before-action',
             'multi-agent-protocol',
             'targeted-validation',
         ),
@@ -132,24 +113,6 @@ EXAMPLE_CASES: tuple[ExampleCase, ...] = (
             'parallel work is justified explicitly',
             'subtasks are clearly separated',
             'findings are merged without collapsing uncertainty too early',
-        ),
-    ),
-    ExampleCase(
-        file_name='phased-migration-planning.md',
-        title='Phased Migration Planning',
-        scenario='Break a cross-service database schema migration into a phased execution plan with wave sequencing, hotspot ownership, and schema-first doc set.',
-        skills=(
-            'phase-plan',
-            'phase-contract-tools',
-            'scoped-tasking',
-            'plan-before-action',
-        ),
-        expectations=(
-            'docs/phases/phase1/plan.yaml is the execution authority, not Markdown',
-            'the per-phase strict four-file doc set is produced without extra phase-local planning docs',
-            'docs/phases/README.md includes a concise summary for phase1',
-            'validators run immediately after YAML is produced',
-            'hotspot ownership is explicit in the plan',
         ),
     ),
 )

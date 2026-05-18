@@ -50,7 +50,6 @@ python3 maintainer/scripts/install/manage-governance.py --sync-local cursor
 | `safe-refactor.md` | behavior-preserving structure change | invariants stated, extraction in small steps, validation after meaningful steps |
 | `context-budgeted-debugging.md` | context compression and restart | stale hypotheses dropped, compressed summary, focused next step |
 | `multi-agent-root-cause-analysis.md` | justified parallelism | low-coupling split, clear subagent assignments, merge and adjudication discipline |
-| `phased-migration-planning.md` | schema-first phase planning | YAML is execution authority, strict four-file doc set, validators run after YAML, hotspot ownership explicit |
 | `impact-analysis.md` | blast radius assessment before planning | outward tracing from edit point, structured impact summary, stop at framework boundaries, result feeds into plan |
 | `self-review.md` | diff quality check before testing | reviews diff before running tests, catches debug residuals, severity grading, fixes blocking issues first |
 
@@ -144,7 +143,6 @@ The matrix lives in `maintainer/data/trigger_test_data.py`. Each case specifies:
 | --- | --- |
 | `task-type` | Does the right skill activate for bugs, refactors, and features? |
 | `agents-md-boundary` | Do simple tasks stay at AGENTS.md level while complex tasks escalate to the full skill? |
-| `phase` | Do phase-plan and phase-execute trigger independently while phase-contract-tools stays hidden? |
 
 ### How to Run a Trigger Test
 

@@ -127,7 +127,7 @@ They do not:
 
 **Escalation:**
 
-- → `phase-plan` if the task exceeds 4 increments, 2 modules, or needs parallel lanes
+- Split the work across separate sessions or ask the user to re-scope if it grows beyond 4 increments, 2 modules, or needs parallel lanes
 
 **Example trigger:** "Migrate authentication from session tokens to JWT across the API layer"
 
@@ -277,14 +277,11 @@ Phase 1 optimizations (7 skills, ~450 tokens saved):
 7. self-review: Multiple chains
 8. targeted-validation: Multiple chains (exit point)
 
-### Phase/Orchestration Skills (5 total)
+### Orchestration Skills
 
 These skills use domain-specific composition patterns that don't map to standard execution chains:
 
 - multi-agent-protocol: Uses `parallel` chain (correctly optimized)
-- phase-contract-tools: Phase-specific composition
-- phase-execute: Phase-specific composition
-- phase-plan: Phase-specific composition
 
 ## Token Savings Achieved
 

@@ -101,7 +101,7 @@ Additional compositions:
 
 Fallbacks:
 
-- To `phase-plan` when contract migration becomes multi-stage or externally constrained
+- To `design-before-plan` when contract migration becomes multi-stage or externally constrained
 
 Drop after plan-before-action consumes the impact summary.
 
@@ -161,7 +161,7 @@ Hand off the summary to plan-before-action. Do not start editing.
 
 ### Fallback
 
-- Escalate to `phase-plan` or `design-before-plan` when contract migration becomes multi-stage or externally constrained.
+- Escalate to `design-before-plan` when contract migration becomes multi-stage or externally constrained.
 - Ask the user for confirmation when compatibility trade-offs exceed the original task scope.
 
 ### Low Confidence Handling
@@ -202,4 +202,3 @@ recommendations:
 
 - Deactivate once `plan-before-action` has absorbed the impact summary.
 - Deactivate when the change is downgraded to a local internal edit with no shared-contract impact.
-- Deactivate if broader contract work escalates into a phase-planning exercise.

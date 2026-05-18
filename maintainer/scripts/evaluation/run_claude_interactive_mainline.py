@@ -116,19 +116,6 @@ SCENARIOS: tuple[Scenario, ...] = (
         ),
     ),
     Scenario(
-        id="phase-plan-to-execute",
-        description="Phase planning should create document-driven execution artifacts, then require them for execution.",
-        rounds=(
-            "Using docs/db-migration-notes.md, create the normal phase 1 planning artifacts for this database migration. We need sequenced waves with clear ownership so multiple agents can work in parallel. Keep the textual summary short after writing the plan files.",
-            "Execute wave 2 of the phase 1 plan.",
-        ),
-        round_expectations=(
-            (r"phase1-plan\.yaml", r"\bwave\b", r"\bphase\b", r"\bparallel\b"),
-            (r"phase1-plan\.yaml", r"\bwave 2\b", r"\bplan file\b", r"phase 1 plan"),
-        ),
-        timeout_seconds=300,
-    ),
-    Scenario(
         id="multi-agent synthesis",
         description="Competing hypotheses should be weighed by evidence quality.",
         rounds=(
@@ -141,17 +128,11 @@ SCENARIOS: tuple[Scenario, ...] = (
         ),
     ),
     Scenario(
-        id="phase-contract-tools",
-        description="Direct validator maintenance should stay focused on schema and tooling.",
-        rounds=("Fix a validation error in the phase schema validator script.",),
-        round_expectations=((r"\bvalidator\b", r"\bschema\b", r"validation error", r"phase"),),
-    ),
-    Scenario(
         id="negative-control",
-        description="A normal feature request should not be reframed as bugfix/refactor/phase work.",
+        description="A normal feature request should not be reframed as bugfix or refactor work.",
         rounds=("Add a dark mode toggle to the settings page.",),
         round_expectations=((r"dark mode", r"settings page", r"toggle"),),
-        forbidden_patterns=(r"bugfix-workflow", r"phase-plan", r"phase-execute", r"safe-refactor"),
+        forbidden_patterns=(r"bugfix-workflow", r"safe-refactor"),
     ),
 )
 
