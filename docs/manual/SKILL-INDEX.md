@@ -23,7 +23,6 @@
 
 - `scoped-tasking`
 - `plan-before-action`
-- `minimal-change-strategy`
 - `targeted-validation`
 
 这组组合的作用是先把边界缩小、先计划、控制改动规模，再做最小充分验证。
@@ -31,8 +30,6 @@
 ## 基础执行技能
 <div class="title-en">Core Execution Skills</div>
 
-Legacy KDD (`knowledge-driven-development`) 源码仍保留在仓库中用于旧
-`docs/knowledge-driven-development/` 迁移参考，但它不属于当前安装技能集，
 `manage-governance.py` 不再安装它。
 
 ### `scoped-tasking`
@@ -42,8 +39,6 @@ Legacy KDD (`knowledge-driven-development`) 源码仍保留在仓库中用于旧
 ### `plan-before-action`
 
 在多步或不确定任务里，先形成短计划，再进入编辑和验证。
-
-### `minimal-change-strategy`
 
 把改动控制在最小可行补丁内，避免顺手清理、顺手重构、顺手扩大范围。
 
@@ -58,8 +53,6 @@ Legacy KDD (`knowledge-driven-development`) 源码仍保留在仓库中用于旧
 ## 定位、诊断与结构技能
 <div class="title-en">Discovery, Diagnosis, and Structure Skills</div>
 
-### `read-and-locate`
-
 在陌生区域里沿着最强线索找真正的编辑点，不做无边界扫读。
 
 ### `bugfix-workflow`
@@ -69,8 +62,6 @@ Legacy KDD (`knowledge-driven-development`) 源码仍保留在仓库中用于旧
 ### `safe-refactor`
 
 做小范围、可控的结构整理，同时保持对外行为和接口稳定。
-
-### `context-budget-awareness`
 
 当调查越做越散、文件越看越多、假设越列越多时，主动压缩上下文，重新聚焦。
 
@@ -82,6 +73,31 @@ Legacy KDD (`knowledge-driven-development`) 源码仍保留在仓库中用于旧
 
 当真正卡住你的不是“怎么排步骤”，而是“方案到底怎么选”时，先做设计澄清再规划实施。
 
+## 评审回环技能
+<div class="title-en">Review-Loop Skills</div>
+
+这一组技能用于“拿到一个产物 → 评审 → 修订 → 再评审”的闭环式审核。按被评审产物的类型选择对应技能，技能之间互斥；任何一个都要求"反复直到 review_result: clean"，不是一次性 review。
+
+### `requirements-review-loop`
+
+审核需求文档 / PRD / 用户故事 / 验收标准。关键词：需求、PRD、user story、acceptance criteria。
+
+### `design-review-loop`
+
+审核设计文档 / RFC / ADR / 接口设计 / 架构设计 / 数据模型 / 技术方案。中文“方案 / 实现思路 / 实现方案 / 接口 / 思路”默认归这里。
+
+### `plan-review-loop`
+
+审核实施计划 / 迁移方案 / 重构计划 / 任务计划 / 路线图。中文“实施方案 / 迁移方案”归这里。
+
+### `code-review-loop`
+
+审核已实现的代码 diff / commit / PR / 指定文件，修复实现层缺陷并跑最小验证。
+
+### `test-review-loop`
+
+审核测试用例 / 测试策略 / 覆盖矩阵 / 新增或修改的测试文件本身，跑测试作为验证。注意：审"测试用例本身"而不是"被测的产品代码"。
+
 ## 协作与交付技能
 <div class="title-en">Coordination and Delivery Skills</div>
 
@@ -89,11 +105,7 @@ Legacy KDD (`knowledge-driven-development`) 源码仍保留在仓库中用于旧
 
 把确实适合并行的任务拆成低耦合子问题，并协调多个代理如何分工、汇总和验证。
 
-### `conflict-resolution`
-
 当并行调查结果或多个假设彼此冲突时，用证据而不是语气来比较和裁决。
-
-### `incremental-delivery`
 
 把一个中等规模任务拆成 2 到 4 个可独立合并的增量，而不是一次压成一个大改动。
 
@@ -106,8 +118,6 @@ Legacy KDD (`knowledge-driven-development`) 源码仍保留在仓库中用于旧
 ### `phase-plan`
 
 把大任务拆成按波次执行的结构化计划，而不是写成一篇松散的规划说明。
-
-### `phase-plan-review`
 
 在阶段执行前，从意图一致性、计划质量和执行可行性三个角度审查阶段计划。
 
@@ -125,13 +135,13 @@ Legacy KDD (`knowledge-driven-development`) 源码仍保留在仓库中用于旧
 如果你只想快速判断该从哪个技能开始，可以先用这几条：
 
 - 范围太大或太散：`scoped-tasking`
-- 不知道该改哪个文件：`read-and-locate`
 - 需要先计划：`plan-before-action`
 - 是缺陷且根因不明：`bugfix-workflow`
 - 是结构整理：`safe-refactor`
 - 可能影响很多调用方：`impact-analysis`
 - 想并行但不确定值不值得：`multi-agent-protocol`
 - 只想把验证缩到最小：`targeted-validation`
+- 用户说“评审/审核/review …”：按被审产物选 `requirements-review-loop` / `design-review-loop` / `plan-review-loop` / `code-review-loop` / `test-review-loop`
 
 ## 接下来读什么
 <div class="title-en">Read Next</div>

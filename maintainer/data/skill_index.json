@@ -55,6 +55,42 @@
       ]
     },
     {
+      "name": "design-review-loop",
+      "description": "WHAT: Review and revise a design document — architecture design, RFC, ADR, interface design, data model, or technical proposal — against the requirements and the actual repository context, classify issues, fix real defects, and repeat the review/fix loop until the document is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize a design doc, RFC, ADR, architecture, interface design, data model, or technical proposal. Terms like 方案 / 实现思路 / 实现方案 / 接口 / 思路 belong here. Do NOT use to review requirements (use requirements-review-loop), implementation plans / migration plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop).",
+      "directory": "skills/design-review-loop",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "review"
+      ]
+    },
+    {
+      "name": "requirements-review-loop",
+      "description": "WHAT: Review and revise a requirements document — PRD, user stories, problem statements, or acceptance criteria drafts — against the actual repository context, classify issues, fix real defects, and repeat the review/fix loop until the document is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize a requirements doc, PRD, user story, problem statement, or acceptance criteria. Do NOT use to review design docs / RFCs / ADRs / interface designs (use design-review-loop), implementation plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop). Terms like 方案 / 接口 / 思路 / 实现思路 / 实现方案 belong to design-review-loop; 实施方案 / 迁移方案 belong to plan-review-loop.",
+      "directory": "skills/requirements-review-loop",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "review"
+      ]
+    },
+    {
+      "name": "test-review-loop",
+      "description": "WHAT: Review and revise test cases, test strategy, coverage matrix, or new/modified test files — classify issues, fix real defects, run the tests as validation, and repeat the review/fix loop until the test set is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize test cases, test strategy, coverage matrix, 测试 / 用例 / 覆盖. Do NOT use to review production code under test, 被测代码, or 实现代码 — use code-review-loop instead. Do NOT use to review requirements (use requirements-review-loop), design docs (use design-review-loop), or implementation plans (use plan-review-loop).",
+      "directory": "skills/test-review-loop",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "review"
+      ]
+    },
+    {
       "name": "multi-agent-protocol",
       "description": "Launch and coordinate parallel subagents. Use when (1) user explicitly says \"in parallel\", (2) task describes 3+ independent investigation areas owned by different teams/modules, or (3) AGENTS.md rules indicate Tier 2 parallelism. Implicit parallel opportunity example \"understand X system, Y service, and Z pipeline\" equals 3 independent areas.",
       "directory": "skills/multi-agent-protocol",

@@ -24,6 +24,14 @@ Mid-task escalation:
 - `phase-execute`: accepted phase plan is ready for wave implementation.
 - `phase-contract-tools`: maintaining phase contract scripts, schemas, or renderers.
 
+Review-loop activation (pick by artifact type, mutually exclusive):
+
+- `requirements-review-loop`: user asks to review/validate/finalize requirements, PRD, user stories, or acceptance criteria.
+- `design-review-loop`: user asks to review design docs / RFC / ADR / interface design / data model / 方案 / 实现思路 / 实现方案 / 接口 / 思路.
+- `plan-review-loop`: user asks to review implementation plans / migration plans / 实施方案 / 迁移方案 / refactor plans / roadmaps.
+- `code-review-loop`: user asks to review a diff / commit / PR / specified files of already-implemented code.
+- `test-review-loop`: user asks to review test cases / test strategy / coverage / 测试用例本身 (not the production code under test).
+
 ## Skill Lifecycle
 
 Load the smallest set that fits the task. Drop a skill when its deliverable is complete. Re-evaluate when the task phase changes. Keep at most 4 active skills unless a handoff transition requires a brief overlap.
@@ -37,6 +45,7 @@ Multi-file:   scoped-tasking -> plan-before-action -> self-review -> targeted-va
 Design-first: scoped-tasking -> design-before-plan -> impact-analysis -> plan-before-action
 Parallel:     multi-agent-protocol -> synthesis
 Phase work:   phase-plan -> phase-execute -> phase-contract-tools
+Review loop:  pick one of requirements-review-loop / design-review-loop / plan-review-loop / code-review-loop / test-review-loop -> revise -> re-review until review_result: clean
 ```
 
 ## Skill Protocol v2

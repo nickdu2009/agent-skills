@@ -78,7 +78,7 @@ When fixing findings:
 - preserve existing architecture and conventions
 - avoid opportunistic refactors
 
-Refer to `minimal-change-strategy` for keeping the edit minimal.
+Refer to the `Change Rules` section in AGENTS.md for keeping the edit minimal.
 
 ## Validation
 

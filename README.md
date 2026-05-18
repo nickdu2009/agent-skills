@@ -40,8 +40,11 @@ flowchart TD
 - `impact-analysis`
 - `self-review`
 - `design-before-plan`
-- `code-review-loop`
+- `requirements-review-loop`
+- `design-review-loop`
 - `plan-review-loop`
+- `code-review-loop`
+- `test-review-loop`
 
 ### Orchestration Skills
 
@@ -65,6 +68,7 @@ For most coding tasks, start with the smallest skill set that fits the work. Add
 - Use `self-review` and `targeted-validation` after edits.
 - Use `multi-agent-protocol` when independent subagent lanes are justified.
 - Use phase skills only for multi-wave execution with schema-backed handoff.
+- Use the `*-review-loop` family when the user asks to review/validate/finalize an artifact (requirements / design / plan / code / tests). Pick the loop by artifact type.
 
 ## User Manual
 
@@ -98,19 +102,22 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 README.md
 skills/
   bugfix-workflow/
-  design-before-plan/
-  impact-analysis/
   code-review-loop/
+  design-before-plan/
+  design-review-loop/
+  impact-analysis/
   multi-agent-protocol/
   phase-contract-tools/
   phase-execute/
   phase-plan/
   plan-before-action/
   plan-review-loop/
+  requirements-review-loop/
   safe-refactor/
   scoped-tasking/
   self-review/
   targeted-validation/
+  test-review-loop/
 templates/
   governance/
 docs/

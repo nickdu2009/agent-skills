@@ -1,6 +1,6 @@
 ---
 name: impact-analysis
-description: Assess blast radius of code changes. Use when (1) function/API has 3+ callers across modules, (2) modifies public API or shared interface, (3) changes data model used by 3+ modules, (4) mentions "might/may/could affect multiple modules/areas", or (5) read-and-locate found 3+ tentative leads. Do NOT use for 2 or fewer callers in single module.
+description: Assess blast radius of code changes. Use when (1) function/API has 3+ callers across modules, (2) modifies public API or shared interface, (3) changes data model used by 3+ modules, (4) mentions "might/may/could affect multiple modules/areas", or (5) built-in code search found 3+ tentative leads. Do NOT use for 2 or fewer callers in single module.
 metadata:
   version: "0.1.0"
   tags: "coding, agents, orchestration, efficiency"
@@ -15,7 +15,6 @@ Trace outward from a planned edit point to identify affected callers, dependents
 - When the change involves a function/interface called by 3+ other modules.
 - When the change touches a public API, shared type, or configuration schema.
 - When the change involves a data model (ORM model, database schema, protobuf).
-- When read-and-locate produced 3+ tentative leads.
 
 # When Not to Use
 
@@ -33,7 +32,6 @@ Trace outward from a planned edit point to identify affected callers, dependents
 
 # Execution Pattern
 
-1. Receive the edit point from scoped-tasking or read-and-locate.
 2. Trace direct callers of the changed symbol (layer 1).
 3. Trace callers of callers (layer 2), then one more layer if needed (layer 3 max).
 4. For each affected file, classify: direct consumer, transitive consumer, test reference, type dependency.
@@ -43,7 +41,6 @@ Trace outward from a planned edit point to identify affected callers, dependents
 Stop conditions (critical guardrails preventing full-repo scan):
 
 - Tracing depth must not exceed 3 call layers.
-- Total files traced must not exceed 8 (aligned with context-budget-awareness threshold).
 - Stop at framework boundaries: HTTP handler, CLI entry, test fixture, plugin boundary.
 
 # Input Contract
@@ -52,7 +49,6 @@ Provide:
 
 - the edit point (file, function, symbol)
 - the nature of the planned change
-- results from read-and-locate if available
 
 Optional:
 
@@ -97,20 +93,14 @@ See skill-anti-pattern-template.md for format guidelines.
 
 Core component of `large-task` chain (see the project governance file § Skill Chain Triggers).
 
-Role: Assess blast radius by tracing outward from edit point to affected callers, dependents, and contracts. Receives edit point from read-and-locate or design-before-plan, produces impact summary, hands to plan-before-action.
-
 Standard forward flow:
-
-- large-task: design-before-plan → impact-analysis → plan-before-action → incremental-delivery
 
 Additional compositions:
 
-- Receives input from `read-and-locate` when edit point is discovered
 - Provides invariants to `safe-refactor` as preservation contract
 
 Fallbacks:
 
-- To `read-and-locate` when true edit point is not stable
 - To `phase-plan` when contract migration becomes multi-stage or externally constrained
 
 Drop after plan-before-action consumes the impact summary.
@@ -171,7 +161,6 @@ Hand off the summary to plan-before-action. Do not start editing.
 
 ### Fallback
 
-- Return to `read-and-locate` when the true edit point is not stable.
 - Escalate to `phase-plan` or `design-before-plan` when contract migration becomes multi-stage or externally constrained.
 - Ask the user for confirmation when compatibility trade-offs exceed the original task scope.
 

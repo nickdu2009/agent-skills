@@ -56,7 +56,7 @@ Low-risk issues must not be merely reported. Each low-risk issue must be resolve
 - Do not modify the production code under test.
 - Do not bundle unrelated edits into the same revision pass.
 
-Refer to `minimal-change-strategy` for keeping the edit minimal.
+Refer to the `Change Rules` section in AGENTS.md for keeping the edit minimal.
 
 ## Validation
 
