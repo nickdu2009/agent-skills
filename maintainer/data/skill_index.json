@@ -116,6 +116,19 @@
       ]
     },
     {
+      "name": "manage-agents-md",
+      "description": "Initialize and update project-level AGENTS.md guidance for coding agents. Use when the user asks to create, bootstrap, refresh, audit, or update a repository's AGENTS.md, agent instructions, AI coding rules, or project governance content.",
+      "directory": "skills/manage-agents-md",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "documentation",
+        "governance"
+      ]
+    },
+    {
       "name": "safe-refactor",
       "description": "Guide small, controlled refactors that improve code structure while keeping behavior and interfaces stable. Use when the task is structural cleanup (extract duplicate code, consolidate similar functions, simplify tangled logic), pre-refactor for a feature, or local improvement is needed without behavior change. Triggers on \"refactor\", \"extract\", \"consolidate\", \"simplify\", or \"cleanup\" keywords.",
       "directory": "skills/safe-refactor",

@@ -89,7 +89,7 @@ Report what changed, what was validated, and any residual risk. Keep status upda
 
 ## Skill Activation
 
-Task-type activation: `bugfix-workflow`, `safe-refactor`, `scoped-tasking`, `design-before-plan`, `impact-analysis`, `self-review`, and `targeted-validation` activate when task shape requires their guidance.
+Task-type activation: `bugfix-workflow`, `safe-refactor`, `scoped-tasking`, `design-before-plan`, `impact-analysis`, `self-review`, `targeted-validation`, and `manage-agents-md` activate when task shape requires their guidance.
 
 Mid-task escalation:
 
@@ -97,6 +97,7 @@ Mid-task escalation:
 - `impact-analysis`: shared interfaces, public APIs, shared data models, or broad caller impact.
 - `self-review`: multi-file edits complete or user requests diff review.
 - `targeted-validation`: validation choice is non-obvious or expensive.
+- `manage-agents-md`: user asks to initialize, create, refresh, or update a project's `AGENTS.md`.
 
 Review-loop activation (pick by artifact type, mutually exclusive):
 

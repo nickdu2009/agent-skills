@@ -164,6 +164,24 @@
 - 增量边界已经确定
 - 每个增量都能独立验证和合并
 
+### 初始化或更新项目 AGENTS.md
+<div class="title-en">Initialize or Update Project AGENTS.md</div>
+
+优先考虑：
+
+- `manage-agents-md`
+
+适用场景：
+
+- 用户想为项目创建根目录 `AGENTS.md`
+- 现有 `AGENTS.md` 需要刷新、补充或去重
+- 多个 Agent 说明文件之间有冲突，需要按仓库事实合并
+
+结束信号：
+
+- `AGENTS.md` 已经只包含可长期复用的项目规则
+- 新增命令、路径和约定都能从仓库证据或用户要求追溯
+
 ## 什么时候不要升级
 <div class="title-en">When Not to Escalate</div>
 

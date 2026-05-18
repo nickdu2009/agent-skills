@@ -91,6 +91,13 @@
 
 审核测试用例 / 测试策略 / 覆盖矩阵 / 新增或修改的测试文件本身，跑测试作为验证。注意：审"测试用例本身"而不是"被测的产品代码"。
 
+## 项目治理技能
+<div class="title-en">Project Governance Skills</div>
+
+### `manage-agents-md`
+
+初始化或更新项目级 `AGENTS.md`，把仓库里已有的构建、测试、约定和 Agent 行为规则整理成可长期复用的项目说明。
+
 ## 协作与交付技能
 <div class="title-en">Coordination and Delivery Skills</div>
 
@@ -115,6 +122,7 @@
 - 想并行但不确定值不值得：`multi-agent-protocol`
 - 只想把验证缩到最小：`targeted-validation`
 - 用户说“评审/审核/review …”：按被审产物选 `requirements-review-loop` / `design-review-loop` / `plan-review-loop` / `code-review-loop` / `test-review-loop`
+- 用户要初始化或更新项目 `AGENTS.md`：`manage-agents-md`
 
 ## 接下来读什么
 <div class="title-en">Read Next</div>
