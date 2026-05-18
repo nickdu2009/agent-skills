@@ -1,6 +1,9 @@
 ---
 name: code-review-loop
 description: "WHAT: Review a code diff, commit, PR, or specified files, classify issues, fix real defects, run the minimum necessary validation, and repeat the review/fix loop until the implementation is issue-free. WHEN: Use after code has been implemented or staged, when the user asks to review a diff, commit, pull request, or completed implementation; or to validate that finished code matches the requested scope, plan, or contract. Do NOT use to review requirements (use requirements-review-loop), design docs / RFCs / ADRs (use design-review-loop), implementation plans (use plan-review-loop), or test cases themselves (use test-review-loop)."
+metadata:
+  version: "0.1.0"
+  tags: "review, code, validation"
 ---
 # code-review-loop
 
@@ -78,7 +81,7 @@ When fixing findings:
 - preserve existing architecture and conventions
 - avoid opportunistic refactors
 
-Refer to the `Change Rules` section in AGENTS.md for keeping the edit minimal.
+Refer to AGENTS.md Behavioral Guidelines §3 (Surgical Changes) for keeping the edit minimal.
 
 ## Validation
 
@@ -131,6 +134,10 @@ low-risk:
 - assumption: ""
   validation_method: ""
 ```
+
+Then finish with the compact protocol line:
+
+`[output: code-review-loop | completed <confidence> | review_result:"clean|issues_found" issues:"<count by severity>" fixes:"..." validation:"..." | next:<action>]`
 
 ## Constraints
 

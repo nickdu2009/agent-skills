@@ -1,6 +1,9 @@
 ---
 name: requirements-review-loop
 description: "WHAT: Review and revise a requirements document — PRD, user stories, problem statements, or acceptance criteria drafts — against the actual repository context, classify issues, fix real defects, and repeat the review/fix loop until the document is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize a requirements doc, PRD, user story, problem statement, or acceptance criteria. Do NOT use to review design docs / RFCs / ADRs / interface designs (use design-review-loop), implementation plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop). Terms like 方案 / 接口 / 思路 / 实现思路 / 实现方案 belong to design-review-loop; 实施方案 / 迁移方案 belong to plan-review-loop."
+metadata:
+  version: "0.1.0"
+  tags: "review, requirements, documentation"
 ---
 # requirements-review-loop
 
@@ -57,7 +60,7 @@ Low-risk issues must not be merely reported. Each low-risk issue must be resolve
 - Do not write design docs, implementation plans, code, or tests.
 - Do not bundle unrelated edits into the same revision pass.
 
-Refer to the `Change Rules` section in AGENTS.md for keeping the edit minimal.
+Refer to AGENTS.md Behavioral Guidelines §3 (Surgical Changes) for keeping the edit minimal.
 
 ## Validation
 
@@ -110,6 +113,10 @@ low-risk:
 - assumption: ""
   validation_method: ""
 ```
+
+Then finish with the compact protocol line:
+
+`[output: requirements-review-loop | completed <confidence> | review_result:"clean|issues_found" issues:"<count by severity>" changes:"..." validation:"..." | next:<action>]`
 
 ## Constraints
 

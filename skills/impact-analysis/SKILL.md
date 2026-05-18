@@ -15,6 +15,8 @@ Trace outward from a planned edit point to identify affected callers, dependents
 - When the change involves a function/interface called by 3+ other modules.
 - When the change touches a public API, shared type, or configuration schema.
 - When the change involves a data model (ORM model, database schema, protobuf).
+- When the task says the change might, may, or could affect multiple modules or areas.
+- When initial code search finds 3+ tentative leads that may be affected.
 
 # When Not to Use
 
@@ -32,6 +34,7 @@ Trace outward from a planned edit point to identify affected callers, dependents
 
 # Execution Pattern
 
+1. Identify the edit point and the contract or behavior that may change.
 2. Trace direct callers of the changed symbol (layer 1).
 3. Trace callers of callers (layer 2), then one more layer if needed (layer 3 max).
 4. For each affected file, classify: direct consumer, transitive consumer, test reference, type dependency.
@@ -87,7 +90,7 @@ stop_reason: "reached framework boundary at HTTP handler layer"
 - **Full-repo grep instead of call tracing.** The agent greps for the function name across all files instead of tracing the actual call graph. This finds mentions in comments, strings, and unrelated code, inflating the blast radius.
 - **Tracing beyond framework boundaries.** The agent follows callers past the HTTP handler into the test infrastructure and client code, treating the entire stack as "affected" when the real impact stops at the API surface.
 
-See skill-anti-pattern-template.md for format guidelines.
+Keep anti-pattern guidance self-contained; installed skills must not depend on maintainer-only documents.
 
 # Composition
 
@@ -170,29 +173,6 @@ Hand off the summary to the implementation step (per AGENTS.md Behavioral Guidel
 - Require planning to preserve extra rollback margin when compatibility risk remains medium or high.
 
 ## Output Example
-
-### V1 Format (verbose)
-
-```yaml
-[skill-output: impact-analysis]
-status: completed
-confidence: high
-outputs:
-  affected_callers:
-    - "auth/middleware"
-    - "admin dashboard route handlers"
-  contracts:
-    - "validateToken() return shape"
-  compatibility_risks:
-    - "boolean comparisons must be migrated before rollout"
-signals:
-  blast_radius: "8 files across 2 modules"
-recommendations:
-  downstream_skill: "implementation"
-[/skill-output]
-```
-
-### V2 Format (compact)
 
 ```
 [output: impact-analysis | completed high | affected_callers:"auth/middleware, admin dashboard route handlers" contracts:"validateToken() return shape" compatibility_risks:"boolean comparisons must be migrated before rollout" | next:implementation]

@@ -1,6 +1,9 @@
 ---
 name: plan-review-loop
 description: "WHAT: Review and revise project plan files against the actual repository code, docs, configuration, and constraints until the plan is executable and issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize an implementation plan, migration plan, refactor plan, task plan, roadmap, or any plan-like document before coding."
+metadata:
+  version: "0.1.0"
+  tags: "review, planning, documentation"
 ---
 # plan-review-loop
 
@@ -112,6 +115,10 @@ low-risk:
 - assumption: ""
   validation_method: ""
 ```
+
+Then finish with the compact protocol line:
+
+`[output: plan-review-loop | completed <confidence> | review_result:"clean|issues_found" issues:"<count by severity>" changes:"..." validation:"..." | next:<action>]`
 
 ## Constraints
 

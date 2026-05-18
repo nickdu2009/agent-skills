@@ -44,7 +44,7 @@ Parallel:     multi-agent-protocol -> synthesis
 Review loop:  pick one of requirements-review-loop / design-review-loop / plan-review-loop / code-review-loop / test-review-loop -> revise -> re-review until review_result: clean
 ```
 
-## Skill Protocol v2
+## Skill Protocol
 
 Use compact inline blocks when skill-driven execution needs visible traceability:
 
@@ -55,11 +55,11 @@ Use compact inline blocks when skill-driven execution needs visible traceability
 5. `[validate: <skill> | ...]`
 6. `[drop: <skill> | ...]`
 
-Every `[output]` needs matching `[validate]`; every triggered skill must eventually be dropped.
+Each triggered skill should produce or be summarized by an `[output]` block. The calling agent is responsible for emitting matching `[validate]` and `[drop]` blocks when validation completes or the skill is no longer active.
 
 ## Behavioral Guidelines
 
-Behavioral guidelines to reduce common LLM coding mistakes. These supplement skills with general dispositions.
+Behavioral guidelines to reduce common LLM coding mistakes. These supplement skills with general dispositions. Merge with project-specific instructions as needed.
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
@@ -134,4 +134,4 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## Validation Rules
 
-Start with the smallest sufficient validation. State residual risk for anything unvalidated. When testing skills, use a temporary project and `manage-governance.py --project <temp-dir>`.
+Start with the smallest sufficient validation. State residual risk for anything unvalidated. When testing skills, use a temporary project and `python3 maintainer/scripts/install/manage-governance.py --project <temp-dir>`.

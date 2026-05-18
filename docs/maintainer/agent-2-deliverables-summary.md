@@ -4,6 +4,8 @@
 **Date**: 2026-04-11  
 **Status**: Complete
 
+> Historical snapshot: skill names and paths reflect the repository state at the time of this report. Some referenced skills may have been retired or moved since then.
+
 ## Objective
 
 Apply deduplication to maintainer documentation and create canonical templates for skill authoring efficiency.

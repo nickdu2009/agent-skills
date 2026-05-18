@@ -5,6 +5,8 @@
 **Reference**: docs/maintainer/claude-skill-authoring-best-practices.md  
 **Status**: Analysis Complete
 
+> Historical snapshot: skill names and paths reflect the repository state at the time of this report. Some referenced skills may have been retired or moved since then.
+
 ## Executive Summary
 
 Found 6 categories of optimization opportunities across 18 skills, with estimated total token savings of **600-900 tokens** (52% reduction in affected sections). One critical issue (phase-plan-review exceeds 500 lines) and multiple consistency improvements needed.

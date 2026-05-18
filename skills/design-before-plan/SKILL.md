@@ -196,7 +196,7 @@ data_migration:
 - **Skipping interface contract definition for cross-module changes.** The agent plans to modify a shared utility function used by 5 modules without defining the new function signature first. Callers are patched reactively during implementation instead of proactively during design.
 - **Ignoring implicit security/performance/observability requirements.** The agent designs a file upload endpoint without considering: input validation (allowing executable uploads), performance limits (no protection against OOM for large files), or observability (no logging/metrics for debugging failures). These omissions surface as production incidents rather than being caught during design.
 
-See skill-anti-pattern-template.md for format guidelines.
+Keep anti-pattern guidance self-contained; installed skills must not depend on maintainer-only documents.
 
 # Composition
 
@@ -299,33 +299,6 @@ Hand off design brief to the implementation step (per AGENTS.md Behavioral Guide
 - Do not convert a low-confidence design brief into an implementation plan without explicit acknowledgment of the uncertainty.
 
 ## Output Example
-
-### V1 Format (verbose)
-
-```yaml
-[skill-output: design-before-plan]
-status: completed
-confidence: medium
-outputs:
-  requirements:
-    - "Retry flaky payment-status calls up to 3 times."
-  alternatives:
-    - "Inline retry in payment client"
-    - "Reusable retry wrapper"
-  chosen_design:
-    approach: "Inline retry in payment client"
-    rationale: "Smallest viable change for a single flaky upstream path"
-  acceptance_criteria:
-    - "Retries complete within 10 seconds total"
-    - "Idempotency headers are preserved on every retry"
-signals:
-  planning_ready: true
-recommendations:
-  downstream_skill: "implementation"
-[/skill-output]
-```
-
-### V2 Format (compact)
 
 ```
 [output: design-before-plan | completed medium | requirements:"Retry flaky payment-status calls up to 3 times." alternatives:"Inline retry in payment client, Reusable retry wrapper" chosen_design:"Inline retry in payment client" acceptance_criteria:"Retries complete within 10 seconds total, Idempotency headers are preserved on every retry" | next:implementation]

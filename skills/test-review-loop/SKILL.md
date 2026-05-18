@@ -1,6 +1,9 @@
 ---
 name: test-review-loop
 description: "WHAT: Review and revise test cases, test strategy, coverage matrix, or new/modified test files — classify issues, fix real defects, run the tests as validation, and repeat the review/fix loop until the test set is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize test cases, test strategy, coverage matrix, 测试 / 用例 / 覆盖. Do NOT use to review production code under test, 被测代码, or 实现代码 — use code-review-loop instead. Do NOT use to review requirements (use requirements-review-loop), design docs (use design-review-loop), or implementation plans (use plan-review-loop)."
+metadata:
+  version: "0.1.0"
+  tags: "review, testing, validation"
 ---
 # test-review-loop
 
@@ -56,7 +59,7 @@ Low-risk issues must not be merely reported. Each low-risk issue must be resolve
 - Do not modify the production code under test.
 - Do not bundle unrelated edits into the same revision pass.
 
-Refer to the `Change Rules` section in AGENTS.md for keeping the edit minimal.
+Refer to AGENTS.md Behavioral Guidelines §3 (Surgical Changes) for keeping the edit minimal.
 
 ## Validation
 
@@ -110,6 +113,10 @@ low-risk:
 - assumption: ""
   validation_method: ""
 ```
+
+Then finish with the compact protocol line:
+
+`[output: test-review-loop | completed <confidence> | review_result:"clean|issues_found" issues:"<count by severity>" changes:"..." validation:"..." | next:<action>]`
 
 ## Constraints
 

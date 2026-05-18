@@ -1,6 +1,9 @@
 ---
 name: design-review-loop
 description: "WHAT: Review and revise a design document — architecture design, RFC, ADR, interface design, data model, or technical proposal — against the requirements and the actual repository context, classify issues, fix real defects, and repeat the review/fix loop until the document is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize a design doc, RFC, ADR, architecture, interface design, data model, or technical proposal. Terms like 方案 / 实现思路 / 实现方案 / 接口 / 思路 belong here. Do NOT use to review requirements (use requirements-review-loop), implementation plans / migration plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop)."
+metadata:
+  version: "0.1.0"
+  tags: "review, design, documentation"
 ---
 # design-review-loop
 
@@ -57,7 +60,7 @@ Low-risk issues must not be merely reported. Each low-risk issue must be resolve
 - Do not write implementation code or implementation plans.
 - Do not bundle unrelated edits into the same revision pass.
 
-Refer to the `Change Rules` section in AGENTS.md for keeping the edit minimal.
+Refer to AGENTS.md Behavioral Guidelines §3 (Surgical Changes) for keeping the edit minimal.
 
 ## Validation
 
@@ -110,6 +113,10 @@ low-risk:
 - assumption: ""
   validation_method: ""
 ```
+
+Then finish with the compact protocol line:
+
+`[output: design-review-loop | completed <confidence> | review_result:"clean|issues_found" issues:"<count by severity>" changes:"..." validation:"..." | next:<action>]`
 
 ## Constraints
 

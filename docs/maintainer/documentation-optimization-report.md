@@ -5,6 +5,8 @@
 **Status**: Final  
 **Scope**: Maintainer documentation and skill authoring efficiency
 
+> Historical snapshot: skill names and paths reflect the repository state at the time of this report. Some referenced skills may have been retired or moved since then.
+
 ## Executive Summary
 
 This report documents the deduplication and optimization work applied to maintainer documentation and skill authoring templates. The primary goal was to reduce repeated prose across skill files and maintainer documentation while maintaining clarity and usability.

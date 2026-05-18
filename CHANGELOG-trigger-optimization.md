@@ -2,6 +2,8 @@
 
 记录触发测试准确率优化的所有变更。
 
+> Historical snapshot: skill names and paths in this changelog reflect the repository state at the time of the recorded optimization work. Some referenced skills may have been retired or moved since then.
+
 ---
 
 ## [v1.0] - 2026-04-11

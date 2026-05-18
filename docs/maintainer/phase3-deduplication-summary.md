@@ -6,6 +6,8 @@
 **Phase**: Token Efficiency Optimization Plan — Phase 3  
 **Agent**: Agent A (Documentation & Chain Aliases)
 
+> Historical snapshot: skill names and paths reflect the repository state at the time of this report. Some referenced skills may have been retired or moved since then.
+
 ## Executive Summary
 
 Phase 3 work focused on creating canonical chain aliases and normalizing repeated documentation phrasing. This phase delivers foundational infrastructure for token-efficient skill documentation without modifying skill semantics or contracts.

@@ -62,7 +62,7 @@ Anti-patterns typically fall into these categories. Use this taxonomy to organiz
 
 **Pattern**: Expanding beyond the task boundary without explicit permission.
 
-**Example**: "While I'm here cleanup" (minimal-change-strategy)
+**Example**: "While I'm here cleanup" (safe-refactor)
 
 ### Evidence Failures
 
@@ -74,13 +74,13 @@ Anti-patterns typically fall into these categories. Use this taxonomy to organiz
 
 **Pattern**: Choosing a more complex solution when a simpler one suffices.
 
-**Example**: "Rewriting instead of patching" (minimal-change-strategy)
+**Example**: "Rewriting instead of patching" (safe-refactor)
 
 ### Signal Loss
 
 **Pattern**: Discarding information that downstream skills or users need.
 
-**Example**: "Vague progress reporting" (plan-before-action)
+**Example**: "Vague progress reporting" (scoped-tasking)
 
 ## Good Examples
 
@@ -206,7 +206,7 @@ If a skill has 0 anti-patterns, consider whether:
 
 Some anti-patterns appear across multiple skills. Document these in each affected skill, but keep the wording consistent:
 
-**Example**: "Editing while still discovering" appears in both `plan-before-action` and `scoped-tasking`.
+**Example**: "Editing while still discovering" appears in both `scoped-tasking` and `design-before-plan`.
 
 **Guideline**: Use the same pattern name and similar phrasing, but adapt the example to the skill context.
 
@@ -316,4 +316,4 @@ When updating this template:
 
 - **Guardrails formatting**: `docs/maintainer/skill-contract-template.md`
 - **Full skill structure**: `docs/maintainer/claude-skill-authoring-best-practices.md`
-- **Example anti-patterns**: See `skills/bugfix-workflow/SKILL.md`, `skills/minimal-change-strategy/SKILL.md`, `skills/plan-before-action/SKILL.md`
+- **Example anti-patterns**: See `skills/bugfix-workflow/SKILL.md`, `skills/safe-refactor/SKILL.md`, `skills/scoped-tasking/SKILL.md`

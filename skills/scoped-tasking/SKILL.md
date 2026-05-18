@@ -89,7 +89,7 @@ Return:
 - **Grepping the entire repo before reading the error message.** The agent runs broad searches across every directory instead of starting from the user-provided clue. This wastes context and delays the first useful finding.
 - **Silent scope creep.** The agent discovers a related issue in a neighboring module and investigates it without stating that the original boundary was insufficient. Scope expands without an explicit expansion decision.
 
-See skill-anti-pattern-template.md for format guidelines.
+Keep anti-pattern guidance self-contained; installed skills must not depend on maintainer-only documents.
 
 # Composition
 
@@ -162,29 +162,6 @@ Do not scan every reporting module. If the service delegates to a shared query b
 - Prefer another read-only narrowing pass over silent scope expansion.
 
 ## Output Example
-
-### V1 Format (verbose)
-
-```yaml
-[skill-output: scoped-tasking]
-status: completed
-confidence: high
-outputs:
-  objective: "Fix the timeout regression in invoice export."
-  analysis_boundary:
-    - "invoice_export_controller"
-    - "export_service"
-    - "failing export command"
-  excluded_areas:
-    - "unrelated reporting modules"
-signals:
-  next_action: "inspect the export service call path inside the boundary"
-recommendations:
-  downstream_skill: "implementation"
-[/skill-output]
-```
-
-### V2 Format (compact)
 
 ```
 [output: scoped-tasking | completed high | objective:"Fix the timeout regression in invoice export." analysis_boundary:"invoice_export_controller, export_service, failing export command" excluded_areas:"unrelated reporting modules" | next:implementation]
