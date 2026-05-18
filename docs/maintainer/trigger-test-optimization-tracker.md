@@ -13,6 +13,7 @@
 | v1.0 | 2026-04-11 | 89.0% | +6.1% | 8 个技能描述优化（P0-P3） | ✅ 完成 |
 | v1.1 | 2026-04-11 | **95.1%** | +6.1% | 4 个技能语言模式识别 | ✅ 完成 |
 | v1.2 | 2026-04-11 | **98.8%** | +3.7% | 4 个技能边界精化 | ✅ 完成 |
+| v1.3 | 2026-05-18 | _pending_ | _pending_ | 新增 Review-Loop 主链 5 件套（20 个触发测试用例） | ⏳ 待执行 |
 
 ---
 
@@ -495,6 +496,39 @@ read-and-locate 描述应强调:
 1. **推理模式评估**: 已测试，+1.2% 提升不值得成本
 2. **组合触发优化**: 需要在 CLAUDE.md 层面强化
 3. **链式触发规则**: 可能需要独立文档说明
+
+---
+
+### v1.3 - Review-Loop 主链 5 件套（待执行）
+
+**日期**: 2026-05-18（计划）
+**测试配置**: qwen3.6-plus + 显式缓存 + compact 模式（沿用 v1.2）
+
+**新增内容**：
+- `REVIEW_LOOP_MAINCHAIN_CASES` 共 20 个测试用例（`maintainer/data/trigger_test_data.py`）
+- 5 件套覆盖：requirements / design / plan / code / test review-loop
+- 易混淆词专项 5 条：方案 / 实施方案 / 接口 / 被测代码 / 无宾语评审
+
+**验收门槛**（与设计文档 §1.2 / §10.3 一致）：
+- 命中率 ≥ 90%
+- 跨件套误触发率 ≤ 5%
+- 易混淆词归属 100% 正确
+
+**待执行**：
+```bash
+python3 maintainer/scripts/evaluation/run_trigger_tests.py \
+  --mode api \
+  --compact-mode \
+  --enable-cache \
+  --concurrency 5 \
+  --filter category=review-loop-mainchain
+```
+
+**预期结果**：填入实际命中率后更新本表 v1.3 行与「优化历史总览」。
+
+**关联设计**：
+- [Review-Loop 主链 5 件套设计文档](./review-loop-mainchain-design.md)
+- [Review-Loop 主链 5 件套实施计划](./review-loop-mainchain-plan.md)
 
 ---
 

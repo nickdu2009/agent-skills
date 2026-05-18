@@ -15,3 +15,7 @@
   - [Protocol v2 迁移跟踪](protocol-v2-migration-tracker.md)
   - [Skill Chain Aliases](skill-chain-aliases.md)
   - [Chain Alias 维护说明](chain-alias-maintenance.md)
+
+- **Review-Loop 主链 5 件套**
+  - [设计文档](review-loop-mainchain-design.md)
+  - [实施计划](review-loop-mainchain-plan.md)
