@@ -126,7 +126,6 @@ This skill does not own:
 - baseline discovery for a new phase
 - milestone design trade-offs
 - integrator operating policy
-- conflict-resolution decision-making
 
 ## Reference Loading By Task
 
@@ -173,7 +172,6 @@ The smoke fixture set lives in `fixtures/smoke/`. The golden output files live i
 Use this skill together with:
 
 - `$phase-plan` to author the per-phase strict four-file phase doc set plus the phase-root README against this contract
-- `$phase-plan-review` to review upstream intent alignment, plan quality, and execution readiness before wave execution begins
 - `$phase-execute` to execute accepted waves by consuming this contract and its helpers
 
 # Common Anti-Patterns

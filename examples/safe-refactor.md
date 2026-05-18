@@ -7,7 +7,6 @@ Three webhook handlers each normalize the same incoming payload shape with sligh
 ## Recommended Skill Composition
 
 - `scoped-tasking`
-- `read-and-locate`
 - `plan-before-action`
 - `safe-refactor`
 - `targeted-validation`
@@ -21,7 +20,6 @@ Three webhook handlers each normalize the same incoming payload shape with sligh
 
 ## Example Flow
 
-1. Use `read-and-locate` to confirm all normalization entry points and the shared boundary.
 2. Use `scoped-tasking` to keep the task limited to the three handlers and the new helper location.
 3. Use `plan-before-action` to declare:
    - intended files
@@ -52,7 +50,6 @@ Three webhook handlers each normalize the same incoming payload shape with sligh
 
 ```text
 [task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
-[triggers: read-and-locate:trigger safe-refactor:trigger targeted-validation:defer]
 [precheck: safe-refactor | result:PASS | checks:invariants_stated structural_goal_bounded]
 [output: safe-refactor | status:completed | confidence:high | behavior_invariants:"handler signatures unchanged; normalized payload unchanged" | refactor_boundary:"three webhook handlers, shared normalization helper" | rollback_notes:"revert helper extraction if output shape changes" | validation_boundary:"webhook handler tests only" | next:targeted-validation]
 [validate: safe-refactor | result:PASS | checks:behavior_invariants refactor_boundary]

@@ -116,7 +116,6 @@ Required semantics:
 ### Trigger Evaluation
 
 ```text
-[triggers: scoped-tasking:trigger plan-before-action:trigger read-and-locate:defer safe-refactor:skip]
 ```
 
 Required semantics:
@@ -145,7 +144,6 @@ Optional:
 ### Skill Output
 
 ```text
-[output: plan-before-action | status:completed | confidence:high | assumptions:"single timeout path" | working_set:"a.py b.py" | sequence:"edit -> validate" | validation_boundary:"focused timeout test" | next:minimal-change-strategy]
 ```
 
 Required semantics:
@@ -186,7 +184,6 @@ Optional:
 ### Skill Deactivation
 
 ```text
-[drop: plan-before-action | reason:"execution started" | active:minimal-change-strategy targeted-validation]
 ```
 
 Required semantics:
@@ -198,7 +195,6 @@ Required semantics:
 ### Loop Detection
 
 ```text
-[loop: read-and-locate | reason:"re-activated without new evidence"]
 ```
 
 Use only when the same skill is retried without materially new evidence.
@@ -302,8 +298,6 @@ Execution skills must include:
 - `## Failure Handling`
 - `## Deactivation Trigger`
 
-`conflict-resolution` must include:
-
 - `## Contract`
 - `## Failure Handling`
 - `## Deactivation Trigger`
@@ -319,15 +313,12 @@ Phase skills must include:
 
 ```text
 [task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
-[triggers: scoped-tasking:trigger plan-before-action:trigger read-and-locate:defer]
 [precheck: scoped-tasking | result:PASS | checks:objective-clear boundary-unknown]
 [output: scoped-tasking | status:completed | confidence:high | objective:"fix timeout regression" | analysis_boundary:"export controller export service failing test" | excluded_areas:"payment flow ui" | next:plan-before-action]
 [validate: scoped-tasking | result:PASS | checks:objective analysis_boundary excluded_areas]
 [drop: scoped-tasking | reason:"boundary consumed by planning" | active:plan-before-action]
 [precheck: plan-before-action | result:PASS | checks:boundary-known working-set-sized validation-path-chosen]
-[output: plan-before-action | status:completed | confidence:high | assumptions:"single timeout path in export flow" | working_set:"export_service.py export_test.py" | sequence:"patch -> focused test" | validation_boundary:"export timeout test" | next:minimal-change-strategy]
 [validate: plan-before-action | result:PASS | checks:assumptions working_set sequence validation_boundary]
-[drop: plan-before-action | reason:"execution begins" | active:minimal-change-strategy targeted-validation]
 ```
 
 ## Differences From v1

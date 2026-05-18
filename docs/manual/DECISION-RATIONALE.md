@@ -12,8 +12,6 @@
 ## 为什么小任务不该直接上阶段技能
 <div class="title-en">Why Small Tasks Should Not Start With Phase Skills</div>
 
-`phase-plan`、`phase-plan-review`、`phase-execute` 这类阶段技能适合的是多波次、多 PR、跨模块、需要正式交接物的大任务。
-
 如果把它们直接用在小任务上，通常会出现反效果：
 
 - 任务本身很小，但协调流程变得很重
@@ -24,17 +22,11 @@
 
 - `scoped-tasking`
 - `plan-before-action`
-- `minimal-change-strategy`
 - `targeted-validation`
 
 只有当任务真的跨越多个阶段、多个 PR、多个依赖关系时，这类阶段技能才值得上场。
 
-## 为什么编辑点不明确时要先用 `read-and-locate`
-<div class="title-en">Why Use `read-and-locate` When the Edit Point Is Unclear</div>
-
 当编辑点不明确时，最危险的动作就是开始无边界地阅读仓库。
-
-`read-and-locate` 的作用不是“多看一点”，而是“只看足够找到编辑点的那一小段路径”。
 
 之所以优先它，是因为它要求：
 

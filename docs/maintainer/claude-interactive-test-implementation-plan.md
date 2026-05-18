@@ -116,10 +116,8 @@ Outputs:
 Primary scenarios:
 
 1. `scoped-tasking -> plan-before-action`
-2. `context-budget-awareness`
 3. `multi-agent-protocol`
 4. `phase-plan -> phase-execute`
-5. `conflict-resolution`
 
 Supplementary scenarios:
 

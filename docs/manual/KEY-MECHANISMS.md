@@ -26,7 +26,6 @@
 
 例如：
 
-- `read-and-locate` 负责在陌生代码区缩小编辑点
 - `bugfix-workflow` 负责先诊断再修复
 - `targeted-validation` 负责选择最小充分验证
 

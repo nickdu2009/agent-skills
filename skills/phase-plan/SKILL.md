@@ -345,7 +345,7 @@ For partial-output mode, the task is done only when:
 Use this skill together with:
 
 - `$phase-contract-tools` for the sole schema, validator, renderer, handoff, and cutover contract
-- `$phase-plan-review` when the accepted doc set should be independently reviewed before execution begins
+- `$phase acceptance review` when the accepted doc set should be independently reviewed before execution begins
 - `$phase-execute` after the accepted doc set exists and execution can consume the contract-defined artifacts
 
 # Common Anti-Patterns
@@ -398,7 +398,7 @@ See skill-anti-pattern-template.md for format guidelines.
 
 - Use partial-output mode only when the user explicitly asks for a subset.
 - Hand contract questions to `phase-contract-tools`.
-- Hand acceptance review to `phase-plan-review` before execution starts.
+- Hand acceptance review to `phase acceptance review` before execution starts.
 
 ## Output Example
 
@@ -426,18 +426,30 @@ outputs:
 signals:
   validation_passed: true
 recommendations:
-  next_step: "hand off to phase-plan-review"
+  next_step: "hand off to phase acceptance review"
 [/skill-output]
 ```
 
 ### V2 Format (compact)
 
 ```
-[output: phase-plan | completed high | plan_artifacts:"docs/phases/phase1/plan.yaml, roadmap.md, wave-guide.md, execution-index.md" waves:"wave1: schema migration (3 PRs, serial) → wave2: service layer (4 PRs, parallel lanes)" gates:"wave1 complete before wave2 starts, schema validators pass before service implementation" ownership:"wave1: backend-team, wave2: service-team" | next:phase-plan-review]
+[output: phase-plan | completed high | plan_artifacts:"docs/phases/phase1/plan.yaml, roadmap.md, wave-guide.md, execution-index.md" waves:"wave1: schema migration (3 PRs, serial) → wave2: service layer (4 PRs, parallel lanes)" gates:"wave1 complete before wave2 starts, schema validators pass before service implementation" ownership:"wave1: backend-team, wave2: service-team" | next:phase acceptance review]
 ```
 
 ## Lifecycle
 
 - Activate while authoring or repairing the accepted phase artifact set.
-- Deactivate once the artifact set has been handed to `phase-plan-review` or the user accepts the plan.
+- Deactivate once the artifact set has been handed to `phase acceptance review` or the user accepts the plan.
 - Deactivate immediately if the work escalates into direct maintenance of contract tools rather than phase authoring.
+
+## Acceptance Review
+
+Before execution starts, review the phase artifacts as an acceptance gate, not as a second planning pass.
+
+Check three layers:
+
+1. Upstream intent: requirements, design constraints, and contract assumptions are carried into the plan.
+2. Plan quality: the phase doc set is complete, coherent, ordered, and schema-aligned.
+3. Execution readiness: lanes, dependencies, validation, and prompt-rendered instructions are safe to hand to executors.
+
+If upstream inputs are missing, downgrade the review scope explicitly and state residual risk. Findings must include issue, cause, impact, and recommendation. Blocking findings return to planning; clean artifacts may proceed to execution.

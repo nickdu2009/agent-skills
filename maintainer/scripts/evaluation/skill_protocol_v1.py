@@ -8,28 +8,28 @@ import re
 EXECUTION_SKILLS: tuple[str, ...] = (
     "scoped-tasking",
     "design-before-plan",
-    "minimal-change-strategy",
+    "smallest-change discipline",
     "plan-before-action",
     "targeted-validation",
-    "context-budget-awareness",
-    "read-and-locate",
+    "context discipline",
+    "built-in code search",
     "safe-refactor",
     "bugfix-workflow",
     "impact-analysis",
     "self-review",
-    "incremental-delivery",
-    "knowledge-driven-development",
+    "increment planning",
+    "durable project knowledge",
 )
 
 ORCHESTRATION_SKILLS: tuple[str, ...] = (
     "multi-agent-protocol",
-    "conflict-resolution",
+    "multi-agent synthesis",
 )
 
 PHASE_SKILLS: tuple[str, ...] = (
     "phase-plan",
     "phase-execute",
-    "phase-plan-review",
+    "phase acceptance review",
     "phase-contract-tools",
 )
 
@@ -55,7 +55,7 @@ SKILL_REQUIRED_SECTIONS: dict[str, tuple[str, ...]] = {
         "Failure Handling",
         "Deactivation Trigger",
     ),
-    "conflict-resolution": (
+    "multi-agent synthesis": (
         "Contract",
         "Failure Handling",
         "Deactivation Trigger",
@@ -74,17 +74,17 @@ SKILL_REQUIRED_SECTIONS: dict[str, tuple[str, ...]] = {
 SKILL_OUTPUT_FIELDS: dict[str, tuple[str, ...]] = {
     "scoped-tasking": ("objective", "analysis_boundary", "excluded_areas"),
     "design-before-plan": ("requirements", "alternatives", "chosen_design", "acceptance_criteria"),
-    "minimal-change-strategy": ("change_boundary", "scope_guardrails", "stop_conditions"),
+    "smallest-change discipline": ("change_boundary", "scope_guardrails", "stop_conditions"),
     "plan-before-action": ("assumptions", "working_set", "sequence", "validation_boundary"),
     "targeted-validation": ("checks_to_run", "risks_not_covered", "pass_criteria"),
-    "context-budget-awareness": ("current_state", "dropped_hypotheses", "open_questions"),
-    "read-and-locate": ("entry_points", "candidate_files", "edit_points"),
+    "context discipline": ("current_state", "dropped_hypotheses", "open_questions"),
+    "built-in code search": ("entry_points", "candidate_files", "edit_points"),
     "safe-refactor": ("behavior_invariants", "refactor_boundary", "rollback_notes"),
     "bugfix-workflow": ("symptom", "repro", "fault_domain", "fix_hypothesis"),
     "impact-analysis": ("affected_callers", "contracts", "compatibility_risks"),
     "self-review": ("findings", "residual_risks", "scope_violations"),
-    "incremental-delivery": ("increments", "merge_order", "gates"),
-    "knowledge-driven-development": (
+    "increment planning": ("increments", "merge_order", "gates"),
+    "durable project knowledge": (
         "knowledge_root",
         "knowledge_read",
         "candidate_updates",
@@ -92,10 +92,10 @@ SKILL_OUTPUT_FIELDS: dict[str, tuple[str, ...]] = {
         "local_only_notes",
     ),
     "multi-agent-protocol": ("split_dimension", "lanes", "integration_plan", "synthesis"),
-    "conflict-resolution": ("claims", "evidence", "resolution", "residual_uncertainty"),
+    "multi-agent synthesis": ("claims", "evidence", "resolution", "residual_uncertainty"),
     "phase-plan": ("plan_artifacts", "waves", "gates", "ownership"),
     "phase-execute": ("wave_status", "lane_results", "gate_outcomes", "rollback_state"),
-    "phase-plan-review": ("alignment_findings", "blocking_issues", "approval_status"),
+    "phase acceptance review": ("alignment_findings", "blocking_issues", "approval_status"),
     "phase-contract-tools": ("schema_checks", "rendered_views", "contract_issues"),
 }
 

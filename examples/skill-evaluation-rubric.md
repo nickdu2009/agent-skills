@@ -53,8 +53,6 @@ Score these dimensions for every scenario:
 - Pass: states goal, assumptions, intended files, and next actions before non-trivial edits.
 - Fail: starts editing while the plan or file list is still fuzzy.
 
-### `minimal-change-strategy`
-
 - Pass: selects a local, reviewable patch and defers unrelated cleanup.
 - Fail: mixes the main task with cosmetic rewrites, renames, or opportunistic refactors.
 
@@ -63,12 +61,8 @@ Score these dimensions for every scenario:
 - Pass: first validation step directly exercises the changed or analyzed surface.
 - Fail: jumps to full builds or broad test suites without explicit risk-based reasoning.
 
-### `context-budget-awareness`
-
 - Pass: compresses the session state, drops stale hypotheses, and resumes from a smaller fault domain.
 - Fail: preserves dead ends and keeps re-reading noisy artifacts without a sharper question.
-
-### `read-and-locate`
 
 - Pass: starts from the strongest clue and identifies likely edit points without repo-wide drift.
 - Fail: reads large unrelated areas before establishing the local ownership path.
@@ -87,8 +81,6 @@ Score these dimensions for every scenario:
 
 - Pass: uses tiered parallelism appropriately — Tier 1 for read-only exploration, Tier 2 with an explicit gate declaration for write-capable delegation — with clear assignments and merge expectations.
 - Fail: splits tightly coupled work, launches overlapping write scopes, skips the Tier 2 gate declaration, or conflates explore and delegate tiers.
-
-### `conflict-resolution`
 
 - Pass: compares overlapping findings by evidence quality and preserves uncertainty where needed.
 - Fail: collapses conflicting findings into one answer without adjudication or confidence notes.
@@ -113,10 +105,7 @@ Score these dimensions for every scenario:
 - Pass: traces outward from edit point, produces structured impact summary with blast radius, stops at framework boundaries or 8-file threshold.
 - Fail: skips impact assessment and goes directly to planning, or reads the entire repo during impact analysis.
 
-### `incremental-delivery`
-
 - Pass: splits plan into 2–4 mergeable increments with explicit dependencies and acceptance criteria; each increment keeps the system runnable; correctly escalates to phase-plan when thresholds are exceeded.
-- Fail: creates increments with implicit dependencies, allows non-runnable intermediate states, or stays at incremental-delivery when phase-plan is clearly needed.
 
 ### `self-review`
 
@@ -146,8 +135,6 @@ A false negative is worse than a false positive. If the agent never loads the sk
 
 ### AGENTS.md Boundary Cases
 
-For skills that overlap with AGENTS.md rules (`minimal-change-strategy`, `targeted-validation`, `context-budget-awareness`):
-
 Also verify that governance text stays at the routing layer and points detailed skill behavior back to `SKILL.md`, instead of duplicating step-by-step skill procedures.
 
 | Score | Meaning |
@@ -157,8 +144,6 @@ Also verify that governance text stays at the routing layer and points detailed 
 | `0` | The agent never loaded the full skill even for complex tasks, or governance text effectively replaced the skill manual |
 
 ### Chain Trigger Cases
-
-For skills triggered by other skills (`conflict-resolution` via `multi-agent-protocol`, `phase-contract-tools` via `phase-plan`/`phase-execute`):
 
 | Score | Meaning |
 | --- | --- |

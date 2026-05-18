@@ -81,7 +81,7 @@ Execution skills must include:
 - `## Failure Handling`
 - `## Deactivation Trigger`
 
-`conflict-resolution` must include:
+`multi-agent-protocol` synthesis guidance must include:
 
 - `## Contract`
 - `## Failure Handling`

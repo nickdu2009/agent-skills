@@ -8,7 +8,6 @@ You changed one or more `SKILL.md` files and want a repeatable way to verify tha
 
 - `scoped-tasking`
 - `plan-before-action`
-- `minimal-change-strategy`
 - `targeted-validation`
 
 ## Test Flow
@@ -48,13 +47,11 @@ python3 maintainer/scripts/install/manage-governance.py --sync-local cursor
 | Example | Primary Skill Intent | What To Observe |
 | --- | --- | --- |
 | `single-agent-bugfix.md` | diagnosis before edit | symptom clarity, fault-domain narrowing, smallest viable fix, narrow validation |
-| `read-and-locate.md` | bounded discovery | strong starting clue, small search radius, explicit likely edit points |
 | `safe-refactor.md` | behavior-preserving structure change | invariants stated, extraction in small steps, validation after meaningful steps |
 | `context-budgeted-debugging.md` | context compression and restart | stale hypotheses dropped, compressed summary, focused next step |
 | `multi-agent-root-cause-analysis.md` | justified parallelism | low-coupling split, clear subagent assignments, merge and adjudication discipline |
 | `phased-migration-planning.md` | schema-first phase planning | YAML is execution authority, strict four-file doc set, validators run after YAML, hotspot ownership explicit |
 | `impact-analysis.md` | blast radius assessment before planning | outward tracing from edit point, structured impact summary, stop at framework boundaries, result feeds into plan |
-| `incremental-delivery.md` | 2–4 PR split with upgrade/downgrade | increments keep system runnable, dependencies explicit, correctly escalates to phase-plan or downgrades to plan-before-action |
 | `self-review.md` | diff quality check before testing | reviews diff before running tests, catches debug residuals, severity grading, fixes blocking issues first |
 
 ## Core Acceptance Checklist
@@ -147,9 +144,6 @@ The matrix lives in `maintainer/data/trigger_test_data.py`. Each case specifies:
 | --- | --- |
 | `task-type` | Does the right skill activate for bugs, refactors, and features? |
 | `agents-md-boundary` | Do simple tasks stay at AGENTS.md level while complex tasks escalate to the full skill? |
-| `discovery` | Does read-and-locate trigger when the edit point is unknown? |
-| `context-budget` | Does context-budget-awareness trigger when sessions grow noisy? |
-| `multi-agent` | Does multi-agent-protocol trigger for parallel work? Does conflict-resolution stay dormant until needed? |
 | `phase` | Do phase-plan and phase-execute trigger independently while phase-contract-tools stays hidden? |
 
 ### How to Run a Trigger Test

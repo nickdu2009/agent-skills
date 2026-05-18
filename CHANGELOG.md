@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed - 2026-05-18: Skill Library Modernization
+
+- Removed 7 live skills: read-and-locate, context-budget-awareness, incremental-delivery, minimal-change-strategy, knowledge-driven-development, conflict-resolution, and phase-plan-review.
+- Merged conflict arbitration into multi-agent-protocol and phase acceptance checks into phase-plan.
+- Slimmed plan-before-action, self-review, multi-agent-protocol, targeted-validation, safe-refactor, and bugfix-workflow to compact trigger-and-contract guidance.
+- Removed compatibility shims and updated governance, docs, examples, data, and maintenance scripts for the 14-skill live set.
+
 ### Added - 2026-04-11: Skill Protocol v2 Migration
 
 **Skill Protocol v2**: Compact inline protocol format for improved token efficiency and readability.

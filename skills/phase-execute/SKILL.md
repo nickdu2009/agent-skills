@@ -325,9 +325,7 @@ Return:
 Use this skill together with:
 
 - `$phase-contract-tools` for the sole schema, renderer, handoff, snapshot, and validation contract
-- `$phase-plan-review` when the user wants a pre-execution quality gate before the first wave launch
 - `$phase-plan` when the phase doc set must be repaired, re-rendered, or re-scoped
-- `$conflict-resolution` when merge or evidence conflicts exceed the circuit-breaker threshold
 
 # Common Anti-Patterns
 
@@ -378,7 +376,6 @@ See skill-anti-pattern-template.md for format guidelines.
 ### Fallback
 
 - Return to `phase-plan` when the doc set or wave split is no longer executable as written.
-- Use `conflict-resolution` for non-trivial merge or evidence conflicts.
 - Use `phase-contract-tools` helpers for preflight, handoff, and status validation instead of inventing substitutes.
 
 ## Output Example

@@ -96,4 +96,3 @@ When tripped:
 - stop active integration
 - follow `rollback-and-conflict-procedure.md`
 - report the exact conflict or failing evidence
-- escalate to the user or `$conflict-resolution`

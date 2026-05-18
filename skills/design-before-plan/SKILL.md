@@ -188,7 +188,6 @@ data_migration:
 **Technical debt assessment** (lightweight, context-dependent):
 - Obvious debt (TODOs, deprecated patterns, duplication) → note in design brief but avoid mixing cleanup with delivery unless blocking or safety-critical
 - Debt cleanup that simplifies design (reduces blast radius 3+ files, eliminates complex workaround) → consider as separate increment
-- Default: defer debt cleanup per minimal-change-strategy unless load-bearing for current design
 
 # Common Anti-Patterns
 
@@ -206,9 +205,6 @@ Entry point for `design-first` and core component of `large-task` chains (see th
 Role: Clarify requirements, compare design alternatives, establish interface contracts before planning. Receives boundary from scoped-tasking, produces design brief, hands to plan-before-action.
 
 Standard forward flow:
-
-- design-first: receives boundary → produces design brief → plan-before-action → minimal-change-strategy → self-review → targeted-validation
-- large-task: receives boundary → produces design brief → impact-analysis → plan-before-action → incremental-delivery
 
 Fallbacks:
 

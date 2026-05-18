@@ -33,8 +33,6 @@
 
 | 层级 | 技能 | 职责 |
 |------|------|------|
-| **执行层**（8 个） | `scoped-tasking`、`plan-before-action`、`minimal-change-strategy`、`targeted-validation`、`context-budget-awareness`、`read-and-locate`、`safe-refactor`、`bugfix-workflow` | 约束单个 Agent 在一个有界任务内如何工作 |
-| **编排层**（2 个） | `multi-agent-protocol`、`conflict-resolution` | 约束主 Agent 如何协调并行子 Agent |
 | **阶段系统**（3 个 + 工具脚本） | `phase-plan`、`phase-execute`、`phase-contract-tools` | Schema 优先的多波次项目执行，带验证器、渲染器和契约 |
 
 依赖关系干净：
@@ -64,10 +62,6 @@
 
 1. **`bugfix-workflow`**：要求"证据先行"，不允许在没有确认故障域的情况下就开始修改代码。这直接对抗了 Agent 最常见的"看到代码就想改"冲动。
 
-2. **`context-budget-awareness`**：提出了量化的触发阈值（8 个文件、2 次重复读取、3 个假设、3 次无进展操作），并明确说这些是"起始默认值，可调整"。这比模糊的"注意上下文"有效得多。
-
-3. **`conflict-resolution`**：提出了证据质量的优先级排序（直接代码路径证据 > 可复现行为证据 > 日志相关性 > 结构类比），不让"语气最强"的结论赢。
-
 4. **`multi-agent-protocol`**：并行性记分卡（6 个问题，4+ 才并行）是一个简洁有效的决策框架，Tier 1/Tier 2 的分级也很务实。
 
 5. **`phase-contract-tools`**：作为唯一的契约权威，带有完整的 Python 验证器/渲染器和冒烟测试夹具，确保契约漂移可被检测。
@@ -78,13 +72,9 @@
 
 这套系统最巧妙的设计之一是**每个技能都声明了自己的组合伙伴**。例如：
 
-- `bugfix-workflow` 组合 `scoped-tasking`（限定故障域） + `read-and-locate`（快速定位路径） + `minimal-change-strategy`（最小修复） + `targeted-validation`（验证症状）
-
 这意味着技能之间不是扁平列表，而是有明确的**组合拓扑**。README 中的 Mermaid 图就是这个拓扑的可视化。
 
 推荐的"起始组合"也很实用：
-
-> `scoped-tasking` + `minimal-change-strategy` + `plan-before-action` + `targeted-validation`
 
 这四个技能构成了一个最小但完整的行为纪律基线。
 
@@ -130,8 +120,6 @@
 
 ### 2. AGENTS.md 与技能之间的边界模糊地带
 
-`AGENTS.md` 中的 Change Rules、Context Budget、Validation Rules 与 `minimal-change-strategy`、`context-budget-awareness`、`targeted-validation` 有大量重叠。评分体系中虽然定义了"简单任务用 AGENTS.md 规则，复杂任务升级到完整技能"的标准，但这个边界在实践中很难控制。
-
 **建议**：在 `AGENTS.md` 中的重叠部分增加明确的"升级条件"标注，例如"当 X 发生时，加载完整技能"。
 
 ### 3. 阶段系统的复杂度跳跃
@@ -150,10 +138,6 @@
 **建议**：在每个技能的 `Guardrails` 部分增加 1-2 个"典型反模式"示例，直接展示 Agent 常犯的错误。
 
 ### 5. 没有技能卸载/降级机制
-
-系统有详细的"何时加载"逻辑，但没有明确的"何时卸载或降级"机制。在长会话中，Agent 可能同时背负 5-6 个技能的规则，导致上下文膨胀——这恰恰违反了 `context-budget-awareness` 的精神。
-
-**建议**：在 `AGENTS.md` 或新增一个轻量技能中定义"技能降级"规则，例如"当任务进入纯执行阶段时，可以放下 `scoped-tasking` 和 `read-and-locate`"。
 
 ### 6. 缺乏真实项目的实效验证数据
 

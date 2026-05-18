@@ -175,8 +175,8 @@ SKILL_SCORE_RULES: dict[str, ScoreRule] = {
             r"计划",
         ),
     ),
-    "minimal-change-strategy": ScoreRule(
-        label="minimal-change-strategy",
+    "smallest-change discipline": ScoreRule(
+        label="smallest-change discipline",
         positive_patterns=(
             r"\bsmallest viable\b",
             r"\blocal patch\b",
@@ -204,8 +204,8 @@ SKILL_SCORE_RULES: dict[str, ScoreRule] = {
             r"全量测试",
         ),
     ),
-    "context-budget-awareness": ScoreRule(
-        label="context-budget-awareness",
+    "context discipline": ScoreRule(
+        label="context discipline",
         positive_patterns=(
             r"\bcompress\b",
             r"\bstale hypotheses\b",
@@ -215,8 +215,8 @@ SKILL_SCORE_RULES: dict[str, ScoreRule] = {
             r"重新聚焦",
         ),
     ),
-    "read-and-locate": ScoreRule(
-        label="read-and-locate",
+    "built-in code search": ScoreRule(
+        label="built-in code search",
         positive_patterns=(
             r"\bentry point\b",
             r"\blikely edit points\b",
@@ -271,8 +271,8 @@ SKILL_SCORE_RULES: dict[str, ScoreRule] = {
             r"探索",
         ),
     ),
-    "conflict-resolution": ScoreRule(
-        label="conflict-resolution",
+    "multi-agent synthesis": ScoreRule(
+        label="multi-agent synthesis",
         positive_patterns=(
             r"\bconsensus\b",
             r"\bdisagreement\b",

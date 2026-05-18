@@ -16,7 +16,6 @@ Design decision with multiple approaches and cross-module impact.
 1. `scoped-tasking` — narrow the initial boundary (which endpoints? what batch size?)
 2. **`design-before-plan`** — compare batch API designs, define contracts, establish acceptance criteria
 3. `plan-before-action` — convert chosen design into implementation plan
-4. `minimal-change-strategy` — constrain the implementation to the chosen design
 5. `targeted-validation` — validate batch semantics (atomicity, partial failures)
 
 ## Expected Agent Behavior
@@ -144,7 +143,6 @@ Consumes the design brief and produces:
 - Assumptions: existing item validation logic is reusable
 - Intended files: `routes/items.js`, `controllers/batch_items_controller.js`, `tests/batch_items.test.js`
 
-### Phase 4: Implementation (minimal-change-strategy + targeted-validation)
 Execute the plan, validate with batch integration tests.
 
 ## Anti-Patterns to Avoid

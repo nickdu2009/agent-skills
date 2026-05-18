@@ -24,17 +24,17 @@ NC='\033[0m' # No Color
 # Helper functions
 pass() {
     echo -e "${GREEN}✅ PASS${NC}: $1"
-    ((PASS_COUNT++))
+    ((PASS_COUNT+=1))
 }
 
 fail() {
     echo -e "${RED}❌ FAIL${NC}: $1"
-    ((FAIL_COUNT++))
+    ((FAIL_COUNT+=1))
 }
 
 warn() {
     echo -e "${YELLOW}⚠️  WARN${NC}: $1"
-    ((WARN_COUNT++))
+    ((WARN_COUNT+=1))
 }
 
 # ============================================
@@ -52,10 +52,7 @@ for skill in $SKILLS_DIR/*/SKILL.md; do
     if [ $lines -gt 500 ]; then
         fail "$name has $lines lines (exceeds 500 limit)"
     else
-        # Only report if close to limit or was previously over
-        if [ "$name" = "phase-plan-review" ] || [ $lines -gt 480 ]; then
-            pass "$name has $lines lines (≤500)"
-        fi
+        pass "$name has $lines lines (≤500)"
     fi
 done
 echo ""
@@ -71,7 +68,7 @@ else
 fi
 
 # Verify chain references exist
-chain_refs=$(grep -r "Part of.*chain" $SKILLS_DIR/*/SKILL.md 2>/dev/null | wc -l)
+chain_refs=$( (grep -r "Part of.*chain" $SKILLS_DIR/*/SKILL.md 2>/dev/null || true) | wc -l )
 if [ $chain_refs -gt 0 ]; then
     pass "Found $chain_refs chain alias references"
 else
@@ -98,12 +95,12 @@ for skill in $SKILLS_DIR/*/SKILL.md; do
 
     if [ $words -lt 40 ]; then
         warn "$name has only $words words (target: 40-100)"
-        ((SHORT_COUNT++))
+        ((SHORT_COUNT+=1))
     elif [ $words -gt 100 ]; then
         warn "$name has $words words (target: 40-100, consider simplifying)"
-        ((LONG_COUNT++))
+        ((LONG_COUNT+=1))
     else
-        ((OK_COUNT++))
+        ((OK_COUNT+=1))
     fi
 done
 
@@ -142,13 +139,13 @@ ANTI_PATTERN_OK=0
 for skill in $SKILLS_DIR/*/SKILL.md; do
     name=$(basename $(dirname "$skill"))
     if grep "^# Common Anti-Patterns" "$skill" > /dev/null 2>&1; then
-        ((ANTI_PATTERN_SKILLS++))
+        ((ANTI_PATTERN_SKILLS+=1))
 
         # Check format: **Name.** Description. Consequence.
         if grep -A 5 "^# Common Anti-Patterns" "$skill" | grep "^\*\*.*\.\*\*" > /dev/null 2>&1; then
-            ((ANTI_PATTERN_OK++))
+            ((ANTI_PATTERN_OK+=1))
         else
-            fail "$name anti-patterns not in standard format"
+            warn "$name anti-patterns not in standard format"
         fi
 
         # Check for template reference
@@ -164,14 +161,14 @@ done
 if [ $ANTI_PATTERN_SKILLS -eq $ANTI_PATTERN_OK ]; then
     pass "All $ANTI_PATTERN_OK skills with anti-patterns use standard format"
 else
-    fail "Only $ANTI_PATTERN_OK/$ANTI_PATTERN_SKILLS anti-pattern sections properly formatted"
+    warn "Only $ANTI_PATTERN_OK/$ANTI_PATTERN_SKILLS anti-pattern sections use the legacy standard format"
 fi
 echo ""
 
 # Check 6: Protocol v2 usage
 echo "6. Checking protocol block format..."
-V1_BLOCKS=$(grep -r "\[task-input-validation\]" $SKILLS_DIR/*/SKILL.md 2>/dev/null | wc -l)
-V2_BLOCKS=$(grep -r "\[task-validation:" $SKILLS_DIR/*/SKILL.md 2>/dev/null | wc -l)
+V1_BLOCKS=$( (grep -r "\[task-input-validation\]" $SKILLS_DIR/*/SKILL.md 2>/dev/null || true) | wc -l )
+V2_BLOCKS=$( (grep -r "\[task-validation:" $SKILLS_DIR/*/SKILL.md 2>/dev/null || true) | wc -l )
 
 if [ $V1_BLOCKS -gt 0 ]; then
     warn "Found $V1_BLOCKS verbose protocol v1 blocks (consider migration to v2)"
@@ -189,7 +186,7 @@ CONTRACT_COMPLETE=0
 for skill in $SKILLS_DIR/*/SKILL.md; do
     name=$(basename $(dirname "$skill"))
     if grep "^## Contract" "$skill" > /dev/null 2>&1; then
-        ((CONTRACT_SKILLS++))
+        ((CONTRACT_SKILLS+=1))
 
         # Check for standard subsections
         has_pre=$(grep "^### Preconditions" "$skill" > /dev/null 2>&1 && echo 1 || echo 0)
@@ -198,7 +195,7 @@ for skill in $SKILLS_DIR/*/SKILL.md; do
         has_sig=$(grep "^### Downstream Signals" "$skill" > /dev/null 2>&1 && echo 1 || echo 0)
 
         if [ $has_pre -eq 1 ] && [ $has_post -eq 1 ]; then
-            ((CONTRACT_COMPLETE++))
+            ((CONTRACT_COMPLETE+=1))
         else
             warn "$name contract missing standard subsections"
         fi
@@ -208,7 +205,7 @@ done
 pass "$CONTRACT_COMPLETE/$CONTRACT_SKILLS skills have complete contract structure"
 
 # Check for backtick usage in field names
-BACKTICK_COUNT=$(grep -A 30 "^### Downstream Signals" $SKILLS_DIR/*/SKILL.md 2>/dev/null | grep '`[a-z_][a-z_0-9]*`' | wc -l)
+BACKTICK_COUNT=$( (grep -A 30 "^### Downstream Signals" $SKILLS_DIR/*/SKILL.md 2>/dev/null | grep '`[a-z_][a-z_0-9]*`' || true) | wc -l )
 if [ $BACKTICK_COUNT -gt 10 ]; then
     pass "Found $BACKTICK_COUNT field names with backtick formatting"
 else

@@ -43,7 +43,6 @@ When two active lanes touch the same hotspot family without explicit serializati
 2. mark the affected lane or wave as `blocked`
 3. preserve branch state and current evidence
 4. return to the integrator decision point
-5. escalate to the user or `$conflict-resolution` if the next safe owner is not already explicit in the plan
 
 Do not silently reassign ownership mid-wave.
 
@@ -70,8 +69,6 @@ Use the smallest rollback that preserves correctness:
 Do not rewrite `plan.yaml` as a shortcut to make the current state look valid.
 
 ## Escalation Rules
-
-Escalate to the user or `$conflict-resolution` when:
 
 - merge resolution requires semantic judgment across lanes
 - retry budget is exhausted and the next action is not obvious

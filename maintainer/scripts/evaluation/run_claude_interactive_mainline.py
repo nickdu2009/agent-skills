@@ -84,7 +84,7 @@ SCENARIOS: tuple[Scenario, ...] = (
         ),
     ),
     Scenario(
-        id="context-budget-awareness",
+        id="context discipline",
         description="Noisy multi-turn investigation should compress into knowns, unknowns, and next steps.",
         rounds=(
             "We already checked src/cache/cache.py twice and the queue config three times. Still no root cause.",
@@ -129,7 +129,7 @@ SCENARIOS: tuple[Scenario, ...] = (
         timeout_seconds=300,
     ),
     Scenario(
-        id="conflict-resolution",
+        id="multi-agent synthesis",
         description="Competing hypotheses should be weighed by evidence quality.",
         rounds=(
             "Two subagents disagree: one says the cache invalidation path is broken, the other blames clock skew in expiry logic. Which is right?",

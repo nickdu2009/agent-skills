@@ -3,7 +3,7 @@
 
 Parses v2 protocol blocks:
 - [task-validation: PASS | clarity:✓ scope:✓ safety:✓ skill_match:✓ | action:proceed]
-- [triggers: scoped-tasking bugfix-workflow | defer: read-and-locate]
+- [triggers: scoped-tasking bugfix-workflow | defer: built-in code search]
 - [precheck: skill-name | PASS | checks:field1 field2]
 - [output: skill-name | completed high | key:"value" | next:downstream]
 - [validate: skill-name | PASS | checks:field1 field2]
@@ -420,11 +420,11 @@ if __name__ == '__main__':
     # Simple test
     test_text = """
     [task-validation: PASS | clarity:✓ scope:✓ safety:✓ skill_match:✓ | action:proceed]
-    [triggers: scoped-tasking bugfix-workflow | defer: read-and-locate]
+    [triggers: scoped-tasking bugfix-workflow | defer: built-in code search]
     [precheck: bugfix-workflow | PASS | checks:symptom root_cause]
-    [output: bugfix-workflow | completed high | root_cause:"timeout in session.py:42" | next:minimal-change-strategy]
+    [output: bugfix-workflow | completed high | root_cause:"timeout in session.py:42" | next:smallest-change discipline]
     [validate: bugfix-workflow | PASS | checks:root_cause fix_location]
-    [drop: bugfix-workflow | reason:"root cause found" | active: minimal-change-strategy]
+    [drop: bugfix-workflow | reason:"root cause found" | active: smallest-change discipline]
     """
 
     parsed = parse_protocol_blocks(test_text)

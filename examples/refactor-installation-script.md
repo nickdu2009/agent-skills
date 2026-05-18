@@ -7,18 +7,14 @@ The `maintainer/scripts/install/manage-governance.py` script may contain repeate
 ## Recommended Skill Composition
 
 - `scoped-tasking`
-- `read-and-locate`
 - `safe-refactor`
-- `minimal-change-strategy`
 - `self-review`
 - `targeted-validation`
 
 ## Why This Composition
 
 - `scoped-tasking` ensures the refactoring stays within one file and doesn't expand to "improve" unrelated code.
-- `read-and-locate` identifies repeated patterns in path resolution, file copying, or directory detection.
 - `safe-refactor` guides structural changes while keeping all interfaces and behavior unchanged.
-- `minimal-change-strategy` prevents "while we're here" improvements—no new features, no renamed variables unrelated to the refactoring goal.
 - `self-review` verifies that command-line arguments, output, and side effects remain identical.
 - `targeted-validation` runs existing install scenarios to confirm behavior preservation.
 

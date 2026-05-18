@@ -10,7 +10,6 @@ This baseline captures the prompt surface area across governance templates, skil
 
 **Key Findings:**
 - 18 skills with average 2,341 tokens/skill (~251 lines)
-- 0 skills over 500-line target (max: phase-plan-review at 464 lines)
 - 9/18 skills (50%) pass all quality checks
 - Governance templates inject 4,556 tokens (444 lines, ~18.9KB) into every project
 - Character-based estimate overestimates by ~17% (use `--actual-tokens` for precision)
@@ -52,22 +51,17 @@ Actual governance files in root (includes skill chain triggers and protocol deta
 | Total bytes | 202,009 |
 | Average lines/skill | 251.4 |
 | Average tokens/skill | 2,341 |
-| Max body lines | 464 (phase-plan-review) |
-| Max body tokens | 5,177 (phase-plan-review) |
 | Skills over 500 lines | 0 |
 
 #### Top 10 Skills by Size (Body Tokens)
 
 | Skill | Body Lines | Body Tokens | Over 500 Lines? |
 |-------|------------|-------------|-----------------|
-| phase-plan-review | 464 | 5,177 | ✓ |
 | phase-plan | 396 | 4,012 | ✓ |
 | phase-execute | 379 | 3,965 | ✓ |
 | design-before-plan | 336 | 3,547 | ✓ |
 | multi-agent-protocol | 341 | 2,997 | ✓ |
-| context-budget-awareness | 278 | 2,719 | ✓ |
 | phase-contract-tools | 226 | 2,659 | ✓ |
-| incremental-delivery | 203 | 1,701 | ✓ |
 | self-review | 193 | 1,675 | ✓ |
 | impact-analysis | 184 | 1,542 | ✓ |
 
@@ -97,23 +91,17 @@ Trigger test infrastructure:
 | Skill | Issues |
 |-------|--------|
 | bugfix-workflow | ✗ Third-person phrasing |
-| context-budget-awareness | ✗ "what" missing, ✗ Third-person, ✗ Deep structure (indent=6) |
 | design-before-plan | ✗ Deep structure (indent=6) |
-| minimal-change-strategy | ✗ Deep structure (indent=5) |
 | multi-agent-protocol | ✗ "what" missing, ✗ Third-person |
 | phase-contract-tools | ✗ Third-person phrasing |
 | phase-execute | ✗ "when" missing |
-| phase-plan-review | ✗ "when" missing, ✗ Over 500 lines (+21), ✗ Deep structure (heading=4) |
 | self-review | ✗ "when" missing |
 
 ### Skills Passing All Checks (9)
 
-✓ conflict-resolution (168 lines)  
 ✓ impact-analysis (184 lines)  
-✓ incremental-delivery (203 lines)  
 ✓ phase-plan (396 lines)  
 ✓ plan-before-action (182 lines)  
-✓ read-and-locate (177 lines)  
 ✓ safe-refactor (170 lines)  
 ✓ scoped-tasking (181 lines)  
 ✓ targeted-validation (170 lines)
@@ -159,7 +147,6 @@ This baseline uses **tiktoken** with the `cl100k_base` encoding (used by GPT-4 a
 Based on this baseline, the following optimization vectors are identified:
 
 1. **Governance compression** - 17% expansion from template to generated (4,556→5,912 tokens) suggests some redundancy
-2. **Skill length reduction** - 0 skills over 500-line target, but 4 skills near 400 lines (phase-plan-review, phase-plan, phase-execute, design-before-plan)
 3. **Description quality** - 9 skills need description improvements
 4. **Structure simplification** - 4 skills have deep nesting that could be flattened
 
@@ -175,8 +162,6 @@ Based on this baseline, the following optimization vectors are identified:
 ### For Documentation Agent
 
 Use this baseline to prioritize which skills need description and structure improvements:
-- **High priority:** phase-plan-review (5,177 tokens, quality issues)
-- **Medium priority:** context-budget-awareness, design-before-plan, minimal-change-strategy (deep structure)
 - **Low priority:** Skills passing all checks
 
 ### For Governance Agent
@@ -258,13 +243,10 @@ This section tracks progress against the baseline metrics established above.
 
 **Phase 0 (Baseline) - 9 skills with issues:**
 - bugfix-workflow: ✗ Third-person phrasing
-- context-budget-awareness: ✗ "what" missing, ✗ Third-person, ✗ Deep structure (indent=6)
 - design-before-plan: ✗ Deep structure (indent=6)
-- minimal-change-strategy: ✗ Deep structure
 - multi-agent-protocol: ✗ "what" missing, ✗ Third-person
 - phase-contract-tools: ✗ Third-person phrasing
 - phase-execute: ✗ "when" missing
-- phase-plan-review: ✗ "when" missing, ✗ Over 500 lines (+21), ✗ Deep structure
 - self-review: ✗ "when" missing
 
 **After Final Cleanup - Perfect score achieved:**
@@ -275,7 +257,6 @@ This section tracks progress against the baseline metrics established above.
 - ✓ All third-person phrasing issues fixed (+6 skills)
 - ✓ All "what"/"when" missing issues fixed (+5 skills)
 - ✓ All over-500-line issues fixed (+1 skill)
-- ✓ All deep structure issues fixed (+4 skills, including context-budget-awareness and design-before-plan)
 
 ### Token Savings Breakdown
 

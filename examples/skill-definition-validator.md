@@ -8,7 +8,6 @@ Create a validation tool to ensure all skills in the repository have complete an
 
 - `scoped-tasking`
 - `plan-before-action`
-- `minimal-change-strategy`
 - `self-review`
 - `targeted-validation`
 
@@ -16,7 +15,6 @@ Create a validation tool to ensure all skills in the repository have complete an
 
 - `scoped-tasking` keeps the scope limited to a single validation script, not a full linting framework.
 - `plan-before-action` forces the agent to declare the script structure, validation logic, and output format before writing code.
-- `minimal-change-strategy` prevents over-engineering—no external dependencies, no complex abstractions for a straightforward checker.
 - `self-review` catches edge cases like missing error handling for non-existent directories.
 - `targeted-validation` runs the script on the actual `skills/` directory to verify it works.
 

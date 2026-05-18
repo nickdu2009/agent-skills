@@ -195,14 +195,12 @@ maintainer/scripts/evaluation/run_behavior_eval.py --transcript path/to/transcri
 
 | Case ID | 设计意图 |
 |---------|----------|
-| `partial-path-known` | 知道模块但不知道具体文件，边界：是否触发 `read-and-locate` |
 | `grep-sufficient` | 用户提供了明确的函数名，grep 就够了，不应触发 discovery 技能 |
 
 **context-budget 类别**：
 
 | Case ID | 设计意图 |
 |---------|----------|
-| `many-files-opened` | Agent 已读 10+ 文件但未收敛，应触发 `context-budget-awareness` |
 | `repeated-hypothesis` | 同一个假设被反复测试但无进展，应触发 |
 | `medium-session-focused` | 中等长度会话但目标清晰，不应触发 |
 

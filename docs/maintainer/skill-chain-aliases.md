@@ -29,7 +29,6 @@ They do not:
 ### bugfix-standard
 
 **Full chain:**  
-`scoped-tasking` → `read-and-locate` → `bugfix-workflow` → `minimal-change-strategy` → `self-review` → `targeted-validation`
 
 **Use when:**
 
@@ -42,9 +41,7 @@ They do not:
 
 **Variations:**
 
-- Skip `read-and-locate` if the fault domain is already known
 - Skip `self-review` for trivial one-line patches
-- Add `context-budget-awareness` if diagnosis spans too many files or hypotheses
 
 **Example trigger:** "Background retries sometimes send duplicate emails"
 
@@ -53,7 +50,6 @@ They do not:
 ### refactor-safe
 
 **Full chain:**  
-`scoped-tasking` → `safe-refactor` + `minimal-change-strategy` → `self-review` → `targeted-validation`
 
 **Use when:**
 
@@ -64,13 +60,9 @@ They do not:
 **Entry point:** `scoped-tasking` defines the cleanup boundary  
 **Exit:** `targeted-validation` confirms no behavior regression  
 
-**Co-activation:** `safe-refactor` and `minimal-change-strategy` run together to balance structural improvement with patch size control.
-
 **Fallbacks:**
 
 - → `design-before-plan` if structural change requires interface redesign
-- → `minimal-change-strategy` if only local cleanup is justified, not structural refactoring
-- → `read-and-locate` if ownership seams are unclear
 
 **Example trigger:** "Extract repeated validation logic into a shared helper"
 
@@ -79,7 +71,6 @@ They do not:
 ### multi-file-planned
 
 **Full chain:**  
-`scoped-tasking` → `plan-before-action` → `minimal-change-strategy` → `self-review` → `targeted-validation`
 
 **Use when:**
 
@@ -92,9 +83,6 @@ They do not:
 
 **Variations:**
 
-- Prepend `read-and-locate` if edit points are not yet known after scoping
-- Append or escalate to `incremental-delivery` if the plan spans 2–4 PRs
-
 **Example trigger:** "Add retry logic around the payment gateway with exponential backoff"
 
 ---
@@ -102,7 +90,6 @@ They do not:
 ### design-first
 
 **Full chain:**  
-`scoped-tasking` → `design-before-plan` → `plan-before-action` → `minimal-change-strategy` → `self-review` → `targeted-validation`
 
 **Use when:**
 
@@ -124,7 +111,6 @@ They do not:
 ### large-task
 
 **Full chain:**  
-`scoped-tasking` → `design-before-plan` → `impact-analysis` → `plan-before-action` → `incremental-delivery`
 
 **Use when:**
 
@@ -138,9 +124,6 @@ They do not:
 
 1. `design-before-plan` → `impact-analysis` when caller/module impact is still speculative
 2. `impact-analysis` → `plan-before-action` after the impact summary is produced
-3. `plan-before-action` → `incremental-delivery` when the plan identifies 2–4 independently mergeable PRs
-
-**Exit:** `incremental-delivery` produces the increment list; execution then follows per-increment chains
 
 **Escalation:**
 
@@ -153,7 +136,6 @@ They do not:
 ### parallel
 
 **Full chain:**  
-`multi-agent-protocol` → [subagents] → `conflict-resolution` (if needed) → synthesis
 
 **Use when:**
 
@@ -163,8 +145,6 @@ They do not:
 
 **Entry point:** Primary agent declares `[delegate: <count> | split: <dimension> | risk: <level>]`  
 **Exit:** Primary agent synthesizes subagent findings  
-
-**Conditional:** `conflict-resolution` activates only if subagent findings materially disagree.
 
 **Example trigger:** "Analyze test coverage across backend, frontend, and mobile repos"
 
@@ -236,8 +216,6 @@ In `bugfix-workflow/SKILL.md`:
 ```markdown
 Combine with:
 - scoped-tasking to keep diagnosis inside the smallest plausible domain
-- read-and-locate to trace the relevant path quickly
-- minimal-change-strategy to keep the fix small
 - targeted-validation to verify the symptom without paying unnecessary suite cost
 ```
 
@@ -245,9 +223,7 @@ In `scoped-tasking/SKILL.md`:
 
 ```markdown
 Combine with:
-- read-and-locate when the edit point is not known yet
 - plan-before-action to convert the scoped boundary into a concrete work plan
-- minimal-change-strategy once an edit path is clear
 - targeted-validation to keep verification aligned to the same boundary
 ```
 
@@ -257,7 +233,6 @@ In `bugfix-workflow/SKILL.md`:
 
 ```markdown
 Combine with:
-- scoped-tasking, read-and-locate, minimal-change-strategy, and targeted-validation
   (see canonical bugfix-standard chain in docs/maintainer/skill-chain-aliases.md)
 ```
 
@@ -265,9 +240,7 @@ In `scoped-tasking/SKILL.md`:
 
 ```markdown
 Common flows:
-- bugfix-standard: scoped-tasking → read-and-locate → bugfix-workflow → ...
 - multi-file-planned: scoped-tasking → plan-before-action → ...
-- refactor-safe: scoped-tasking → safe-refactor + minimal-change-strategy → ...
 
 (Full definitions: docs/maintainer/skill-chain-aliases.md)
 ```
@@ -289,10 +262,8 @@ Common flows:
 Phase 2 optimizations completed:
 
 1. **bugfix-workflow**: Adopted `bugfix-standard` chain alias (~55 tokens saved)
-2. **context-budget-awareness**: Adopted cross-chain fallback pattern (~60 tokens saved)
 3. **design-before-plan**: Adopted `design-first` and `large-task` chain aliases (~45 tokens saved)
 4. **impact-analysis**: Adopted `large-task` chain alias (~50 tokens saved)
-5. **incremental-delivery**: Adopted `large-task` chain alias (~50 tokens saved)
 
 Total savings from Phase 2: ~260 tokens
 
@@ -300,10 +271,7 @@ Total savings from Phase 2: ~260 tokens
 
 Phase 1 optimizations (7 skills, ~450 tokens saved):
 
-1. conflict-resolution: `parallel` chain
-2. minimal-change-strategy: Multiple chains
 3. plan-before-action: `multi-file-planned`, `design-first`, `large-task` chains
-4. read-and-locate: `bugfix-standard` chain
 5. safe-refactor: `refactor-safe` chain
 6. scoped-tasking: Multiple chains (entry point)
 7. self-review: Multiple chains
@@ -317,7 +285,6 @@ These skills use domain-specific composition patterns that don't map to standard
 - phase-contract-tools: Phase-specific composition
 - phase-execute: Phase-specific composition
 - phase-plan: Phase-specific composition
-- phase-plan-review: Phase-specific composition
 
 ## Token Savings Achieved
 

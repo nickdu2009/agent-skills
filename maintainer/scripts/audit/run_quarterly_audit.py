@@ -40,7 +40,7 @@ BASELINE_TARGETS = {
     "quality_pass_rate": 100,  # 18/18 skills passing (100%)
     "total_skill_tokens": 41783,  # Current baseline
     "avg_tokens_per_skill": 2321,  # Current baseline
-    "max_skill_tokens": 5177,  # phase-plan-review
+    "max_skill_tokens": 5177,  # phase acceptance review
     "governance_tokens": 5912,  # Generated governance
     "template_tokens": 4556,  # Templates
     "cross_references_broken": 0,  # Target: 0 broken refs

@@ -9,7 +9,6 @@ Checkout latency spikes intermittently. Evidence may live in the API path, datab
 - `scoped-tasking`
 - `plan-before-action`
 - `multi-agent-protocol`
-- `conflict-resolution`
 - `targeted-validation`
 
 ## Orchestration Flow
@@ -72,7 +71,6 @@ Parallelism is not justified if all paths collapse into the same reducer file or
 1. Define the split and stop conditions.
 2. Ensure the subagents do not edit overlapping areas unless explicitly allowed.
 3. Normalize outputs into comparable claims.
-4. Use `conflict-resolution` to separate consensus from disagreement.
 5. Choose the smallest adjudication step if findings conflict.
 
 ## Example Merge Outcome
@@ -93,9 +91,6 @@ Parallelism is not justified if all paths collapse into the same reducer file or
 
 ```
 [task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
-[triggers: multi-agent-protocol:trigger conflict-resolution:defer targeted-validation:defer]
 [precheck: multi-agent-protocol | result:PASS | checks:split_is_low_coupling lane_contracts_defined]
-[output: multi-agent-protocol | status:completed | confidence:high | split_dimension:"by suspected fault domain" | lanes:"api path, database path, client path" | integration_plan:"merge findings, compare evidence, adjudicate only if needed" | synthesis:"database timing evidence is strongest but one API-path disagreement remains" | adjudication_needed:true | next:conflict-resolution]
 [validate: multi-agent-protocol | result:PASS | checks:split_dimension synthesis]
-[drop: multi-agent-protocol | reason:"lane findings collected, handed to synthesis" | active:conflict-resolution]
 ```

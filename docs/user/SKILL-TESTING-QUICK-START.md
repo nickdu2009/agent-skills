@@ -55,12 +55,10 @@ When running a test scenario, expect output similar to:
 
 ```markdown
 [task-validation: PASS | clarity:✓ scope:✓ safety:✓ skill_match:✓ | action:proceed]
-[triggers: scoped-tasking plan-before-action minimal-change-strategy self-review targeted-validation]
 
 [precheck: scoped-tasking | PASS | checks:boundary inputs]
 [output: scoped-tasking | completed high | scope:"validator script" boundary:"scripts/" | next:plan-before-action]
 [validate: scoped-tasking | PASS | checks:boundary clarity]
-[drop: scoped-tasking | reason:"boundary confirmed" | active:plan-before-action minimal-change-strategy self-review targeted-validation]
 
 [precheck: plan-before-action | PASS | checks:scope edit_points]
 [output: plan-before-action | completed high | plan:"..." files:"scripts/validate-skill-definition.py" | next:implementation]
@@ -142,7 +140,6 @@ When running a test scenario, expect output similar to:
 3. **Explicitly request protocol:**
    ```
    Please use Skill Protocol v2 format and trigger the recommended skills
-   from the scenario: scoped-tasking, plan-before-action, minimal-change-strategy.
    ```
 
 ### Skills Not Triggering
@@ -176,14 +173,12 @@ When running a test scenario, expect output similar to:
 - Basic protocol compliance
 - Scope definition (scoped-tasking)
 - Planning quality (plan-before-action)
-- Change minimization (minimal-change-strategy)
 
 **Expected duration:** 5-10 minutes
 
 ### Second Test: Refactor Installation Script
 
 **Why next:**
-- ✅ Tests code reading (read-and-locate)
 - ✅ Tests safe-refactor skill
 - ✅ Tests zero-behavior-change constraint
 - ✅ More realistic complexity
@@ -240,7 +235,6 @@ After running a test scenario, score these aspects:
 
 - [ ] scoped-tasking: Clear boundary definition
 - [ ] plan-before-action: Explicit plan with file list
-- [ ] minimal-change-strategy: Controlled scope, no scope creep
 - [ ] self-review: Diff review for quality issues
 - [ ] targeted-validation: Narrow, appropriate checks
 

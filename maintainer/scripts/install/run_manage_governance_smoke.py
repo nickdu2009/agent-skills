@@ -100,16 +100,21 @@ def test_project_install_installs_installable_skills(module) -> None:
         for skill_dir in module.discover_installable_skills():
             skill = skill_dir.name
             assert_exists(project / ".claude" / "skills" / skill / "SKILL.md")
-        for skill in module.NON_INSTALLABLE_SKILLS:
-            assert_missing(project / ".claude" / "skills" / skill / "SKILL.md")
+        installed_skills = {
+            child.name
+            for child in (project / ".claude" / "skills").iterdir()
+            if child.is_dir()
+        }
+        expected_skills = {skill_dir.name for skill_dir in module.discover_source_skills()}
+        if installed_skills != expected_skills:
+            fail(f"installed skills mismatch: expected {sorted(expected_skills)}, got {sorted(installed_skills)}")
 
         claude_md = project / "CLAUDE.md"
         assert_exists(claude_md)
         assert_contains(claude_md, "## Multi-Agent Rules")
-        assert_contains(claude_md, "`CLAUDE.md` is the governance and routing layer")
-        assert_contains(claude_md, "## Skill Escalation")
+        assert_contains(claude_md, "## Skill Activation")
         assert_contains(claude_md, "## Skill Lifecycle")
-        assert_contains(claude_md, "## Skill Family Concurrency Budgets")
+        assert_contains(claude_md, "## Common Flow Patterns")
         assert_no_forbidden_runtime_references(project, claude_md)
 
 
@@ -121,8 +126,8 @@ def test_agents_template_selection() -> None:
 
         agents_md = project / "AGENTS.md"
         assert_exists(agents_md)
-        assert_contains(agents_md, "`AGENTS.md` is the governance and routing layer")
-        assert_not_contains(agents_md, "`CLAUDE.md` is the governance and routing layer")
+        assert_contains(agents_md, "## Multi-Agent Rules")
+        assert_contains(agents_md, "## Skill Activation")
         assert_no_forbidden_runtime_references(project, agents_md)
 
 
@@ -144,7 +149,6 @@ def test_local_mirror_sync_and_check(module) -> None:
 
             assert_exists(mirror_target.target_dir / "phase-contract-tools" / "scripts")
             assert_missing(mirror_target.target_dir / "scoped-tasking" / "scripts")
-            assert_missing(mirror_target.target_dir / "knowledge-driven-development" / "SKILL.md")
 
             if module.main(["--sync-local", "cursor", "--check"]) != 0:
                 fail("expected local mirror check to pass after sync")

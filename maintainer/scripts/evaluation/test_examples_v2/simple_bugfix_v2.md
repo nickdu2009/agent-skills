@@ -14,6 +14,4 @@ This is a test file to validate v2 protocol parsing.
 [drop: scoped-tasking | reason:"boundary confirmed" | active: bugfix-workflow]
 
 [precheck: bugfix-workflow | PASS | checks:symptom repro]
-[output: bugfix-workflow | completed high | root_cause:"session timeout in auth.py:42" fix_location:"auth.py:42" | next:minimal-change-strategy]
 [validate: bugfix-workflow | PASS | checks:root_cause fix_location]
-[drop: bugfix-workflow | reason:"root cause found" | active: minimal-change-strategy targeted-validation]

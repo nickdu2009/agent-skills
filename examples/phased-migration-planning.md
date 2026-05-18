@@ -61,9 +61,6 @@ Break the migration into a phased plan:
 
 ```
 [task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
-[triggers: phase-plan:trigger phase-contract-tools:defer phase-plan-review:defer]
 [precheck: phase-plan | result:PASS | checks:baseline_identified contract_authority_known]
-[output: phase-plan | status:completed | confidence:high | plan_artifacts:"docs/phases/phase1/roadmap.md, docs/phases/phase1/plan.yaml, docs/phases/phase1/wave-guide.md, docs/phases/phase1/execution-index.md, docs/phases/README.md" | waves:"phase1 wave sequencing for three services" | gates:"schema validation, doc-set validation" | ownership:"users table hotspot ownership is explicit" | review_ready:true | next:phase-plan-review]
 [validate: phase-plan | result:PASS | checks:plan_artifacts gates]
-[drop: phase-plan | reason:"planning artifacts complete, ready for review" | active:phase-plan-review]
 ```

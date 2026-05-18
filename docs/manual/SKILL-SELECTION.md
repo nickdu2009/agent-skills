@@ -18,7 +18,6 @@
 
 - `scoped-tasking`
 - `plan-before-action`
-- `minimal-change-strategy`
 - `targeted-validation`
 
 这组组合适合大多数普通开发任务，因为它先解决四个最基础的问题：
@@ -68,8 +67,6 @@
 <div class="title-en">Edit point is unknown</div>
 
 优先考虑：
-
-- `read-and-locate`
 
 适用场景：
 
@@ -139,7 +136,6 @@
 优先考虑：
 
 - `multi-agent-protocol`
-- 必要时补 `conflict-resolution`
 
 适用场景：
 
@@ -156,8 +152,6 @@
 <div class="title-en">Work spans 2-4 PRs</div>
 
 优先考虑：
-
-- `incremental-delivery`
 
 适用场景：
 
@@ -176,7 +170,6 @@
 优先考虑：
 
 - `phase-plan`
-- `phase-plan-review`
 - `phase-execute`
 
 适用场景：
@@ -195,7 +188,6 @@
 不要为了“看起来更完整”而过早升级到更重的技能：
 
 - 小范围改动，不要一开始就上 `phase-*`
-- 编辑点已经明确时，不要再强行走 `read-and-locate`
 - 单文件小修，不必默认拉起并行
 - 纯信息问题，不要把执行型技能全都挂上
 
@@ -203,12 +195,6 @@
 <div class="title-en">Starter Compositions</div>
 
 如果你只想要几组最常用组合，可以先从这里开始：
-
-- 小范围普通改动：`scoped-tasking` + `plan-before-action` + `minimal-change-strategy` + `targeted-validation`
-- 陌生区域定位：`scoped-tasking` + `read-and-locate` + `plan-before-action`
-- 缺陷修复：`scoped-tasking` + `read-and-locate` + `bugfix-workflow` + `minimal-change-strategy` + `targeted-validation`
-- 安全重构：`scoped-tasking` + `safe-refactor` + `minimal-change-strategy` + `self-review` + `targeted-validation`
-- 低耦合并行分析：`plan-before-action` + `multi-agent-protocol` + `conflict-resolution`（必要时） + `targeted-validation`
 
 ## 这一章补充了什么
 <div class="title-en">What This Chapter Adds</div>

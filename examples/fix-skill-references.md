@@ -7,18 +7,14 @@ Example documents in the `examples/` directory may reference skill names that do
 ## Recommended Skill Composition
 
 - `scoped-tasking`
-- `read-and-locate`
 - `bugfix-workflow`
-- `minimal-change-strategy`
 - `self-review`
 - `targeted-validation`
 
 ## Why This Composition
 
 - `scoped-tasking` narrows the problem to skill name references in example documents only—not README.md, not SKILL.md files, not governance templates.
-- `read-and-locate` systematically finds all skill references across multiple example files.
 - `bugfix-workflow` treats this as a diagnosis problem: gather evidence (actual skills vs. referenced names), identify mismatches, fix only confirmed errors.
-- `minimal-change-strategy` prevents "improving" examples beyond fixing broken references—no rewording, no structural changes.
 - `self-review` verifies that all fixed references now point to real skills and no new errors were introduced.
 - `targeted-validation` confirms all referenced skills actually exist in `skills/`.
 
@@ -34,7 +30,6 @@ Example documents in the `examples/` directory may reference skill names that do
    # List all actual skill names
    ls -1 skills/
    ```
-   - Record: scoped-tasking, minimal-change-strategy, plan-before-action, etc.
 
 3. **Locate all skill references.**
    - Search `examples/*.md` for skill name patterns:
@@ -49,7 +44,6 @@ Example documents in the `examples/` directory may reference skill names that do
    - Examples of potential errors:
      - `scope-task` instead of `scoped-tasking`
      - `plan-first` instead of `plan-before-action`
-     - `minimal-changes` instead of `minimal-change-strategy`
 
 5. **Fix only confirmed errors.**
    - If a reference clearly doesn't match any real skill → fix it.
@@ -66,7 +60,6 @@ Example documents in the `examples/` directory may reference skill names that do
 7. **Validate the result.**
    ```bash
    # Re-scan for all skill references
-   grep -r "scoped-tasking\|minimal-change-strategy\|plan-before-action" examples/
    
    # Verify each referenced skill exists
    for skill in $(grep -oh "[a-z-]*-[a-z-]*" examples/*.md | sort -u); do

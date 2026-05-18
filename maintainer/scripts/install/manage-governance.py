@@ -18,9 +18,6 @@ SOURCE_DIR = REPO_ROOT / "skills"
 SKILL_FILE = "SKILL.md"
 AGENTS_TEMPLATE_PATH = REPO_ROOT / "templates" / "governance" / "AGENTS-template.md"
 CLAUDE_TEMPLATE_PATH = REPO_ROOT / "templates" / "governance" / "CLAUDE-template.md"
-NON_INSTALLABLE_SKILLS = frozenset({"knowledge-driven-development"})
-
-
 @dataclass(frozen=True)
 class MirrorTarget:
     key: str
@@ -91,11 +88,7 @@ def discover_source_skills() -> list[Path]:
 
 
 def discover_installable_skills() -> list[Path]:
-    return [
-        skill_dir
-        for skill_dir in discover_source_skills()
-        if skill_dir.name not in NON_INSTALLABLE_SKILLS
-    ]
+    return discover_source_skills()
 
 
 def discover_target_skills(target: MirrorTarget) -> list[Path]:

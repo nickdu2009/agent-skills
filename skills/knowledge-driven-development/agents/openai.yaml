@@ -1,4 +1,0 @@
-interface:
-  display_name: "Knowledge Driven Development"
-  short_description: "Bridge legacy KDD docs into Worktrail or fall back to old-format project knowledge"
-  default_prompt: "Use $knowledge-driven-development when a repository still has docs/knowledge-driven-development, should migrate it with worktrail import kdd, or needs a legacy shared/local knowledge fallback because Worktrail is unavailable."

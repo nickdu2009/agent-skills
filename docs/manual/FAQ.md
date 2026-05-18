@@ -97,20 +97,13 @@
 
 通常不需要。
 
-`phase-plan`、`phase-plan-review`、`phase-execute` 适合的是多模块、多 PR、多波次协调的大任务。  
 如果你只是处理普通开发任务，一开始更适合从基础组合开始：
 
 - `scoped-tasking`
 - `plan-before-action`
-- `minimal-change-strategy`
 - `targeted-validation`
 
-## 编辑点不明确时，为什么先用 `read-and-locate`
-<div class="title-en">Why Use `read-and-locate` When the Edit Point Is Unclear</div>
-
 因为最容易失控的情况，就是编辑点还没找到，工作集已经膨胀了。
-
-`read-and-locate` 的价值不在于“多读一点”，而在于：
 
 - 从最强线索开始
 - 只追相邻路径

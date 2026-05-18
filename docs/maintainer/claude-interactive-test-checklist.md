@@ -86,8 +86,6 @@ Failure signals:
 - Immediate repo-wide exploration with no boundary
 - No upgrade from scoping to planning after uncertainty becomes explicit
 
-### 2. `context-budget-awareness`
-
 Purpose:
 Verify that Claude can compress a noisy session into a useful summary instead of continuing to thrash.
 
@@ -143,8 +141,6 @@ Failure signals:
 
 - Parallelism is suggested for the single-file fix
 - The positive case stays completely serial without justification
-
-### 4. `conflict-resolution`
 
 Purpose:
 Validate that Claude asks for evidence, preserves uncertainty, and adjudicates by evidence quality rather than tone.
@@ -247,10 +243,8 @@ Failure signals:
 If you want a short interactive acceptance pass, run these in order:
 
 1. `scoped-tasking` -> `plan-before-action`
-2. `context-budget-awareness`
 3. `multi-agent-protocol`
 4. `phase-plan` -> `phase-execute`
-5. `conflict-resolution`
 
 If you want one extra direct-tooling check, add `phase-contract-tools`.
 

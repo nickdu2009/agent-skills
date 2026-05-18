@@ -97,7 +97,6 @@ Entry point for most execution chains: `bugfix-standard`, `refactor-safe`, `mult
 
 Standard forward handoffs:
 
-- → `read-and-locate` when boundary is known but edit point is still unknown
 - → `plan-before-action` when boundary is confirmed and ready for implementation planning
 - → `design-before-plan` when boundary is known but design choices remain open
 
@@ -138,8 +137,6 @@ Do not scan every reporting module. If the service delegates to a shared query b
 ### Downstream Signals
 
 - `objective` defines the current task target for downstream skills.
-- `analysis_boundary` specifies where `read-and-locate` or `plan-before-action` may continue.
-- `excluded_areas` protects `minimal-change-strategy` and `targeted-validation` from drift.
 
 ## Failure Handling
 
@@ -156,7 +153,6 @@ Do not scan every reporting module. If the service delegates to a shared query b
 
 ### Fallback
 
-- Use `read-and-locate` once the boundary is known but the edit point is still unknown.
 - Hand off to `design-before-plan` if the boundary is known but design choices remain open.
 - Escalate to the user when no bounded interpretation is defensible.
 
@@ -196,6 +192,5 @@ recommendations:
 
 ## Deactivation Trigger
 
-- Deactivate once `plan-before-action`, `read-and-locate`, or another downstream skill has consumed the boundary.
 - Deactivate immediately if the task is confirmed to be globally scoped rather than narrowable.
 - Deactivate when the task is complete or when a new clarification round resets the objective.

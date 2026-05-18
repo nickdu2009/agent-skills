@@ -9,7 +9,6 @@ An API returns `500` when an optional marketing profile is missing. The intended
 - `scoped-tasking`
 - `plan-before-action`
 - `bugfix-workflow`
-- `minimal-change-strategy`
 - `targeted-validation`
 
 ## Why This Composition
@@ -17,7 +16,6 @@ An API returns `500` when an optional marketing profile is missing. The intended
 - `scoped-tasking` keeps the investigation inside the handler, service, and profile lookup path.
 - `plan-before-action` forces the agent to declare the intended edit surface before touching files.
 - `bugfix-workflow` prevents editing before the symptom and fault domain are clear.
-- `minimal-change-strategy` biases toward a local guard instead of broader exception redesign.
 - `targeted-validation` keeps verification limited to the affected endpoint or test path.
 
 ## Example Execution
@@ -57,9 +55,6 @@ An API returns `500` when an optional marketing profile is missing. The intended
 
 ```text
 [task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
-[triggers: scoped-tasking:trigger bugfix-workflow:trigger minimal-change-strategy:defer targeted-validation:defer]
 [precheck: bugfix-workflow | result:PASS | checks:symptom_known repro_available]
-[output: bugfix-workflow | status:completed | confidence:high | symptom:"Missing marketing profile returns 500." | repro:"Exercise the profile-missing account update path." | fault_domain:"request handler, profile lookup guard" | fix_hypothesis:"A nullable lookup is dereferenced before a handled 404 branch." | validation_boundary:"profile-missing endpoint test" | next:minimal-change-strategy]
 [validate: bugfix-workflow | result:PASS | checks:symptom fault_domain]
-[drop: bugfix-workflow | reason:"Root cause and fix path are now confirmed." | active:minimal-change-strategy]
 ```

@@ -21,7 +21,6 @@
 
 - `scoped-tasking`
 - `plan-before-action`
-- `minimal-change-strategy`
 - `targeted-validation`
 
 ### 如何运行
@@ -51,7 +50,6 @@
 <div class="title-en">Recommended Skills</div>
 
 - `scoped-tasking`
-- `read-and-locate`
 - `plan-before-action`
 
 ### 如何运行
@@ -81,9 +79,7 @@
 <div class="title-en">Recommended Skills</div>
 
 - `scoped-tasking`
-- `read-and-locate`
 - `bugfix-workflow`
-- `minimal-change-strategy`
 - `targeted-validation`
 
 ### 如何运行
@@ -114,7 +110,6 @@
 
 - `scoped-tasking`
 - `safe-refactor`
-- `minimal-change-strategy`
 - `self-review`
 - `targeted-validation`
 
@@ -146,7 +141,6 @@
 
 - `plan-before-action`
 - `multi-agent-protocol`
-- `conflict-resolution`（必要时）
 - `targeted-validation`
 
 ### 如何运行

@@ -24,17 +24,11 @@
 flowchart TD
     T[Task] --> S[scoped-tasking]
     S --> P[plan-before-action]
-    P --> M[minimal-change-strategy]
     M --> V[targeted-validation]
-    P --> C[context-budget-awareness]
-    S --> R[read-and-locate]
     M --> F[safe-refactor]
     S --> B[bugfix-workflow]
     P --> O[multi-agent-protocol]
-    O --> X[conflict-resolution]
 ```
-
-Phase 技能（`phase-plan` → `phase-plan-review` → `phase-execute`）仅在 5+ PR、多波次、多模块协调时启用。
 
 ---
 
@@ -71,7 +65,6 @@ Phase 技能（`phase-plan` → `phase-plan-review` → `phase-execute`）仅在
 
 **解决的问题**：
 
-- `read-and-locate` 负责"找到代码在哪"，但不评估"改了之后会影响什么"。
 - `plan-before-action` 制定计划时缺少影响面信息。
 - Agent 常低估变更的连锁反应（调用者、依赖方、配置、测试）。
 
@@ -82,11 +75,7 @@ Phase 技能（`phase-plan` → `phase-plan-review` → `phase-execute`）仅在
 - 估算变更的"爆炸半径"（blast radius）。
 - 输出影响面摘要供 `plan-before-action` 消费。
 
-**输入**：`scoped-tasking` 的范围输出、`read-and-locate` 的定位结果。
-
 **输出**：影响面摘要（受影响文件/模块列表、风险等级、连锁变更说明）。
-
-**组合**：依赖 `read-and-locate`；输出供 `plan-before-action` 消费。
 
 ---
 
@@ -115,8 +104,6 @@ Phase 技能（`phase-plan` → `phase-plan-review` → `phase-execute`）仅在
 
 ---
 
-### 4. `incremental-delivery`
-
 **管线位置**：`plan-before-action` 之后、phase 系统之前（中间地带）
 
 **解决的问题**：
@@ -140,7 +127,6 @@ Phase 技能（`phase-plan` → `phase-plan-review` → `phase-execute`）仅在
 
 **升级阈值**：
 
-| 条件 | 留在 `incremental-delivery` | 升级到 `phase-plan` |
 |------|---------------------------|-------------------|
 | PR 数量 | 2–4 | 5+ |
 | 模块跨度 | 1–2 个模块 | 3+ 模块 |
@@ -184,12 +170,9 @@ Phase 技能（`phase-plan` → `phase-plan-review` → `phase-execute`）仅在
 
 ### 6. `rollback-awareness`
 
-**管线位置**：`minimal-change-strategy` 的伴生技能
-
 **解决的问题**：
 
 - 当前系统优化"怎么做最小改动"，但不关注"如果错了怎么退回"。
-- Phase 系统在 `phase-plan-review` 中覆盖了风险和回退，但非 phase 任务完全缺失。
 - 不可逆操作（数据库 schema 变更、外部 API 调用、文件删除）需要额外注意。
 
 **核心规则**：
@@ -197,7 +180,6 @@ Phase 技能（`phase-plan` → `phase-plan-review` → `phase-execute`）仅在
 - 每个变更前声明回退策略（`git revert` 是否足够？是否需要数据迁移回退？）。
 - 识别不可逆操作并标记。
 - 对不可逆操作要求额外确认。
-- 越小的改动越容易回退——与 `minimal-change-strategy` 自然互补。
 
 **触发条件**：
 
@@ -209,8 +191,6 @@ Phase 技能（`phase-plan` → `phase-plan-review` → `phase-execute`）仅在
 **输入**：计划中的变更列表。
 
 **输出**：每项变更的可逆性评估、回退策略、不可逆操作的风险标注。
-
-**组合**：与 `minimal-change-strategy` 伴生；纯代码重构场景下可不加载。
 
 ---
 
@@ -251,24 +231,19 @@ Phase 技能（`phase-plan` → `phase-plan-review` → `phase-execute`）仅在
 flowchart TD
     T[Task] --> RC[requirement-clarification]
     RC --> S[scoped-tasking]
-    S --> R[read-and-locate]
     S --> IA[impact-analysis]
     S --> SP[spike-exploration]
     R --> P[plan-before-action]
     IA --> P
     SP --> P
     P --> DA[dependency-audit]
-    P --> ID[incremental-delivery]
     ID -->|超出边界| PP[phase-plan]
-    P --> M[minimal-change-strategy]
     M --> RA[rollback-awareness]
     M --> SR[self-review]
     SR --> V[targeted-validation]
-    P --> C[context-budget-awareness]
     M --> F[safe-refactor]
     S --> B[bugfix-workflow]
     P --> O[multi-agent-protocol]
-    O --> X[conflict-resolution]
 ```
 
 ---
@@ -277,8 +252,6 @@ flowchart TD
 
 | 优先级 | 技能 | 理由 |
 |--------|------|------|
-| **P0** | `impact-analysis` | 填补 `read-and-locate` 与 `plan-before-action` 之间最关键的信息缺口。Agent 因缺少影响面信息导致的计划偏差是最常见的失败模式之一。 |
-| **P0** | `incremental-delivery` | 解决 `plan-before-action` 与 phase 系统之间的复杂度断层。直接回应评价报告中的"复杂度跳跃"问题。 |
 | **P0** | `self-review` | 低成本高收益。diff 审查在所有任务中都适用，直接减少低级错误率。 |
 | **P1** | `requirement-clarification` | 对模糊任务价值大，但部分场景中用户会主动给出清晰需求，触发频率低于 P0 技能。 |
 | **P1** | `rollback-awareness` | 对有副作用的变更至关重要，但纯代码重构场景不需要。 |
@@ -289,9 +262,7 @@ flowchart TD
 
 ## 实施建议
 
-1. **先实现 P0 三个技能**（`impact-analysis`、`incremental-delivery`、`self-review`），它们填补的缺口最明显且与现有技能的组合关系最清晰。
 2. 每个新技能遵循现有 `SKILL.md` 统一结构（Purpose → When to Use → Core Rules → Execution Pattern → I/O Contract → Guardrails → Composition → Example）。
 3. 每个新技能需配套一个 `examples/` 场景文件用于行为验收测试。
 4. 在 README 管线图和"When to Add More Skills"章节中补充新技能的位置和触发条件。
 5. 在 `AGENTS-template.md` 的"升级条件"中补充对应的升级路径。
-6. `incremental-delivery` 需要与 `phase-plan` 的"适用场景阈值"对齐，明确交界处的判断标准。

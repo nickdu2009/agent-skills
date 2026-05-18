@@ -29,14 +29,15 @@ CLAUDE_MD = REPO_ROOT / "CLAUDE.md"
 
 # Non-skill terms that look like skill names but aren't (field names, placeholders, etc.)
 NON_SKILL_TERMS = {
-    "re-reads",           # Field name in context-budget-awareness
+    "re-reads",           # Field name in context discipline
     "best-of-n-runner",   # Subagent type in multi-agent-protocol
     "fail-closed",        # Status value in phase contracts
     "wave-guide",         # Output artifact name in phase-execute
     "execution-index",    # Output artifact name in phase-execute
-    "needs-repair",       # Status value in phase-plan-review
-    "ready-with-followups",   # Status value in phase-plan-review
-    "ready-for-execute",  # Status value in phase-plan-review
+    "needs-repair",       # Status value in phase acceptance review
+    "ready-with-followups",   # Status value in phase acceptance review
+    "ready-for-execute",  # Status value in phase acceptance review
+    "low-risk",           # Review severity label, not a skill
 }
 
 

@@ -114,7 +114,6 @@ local mirror 是从 canonical source 生成出来的便利层，不是你应该�
 ### 给单个 Skill 补边界说明
 
 - 任务场景：你发现 `skills/scoped-tasking/SKILL.md` 的边界解释还不够直观，想补一小段更贴近仓库实际用法的说明。
-- 推荐 skill 组合：`scoped-tasking` + `plan-before-action` + `minimal-change-strategy` + `targeted-validation`
 - 执行顺序：
   1. 把范围压到一个目标 skill 文件。
   2. 在编辑前先说清楚这次只补什么。
@@ -128,7 +127,6 @@ local mirror 是从 canonical source 生成出来的便利层，不是你应该�
 ### 先判断安装说明该改在哪一章
 
 - 任务场景：使用者仍分不清 `manage-governance.py` 和 local mirror 的区别，但你还不确定真正 edit point 在 `docs/manual/QUICK-START.md`、`docs/manual/INSTALLATION.md` 还是 `docs/manual/TROUBLESHOOTING.md`。
-- 推荐 skill 组合：`scoped-tasking` + `read-and-locate` + `plan-before-action`
 - 执行顺序：
   1. 先看 `docs/manual/QUICK-START.md` 的首次上手路径。
   2. 再看 `docs/manual/INSTALLATION.md` 的安装路径分工。
@@ -142,7 +140,6 @@ local mirror 是从 canonical source 生成出来的便利层，不是你应该�
 ### 修正 `examples/` 里的 Skill 引用
 
 - 任务场景：`examples/` 中某个场景文档引用了不存在的 skill 名称，或者名字和 `skills/` 目录中的真实名称对不上。
-- 推荐 skill 组合：`scoped-tasking` + `read-and-locate` + `bugfix-workflow` + `minimal-change-strategy` + `targeted-validation`
 - 执行顺序：
   1. 先把症状说清楚。
   2. 以 `skills/` 目录作为基线，确认真实存在的 skill 名称。
@@ -156,7 +153,6 @@ local mirror 是从 canonical source 生成出来的便利层，不是你应该�
 ### 整理手册目录页的导航结构
 
 - 任务场景：`docs/manual/README.md` 的入口仍然偏散，想把导航结构整理得更清楚，同时不改变已有章节顺序、不删除现有链接。
-- 推荐 skill 组合：`scoped-tasking` + `safe-refactor` + `minimal-change-strategy` + `self-review` + `targeted-validation`
 - 执行顺序：
   1. 先确认这次目标是整理结构，而不是重写手册内容本身。
   2. 明确不变条件，例如章节文件名、阅读顺序和已有入口不变。

@@ -11,7 +11,6 @@ an `as any` type assertion.
 ## Recommended Skill Composition
 
 - plan-before-action
-- minimal-change-strategy
 - self-review
 - targeted-validation
 
