@@ -7,8 +7,9 @@ You want a repeatable scoring standard for reviewing whether an agent actually d
 ## Recommended Skill Composition
 
 - `scoped-tasking`
-- `plan-before-action`
 - `targeted-validation`
+
+Planning behavior is scored against `AGENTS.md` Behavioral Guidelines §4 rather than a dedicated skill.
 
 ## Review Model
 
@@ -48,10 +49,10 @@ Score these dimensions for every scenario:
 - Pass: proposes a bounded initial working set and explains each scope expansion.
 - Fail: scans widely by reflex or expands scope without stating why.
 
-### `plan-before-action`
+### AGENTS.md §4 Plan
 
-- Pass: states goal, assumptions, intended files, and next actions before non-trivial edits.
-- Fail: starts editing while the plan or file list is still fuzzy.
+- Pass: states goal, assumptions, intended files, and per-step verify checks before non-trivial edits.
+- Fail: starts editing while the plan or verify steps are still fuzzy.
 
 - Pass: selects a local, reviewable patch and defers unrelated cleanup.
 - Fail: mixes the main task with cosmetic rewrites, renames, or opportunistic refactors.

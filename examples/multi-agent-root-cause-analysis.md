@@ -7,9 +7,10 @@ Checkout latency spikes intermittently. Evidence may live in the API path, datab
 ## Recommended Skill Composition
 
 - `scoped-tasking`
-- `plan-before-action`
 - `multi-agent-protocol`
 - `targeted-validation`
+
+Planning follows `AGENTS.md` Behavioral Guidelines §4.
 
 ## Orchestration Flow
 

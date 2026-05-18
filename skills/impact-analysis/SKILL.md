@@ -8,7 +8,7 @@ metadata:
 
 # Purpose
 
-Trace outward from a planned edit point to identify affected callers, dependents, modules, and contracts. The goal is to produce a structured impact summary so that plan-before-action can make informed scope and sequencing decisions.
+Trace outward from a planned edit point to identify affected callers, dependents, modules, and contracts. The goal is to produce a structured impact summary so that the subsequent implementation plan (per AGENTS.md Behavioral Guidelines §4) can make informed scope and sequencing decisions.
 
 # When to Use
 
@@ -79,7 +79,7 @@ stop_reason: "reached framework boundary at HTTP handler layer"
 - Do not trace beyond 3 call layers.
 - Do not read more than 8 files during impact tracing.
 - Stop tracing at framework boundaries — do not chase into HTTP handlers, CLI entry points, or test harness infrastructure.
-- If blast radius exceeds the 8-file threshold, record the estimate but stop tracing. Note the overflow for plan-before-action.
+- If blast radius exceeds the 8-file threshold, record the estimate but stop tracing. Note the overflow for the implementation plan.
 - Do not confuse "reachable" with "affected" — only files that consume the changed interface count.
 
 # Common Anti-Patterns
@@ -103,7 +103,7 @@ Fallbacks:
 
 - To `design-before-plan` when contract migration becomes multi-stage or externally constrained
 
-Drop after plan-before-action consumes the impact summary.
+Drop after the implementation plan (per AGENTS.md Behavioral Guidelines §4) consumes the impact summary.
 
 # Example
 
@@ -118,7 +118,7 @@ Apply impact-analysis:
 - Blast radius: 8 files, 2 modules.
 - Invariants: all callers must destructure the new return shape; no caller should compare the result to true/false directly.
 
-Hand off the summary to plan-before-action. Do not start editing.
+Hand off the summary to the implementation step (per AGENTS.md Behavioral Guidelines §4 plan). Do not start editing.
 
 ## Contract
 
@@ -188,17 +188,17 @@ outputs:
 signals:
   blast_radius: "8 files across 2 modules"
 recommendations:
-  downstream_skill: "plan-before-action"
+  downstream_skill: "implementation"
 [/skill-output]
 ```
 
 ### V2 Format (compact)
 
 ```
-[output: impact-analysis | completed high | affected_callers:"auth/middleware, admin dashboard route handlers" contracts:"validateToken() return shape" compatibility_risks:"boolean comparisons must be migrated before rollout" | next:plan-before-action]
+[output: impact-analysis | completed high | affected_callers:"auth/middleware, admin dashboard route handlers" contracts:"validateToken() return shape" compatibility_risks:"boolean comparisons must be migrated before rollout" | next:implementation]
 ```
 
 ## Deactivation Trigger
 
-- Deactivate once `plan-before-action` has absorbed the impact summary.
+- Deactivate once the implementation plan (AGENTS.md Behavioral Guidelines §4) has absorbed the impact summary.
 - Deactivate when the change is downgraded to a local internal edit with no shared-contract impact.

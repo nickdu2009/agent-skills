@@ -10,9 +10,10 @@ an `as any` type assertion.
 
 ## Recommended Skill Composition
 
-- plan-before-action
 - self-review
 - targeted-validation
+
+Implementation precedes review via `AGENTS.md` Behavioral Guidelines §4.
 
 ## Why This Composition
 

@@ -100,8 +100,9 @@
 如果你只是处理普通开发任务，一开始更适合从基础组合开始：
 
 - `scoped-tasking`
-- `plan-before-action`
 - `targeted-validation`
+
+并结合 `AGENTS.md` 行为指南 §4 的 "plan + verify" 做轻量计划。
 
 因为最容易失控的情况，就是编辑点还没找到，工作集已经膨胀了。
 

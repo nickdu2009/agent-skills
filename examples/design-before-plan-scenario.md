@@ -15,8 +15,8 @@ Design decision with multiple approaches and cross-module impact.
 ## Recommended Skill Composition
 1. `scoped-tasking` — narrow the initial boundary (which endpoints? what batch size?)
 2. **`design-before-plan`** — compare batch API designs, define contracts, establish acceptance criteria
-3. `plan-before-action` — convert chosen design into implementation plan
-5. `targeted-validation` — validate batch semantics (atomicity, partial failures)
+3. AGENTS.md Behavioral Guidelines §4 plan — convert chosen design into a per-step implementation plan with verify checks
+4. `targeted-validation` — validate batch semantics (atomicity, partial failures)
 
 ## Expected Agent Behavior
 
@@ -136,12 +136,17 @@ Design decision with multiple approaches and cross-module impact.
 - Rate limiter: must count batch as 1 request (not N requests)
 - Authentication: single token validates entire batch (no per-item auth)
 
-### Phase 3: Planning (plan-before-action)
-Consumes the design brief and produces:
+### Phase 3: Planning (AGENTS.md §4 plan)
+Consumes the design brief and produces a per-step plan with verify checks:
 - Goal: implement `POST /items/batch` endpoint with best-effort semantics
 - Scope: 2 files (batch controller, routes)
 - Assumptions: existing item validation logic is reusable
 - Intended files: `routes/items.js`, `controllers/batch_items_controller.js`, `tests/batch_items.test.js`
+- Plan:
+  1. Add route + controller skeleton → verify: route table updated, 200 OK on empty array
+  2. Wire per-item validation reuse → verify: invalid item returns structured error
+  3. Add batch size guard + rate-limit-1 marker → verify: oversized batch returns 400
+  4. Write integration tests for partial failure → verify: tests pass
 
 Execute the plan, validate with batch integration tests.
 
@@ -173,15 +178,15 @@ Correct approach: During design phase, explicitly check implicit requirements tr
 - ✅ Agent defines complete interface contract (request, response, errors) before planning
 - ✅ Agent derives acceptance criteria from requirements (not from implementation details)
 - ✅ Agent flags architectural constraints (rate limiter, database locking)
-- ✅ Agent outputs a structured design brief consumed by plan-before-action
+- ✅ Agent outputs a structured design brief consumed by the AGENTS.md §4 implementation plan
 
 ## Skill Protocol v2 Trace
 
 ```
 [task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
-[triggers: scoped-tasking:trigger design-before-plan:trigger plan-before-action:defer]
+[triggers: scoped-tasking:trigger design-before-plan:trigger]
 [precheck: design-before-plan | result:PASS | checks:alternatives_exist acceptance_criteria_unfrozen]
-[output: design-before-plan | status:completed | confidence:high | requirements:"Support batch create and update up to 100 items" | alternatives:"Single batch endpoint, Extend existing endpoint, GraphQL mutation" | chosen_design:"POST /items/batch" | rationale:"Clear contract separation with smallest acceptable blast radius" | acceptance_criteria:"Per-item partial failure details are returned; Batches of 10 finish within 2 seconds p95" | planning_ready:true | next:plan-before-action]
+[output: design-before-plan | status:completed | confidence:high | requirements:"Support batch create and update up to 100 items" | alternatives:"Single batch endpoint, Extend existing endpoint, GraphQL mutation" | chosen_design:"POST /items/batch" | rationale:"Clear contract separation with smallest acceptable blast radius" | acceptance_criteria:"Per-item partial failure details are returned; Batches of 10 finish within 2 seconds p95" | planning_ready:true | next:implementation]
 [validate: design-before-plan | result:PASS | checks:alternatives acceptance_criteria]
-[drop: design-before-plan | reason:"design brief complete, ready for planning" | active:plan-before-action]
+[drop: design-before-plan | reason:"design brief complete, ready for AGENTS.md §4 plan" | active:none]
 ```

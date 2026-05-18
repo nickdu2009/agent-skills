@@ -20,14 +20,15 @@
 <div class="title-en">Recommended Skills</div>
 
 - `scoped-tasking`
-- `plan-before-action`
 - `targeted-validation`
+
+计划环节使用 `AGENTS.md` 行为指南 §4 的轻量 "plan + verify"，无需独立技能。
 
 ### 如何运行
 <div class="title-en">How It Runs</div>
 
 1. 先把任务缩到最小边界，只保留这次真正要完成的那一小块。
-2. 在编辑前先形成一个短计划，明确准备改哪些文件、为什么改、准备怎样验证。
+2. 在编辑前按 §4 形成短计划，明确每一步该做什么、用什么方式验证。
 3. 按最小可行改动执行，不顺手清理无关代码。
 4. 先跑最小充分验证，只确认直接受影响的面。
 
@@ -50,7 +51,8 @@
 <div class="title-en">Recommended Skills</div>
 
 - `scoped-tasking`
-- `plan-before-action`
+
+计划环节使用 `AGENTS.md` 行为指南 §4 的轻量 "plan + verify"。
 
 ### 如何运行
 <div class="title-en">How It Runs</div>
@@ -139,9 +141,10 @@
 ### 推荐技能
 <div class="title-en">Recommended Skills</div>
 
-- `plan-before-action`
 - `multi-agent-protocol`
 - `targeted-validation`
+
+整体编排遵循 `AGENTS.md` 行为指南 §4 的 "plan + verify" 节奏，无需独立的计划技能。
 
 ### 如何运行
 <div class="title-en">How It Runs</div>

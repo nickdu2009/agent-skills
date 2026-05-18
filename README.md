@@ -8,7 +8,7 @@ This repository is a reusable skill library for coding agents. It focuses on exe
 flowchart TD
     T[Task] --> S[scoped-tasking]
     S --> B[bugfix-workflow]
-    S --> P[plan-before-action]
+    S --> P["AGENTS.md §4 plan"]
     S --> D[design-before-plan]
     D --> IA[impact-analysis]
     IA --> P
@@ -29,7 +29,6 @@ flowchart TD
 ### Execution Skills
 
 - `scoped-tasking`
-- `plan-before-action`
 - `targeted-validation`
 - `safe-refactor`
 - `bugfix-workflow`
@@ -51,7 +50,7 @@ flowchart TD
 For most coding tasks, start with the smallest skill set that fits the work. Add skills only when the task shape justifies them.
 
 - Use `scoped-tasking` for broad or ambiguous requests.
-- Use `plan-before-action` when multiple files or uncertain sequencing are involved.
+- For multi-file or uncertain sequencing, follow `AGENTS.md` Behavioral Guidelines §4 (plan + verify); no dedicated skill is required.
 - Use `bugfix-workflow` for unconfirmed failures.
 - Use `safe-refactor` for behavior-preserving structural cleanup.
 - Use `impact-analysis` for shared interfaces or broad caller impact.
@@ -96,7 +95,6 @@ skills/
   design-review-loop/
   impact-analysis/
   multi-agent-protocol/
-  plan-before-action/
   plan-review-loop/
   requirements-review-loop/
   safe-refactor/

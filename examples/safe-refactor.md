@@ -7,9 +7,10 @@ Three webhook handlers each normalize the same incoming payload shape with sligh
 ## Recommended Skill Composition
 
 - `scoped-tasking`
-- `plan-before-action`
 - `safe-refactor`
 - `targeted-validation`
+
+Editing follows `AGENTS.md` Behavioral Guidelines §4 (plan + verify).
 
 ## Refactor Invariants
 
@@ -21,10 +22,11 @@ Three webhook handlers each normalize the same incoming payload shape with sligh
 ## Example Flow
 
 2. Use `scoped-tasking` to keep the task limited to the three handlers and the new helper location.
-3. Use `plan-before-action` to declare:
+3. Per AGENTS.md §4, declare before editing:
    - intended files
    - extraction target
    - invariants
+   - per-step verify checks
 4. Use `safe-refactor` to perform small steps:
    - extract the shared normalization helper
    - switch one handler to the helper

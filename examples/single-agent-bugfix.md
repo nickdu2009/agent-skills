@@ -7,15 +7,16 @@ An API returns `500` when an optional marketing profile is missing. The intended
 ## Recommended Skill Composition
 
 - `scoped-tasking`
-- `plan-before-action`
 - `bugfix-workflow`
 - `targeted-validation`
+
+Editing follows `AGENTS.md` Behavioral Guidelines §4 (plan + verify), no dedicated skill required.
 
 ## Why This Composition
 
 - `scoped-tasking` keeps the investigation inside the handler, service, and profile lookup path.
-- `plan-before-action` forces the agent to declare the intended edit surface before touching files.
 - `bugfix-workflow` prevents editing before the symptom and fault domain are clear.
+- AGENTS.md §4 forces the agent to declare the intended edit surface and per-step verification before touching files.
 - `targeted-validation` keeps verification limited to the affected endpoint or test path.
 
 ## Example Execution

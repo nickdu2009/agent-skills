@@ -79,7 +79,7 @@ Force the agent to complete requirements clarification and design decision-makin
    - Note framework limitations or platform constraints.
    - Document compatibility requirements (API versions, dependency constraints).
 
-7. **Output the design brief** (structured contract for plan-before-action).
+7. **Output the design brief** (structured contract for the subsequent implementation plan per AGENTS.md Behavioral Guidelines §4).
 
 # Input Contract
 
@@ -202,7 +202,7 @@ See skill-anti-pattern-template.md for format guidelines.
 
 Entry point for `design-first` and core component of `large-task` chains (see the project governance file § Skill Chain Triggers).
 
-Role: Clarify requirements, compare design alternatives, establish interface contracts before planning. Receives boundary from scoped-tasking, produces design brief, hands to plan-before-action.
+Role: Clarify requirements, compare design alternatives, establish interface contracts before planning. Receives boundary from scoped-tasking, produces design brief, hands to the implementation step (per AGENTS.md Behavioral Guidelines §4).
 
 Standard forward flow:
 
@@ -211,7 +211,7 @@ Fallbacks:
 - To `impact-analysis` when caller/module impact is speculative
 - To `scoped-tasking` when task boundary itself is unstable
 
-Drop after plan-before-action consumes the design brief.
+Drop after the implementation plan (per AGENTS.md Behavioral Guidelines §4) consumes the design brief.
 
 # Example
 
@@ -245,7 +245,7 @@ After scoped-tasking establishes the boundary (payment client wrapper + tests), 
 **Constraints:**
 - Must preserve idempotency token in retry headers.
 
-Hand off design brief to plan-before-action. Do not start editing.
+Hand off design brief to the implementation step (per AGENTS.md Behavioral Guidelines §4 plan). Do not start editing.
 
 ## Contract
 
@@ -259,7 +259,7 @@ Hand off design brief to plan-before-action. Do not start editing.
 
 - `status: completed` includes `requirements`, `alternatives`, `chosen_design`, and `acceptance_criteria`.
 - Cross-module or public-contract work also records interface expectations and compatibility constraints.
-- The result is specific enough for `plan-before-action` to produce an implementation sequence without reopening design.
+- The result is specific enough for the implementation step (per AGENTS.md Behavioral Guidelines §4 plan) to produce an implementation sequence without reopening design.
 
 ### Invariants
 
@@ -321,18 +321,18 @@ outputs:
 signals:
   planning_ready: true
 recommendations:
-  downstream_skill: "plan-before-action"
+  downstream_skill: "implementation"
 [/skill-output]
 ```
 
 ### V2 Format (compact)
 
 ```
-[output: design-before-plan | completed medium | requirements:"Retry flaky payment-status calls up to 3 times." alternatives:"Inline retry in payment client, Reusable retry wrapper" chosen_design:"Inline retry in payment client" acceptance_criteria:"Retries complete within 10 seconds total, Idempotency headers are preserved on every retry" | next:plan-before-action]
+[output: design-before-plan | completed medium | requirements:"Retry flaky payment-status calls up to 3 times." alternatives:"Inline retry in payment client, Reusable retry wrapper" chosen_design:"Inline retry in payment client" acceptance_criteria:"Retries complete within 10 seconds total, Idempotency headers are preserved on every retry" | next:implementation]
 ```
 
 ## Deactivation Trigger
 
-- Deactivate once `plan-before-action` has consumed the design brief.
+- Deactivate once the implementation plan (per AGENTS.md Behavioral Guidelines §4) has consumed the design brief.
 - Deactivate when the user chooses a different design direction and the brief must be regenerated from scratch.
 - Deactivate if the task is reframed into a direct implementation with no remaining design decisions.

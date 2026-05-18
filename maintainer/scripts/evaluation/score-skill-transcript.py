@@ -161,20 +161,6 @@ SKILL_SCORE_RULES: dict[str, ScoreRule] = {
             r"扩展范围",
         ),
     ),
-    "plan-before-action": ScoreRule(
-        label="plan-before-action",
-        positive_patterns=(
-            r"\bgoal\b",
-            r"\bassumptions?\b",
-            r"\bintended files\b",
-            r"\bplanned actions\b",
-            r"\bdone\b",
-            r"\bnext\b",
-            r"目标",
-            r"假设",
-            r"计划",
-        ),
-    ),
     "smallest-change discipline": ScoreRule(
         label="smallest-change discipline",
         positive_patterns=(

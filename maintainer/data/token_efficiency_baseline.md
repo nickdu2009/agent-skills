@@ -101,7 +101,6 @@ Trigger test infrastructure:
 
 ✓ impact-analysis (184 lines)  
 ✓ phase-plan (396 lines)  
-✓ plan-before-action (182 lines)  
 ✓ safe-refactor (170 lines)  
 ✓ scoped-tasking (181 lines)  
 ✓ targeted-validation (170 lines)

@@ -7,8 +7,9 @@ You changed one or more `SKILL.md` files and want a repeatable way to verify tha
 ## Recommended Skill Composition
 
 - `scoped-tasking`
-- `plan-before-action`
 - `targeted-validation`
+
+Implementation follows `AGENTS.md` Behavioral Guidelines §4 (plan + verify).
 
 ## Test Flow
 
@@ -222,7 +223,7 @@ checks:
     reason: "Checks are validation-only."
   skill_match:
     status: PASS
-    reason: "plan-before-action and targeted-validation directly support this flow."
+    reason: "targeted-validation directly supports this flow; planning follows AGENTS.md §4."
 result: PASS
 action: proceed
 [/task-input-validation]
@@ -230,52 +231,49 @@ action: proceed
 [trigger-evaluation]
 task: "Run a repeatable skill verification pass."
 evaluated:
-  - plan-before-action: ✓ TRIGGER
   - targeted-validation: ✓ TRIGGER
-activated_now: [plan-before-action, targeted-validation]
+activated_now: [targeted-validation]
 deferred: []
 [/trigger-evaluation]
 
-[precondition-check: plan-before-action]
+# Implementation sequence follows AGENTS.md Behavioral Guidelines §4 (plan + verify):
+#   1. run mirror/static checks    → verify: no drift in .cursor/.claude mirrors
+#   2. run trigger checks          → verify: expected triggers fire on sampled prompts
+#   3. run scenario-based acceptance → verify: rubric pass on selected examples
+
+[precondition-check: targeted-validation]
 checks:
-  - intended_checks_listed: ✓ PASS
-  - examples_selected: ✓ PASS
+  - changed_surface_known: ✓ PASS
+  - validation_scope_chosen: ✓ PASS
 result: PASS
 [/precondition-check]
 
-[skill-output: plan-before-action]
+[skill-output: targeted-validation]
 status: completed
 confidence: high
 outputs:
-  assumptions:
-    - "examples and trigger cases represent the changed skill surface"
-  working_set:
-    - "changed SKILL.md files"
-    - "trigger cases"
-    - "example scenarios"
-  sequence:
-    - "run mirror/static checks"
-    - "run trigger checks"
-    - "run scenario-based acceptance"
-  validation_boundary:
-    - "protocol readiness report"
-    - "selected example scenarios"
-signals:
-  test_harness_ready: true
-recommendations:
-  next_step: "score observed behavior with the rubric"
+  checks_to_run:
+    - "mirror sync check on changed skills"
+    - "trigger smoke on sampled prompts"
+    - "scenario acceptance against rubric"
+  risks_not_covered:
+    - "long-tail prompts outside the sampled trigger set"
+  pass_criteria:
+    - "no mirror drift"
+    - "expected triggers fire; no unexpected triggers"
+    - "rubric score >= threshold for the touched skills"
 [/skill-output]
 
-[output-validation: plan-before-action]
+[output-validation: targeted-validation]
 checks:
-  - outputs.sequence: ✓ PASS
-  - outputs.validation_boundary: ✓ PASS
+  - outputs.checks_to_run: ✓ PASS
+  - outputs.pass_criteria: ✓ PASS
 result: PASS
 [/output-validation]
 
-[skill-deactivation: plan-before-action]
-reason: "The verification sequence is fixed and ready to execute."
-outputs_consumed_by: [targeted-validation]
-remaining_active: [targeted-validation]
+[skill-deactivation: targeted-validation]
+reason: "Verification sequence executed; rubric results captured."
+outputs_consumed_by: [maintainer review]
+remaining_active: []
 [/skill-deactivation]
 ```

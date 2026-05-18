@@ -7,14 +7,15 @@ Create a validation tool to ensure all skills in the repository have complete an
 ## Recommended Skill Composition
 
 - `scoped-tasking`
-- `plan-before-action`
 - `self-review`
 - `targeted-validation`
+
+Editing follows `AGENTS.md` Behavioral Guidelines §4 (plan + verify).
 
 ## Why This Composition
 
 - `scoped-tasking` keeps the scope limited to a single validation script, not a full linting framework.
-- `plan-before-action` forces the agent to declare the script structure, validation logic, and output format before writing code.
+- AGENTS.md §4 forces the agent to declare the script structure, validation logic, and output format with per-step verify checks before writing code.
 - `self-review` catches edge cases like missing error handling for non-existent directories.
 - `targeted-validation` runs the script on the actual `skills/` directory to verify it works.
 

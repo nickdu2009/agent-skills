@@ -33,7 +33,7 @@ Example documents in the `examples/` directory may reference skill names that do
 
 3. **Locate all skill references.**
    - Search `examples/*.md` for skill name patterns:
-     - Inline references: `scoped-tasking`, `plan-before-action`
+     - Inline references: `scoped-tasking`, `safe-refactor`
      - Code blocks with skill compositions
      - Headings mentioning skill names
    - Use `grep` or `Grep` tool to find all occurrences
@@ -43,7 +43,7 @@ Example documents in the `examples/` directory may reference skill names that do
    - Flag any reference that doesn't match an existing skill.
    - Examples of potential errors:
      - `scope-task` instead of `scoped-tasking`
-     - `plan-first` instead of `plan-before-action`
+     - `safe-refactoring` instead of `safe-refactor`
 
 5. **Fix only confirmed errors.**
    - If a reference clearly doesn't match any real skill → fix it.

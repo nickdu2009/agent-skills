@@ -57,11 +57,10 @@ When running a test scenario, expect output similar to:
 [task-validation: PASS | clarity:✓ scope:✓ safety:✓ skill_match:✓ | action:proceed]
 
 [precheck: scoped-tasking | PASS | checks:boundary inputs]
-[output: scoped-tasking | completed high | scope:"validator script" boundary:"scripts/" | next:plan-before-action]
+[output: scoped-tasking | completed high | scope:"validator script" boundary:"scripts/" | next:implementation]
 [validate: scoped-tasking | PASS | checks:boundary clarity]
 
-[precheck: plan-before-action | PASS | checks:scope edit_points]
-[output: plan-before-action | completed high | plan:"..." files:"scripts/validate-skill-definition.py" | next:implementation]
+<!-- Implementation step follows AGENTS.md Behavioral Guidelines §4 (plan + verify), no skill block emitted. -->
 ...
 ```
 
@@ -157,7 +156,7 @@ When running a test scenario, expect output similar to:
 3. **Verify scenario matches trigger conditions:**
    - Bugfix scenarios should trigger bugfix-workflow
    - Refactor scenarios should trigger safe-refactor
-   - Multi-file scenarios should trigger plan-before-action
+   - Multi-file scenarios should follow AGENTS.md Behavioral Guidelines §4 (plan + verify)
 
 ## Test Scenario Selection Guide
 
@@ -172,7 +171,7 @@ When running a test scenario, expect output similar to:
 **What it tests:**
 - Basic protocol compliance
 - Scope definition (scoped-tasking)
-- Planning quality (plan-before-action)
+- Planning quality (AGENTS.md Behavioral Guidelines §4)
 
 **Expected duration:** 5-10 minutes
 
@@ -234,7 +233,7 @@ After running a test scenario, score these aspects:
 ### Skill-Specific Behavior (0-10 points each)
 
 - [ ] scoped-tasking: Clear boundary definition
-- [ ] plan-before-action: Explicit plan with file list
+- [ ] AGENTS.md §4 plan: Explicit plan with file list and verify step
 - [ ] self-review: Diff review for quality issues
 - [ ] targeted-validation: Narrow, appropriate checks
 

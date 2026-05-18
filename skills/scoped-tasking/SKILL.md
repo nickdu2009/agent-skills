@@ -97,7 +97,7 @@ Entry point for most execution chains: `bugfix-standard`, `refactor-safe`, `mult
 
 Standard forward handoffs:
 
-- → `plan-before-action` when boundary is confirmed and ready for implementation planning
+- → implementation (per AGENTS.md Behavioral Guidelines §4 plan) when boundary is confirmed and ready for implementation
 - → `design-before-plan` when boundary is known but design choices remain open
 
 Validation alignment: downstream `targeted-validation` inherits the same boundary to keep verification focused.
@@ -180,14 +180,14 @@ outputs:
 signals:
   next_action: "inspect the export service call path inside the boundary"
 recommendations:
-  downstream_skill: "plan-before-action"
+  downstream_skill: "implementation"
 [/skill-output]
 ```
 
 ### V2 Format (compact)
 
 ```
-[output: scoped-tasking | completed high | objective:"Fix the timeout regression in invoice export." analysis_boundary:"invoice_export_controller, export_service, failing export command" excluded_areas:"unrelated reporting modules" | next:plan-before-action]
+[output: scoped-tasking | completed high | objective:"Fix the timeout regression in invoice export." analysis_boundary:"invoice_export_controller, export_service, failing export command" excluded_areas:"unrelated reporting modules" | next:implementation]
 ```
 
 ## Deactivation Trigger

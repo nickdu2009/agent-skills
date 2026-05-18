@@ -21,8 +21,9 @@
 所以对小任务来说，更合理的默认路径通常是：
 
 - `scoped-tasking`
-- `plan-before-action`
 - `targeted-validation`
+
+并由 `AGENTS.md` 行为指南 §4 在编辑前提供轻量的 "plan + verify"。
 
 只有当任务真的跨越多个阶段、多个 PR、多个依赖关系时，这类阶段技能才值得上场。
 

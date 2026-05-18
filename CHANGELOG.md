@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed - 2026-05-18: `plan-before-action` Skill Retirement
+
+- Removed the `plan-before-action` skill (live + `.cursor/` and `.claude/` mirrors). Its discipline is now absorbed by the new `Behavioral Guidelines §4 Goal-Driven Execution` section in governance files.
+- Added a `Behavioral Guidelines` section (Think Before Coding / Simplicity First / Surgical Changes / Goal-Driven Execution) to `templates/governance/{AGENTS,CLAUDE}-template.md` and live `AGENTS.md` / `CLAUDE.md`. The new §3 Surgical Changes supersedes the old `Change Rules` section.
+- Updated `Skill Activation` lists, `Common Flow Patterns`, and the project-specific "delete-skill-directory" cleanup rule (re-homed under §3) across all four governance files.
+- Rewrote downstream handoffs in `skills/scoped-tasking/SKILL.md`, `skills/design-before-plan/SKILL.md`, and `skills/impact-analysis/SKILL.md` to point at `implementation` per AGENTS.md §4 instead of the removed skill.
+- Removed `plan-before-action` entries from `maintainer/data/{skill_index.json,skill_test_data.py,trigger_test_data.py,token_efficiency_baseline.md}` and from `maintainer/scripts/evaluation/{skill_protocol_v1.py,score-skill-transcript.py,run_claude_trigger_smoke.py}`.
+- Updated user-facing docs: `docs/manual/{SKILL-INDEX,SKILL-SELECTION,COMMON-WORKFLOWS,FAQ,DECISION-RATIONALE}.md` and `docs/user/{SKILL-PROTOCOL-V2,SKILL-TESTING-QUICK-START}.md`.
+- Updated examples: `single-agent-bugfix`, `safe-refactor`, `multi-agent-root-cause-analysis`, `self-review`, `impact-analysis`, `skill-evaluation-rubric`, `skill-definition-validator`, `skill-testing-playbook`, `design-before-plan-scenario`, `fix-skill-references`.
+- Updated `README.md` (Mermaid graph, Skill Types, Repository Layout, Recommended Starting Composition).
+- Historical analysis reports under `docs/maintainer/`, `maintainer/reports/`, and `CHANGELOG-trigger-optimization.md` are intentionally untouched as point-in-time snapshots.
+
 ### Removed - 2026-05-18: Phase Skill Family Retirement
 
 - Removed the entire phase skill family: `phase-plan`, `phase-execute`, and `phase-contract-tools` (live skills + `.cursor/` and `.claude/` mirrors).
