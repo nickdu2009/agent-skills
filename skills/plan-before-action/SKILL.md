@@ -2,200 +2,43 @@
 name: plan-before-action
 description: Require a clear plan before multi-step or uncertain edits. Use when (1) user says "not sure", "don't know", or "uncertain" about file locations or structure, (2) 3+ files involved with unclear sequencing, (3) task mentions multiple areas that need coordination. Always trigger when uncertainty keywords present.
 metadata:
-  version: "0.1.0"
-  tags: "coding, agents, orchestration, efficiency"
+  version: "0.2.0"
+  tags: "coding, agents, planning"
 ---
 
-# Purpose
+# plan-before-action
 
-Prevent impulsive editing. The skill requires the agent to converge on a short, explicit plan before making changes so that execution stays aligned with the stated goal and current evidence.
+Use this skill to pause long enough to make the next edit sequence explicit.
 
-# When to Use
+## Use When
 
-- When the edit involves three or more files or multiple coordinated steps.
-- When the task includes uncertainty, assumptions, or sequencing risk.
-- When the agent is unsure which files need to change or in what order.
-- When progress reporting matters because the task is long or multi-phase.
+- The task touches 3 or more files.
+- The edit order matters.
+- The user or agent is uncertain about file locations, ownership, or acceptance criteria.
+- A proposed change affects tests, docs, and implementation together.
 
-# When Not to Use
+## Skip When
 
-- For purely informational questions with no code changes.
-- For a tiny one-line edit where the scope and action are already fully obvious.
-- When the user explicitly requests exploratory analysis before any plan is possible.
+- The request is a direct answer, status check, or one-command task.
+- The exact single-file edit is already known and low risk.
 
-# Core Rules
+## Required Plan
 
-- Summarize the goal before acting.
-- Define the scope and assumptions explicitly.
-- List intended files and actions before editing.
-- Complete one clear objective at a time.
-- Report progress in terms of done, not done, and next.
-- If assumptions become invalid, stop and revise the plan before continuing.
+Before editing, state:
 
-# Execution Pattern
+- scope: the smallest boundary that satisfies the request
+- assumptions: facts being relied on before execution
+- files: intended files or directories to inspect or edit
+- sequence: the next 2-5 actions in order
+- validation: the narrowest useful check after the change
 
-1. Restate the goal.
-2. Declare the current scope.
-3. List assumptions and open questions.
-4. List intended files and planned actions.
-5. Execute one objective.
-6. Report: done, not done, next.
-7. Re-plan if new evidence changes the task shape.
+## Rules
 
-# Input Contract
+- Keep the plan shorter than the implementation unless the work is inherently large.
+- Ask a focused question when scope or acceptance criteria are not actionable.
+- Update the plan only when new evidence changes the path.
+- Start implementation once the plan is specific enough to execute.
 
-Provide:
+## Output
 
-- the goal
-- known constraints
-- current evidence
-- whether edits are allowed now or only after confirmation
-
-Optional but helpful:
-
-- acceptance criteria
-- preferred validation boundary
-
-# Output Contract
-
-Return:
-
-- a concise task summary
-- stated assumptions
-- the planned working set
-- the intended sequence of actions
-- progress updates using done / not done / next
-
-# Guardrails
-
-- Do not begin editing while the intended file list is still fuzzy.
-- Do not keep multiple unrelated objectives active at once.
-- Do not hide uncertainty; surface it as an assumption or open question.
-- Do not let progress updates collapse into vague status language.
-- Keep the plan short enough to execute, not so broad that it becomes a project document.
-- If the plan involves adding or upgrading dependencies, note the dependency change in the plan and recommend running the project's dependency audit tool (npm audit / pip-audit / cargo audit or equivalent).
-- If a lock file shows large-scale changes, flag it in the plan and assess the impact before proceeding.
-- Do not silently introduce new dependencies during implementation — all new dependencies must be declared in the plan.
-
-# Common Anti-Patterns
-
-- **Editing while still discovering.** The agent starts modifying a file before confirming the full set of files that need change, then backtracks when a dependency surfaces. The plan was never stated.
-- **Vague progress reporting.** The agent says "making progress" or "almost done" instead of reporting concrete done / not done / next items. This hides whether the plan is still on track.
-
-See skill-anti-pattern-template.md for format guidelines.
-
-# Composition
-
-Core component of multiple chains: `multi-file-planned`, `design-first`, and `large-task` (see the project governance file § Skill Chain Triggers).
-
-Standard forward flow: receives scoped boundary from `scoped-tasking` or edit points from `read-and-locate`, produces plan, hands to `minimal-change-strategy` → `self-review` → `targeted-validation`.
-
-Additional compositions:
-
-- `multi-agent-protocol` when the plan includes parallel analysis
-- `incremental-delivery` when the plan spans 2-4 independently mergeable PRs
-
-# Example
-
-Task: "Add a retry around one flaky upstream call."
-
-Plan:
-
-- Goal: add bounded retry logic for the upstream payment-status call.
-- Scope: the client wrapper and the unit tests covering that call path.
-- Assumptions: other upstream calls are unaffected.
-- Intended files: client wrapper, retry helper if already present, related tests.
-- Progress:
-  - Done: mapped current call path.
-  - Not done: implement retry and verify no duplicate side effects.
-  - Next: patch the wrapper and run the targeted tests.
-
-## Contract
-
-### Preconditions
-
-- Task needs multi-step execution, multiple files, or explicit sequencing.
-- Enough evidence exists to name the working set and next action.
-- Edits are allowed now or plan will be produced for later execution.
-
-### Postconditions
-
-- `status: completed` includes `assumptions`, `working_set`, `sequence`, `validation_boundary`.
-- Plan names intended files or modules before implementation starts.
-- Progress is reportable as done, not done, or next without reopening discovery.
-
-### Invariants
-
-- Execution does not begin while the working set is fuzzy.
-- Only one coherent objective is active at a time.
-- New dependencies or irreversible operations are surfaced in the plan rather than introduced silently.
-
-### Downstream Signals
-
-- `assumptions` defines what must be rechecked if conditions change.
-- `working_set` specifies the approved edit surface.
-- `sequence` provides execution order for edits and validation.
-- `validation_boundary` identifies the first targeted check after the patch.
-
-## Failure Handling
-
-### Common Failure Causes
-
-- Discovery is incomplete, so the intended file list is still unstable.
-- Hidden assumptions change the task shape mid-plan.
-- The task combines unrelated objectives that should be split first.
-
-### Retry Policy
-
-- Allow one re-plan when new evidence invalidates a stated assumption.
-- If the working set remains unstable after the second pass, stop and return to discovery or scoping.
-
-### Fallback
-
-- Return to `scoped-tasking` or `read-and-locate` when the edit surface is still uncertain.
-- Hand off to `design-before-plan` when design choices, not execution order, are the real blocker.
-- Escalate to the user when plan alternatives require product or policy decisions.
-
-### Low Confidence Handling
-
-- Mark uncertain steps as assumptions and keep the first edit narrow.
-- Require downstream execution to restate any unresolved assumption before editing.
-
-## Output Example
-
-### V1 Format (verbose)
-
-```yaml
-[skill-output: plan-before-action]
-status: completed
-confidence: high
-outputs:
-  assumptions:
-    - "Only the payment client wrapper is affected."
-  working_set:
-    - "payment_client.py"
-    - "payment_client_test.py"
-  sequence:
-    - "add bounded retry logic"
-    - "update focused tests"
-    - "run targeted validation"
-  validation_boundary:
-    - "payment client unit tests"
-signals:
-  execution_ready: true
-recommendations:
-  next_step: "patch the client wrapper before touching broader payment flows"
-[/skill-output]
-```
-
-### V2 Format (compact)
-
-```
-[output: plan-before-action | completed high | assumptions:"Only the payment client wrapper is affected." working_set:"payment_client.py, payment_client_test.py" sequence:"add bounded retry logic → update focused tests → run targeted validation" validation_boundary:"payment client unit tests" | next:minimal-change-strategy]
-```
-
-## Deactivation Trigger
-
-- Deactivate once execution starts and no re-planning is required.
-- Deactivate when a new assumption failure forces the task back into scoping or design.
-- Deactivate after the plan has been consumed by downstream implementation and validation work.
+`[output: plan-before-action | completed <confidence> | scope:"..." files:"..." sequence:"..." validation:"..." | next:<skill-or-action>]`
