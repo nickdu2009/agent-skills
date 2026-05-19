@@ -122,6 +122,13 @@ Transform tasks into verifiable goals:
 For multi-step tasks, state a brief plan:
 
 ```text
+[parallelism:
+- independent lanes: <parallel work, or none>
+- sequential blockers: <must happen first>
+- shared write surfaces: <single-owner files/modules>
+- delegation: <delegate count, or 0 with reason>
+]
+
 1. [Step] → verify: [check]
 2. [Step] → verify: [check]
 3. [Step] → verify: [check]
