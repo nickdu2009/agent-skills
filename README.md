@@ -45,18 +45,23 @@ flowchart TD
 
 - `multi-agent-protocol`
 
+### Project Governance Skills
+
+- `manage-agents-md`
+
 ## Recommended Starting Composition
 
 For most coding tasks, start with the smallest skill set that fits the work. Add skills only when the task shape justifies them.
 
 - Use `scoped-tasking` for broad or ambiguous requests.
-- For multi-file or uncertain sequencing, follow `AGENTS.md` Behavioral Guidelines §4 (plan + verify); no dedicated skill is required.
+- For multi-file or uncertain sequencing, follow `AGENTS.md` Behavioral Guidelines §4 (parallelism decision + plan + verify), including when using built-in Plan tools or modes; no dedicated skill is required.
 - Use `bugfix-workflow` for unconfirmed failures.
 - Use `safe-refactor` for behavior-preserving structural cleanup.
 - Use `impact-analysis` for shared interfaces or broad caller impact.
 - Use `self-review` and `targeted-validation` after edits.
 - Use `multi-agent-protocol` when independent subagent lanes are justified.
 - Use the `*-review-loop` family when the user asks to review/validate/finalize an artifact (requirements / design / plan / code / tests). Pick the loop by artifact type.
+- Use `manage-agents-md` when the user asks to initialize or update a project's `AGENTS.md`.
 
 ## User Manual
 
@@ -66,7 +71,19 @@ For most coding tasks, start with the smallest skill set that fits the work. Add
 
 ## Installation
 
-Install both governance skills and project rules:
+Install governance skills and user-level rules:
+
+```bash
+python3 maintainer/scripts/install/manage-governance.py --global
+```
+
+Check the user-level installation:
+
+```bash
+python3 maintainer/scripts/install/manage-governance.py --global --check
+```
+
+Install both governance skills and project rules for a shared repository:
 
 ```bash
 python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo
@@ -75,14 +92,16 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 Install only skills:
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo --skills-only
+python3 maintainer/scripts/install/manage-governance.py --global --skills-only
 ```
 
 Install only rules:
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo --rules-only
+python3 maintainer/scripts/install/manage-governance.py --global --rules-only
 ```
+
+Cursor does not have an official user-level `AGENTS.md` path. Global install still installs Cursor skills, but copy the governance content into Cursor User Rules manually when you want the same user-level routing behavior in Cursor. If you already copied older rules, replace the old `Behavioral Guidelines` section so the parallelism decision block is present.
 
 ## Repository Layout
 
@@ -96,6 +115,7 @@ skills/
   impact-analysis/
   multi-agent-protocol/
   plan-review-loop/
+  manage-agents-md/
   requirements-review-loop/
   safe-refactor/
   scoped-tasking/

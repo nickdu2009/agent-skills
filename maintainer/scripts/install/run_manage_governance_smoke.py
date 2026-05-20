@@ -23,6 +23,7 @@ def run_cli(args: list[str], *, home: Path | None = None) -> subprocess.Complete
     env = os.environ.copy()
     if home is not None:
         env["HOME"] = str(home)
+        env["CODEX_HOME"] = str(home / ".codex")
 
     result = subprocess.run(
         [sys.executable, str(INSTALLER_PATH), *args],
@@ -79,6 +80,11 @@ FORBIDDEN_RUNTIME_SNIPPETS = (
     "docs/maintainer/skill-chain-aliases.md",
     "docs/maintainer/protocol-v2-compact.md",
 )
+PARALLELISM_PLAN_SNIPPETS = (
+    "Built-in planning tools and modes count as planning:",
+    "[parallelism:",
+    "- delegation: <delegate count, or 0 with reason>",
+)
 
 
 def assert_no_forbidden_runtime_references(project: Path, governance_file: Path) -> None:
@@ -91,11 +97,22 @@ def assert_no_forbidden_runtime_references(project: Path, governance_file: Path)
             assert_not_contains(skill_file, snippet)
 
 
+def assert_parallelism_plan_template(governance_file: Path) -> None:
+    assert_exists(governance_file)
+    for snippet in PARALLELISM_PLAN_SNIPPETS:
+        assert_contains(governance_file, snippet)
+
+
 def test_project_install_installs_installable_skills(module) -> None:
     with tempfile.TemporaryDirectory(prefix="install-project-") as project_dir:
         project = Path(project_dir)
+        stale_skill = project / ".claude" / "skills" / "removed-skill"
+        stale_skill.mkdir(parents=True)
+        (stale_skill / "SKILL.md").write_text("# removed\n", encoding="utf-8")
+        (stale_skill / module.MANAGED_MARKER).write_text("agent-skills\n", encoding="utf-8")
 
         run_cli(["--project", str(project), "--platform", "claude-code", "--force"])
+        assert_missing(stale_skill)
 
         for skill_dir in module.discover_installable_skills():
             skill = skill_dir.name
@@ -115,6 +132,7 @@ def test_project_install_installs_installable_skills(module) -> None:
         assert_contains(claude_md, "## Skill Activation")
         assert_contains(claude_md, "## Skill Lifecycle")
         assert_contains(claude_md, "## Common Flow Patterns")
+        assert_parallelism_plan_template(claude_md)
         assert_no_forbidden_runtime_references(project, claude_md)
 
 
@@ -128,7 +146,46 @@ def test_agents_template_selection() -> None:
         assert_exists(agents_md)
         assert_contains(agents_md, "## Multi-Agent Rules")
         assert_contains(agents_md, "## Skill Activation")
+        assert_parallelism_plan_template(agents_md)
         assert_no_forbidden_runtime_references(project, agents_md)
+
+
+def test_global_install_installs_user_level_governance(module) -> None:
+    with tempfile.TemporaryDirectory(prefix="install-global-home-") as home_dir:
+        home = Path(home_dir)
+        stale_codex_skill = home / ".codex" / "skills" / "removed-skill"
+        stale_codex_skill.mkdir(parents=True)
+        (stale_codex_skill / "SKILL.md").write_text("# removed\n", encoding="utf-8")
+        (stale_codex_skill / module.MANAGED_MARKER).write_text("agent-skills\n", encoding="utf-8")
+
+        run_cli(["--global", "--platform", "codex", "--force"], home=home)
+        assert_missing(stale_codex_skill)
+        codex_agents = home / ".codex" / "AGENTS.md"
+        assert_exists(codex_agents)
+        assert_contains(codex_agents, "## Multi-Agent Rules")
+        assert_contains(codex_agents, "## Skill Activation")
+        assert_parallelism_plan_template(codex_agents)
+        for skill_dir in module.discover_installable_skills():
+            assert_exists(home / ".codex" / "skills" / skill_dir.name / "SKILL.md")
+
+        run_cli(["--global", "--platform", "codex", "--check"], home=home)
+
+        stale_claude_skill = home / ".claude" / "skills" / "removed-skill"
+        stale_claude_skill.mkdir(parents=True)
+        (stale_claude_skill / "SKILL.md").write_text("# removed\n", encoding="utf-8")
+        (stale_claude_skill / module.MANAGED_MARKER).write_text("agent-skills\n", encoding="utf-8")
+
+        run_cli(["--global", "--platform", "claude-code", "--force"], home=home)
+        assert_missing(stale_claude_skill)
+        claude_md = home / ".claude" / "CLAUDE.md"
+        assert_exists(claude_md)
+        assert_contains(claude_md, "## Multi-Agent Rules")
+        assert_contains(claude_md, "## Skill Activation")
+        assert_parallelism_plan_template(claude_md)
+        for skill_dir in module.discover_installable_skills():
+            assert_exists(home / ".claude" / "skills" / skill_dir.name / "SKILL.md")
+
+        run_cli(["--global", "--platform", "claude-code", "--check"], home=home)
 
 
 def test_local_mirror_sync_and_check(module) -> None:
@@ -165,6 +222,7 @@ def main() -> int:
     module = load_installer_module()
     test_project_install_installs_installable_skills(module)
     test_agents_template_selection()
+    test_global_install_installs_user_level_governance(module)
     test_local_mirror_sync_and_check(module)
     print("OK: manage-governance temporary-directory smoke tests passed")
     return 0

@@ -8,13 +8,13 @@
 
 普通使用者的公开安装入口是 `manage-governance.py`，它面向两种使用方式：
 
-- 全局安装：把技能装到你自己的用户级平台目录
-- 项目安装：把技能装到某个具体项目里，并按需要注入治理规则
+- 全局安装：把技能和治理规则装到你自己的用户级平台目录
+- 项目安装：把技能和治理规则装到某个具体项目里
 
 一个简单判断方法是：
 
-- 想在你自己的机器上跨项目复用这套技能，用全局安装
-- 想让某个项目自己携带技能和治理规则，用项目安装
+- 想在你自己的机器上跨项目复用这套技能和治理规则，用全局安装
+- 想让某个项目自己携带团队共享规则，用项目安装
 
 ## 全局安装
 <div class="title-en">Global Install</div>
@@ -25,7 +25,7 @@
 适合以下场景：
 
 - 你主要是个人使用
-- 你希望多个项目都能直接复用同一套技能
+- 你希望多个项目都能直接复用同一套技能和治理规则
 - 你不想改某个具体项目里的文档或规则文件
 
 ### 标准安装
@@ -39,19 +39,27 @@ python3 maintainer/scripts/install/manage-governance.py --global
 <div class="title-en">What You Get</div>
 
 - 技能会安装到用户级平台目录中
-- 适合做个人默认技能环境
-- 不会往某个具体项目里注入 `AGENTS.md` 或 `CLAUDE.md`
+- Codex 会获得用户级 `AGENTS.md`
+- Claude Code 会获得用户级 `CLAUDE.md`
+- Cursor 会获得用户级 skills；治理规则需要手动复制到 Cursor User Rules
 
 ### 首次验证
 <div class="title-en">First Validation</div>
 
-建议先做两件事：
+建议先做三件事：
 
-- 运行检查命令确认技能已经装到目标平台目录
+- 运行检查命令确认技能和用户级治理规则已经装到目标平台目录
+- 如果你使用 Cursor，按下文把治理规则复制到 Cursor User Rules
 - 重启对应 Agent，让它重新发现新安装的技能
 
 ```bash
 python3 maintainer/scripts/install/manage-governance.py --global --check
+```
+
+如果你已经装过旧版治理规则，并希望把模板更新同步到 Codex 或 Claude Code 的已有用户级规则文件，请使用 `--update`：
+
+```bash
+python3 maintainer/scripts/install/manage-governance.py --global --rules-only --update
 ```
 
 ## 项目安装
@@ -65,6 +73,7 @@ python3 maintainer/scripts/install/manage-governance.py --global --check
 - 你希望技能和治理规则一起进入项目
 - 你想让 Agent 不只是“能读到技能内容”，还要“知道什么时候该启用什么技能”
 - 团队想统一使用方式，而不是每个人各配一套
+- 你希望规则随仓库走，而不是只存在于某个用户的机器上
 
 ### 标准安装
 <div class="title-en">Standard Install</div>
@@ -76,7 +85,7 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 这条命令的目标是一次性完成两件事：
 
 - 安装当前支持的技能库
-- 注入匹配的治理规则
+- 注入项目级治理规则
 
 ### 项目安装变体
 <div class="title-en">Project Variants</div>
@@ -137,13 +146,20 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 ### 不要把全局安装和项目安装混成一件事
 <div class="title-en">Do Not Confuse Global Install with Project Install</div>
 
-全局安装解决的是“我这台机器默认可用”。  
-项目安装解决的是“这个项目自己携带技能和治理规则”。
+全局安装解决的是“我这台机器默认可用”，现在会同时安装用户级技能和用户级治理规则。  
+项目安装解决的是“这个项目自己携带技能和治理规则”，适合团队共享。
 
-如果你需要项目内的 `AGENTS.md` 或 `CLAUDE.md`，只做全局安装是不够的。
+如果你需要把 `AGENTS.md` 或 `CLAUDE.md` 提交进某个仓库，只做全局安装是不够的。
 
 ### 不要把“只装技能”误解成另一条安装路径
 <div class="title-en">Do Not Treat Skills Only as a Separate Install Path</div>
 
-`--skills-only` 适合想减少目标项目改动的人，但它不是另一套独立安装体系。  
-它仍然属于项目安装的一个变体。
+`--skills-only` 适合想先减少规则文件改动的人，但它不是另一套独立安装体系。  
+它可以和全局安装或项目安装一起使用，只是跳过治理规则注入。
+
+### Cursor 没有全局 AGENTS.md
+<div class="title-en">Cursor Has No Global AGENTS.md</div>
+
+Cursor 官方文档把 `AGENTS.md` 定位为项目根目录或子目录中的规则文件。用户级全局规则对应的是 Cursor Settings 里的 User Rules，而不是 `~/.cursor/AGENTS.md`。
+
+因此，全局安装会自动安装 Cursor skills，但不会写入一个非官方的全局 `AGENTS.md`。如果你希望 Cursor 也使用同一套治理规则，请打开 Cursor Settings -> Rules，把 `templates/governance/AGENTS-template.md` 的主体内容复制到 User Rules 中。更新旧规则时，尤其要确认 `Behavioral Guidelines` §4 包含 `[parallelism: ...]` 执行计划块。

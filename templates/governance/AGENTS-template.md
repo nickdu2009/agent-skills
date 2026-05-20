@@ -61,7 +61,7 @@ Transform tasks into verifiable goals:
 - "Fix the bug" → "Write a test that reproduces it, then make it pass"
 - "Refactor X" → "Ensure tests pass before and after"
 
-For multi-step tasks, state a brief plan:
+Before substantial or multi-step implementation, state a brief plan that starts by deciding whether parallel work is justified. Built-in planning tools and modes count as planning: when Codex or Cursor asks for a plan, include this block at the top of the plan body before numbered steps.
 
 ```text
 [parallelism:

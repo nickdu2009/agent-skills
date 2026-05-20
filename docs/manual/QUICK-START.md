@@ -26,7 +26,7 @@
 ## 选择安装入口
 <div class="title-en">Choose the Supported Entry</div>
 
-先回答一个问题：你是想让这套技能成为你机器上的默认能力，还是想把它接入某个具体项目？
+先回答一个问题：你是想让这套技能和治理规则成为你机器上的默认能力，还是想把它接入某个具体项目？
 
 ### 方案 A：全局安装
 <div class="title-en">Option A: Global Install</div>
@@ -34,8 +34,8 @@
 适合你如果：
 
 - 主要是个人使用
-- 想在多个项目里复用同一套技能
-- 不需要给某个项目注入治理文件
+- 想在多个项目里复用同一套技能和治理规则
+- 不需要给某个项目提交治理文件
 
 最短命令路径：
 
@@ -46,7 +46,8 @@ python3 maintainer/scripts/install/manage-governance.py --global
 安装完成后，你通常会得到：
 
 - 用户级平台目录中的技能
-- 一个跨项目可复用的默认技能环境
+- Codex 用户级 `AGENTS.md` 或 Claude Code 用户级 `CLAUDE.md`
+- 一个跨项目可复用的默认技能与治理环境
 - 不改项目文件的安装结果
 
 ### 方案 B：项目安装
@@ -57,6 +58,7 @@ python3 maintainer/scripts/install/manage-governance.py --global
 - 想把这套技能用到自己的项目
 - 希望 Agent 能同时获得技能内容和治理规则
 - 想让团队在同一个项目里看到一致行为
+- 希望治理规则随仓库提交和共享
 
 最短命令路径：
 
@@ -90,6 +92,7 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 
 - `--global --check` 能正常通过
 - 重启对应 Agent 后能重新发现已安装技能
+- 如果你使用 Cursor，已手动把治理规则复制到 Cursor User Rules；更新旧规则时要替换旧的 `Behavioral Guidelines` 段落
 
 ```bash
 python3 maintainer/scripts/install/manage-governance.py --global --check
@@ -110,7 +113,7 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 第一次不要上复杂任务，建议直接挑一个简单场景，观察 Agent 是否开始表现出这套技能体系想要的行为：
 
 - 先缩小边界
-- 先给出计划
+- 先判断是否值得并行，再给出计划
 - 改动保持局部
 - 验证保持针对性
 
@@ -119,5 +122,5 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 ## 两个常见误区
 <div class="title-en">Two Common Mistakes</div>
 
-- 不要把全局安装误当成项目安装。全局安装不会往项目里写入 `AGENTS.md` 或 `CLAUDE.md`。
-- 不要把“只装技能”误解成第三条安装路径。它仍然是项目安装的一个变体。
+- 不要把全局安装误当成项目安装。全局安装会写用户级治理规则，但不会往项目里写入 `AGENTS.md` 或 `CLAUDE.md`。
+- 不要把“只装技能”误解成第三条安装路径。它只是跳过治理规则注入的安装变体。

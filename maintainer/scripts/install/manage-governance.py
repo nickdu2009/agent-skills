@@ -16,6 +16,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SOURCE_DIR = REPO_ROOT / "skills"
 SKILL_FILE = "SKILL.md"
+MANAGED_MARKER = ".agent-skills-managed"
 AGENTS_TEMPLATE_PATH = REPO_ROOT / "templates" / "governance" / "AGENTS-template.md"
 CLAUDE_TEMPLATE_PATH = REPO_ROOT / "templates" / "governance" / "CLAUDE-template.md"
 @dataclass(frozen=True)
@@ -108,21 +109,42 @@ def collect_rel_files(root: Path) -> dict[str, Path]:
     return out
 
 
-def get_skill_target_dir(skill_name: str, platform: str, project_dir: Path | None = None) -> Path | None:
+def get_skill_root_dir(platform: str, project_dir: Path | None = None) -> Path | None:
     if project_dir is not None:
         if platform == "codex":
-            return project_dir / ".codex" / "skills" / skill_name
+            return project_dir / ".codex" / "skills"
         if platform in {"cursor", "cursor-cli"}:
-            return project_dir / ".cursor" / "skills" / skill_name
+            return project_dir / ".cursor" / "skills"
         if platform == "claude-code":
-            return project_dir / ".claude" / "skills" / skill_name
+            return project_dir / ".claude" / "skills"
         return None
     if platform == "codex":
-        return Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))) / "skills" / skill_name
+        return Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))) / "skills"
     if platform in {"cursor", "cursor-cli"}:
-        return Path.home() / ".cursor" / "skills" / skill_name
+        return Path.home() / ".cursor" / "skills"
     if platform == "claude-code":
-        return Path.home() / ".claude" / "skills" / skill_name
+        return Path.home() / ".claude" / "skills"
+    return None
+
+
+def get_skill_target_dir(skill_name: str, platform: str, project_dir: Path | None = None) -> Path | None:
+    root_dir = get_skill_root_dir(platform, project_dir)
+    if root_dir is None:
+        return None
+    return root_dir / skill_name
+
+
+def get_governance_target(platform: str, project_dir: Path | None = None) -> tuple[Path, GovernanceTemplate] | None:
+    if project_dir is not None:
+        if platform in {"codex", "cursor", "cursor-cli"}:
+            return project_dir / "AGENTS.md", AGENTS_TEMPLATE
+        if platform == "claude-code":
+            return project_dir / "CLAUDE.md", CLAUDE_TEMPLATE
+        return None
+    if platform == "codex":
+        return Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))) / "AGENTS.md", AGENTS_TEMPLATE
+    if platform == "claude-code":
+        return Path.home() / ".claude" / "CLAUDE.md", CLAUDE_TEMPLATE
     return None
 
 
@@ -277,6 +299,7 @@ def inject_rule_sections(
     *,
     update: bool,
 ) -> bool:
+    target_file.parent.mkdir(parents=True, exist_ok=True)
     if not target_file.exists():
         print(f"  CREATE: {target_file}")
         target_file.write_text(render_doc(template, sections), encoding="utf-8")
@@ -317,23 +340,58 @@ def inject_full_rules(target_file: Path, template: GovernanceTemplate, *, update
     )
 
 
-def inject_rules(project_dir: Path, platforms: list[str], *, update: bool) -> None:
+def inject_rules(project_dir: Path | None, platforms: list[str], *, update: bool) -> int:
     seen_targets: set[Path] = set()
+    changed_count = 0
     for platform in platforms:
-        if platform in {"codex", "cursor", "cursor-cli"}:
-            target = project_dir / "AGENTS.md"
-            template = AGENTS_TEMPLATE
-        elif platform == "claude-code":
-            target = project_dir / "CLAUDE.md"
-            template = CLAUDE_TEMPLATE
-        else:
+        target_info = get_governance_target(platform, project_dir)
+        if target_info is None:
+            if project_dir is None and platform in {"cursor", "cursor-cli"}:
+                print(f"  SKIP: {platform} has no official user-level AGENTS.md target; use Cursor User Rules")
+            else:
+                print(f"  SKIP: unknown platform '{platform}'")
             continue
+        target, template = target_info
 
         if target in seen_targets:
             continue
         seen_targets.add(target)
 
-        inject_full_rules(target, template, update=update)
+        if inject_full_rules(target, template, update=update):
+            changed_count += 1
+    return changed_count
+
+
+def check_governance(platform: str, project_dir: Path | None = None) -> bool:
+    target_info = get_governance_target(platform, project_dir)
+    if target_info is None:
+        if project_dir is None and platform in {"cursor", "cursor-cli"}:
+            print(f"  SKIP CHECK: {platform} has no official user-level AGENTS.md target; use Cursor User Rules")
+            return True
+        print(f"  SKIP CHECK: unknown platform '{platform}'")
+        return False
+    target, template = target_info
+    if not target.is_file():
+        print(f"  NOT INSTALLED: governance rules -> {target}")
+        return False
+
+    text = read_text(target)
+    lines = text.rstrip("\n").split("\n")
+    ok = True
+    for section in template.sections:
+        bounds = find_section_bounds(lines, section.heading)
+        if bounds is None:
+            print(f"  MISSING: {section.heading} in {target}")
+            ok = False
+            continue
+        start, end = bounds
+        actual = ensure_trailing_newline("\n".join(lines[start:end]).rstrip("\n"))
+        if actual != section.text:
+            print(f"  OUTDATED: {section.heading} in {target}")
+            ok = False
+    if ok:
+        print(f"  OK: governance rules ({platform}) -> {target}")
+    return ok
 
 
 def install_skill(skill_name: str, platform: str, *, force: bool, project_dir: Path | None = None) -> bool:
@@ -353,6 +411,7 @@ def install_skill(skill_name: str, platform: str, *, force: bool, project_dir: P
 
     target_dir.mkdir(parents=True, exist_ok=True)
     shutil.copytree(source_dir, target_dir, dirs_exist_ok=True)
+    (target_dir / MANAGED_MARKER).write_text("agent-skills\n", encoding="utf-8")
     print(f"  INSTALLED: {target_dir}")
     return True
 
@@ -375,6 +434,41 @@ def check_skill(skill_name: str, platform: str, project_dir: Path | None = None)
         return True
     print(f"  MISMATCH: {skill_name} ({platform})")
     return False
+
+
+def remove_stale_installed_skills(skill_dirs: list[Path], platform: str, project_dir: Path | None = None) -> int:
+    root_dir = get_skill_root_dir(platform, project_dir)
+    if root_dir is None or not root_dir.exists():
+        return 0
+
+    source_names = {skill_dir.name for skill_dir in skill_dirs}
+    removed = 0
+    for target_dir in sorted((child for child in root_dir.iterdir() if child.is_dir()), key=lambda p: p.name):
+        if target_dir.name in source_names:
+            continue
+        if not (target_dir / MANAGED_MARKER).is_file():
+            continue
+        shutil.rmtree(target_dir)
+        removed += 1
+        print(f"  REMOVED STALE: {target_dir}")
+    return removed
+
+
+def check_stale_installed_skills(skill_dirs: list[Path], platform: str, project_dir: Path | None = None) -> int:
+    root_dir = get_skill_root_dir(platform, project_dir)
+    if root_dir is None or not root_dir.exists():
+        return 0
+
+    source_names = {skill_dir.name for skill_dir in skill_dirs}
+    extra_count = 0
+    for target_dir in sorted((child for child in root_dir.iterdir() if child.is_dir()), key=lambda p: p.name):
+        if target_dir.name in source_names:
+            continue
+        if not (target_dir / MANAGED_MARKER).is_file():
+            continue
+        extra_count += 1
+        print(f"  EXTRA: stale installed skill -> {target_dir}")
+    return extra_count
 
 
 def check_local_mirror(skill_dirs: list[Path], target: MirrorTarget) -> int:
@@ -458,7 +552,7 @@ def build_parser(entrypoint_name: str) -> argparse.ArgumentParser:
     )
     target.add_argument(
         "--global", action="store_true", dest="global_install",
-        help="Install skills to global platform directories (~/.claude/skills/ etc.).",
+        help="Install skills + user-level rules to global platform directories (~/.claude/skills/ etc.).",
     )
     target.add_argument(
         "--sync-local",
@@ -470,17 +564,17 @@ def build_parser(entrypoint_name: str) -> argparse.ArgumentParser:
     # --- Action modifier ---
     parser.add_argument(
         "--check", action="store_true",
-        help="Verify installed skills instead of installing. Works with any target.",
+        help="Verify installed skills and governance rules instead of installing. Works with any target.",
     )
 
-    # --- Install modifiers (--project only) ---
+    # --- Install modifiers (--project / --global only) ---
     parser.add_argument(
         "--rules-only", action="store_true",
-        help="Skip skill installation, inject rules only (requires --project).",
+        help="Skip skill installation, inject rules only (requires --project or --global).",
     )
     parser.add_argument(
         "--skills-only", action="store_true",
-        help="Skip rule injection, install skills only (requires --project).",
+        help="Skip rule injection, install skills only (requires --project or --global).",
     )
 
     # --- Options ---
@@ -491,11 +585,12 @@ def build_parser(entrypoint_name: str) -> argparse.ArgumentParser:
     parser.epilog = "\n".join(
         [
             "Examples:",
+            f"  python3 maintainer/scripts/install/{entrypoint_name} --global",
+            f"  python3 maintainer/scripts/install/{entrypoint_name} --global --check",
+            f"  python3 maintainer/scripts/install/{entrypoint_name} --global --rules-only",
             f"  python3 maintainer/scripts/install/{entrypoint_name} --project /path/to/my-repo",
             f"  python3 maintainer/scripts/install/{entrypoint_name} --project /path/to/my-repo --rules-only",
             f"  python3 maintainer/scripts/install/{entrypoint_name} --project /path/to/my-repo --check",
-            f"  python3 maintainer/scripts/install/{entrypoint_name} --global",
-            f"  python3 maintainer/scripts/install/{entrypoint_name} --global --check",
             f"  python3 maintainer/scripts/install/{entrypoint_name} --sync-local cursor",
             f"  python3 maintainer/scripts/install/{entrypoint_name} --sync-local cursor --check",
         ]
@@ -518,8 +613,8 @@ def validate_mode(args: argparse.Namespace) -> tuple[str, Path | None]:
     if target_count == 0:
         raise SystemExit("No target specified. Use --project DIR, --global, or --sync-local TARGET.")
 
-    if (args.rules_only or args.skills_only) and not has_project:
-        raise SystemExit("--rules-only and --skills-only require --project.")
+    if (args.rules_only or args.skills_only) and has_sync_local:
+        raise SystemExit("--rules-only and --skills-only do not apply to --sync-local.")
     if args.rules_only and args.skills_only:
         raise SystemExit("Cannot use --rules-only and --skills-only together.")
 
@@ -527,10 +622,24 @@ def validate_mode(args: argparse.Namespace) -> tuple[str, Path | None]:
         return ("check-local" if args.check else "sync-local"), None
 
     if has_global:
-        return ("check-global" if args.check else "global"), None
+        if args.check:
+            if args.rules_only:
+                return "check-rules-global", None
+            if args.skills_only:
+                return "check-skills-global", None
+            return "check-global", None
+        if args.rules_only:
+            return "rules-global", None
+        if args.skills_only:
+            return "skills-global", None
+        return "global", None
 
     project_dir = Path(args.project)
     if args.check:
+        if args.rules_only:
+            return "check-rules-project", project_dir
+        if args.skills_only:
+            return "check-skills-project", project_dir
         return "check-project", project_dir
     if args.rules_only:
         return "rules", project_dir
@@ -572,35 +681,59 @@ def main(argv: list[str] | None = None) -> int:
         return sync_local_mirror(skill_dirs, target)
 
     # --- check-global / check-project ---
-    if mode in {"check-global", "check-project"}:
+    if mode in {
+        "check-global",
+        "check-skills-global",
+        "check-rules-global",
+        "check-project",
+        "check-skills-project",
+        "check-rules-project",
+    }:
         platforms = [args.platform] if args.platform else detect_platforms()
         if not platforms:
             print("No supported platform detected. Install Cursor, Codex, or Claude Code first.")
             return 1
 
-        check_dir = project_dir if mode == "check-project" else None
+        is_project_check = mode in {"check-project", "check-skills-project", "check-rules-project"}
+        check_dir = project_dir if is_project_check else None
         location = f"project ({project_dir})" if check_dir else "global"
         skill_dirs = discover_installable_skills()
         skill_names = tuple(skill_dir.name for skill_dir in skill_dirs)
+        check_skills = mode in {"check-global", "check-skills-global", "check-project", "check-skills-project"}
+        check_rules = mode in {"check-global", "check-rules-global", "check-project", "check-rules-project"}
 
         print("")
-        print(f"=== Verifying Skills ({location}) ===")
+        print(f"=== Verifying Skill Governance Setup ({location}) ===")
         print("")
 
         failed = 0
-        for platform in platforms:
-            print(f"Platform: {platform}")
-            for skill in skill_names:
-                if not check_skill(skill, platform, check_dir):
+        if check_skills:
+            print("--- Verifying skills ---")
+            checked_skill_roots: set[Path] = set()
+            for platform in platforms:
+                print(f"Platform: {platform}")
+                for skill in skill_names:
+                    if not check_skill(skill, platform, check_dir):
+                        failed += 1
+                skill_root = get_skill_root_dir(platform, check_dir)
+                if skill_root is not None and skill_root not in checked_skill_roots:
+                    checked_skill_roots.add(skill_root)
+                    failed += check_stale_installed_skills(skill_dirs, platform, check_dir)
+                print("")
+        if check_rules:
+            print("--- Verifying governance rules ---")
+            for platform in platforms:
+                print(f"Platform: {platform}")
+                if not check_governance(platform, check_dir):
                     failed += 1
-            print("")
+                print("")
         if failed:
             print(f"Check failed: {failed} issue(s).")
             return 1
-        print("All checked skills match source.")
+        print("All checked skills and governance rules match source.")
         return 0
 
-    # --- install modes: global, project, skills-project, rules ---
+    # --- install modes: global, project, skills-only, rules-only ---
     print("")
     print(f"=== {INSTALL_DISPLAY_NAME} ===")
     print("")
@@ -615,29 +748,35 @@ def main(argv: list[str] | None = None) -> int:
 
     skill_dirs = discover_installable_skills()
     skill_names = tuple(skill_dir.name for skill_dir in skill_dirs)
-    do_install_skills = mode in {"global", "project", "skills-project"}
-    do_inject_rules = mode in {"project", "rules"}
+    do_install_skills = mode in {"global", "project", "skills-project", "skills-global"}
+    do_inject_rules = mode in {"global", "project", "rules", "rules-global"}
     skill_target_dir = project_dir if mode in {"project", "skills-project"} else None
 
     installed_count = 0
+    injected_count = 0
 
     if do_install_skills:
         location = f"project ({project_dir})" if skill_target_dir else "global"
         print(f"--- Installing skills ({location}) ---")
+        synced_skill_roots: set[Path] = set()
         for platform in platforms:
             print(f"Platform: {platform}")
+            skill_root = get_skill_root_dir(platform, skill_target_dir)
+            if skill_root is not None and skill_root not in synced_skill_roots:
+                synced_skill_roots.add(skill_root)
+                remove_stale_installed_skills(skill_dirs, platform, skill_target_dir)
             for skill in skill_names:
                 if install_skill(skill, platform, force=args.force, project_dir=skill_target_dir):
                     installed_count += 1
             print("")
 
     if do_inject_rules:
-        assert project_dir is not None
-        if not project_dir.is_dir():
+        if project_dir is not None and not project_dir.is_dir():
             print(f"ERROR: {project_dir} is not a directory")
             return 1
-        print(f"--- Injecting rules into {project_dir} ---")
-        inject_rules(project_dir, platforms, update=args.update)
+        location = f"project ({project_dir})" if project_dir else "user-level platform files"
+        print(f"--- Injecting rules into {location} ---")
+        injected_count = inject_rules(project_dir, platforms, update=args.update)
         print("")
 
     print("=== Summary ===")
@@ -645,7 +784,8 @@ def main(argv: list[str] | None = None) -> int:
         location = f"project ({project_dir})" if skill_target_dir else "global"
         print(f"Installed {installed_count} skill(s) ({location})")
     if do_inject_rules:
-        print("Injected rules into AGENTS.md/CLAUDE.md")
+        location = "project AGENTS.md/CLAUDE.md" if project_dir else "user-level AGENTS.md/CLAUDE.md"
+        print(f"Updated {injected_count} governance file(s) ({location})")
     print("")
 
     print("=== Done ===")
@@ -654,7 +794,10 @@ def main(argv: list[str] | None = None) -> int:
     if do_install_skills:
         print("  - Restart your agent (Cursor/Codex/Claude Code) to pick up new skills")
     if do_inject_rules:
-        print("  - Review governance sections in AGENTS.md/CLAUDE.md")
+        if project_dir:
+            print("  - Review governance sections in project AGENTS.md/CLAUDE.md")
+        else:
+            print("  - Review user-level governance files; configure Cursor User Rules manually if needed")
     print("")
     return 0
 

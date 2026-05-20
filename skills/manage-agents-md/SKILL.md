@@ -48,6 +48,8 @@ The result should be useful on the next task, not just accurate for the current 
 2. Read current instruction sources.
    - Existing `AGENTS.md` files from the target directory upward.
    - Related files such as `CLAUDE.md`, `.cursor/rules/`, README, contributor docs, package manifests, build files, and test configuration.
+   - Governance templates such as `templates/governance/AGENTS-template.md` when present.
+   - Supported platform user-level sources when visible: Codex `AGENTS.md`, Claude Code `CLAUDE.md`, and Cursor skills/User Rules status as described in [INITIALIZATION.md](INITIALIZATION.md).
    - Any user-provided exact wording; preserve exact wording when requested.
 
 3. Classify the operation.
@@ -64,6 +66,7 @@ The result should be useful on the next task, not just accurate for the current 
 
 5. Merge carefully.
    - Keep stable local rules.
+   - Do not duplicate sections already confirmed in supported user-level governance or a project governance template; add only project-specific extensions.
    - Remove duplicate or obsolete rules only when the replacement is clearly better supported.
    - Resolve contradictions by favoring current repository files over stale prose, and call out any unresolved conflict.
    - Keep sections short enough that future agents will read them.
