@@ -1670,3 +1670,11 @@ def resolve_trigger_case(case_id: str) -> TriggerCase:
         if c.id == case_id:
             return c
     raise KeyError(f'no TriggerCase with id={case_id!r}')
+
+    raise KeyError(f'no TriggerCase with id={case_id!r}')
+
+
+
+
+
+
