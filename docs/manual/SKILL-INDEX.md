@@ -26,10 +26,23 @@
 
 这组组合的作用是先把边界缩小、控制改动规模，再做最小充分验证。计划环节由 `AGENTS.md` 行为指南 §4（Goal-Driven Execution）统一规范，无需独立技能。
 
+## 整合后的技能簇
+<div class="title-en">Consolidated Skill Clusters</div>
+
+为了降低选择成本，可以先把 14 个技能按职责整合为 5 个技能簇来理解：
+
+- 执行与质量：`scoped-tasking`、`targeted-validation`、`self-review`
+- 缺陷与重构：`bugfix-workflow`、`safe-refactor`
+- 影响与设计：`impact-analysis`、`design-before-plan`
+- 评审回环：`requirements-review-loop`、`design-review-loop`、`plan-review-loop`、`code-review-loop`、`test-review-loop`
+- 治理与协作：`manage-agents-md`、`multi-agent-protocol`
+
+日常任务建议先在“执行与质量”簇起步，只有在证据显示需要时再升级到其他簇。
+
 ## 基础执行技能
 <div class="title-en">Core Execution Skills</div>
 
-`manage-governance.py` 不再安装它。
+这些技能都由 `manage-governance.py` 安装。
 
 ### `scoped-tasking`
 
@@ -46,7 +59,7 @@
 ## 定位、诊断与结构技能
 <div class="title-en">Discovery, Diagnosis, and Structure Skills</div>
 
-在陌生区域里沿着最强线索找真正的编辑点，不做无边界扫读。
+当你还不确定编辑点、根因或影响面时，这组技能用于先找证据再动手。
 
 ### `bugfix-workflow`
 
@@ -55,8 +68,6 @@
 ### `safe-refactor`
 
 做小范围、可控的结构整理，同时保持对外行为和接口稳定。
-
-当调查越做越散、文件越看越多、假设越列越多时，主动压缩上下文，重新聚焦。
 
 ### `impact-analysis`
 
@@ -105,9 +116,7 @@
 
 把确实适合并行的任务拆成低耦合子问题，并协调多个代理如何分工、汇总和验证。
 
-当并行调查结果或多个假设彼此冲突时，用证据而不是语气来比较和裁决。
-
-把一个中等规模任务拆成 2 到 4 个可独立合并的增量，而不是一次压成一个大改动。
+并行子线出现冲突时，按证据显式裁决；中等规模任务的 2 到 4 个增量拆分由 `AGENTS.md` 行为指南 §4 的计划块统一约束。
 
 ## 一页判断法
 <div class="title-en">One-Page Decision Guide</div>

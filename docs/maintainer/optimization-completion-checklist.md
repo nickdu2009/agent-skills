@@ -4,6 +4,10 @@
 **Date**: 2026-04-11  
 **Purpose**: Track completion and verification of all token optimization phases
 
+**Status**: Historical snapshot / complete for its original scope
+
+> Historical note: this checklist records the optimization work as completed at the time it was written. Some referenced skills and phase-system assets were later retired; use it for audit history, not current inventory.
+
 ## Overview
 
 This checklist documents all phases of the token optimization effort, with verification criteria and deliverables for each phase. All phases are now complete, with templates ready for adoption.

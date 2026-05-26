@@ -2,7 +2,8 @@
 
 **Version**: 1.0  
 **Date**: 2026-04-11  
-**Status**: Active
+**Status**: Current authority
+**Current implementation note**: Updated for the 14-skill post-2026-05 governance model. The old plan-before-action, phase, and minimal-change-strategy skills are retired; planning discipline now lives in `AGENTS.md` / `CLAUDE.md` Behavioral Guidelines §4.
 
 ## Purpose
 
@@ -19,7 +20,7 @@ Chain aliases are documentation shortcuts, not runtime primitives. They:
 
 They do not:
 
-- Replace the detailed chain trigger tables in CLAUDE.md
+- Replace the common flow patterns in `AGENTS.md` / `CLAUDE.md`
 - Introduce new runtime batch activation behavior
 - Change how skills are activated or deactivated
 - Modify skill preconditions or contracts
@@ -29,6 +30,7 @@ They do not:
 ### bugfix-standard
 
 **Full chain:**  
+`scoped-tasking` → `bugfix-workflow` → `self-review` → `targeted-validation`
 
 **Use when:**
 
@@ -50,6 +52,7 @@ They do not:
 ### refactor-safe
 
 **Full chain:**  
+`scoped-tasking` → `safe-refactor` → `self-review` → `targeted-validation`
 
 **Use when:**
 
@@ -71,6 +74,7 @@ They do not:
 ### multi-file-planned
 
 **Full chain:**  
+`scoped-tasking` → Behavioral Guidelines §4 plan → `self-review` → `targeted-validation`
 
 **Use when:**
 
@@ -90,6 +94,7 @@ They do not:
 ### design-first
 
 **Full chain:**  
+`scoped-tasking` → `design-before-plan` → `impact-analysis`
 
 **Use when:**
 
@@ -99,10 +104,10 @@ They do not:
 - Design decisions block planning
 
 **Entry point:** `scoped-tasking` confirms the boundary  
-**Handoff:** `design-before-plan` → `plan-before-action` once the design brief is complete  
-**Exit:** `targeted-validation` verifies the contract  
+**Handoff:** `design-before-plan` → `impact-analysis` when shared callers, data models, or public contracts need blast-radius review
+**Exit:** an implementation plan under Behavioral Guidelines §4, followed by `targeted-validation` after code changes
 
-**Deactivation note:** Drop `design-before-plan` after the design brief is handed to `plan-before-action` — it does not stay active during implementation.
+**Deactivation note:** Drop `design-before-plan` after the design brief is accepted or handed to implementation planning — it does not stay active during implementation.
 
 **Example trigger:** "Add pagination to the search API"
 
@@ -110,7 +115,10 @@ They do not:
 
 ### large-task
 
+**Status:** Historical alias retained for older maintainer reports. Current governance handles this with `scoped-tasking`, `design-before-plan`, `impact-analysis`, Behavioral Guidelines §4 planning, and optional `multi-agent-protocol`; there is no dedicated phase or incremental-delivery skill in the live 14-skill set.
+
 **Full chain:**  
+No active canonical chain. Use the current common flow patterns instead.
 
 **Use when:**
 
@@ -123,7 +131,7 @@ They do not:
 **Handoffs:**
 
 1. `design-before-plan` → `impact-analysis` when caller/module impact is still speculative
-2. `impact-analysis` → `plan-before-action` after the impact summary is produced
+2. `impact-analysis` → Behavioral Guidelines §4 planning after the impact summary is produced
 
 **Escalation:**
 
@@ -136,6 +144,7 @@ They do not:
 ### parallel
 
 **Full chain:**  
+`multi-agent-protocol` → synthesis
 
 **Use when:**
 
@@ -165,16 +174,15 @@ Use chain aliases in:
 
 Spell out the full chain when:
 
-- The chain definition itself is the topic (e.g., in CLAUDE.md Skill Chain Triggers)
+- The chain definition itself is the topic
 - A variation or fallback deviates meaningfully from the canonical alias
 - Precision matters more than brevity (e.g., in contract or precondition sections)
 - The alias does not yet exist or is under debate
 
 ### Cross-references
 
-- Full chain trigger rules: `/CLAUDE.md` § Skill Chain Triggers
-- Forward handoff conditions: `/CLAUDE.md` § Forward Handoffs
-- Fallback conditions: `/CLAUDE.md` § Fallbacks
+- Common flow patterns: `/CLAUDE.md` § Common Flow Patterns and `/AGENTS.md` § Common Flow Patterns
+- Skill activation and escalation: `/CLAUDE.md` § Skill Activation and § Escalation Rules
 - Skill lifecycle rules: `/CLAUDE.md` § Skill Lifecycle
 
 ## Alias Naming Convention
@@ -223,7 +231,7 @@ In `scoped-tasking/SKILL.md`:
 
 ```markdown
 Combine with:
-- plan-before-action to convert the scoped boundary into a concrete work plan
+- Behavioral Guidelines §4 planning to convert the scoped boundary into a concrete work plan
 - targeted-validation to keep verification aligned to the same boundary
 ```
 
@@ -240,42 +248,37 @@ In `scoped-tasking/SKILL.md`:
 
 ```markdown
 Common flows:
-- multi-file-planned: scoped-tasking → plan-before-action → ...
+- multi-file-planned: scoped-tasking → Behavioral Guidelines §4 plan → ...
 
 (Full definitions: docs/maintainer/skill-chain-aliases.md)
 ```
 
 ## Adoption Status
 
-**Last updated**: 2026-04-11
+**Last updated**: 2026-05-26
 
-### Execution Skills (12 total)
+This section records current live-chain status. Older optimization reports may mention the pre-2026-05 18-skill set; treat those as historical snapshots.
 
-| Adoption Status | Count | Skills |
-|----------------|-------|--------|
-| Using chain aliases | 12/12 | All execution skills optimized |
-| Verbose listings | 0/12 | None remaining |
-| **Adoption rate** | **100%** | **Target achieved** |
+### Live Governance Chains
 
-### Recent Optimizations (2026-04-11)
+| Alias | Current status | Live chain |
+|---|---|---|
+| `bugfix-standard` | Current | `scoped-tasking` → `bugfix-workflow` → `self-review` → `targeted-validation` |
+| `refactor-safe` | Current | `scoped-tasking` → `safe-refactor` → `self-review` → `targeted-validation` |
+| `multi-file-planned` | Current | `scoped-tasking` → Behavioral Guidelines §4 plan → `self-review` → `targeted-validation` |
+| `design-first` | Current | `scoped-tasking` → `design-before-plan` → `impact-analysis` |
+| `parallel` | Current | `multi-agent-protocol` → synthesis |
+| `large-task` | Historical | Retained for older reports; use current common flow patterns instead |
 
-Phase 2 optimizations completed:
+### Historical Optimization Snapshot (2026-04-11)
 
-1. **bugfix-workflow**: Adopted `bugfix-standard` chain alias (~55 tokens saved)
-3. **design-before-plan**: Adopted `design-first` and `large-task` chain aliases (~45 tokens saved)
-4. **impact-analysis**: Adopted `large-task` chain alias (~50 tokens saved)
+The token-savings figures below describe the old 18-skill optimization pass and are kept for historical comparison only.
+
+- **bugfix-workflow**: Adopted `bugfix-standard` chain alias (~55 tokens saved)
+- **design-before-plan**: Adopted `design-first` and `large-task` chain aliases (~45 tokens saved)
+- **impact-analysis**: Adopted `large-task` chain alias (~50 tokens saved)
 
 Total savings from Phase 2: ~260 tokens
-
-### Skills Already Optimized (Before 2026-04-11)
-
-Phase 1 optimizations (7 skills, ~450 tokens saved):
-
-3. plan-before-action: `multi-file-planned`, `design-first`, `large-task` chains
-5. safe-refactor: `refactor-safe` chain
-6. scoped-tasking: Multiple chains (entry point)
-7. self-review: Multiple chains
-8. targeted-validation: Multiple chains (exit point)
 
 ### Orchestration Skills
 
@@ -298,8 +301,8 @@ These skills use domain-specific composition patterns that don't map to standard
 ### Total Impact
 
 - **Tokens saved**: ~710 tokens (65.4% reduction)
-- **Skills optimized**: 12/12 execution skills (100%)
-- **Target met**: Yes (target was 18/18 adoption with 375-750 token savings)
+- **Historical scope**: old 12 execution skill subset
+- **Current status**: historical measurement only; do not use as the current 14-skill adoption count
 
 ### Breakdown by Optimization Phase
 

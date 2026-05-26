@@ -29,6 +29,19 @@
 
 如果你还不确定从哪里开始，先从这组默认组合起步，通常比一开始就上更重的技能更稳。
 
+## 整合后的选择顺序
+<div class="title-en">Consolidated Selection Order</div>
+
+把技能先看成 5 个簇，按下面顺序升级，通常最稳：
+
+1. 执行与质量：`scoped-tasking` + `targeted-validation`（必要时加 `self-review`）
+2. 缺陷与重构：`bugfix-workflow` / `safe-refactor`
+3. 影响与设计：`impact-analysis` / `design-before-plan`
+4. 评审回环：按产物类型选择一个 `*-review-loop`
+5. 治理与协作：`manage-agents-md` / `multi-agent-protocol`
+
+这个顺序的核心是：先保证边界和验证，再升级复杂机制。
+
 ## 一个简单决策流
 <div class="title-en">A Simple Decision Flow</div>
 
@@ -67,6 +80,8 @@
 <div class="title-en">Edit point is unknown</div>
 
 优先考虑：
+
+- `scoped-tasking`
 
 适用场景：
 
@@ -153,6 +168,9 @@
 
 优先考虑：
 
+- `AGENTS.md` 行为指南 §4（先判断并行价值，再按计划块拆增量）
+- `multi-agent-protocol`（仅当确有低耦合并行子问题）
+
 适用场景：
 
 - 一次做完太大
@@ -194,6 +212,11 @@
 <div class="title-en">Starter Compositions</div>
 
 如果你只想要几组最常用组合，可以先从这里开始：
+
+- 小范围普通改动：`scoped-tasking` + `targeted-validation`
+- 缺陷修复：`scoped-tasking` + `bugfix-workflow` + `targeted-validation`
+- 安全重构：`scoped-tasking` + `safe-refactor` + `self-review` + `targeted-validation`
+- 文档/代码评审：按产物类型选择一个 `*-review-loop`，循环到 `review_result: clean`
 
 ## 这一章补充了什么
 <div class="title-en">What This Chapter Adds</div>

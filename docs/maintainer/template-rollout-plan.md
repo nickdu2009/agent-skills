@@ -2,8 +2,10 @@
 
 **Version**: 1.0  
 **Date**: 2026-04-11  
-**Status**: Active  
+**Status**: Historical snapshot / superseded by the post-2026-05 skill inventory
 **Scope**: Remaining 13 skills template application strategy
+
+> Historical note: this rollout plan was written for the old 18-skill inventory and references skills that were later retired. Use it as rationale for template rollout strategy, not as the current remaining-work list.
 
 ## Executive Summary
 

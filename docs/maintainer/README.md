@@ -20,6 +20,18 @@
 - [`manual-and-repo-development.md`](manual-and-repo-development.md)  
   再看手册预览、本地 mirror、canonical source，以及仓库维护相关工作流。
 
+## Document Status
+
+维护文档按状态阅读，不要把历史报告当成当前实现：
+
+- **Current authority**: 当前维护入口、治理模板说明、canonical source 说明。这里必须和仓库实现一致。
+- **Proposal / roadmap**: 设计想法、候选 skill、未来 rollout。除非明确写入 `skills/`、`templates/governance/` 或维护脚本，否则不代表已经实现。
+- **Partial implementation**: 已有一部分能力，但还有未完成的测试、模板、CI 或文档闭环。阅读时先看实现状态说明。
+- **Historical snapshot**: 某个时间点的评估、报告或基线。保留用于追溯决策，不作为当前架构依据。
+- **Superseded**: 已被新机制替代的旧方案。保留时应在开头标明替代来源。
+
+修订规则：优先修正 Current authority；Proposal 和 Partial implementation 补状态说明；Historical snapshot 只加醒目的历史提示，不大面积重写正文。
+
 ## Go By Task
 
 - 我在维护治理模板、平台注入边界或 `AGENTS.md` / `CLAUDE.md` 的来源：  

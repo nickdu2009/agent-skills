@@ -35,6 +35,35 @@
 python3 maintainer/scripts/install/manage-governance.py --global
 ```
 
+### 全局安装变体
+<div class="title-en">Global Variants</div>
+
+以下变体仍然属于全局安装，不是第三条独立安装路径。
+
+#### 仅安装技能
+<div class="title-en">Skills Only</div>
+
+如果你只想先装技能，不写入用户级治理规则：
+
+```bash
+python3 maintainer/scripts/install/manage-governance.py --global --skills-only
+```
+
+#### 仅注入规则
+<div class="title-en">Rules Only</div>
+
+如果技能已经存在，只想更新或补充用户级治理规则：
+
+```bash
+python3 maintainer/scripts/install/manage-governance.py --global --rules-only
+```
+
+如果目标治理文件里已经有同名章节，默认会跳过；需要替换已有章节时，请加 `--update`：
+
+```bash
+python3 maintainer/scripts/install/manage-governance.py --global --rules-only --update
+```
+
 ### 你会得到什么
 <div class="title-en">What You Get</div>
 
@@ -163,3 +192,9 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 Cursor 官方文档把 `AGENTS.md` 定位为项目根目录或子目录中的规则文件。用户级全局规则对应的是 Cursor Settings 里的 User Rules，而不是 `~/.cursor/AGENTS.md`。
 
 因此，全局安装会自动安装 Cursor skills，但不会写入一个非官方的全局 `AGENTS.md`。如果你希望 Cursor 也使用同一套治理规则，请打开 Cursor Settings -> Rules，把 `templates/governance/AGENTS-template.md` 的主体内容复制到 User Rules 中。更新旧规则时，尤其要确认 `Behavioral Guidelines` §4 包含 `[parallelism: ...]` 执行计划块。
+
+### 不要把 `--sync-local` 当作普通安装路径
+<div class="title-en">Do Not Treat `--sync-local` as a User Install Path</div>
+
+`--sync-local` 的职责是同步仓库内的本地镜像（例如 `.cursor/skills`、`.claude/skills`），主要用于当前仓库的维护与发布准备。  
+普通使用者安装仍应优先使用 `--global` 或 `--project`。

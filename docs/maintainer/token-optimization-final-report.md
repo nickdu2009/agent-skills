@@ -2,8 +2,10 @@
 
 **Version**: 1.0  
 **Date**: 2026-04-11  
-**Status**: Complete  
+**Status**: Historical snapshot / complete for its original scope
 **Scope**: All optimization phases plus follow-up actions and final cleanup
+
+> Historical note: this report is a point-in-time completion record for the pre-2026-05 optimization effort. It may mention the old 18-skill set; do not treat its counts as current live inventory.
 
 ## Executive Summary
 

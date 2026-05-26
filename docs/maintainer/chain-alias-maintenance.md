@@ -2,15 +2,16 @@
 
 **Version**: 1.0  
 **Date**: 2026-04-11  
-**Status**: Active
+**Status**: Current authority
+**Current implementation note**: Updated for the post-2026-05 14-skill governance model. `AGENTS.md` / `CLAUDE.md` § Common Flow Patterns are the current source for live chains; older references to `Skill Chain Triggers`, phase skills, or `plan-before-action` are historical.
 
 ## Purpose
 
-Define procedures for maintaining chain aliases across the skill library, ensuring CLAUDE.md remains the single source of truth for chain definitions.
+Define procedures for maintaining chain aliases across the skill library, ensuring governance common flow patterns remain the source of truth for live chain definitions.
 
 ## Principles
 
-1. **Single Source of Truth**: CLAUDE.md § Skill Chain Triggers is the authoritative definition for all chain patterns.
+1. **Single Source of Truth**: `AGENTS.md` / `CLAUDE.md` § Common Flow Patterns are the authoritative definition for live chain patterns.
 2. **Propagation Discipline**: Changes to chain definitions must propagate to affected SKILL.md files systematically.
 3. **Version Control**: Chain definition changes must be documented in maintainer changelogs.
 4. **Validation**: Chain references must be validated before merge.
@@ -27,14 +28,13 @@ Define procedures for maintaining chain aliases across the skill library, ensuri
 
 **Process:**
 
-1. **Define in CLAUDE.md first**
-   - Add to CLAUDE.md § Skill Chain Triggers → Common Flow Patterns
+1. **Define in governance first**
+   - Add to `AGENTS.md` / `CLAUDE.md` § Common Flow Patterns
    - Use the canonical format:
      ```markdown
      - [Chain name]: `skill-a` → `skill-b` → `skill-c` → `skill-d`
      ```
-   - Add forward handoff conditions if needed (§ Forward Handoffs table)
-   - Add fallback conditions if needed (§ Fallbacks table)
+   - Add activation, escalation, or lifecycle notes if the chain needs conditions beyond the common flow line
 
 2. **Document in skill-chain-aliases.md**
    - Add full chain definition with:
@@ -53,7 +53,7 @@ Define procedures for maintaining chain aliases across the skill library, ensuri
      ```markdown
      ## Composition
      
-     Part of [chain-name] chain (see CLAUDE.md § Skill Chain Triggers).
+     Part of [chain-name] chain (see project governance § Common Flow Patterns).
      
      Role: [entry point | core component | exit point] — [1-2 sentence description]
      
@@ -81,9 +81,9 @@ Define procedures for maintaining chain aliases across the skill library, ensuri
 
 **Process:**
 
-1. **Update CLAUDE.md first**
+1. **Update governance first**
    - Modify the chain definition in § Common Flow Patterns
-   - Update Forward Handoffs or Fallbacks tables if conditions changed
+   - Update activation, escalation, or lifecycle notes if conditions changed
    - Consider backward compatibility: can old references still work?
 
 2. **Update skill-chain-aliases.md**
@@ -125,7 +125,7 @@ Define procedures for maintaining chain aliases across the skill library, ensuri
 
 **Process:**
 
-1. **Mark deprecated in CLAUDE.md**
+1. **Mark deprecated in governance**
    - Add deprecation notice: `(Deprecated: use [new-chain] instead)`
    - Keep the definition visible for one release cycle
    - Document migration path
@@ -139,7 +139,7 @@ Define procedures for maintaining chain aliases across the skill library, ensuri
    - Remove references to deprecated chain
 
 4. **Remove after grace period**
-   - After one release cycle, remove from CLAUDE.md
+   - After one release cycle, remove from governance common flow patterns
    - Archive in skill-chain-aliases.md with deprecation date
    - Remove from adoption tracker
 
@@ -150,7 +150,7 @@ Define procedures for maintaining chain aliases across the skill library, ensuri
 ```markdown
 ## Composition
 
-[Entry point for | Core component of | Exit point for] [chain-alias] chain (see CLAUDE.md § Skill Chain Triggers).
+[Entry point for | Core component of | Exit point for] [chain-alias] chain (see project governance § Common Flow Patterns).
 
 Role: [1-2 sentence description of role]. Receives [inputs] from [predecessor], produces [outputs], hands to [successor].
 
@@ -175,7 +175,7 @@ Drop after [deactivation condition].
 ```markdown
 ## Composition
 
-Cross-chain fallback skill. Activates when [threshold conditions] during any execution chain (see CLAUDE.md § Skill Escalation).
+Cross-chain fallback skill. Activates when [threshold conditions] during any execution chain (see project governance § Skill Activation and § Escalation Rules).
 
 Role: [1-2 sentence description]. Produces [outputs] that downstream skills can consume.
 
@@ -188,19 +188,19 @@ Typical activations:
 Drop after [deactivation condition].
 ```
 
-### For Phase/Orchestration Skills
+### For Orchestration Skills
 
-Phase and orchestration skills use domain-specific composition patterns that don't map to standard execution chains. They should use their own templates focused on phase workflow or parallel orchestration patterns.
+Orchestration skills use domain-specific composition patterns that don't map to standard execution chains. They should use their own templates focused on coordination or parallel synthesis patterns.
 
 ```markdown
 ## Composition
 
 Use this skill together with:
 
-- `$skill-a` for [specific phase/orchestration purpose]
+- `$skill-a` for [specific coordination/orchestration purpose]
 - `$skill-b` when [specific condition]
 
-See also [skill-name] usage in [domain] workflow chain definitions in docs/maintainer/skill-chain-aliases.md.
+See also [skill-name] usage in workflow chain definitions in docs/maintainer/skill-chain-aliases.md.
 ```
 
 ## Validation Procedures
@@ -211,7 +211,7 @@ Before committing chain definition changes:
 
 1. **Reference integrity check**
    ```bash
-   # Check all chain references resolve to CLAUDE.md
+   # Check all chain references resolve to governance common flow patterns
    grep -r "Part of.*chain" skills/*/SKILL.md | \
      while read ref; do
        chain=$(echo "$ref" | grep -o "\`[^']*\`" | head -1 | tr -d '`')
@@ -224,7 +224,7 @@ Before committing chain definition changes:
 2. **Skill coverage check**
    ```bash
    # Verify all skills in a chain have Composition sections
-   # Extract chain definition from CLAUDE.md
+   # Extract chain definition from governance common flow patterns
    # For each skill in chain, check if its SKILL.md references the chain
    ```
 
@@ -242,7 +242,7 @@ After merging chain changes:
    - Recalculate token savings if chain structure changed
 
 2. **Documentation consistency**
-   - Verify CLAUDE.md, skill-chain-aliases.md, and SKILL.md files all agree
+   - Verify AGENTS.md, CLAUDE.md, skill-chain-aliases.md, and SKILL.md files all agree
    - Check that examples still use correct chain references
 
 3. **Regression testing**
@@ -274,7 +274,7 @@ After merging chain changes:
 
 ### When Adding Skills to a Chain
 
-1. **Update CLAUDE.md first** (add skill to chain definition)
+1. **Update governance first** (add skill to chain definition)
 2. **Add Composition section to new skill's SKILL.md**
 3. **Update adjacent skills** (update their "hands to" descriptions)
 4. **Update skill-chain-aliases.md** (revise chain description)
@@ -282,7 +282,7 @@ After merging chain changes:
 
 ### When Removing Skills from a Chain
 
-1. **Update CLAUDE.md first** (remove skill from chain definition)
+1. **Update governance first** (remove skill from chain definition)
 2. **Update removed skill's SKILL.md** (change or remove Composition section)
 3. **Update adjacent skills** (update handoff paths to skip the removed skill)
 4. **Update skill-chain-aliases.md** (revise chain description)
@@ -306,7 +306,7 @@ done
 
 - Individual composition section: < 100 tokens
 - Total across all execution skills: < 500 tokens
-- Phase/orchestration skills: use domain-appropriate patterns, don't force into execution chain model
+- Orchestration skills: use domain-appropriate patterns, don't force into execution chain model
 
 ### When to Optimize
 
@@ -330,7 +330,7 @@ A well-defined chain alias:
 
 1. **Is concise**: name clearly indicates the purpose (bugfix-standard, refactor-safe, design-first)
 2. **Is stable**: chain structure is unlikely to change frequently
-3. **Is well-documented**: CLAUDE.md and skill-chain-aliases.md provide complete information
+3. **Is well-documented**: governance common flow patterns and skill-chain-aliases.md provide complete information
 4. **Is consistently used**: all skills in the chain reference it correctly
 5. **Adds value**: saves tokens and improves clarity vs. spelling out the chain each time
 
@@ -338,7 +338,7 @@ A well-defined chain alias:
 
 A well-written Composition section:
 
-1. **References canonical chains**: uses aliases from CLAUDE.md, not verbose listings
+1. **References canonical chains**: uses aliases from governance common flow patterns, not verbose listings
 2. **Describes role clearly**: entry/core/exit designation is obvious
 3. **Shows data flow**: makes clear what inputs are received and outputs produced
 4. **Preserves unique relationships**: documents skill-specific compositions not covered by standard chains
@@ -348,12 +348,12 @@ A well-written Composition section:
 
 ### Common Issues
 
-**Issue**: Chain reference in SKILL.md doesn't match CLAUDE.md
+**Issue**: Chain reference in SKILL.md doesn't match governance common flow patterns
 
 **Solution**:
-1. Check CLAUDE.md § Skill Chain Triggers for the authoritative definition
+1. Check `AGENTS.md` / `CLAUDE.md` § Common Flow Patterns for the authoritative definition
 2. Update SKILL.md to match
-3. If CLAUDE.md is wrong, update it first, then propagate to skills
+3. If governance is wrong, update it first, then propagate to skills
 
 ---
 
@@ -388,7 +388,7 @@ A well-written Composition section:
 
 ### Change Authority
 
-- **CLAUDE.md changes**: Require maintainer review
+- **AGENTS.md / CLAUDE.md changes**: Require maintainer review
 - **skill-chain-aliases.md changes**: Require maintainer review
 - **SKILL.md Composition changes**: Can be made by contributors with PR review
 - **Chain deprecation**: Requires maintainer consensus
@@ -397,7 +397,7 @@ A well-written Composition section:
 
 For chain definition changes:
 
-- [ ] CLAUDE.md updated first
+- [ ] AGENTS.md / CLAUDE.md updated first
 - [ ] skill-chain-aliases.md updated
 - [ ] All affected SKILL.md files updated
 - [ ] Cross-reference validation passed
@@ -426,6 +426,6 @@ Target metrics:
 
 ## References
 
-- CLAUDE.md § Skill Chain Triggers: authoritative chain definitions
+- AGENTS.md / CLAUDE.md § Common Flow Patterns: authoritative live chain definitions
 - docs/maintainer/skill-chain-aliases.md: detailed chain documentation
 - docs/maintainer/chain-alias-adoption-tracker.md: adoption status and metrics

@@ -47,6 +47,7 @@ python3 maintainer/scripts/install/manage-governance.py --global
 
 - 用户级平台目录中的技能
 - Codex 用户级 `AGENTS.md` 或 Claude Code 用户级 `CLAUDE.md`
+- Cursor 用户级 skills（治理规则需要手动复制到 Cursor User Rules）
 - 一个跨项目可复用的默认技能与治理环境
 - 不改项目文件的安装结果
 
@@ -122,5 +123,5 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 ## 两个常见误区
 <div class="title-en">Two Common Mistakes</div>
 
-- 不要把全局安装误当成项目安装。全局安装会写用户级治理规则，但不会往项目里写入 `AGENTS.md` 或 `CLAUDE.md`。
+- 不要把全局安装误当成项目安装。全局安装会按已检测平台写入 Codex 或 Claude Code 的用户级治理规则；Cursor 仍需手动复制到 User Rules，而且不会往项目里写入 `AGENTS.md` 或 `CLAUDE.md`。
 - 不要把“只装技能”误解成第三条安装路径。它只是跳过治理规则注入的安装变体。

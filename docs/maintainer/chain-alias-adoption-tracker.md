@@ -2,7 +2,9 @@
 
 **Version**: 1.0  
 **Date**: 2026-04-11  
-**Status**: Active
+**Status**: Historical snapshot
+
+> Historical note: this tracker describes the pre-2026-05 18-skill model and may reference retired skills such as `plan-before-action` or phase skills. Use `skill-chain-aliases.md` for the current live chain definitions.
 
 ## Purpose
 

@@ -1,5 +1,8 @@
 # Low-Intervention Agent Workflow
 
+**Status**: Proposal / not implemented
+**Implementation note**: This document records the intended protocol. It does not currently create an `autonomous-coding-workflow` skill, update governance templates, or add trigger tests.
+
 ## Purpose
 
 这篇文档记录一套面向外部项目的低人工介入 AI coding agent 工作协议。
