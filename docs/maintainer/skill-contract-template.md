@@ -2,7 +2,7 @@
 
 **Version**: 1.0  
 **Date**: 2026-04-11  
-**Status**: Active  
+**Status**: Current authority
 **Scope**: Skill authoring and maintenance
 
 ## Purpose
@@ -258,5 +258,5 @@ When updating this template:
 ## Cross-References
 
 - **Full skill structure**: `docs/maintainer/claude-skill-authoring-best-practices.md`
-- **Contract examples**: See `skills/bugfix-workflow/SKILL.md`, `skills/minimal-change-strategy/SKILL.md`
+- **Contract examples**: See `skills/bugfix-workflow/SKILL.md`, `skills/scoped-tasking/SKILL.md`
 - **Composition patterns**: `docs/maintainer/skill-chain-aliases.md`

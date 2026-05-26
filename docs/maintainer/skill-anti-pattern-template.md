@@ -2,7 +2,7 @@
 
 **Version**: 1.0  
 **Date**: 2026-04-11  
-**Status**: Active  
+**Status**: Current authority
 **Scope**: Skill authoring and maintenance
 
 ## Purpose

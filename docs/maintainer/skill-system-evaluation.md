@@ -1,6 +1,10 @@
 # Agent 技能库评价报告
 
 > 评价日期：2026-03-28
+
+**Status**: Historical snapshot
+
+> Historical note: this evaluation reflects the repository state before the 2026-05 governance and skill-family cleanup. References to phase skills or older execution chains are preserved as point-in-time analysis, not current architecture guidance.
 > 评价对象：agent-skills 仓库（14 个技能 + AGENTS.md + 测试/工具体系）
 
 ---

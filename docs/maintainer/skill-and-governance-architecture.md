@@ -1,5 +1,8 @@
 # Skill And Governance Architecture
 
+**Status**: Current authority
+**Current implementation note**: Updated for the post-2026-05 governance layout. Current templates center on `Behavioral Guidelines`, `Skill Activation`, `Escalation Rules`, `Skill Lifecycle`, `Skill Protocol`, `Common Flow Patterns`, and `Multi-Agent Rules`.
+
 ## Purpose
 
 这篇文档面向开发和维护 `agent-skills` 仓库本身的人。  
@@ -77,11 +80,10 @@
 当前模板里真正应该存在的内容类型包括：
 
 - 多代理规则与并行预算
-- skill activation / escalation / lifecycle 这类触发与退场规则
-- governance fast-path 的快速分流规则
+- `Behavioral Guidelines`、`Scope & Ownership`、`Validation Rules`、`Communication Rules` 这类通用执行约束
+- `Skill Activation` / `Escalation Rules` / `Skill Lifecycle` 这类触发与退场规则
 - skill protocol block 的格式与顺序
-- skill family concurrency budget
-- skill chain triggers、handoffs、fallbacks
+- `Common Flow Patterns` 里的标准链路与 handoff
 
 这些内容的共同点是：它们决定“项目里如何组织和调度技能”，而不是解释“某个技能内部怎么执行”。
 
@@ -106,22 +108,21 @@
 以当前 `AGENTS-template.md` / `CLAUDE-template.md` 为例，可以把主要 section 理解成下面几层：
 
 - 顶层路由约束：`Multi-Agent Rules`
-- 技能进入与升级：`Skill Activation` / `Skill Escalation`
-- 责任边界：`Skill Boundary`
-- 治理层快速分流：`Governance Fast-Path`
+- 行为与约束基线：`Behavioral Guidelines`
+- 技能进入与升级：`Skill Activation` / `Escalation Rules`
+- 通用边界规则：`Scope & Ownership` / `Validation Rules` / `Communication Rules`
 - 运行中生命周期管理：`Skill Lifecycle`
 - 通用执行协议：`Skill Protocol v2`
-- 并发预算控制：`Skill Family Concurrency Budgets`
-- 常见交接链路：`Skill Chain Triggers`
+- 常见交接链路：`Common Flow Patterns`
 
 换句话说，模板的核心不是“罗列技能内容”，而是提供一套让多个技能能稳定协同的路由框架。
 
 如果按维护视角来读，这几层其实对应一条从“要不要加载 skill”到“加载后如何协同”的判断路径：
 
-1. 先看能不能走 governance fast-path，避免无意义加载
-2. 如果不能 fast-path，再看哪些 skill 应该进入
-3. 进入后，再看生命周期、协议块和并发预算如何约束执行
-4. 最后用 chain triggers 约束常见 handoff 和 fallback
+1. 先看通用治理约束是否已经足够，避免无意义加载
+2. 如果基础治理不够，再看哪些 skill 应该进入
+3. 进入后，再看行为规则、生命周期和协议块如何约束执行
+4. 最后用 common flow patterns 约束常见 handoff
 
 下面按 section 逐个展开。
 
@@ -131,7 +132,7 @@
 
 - 什么情况下允许并行
 - 并行前必须输出什么声明
-- 什么时候需要因为并发规模过大而升级到 `phase-plan`
+- 什么时候需要把超过并发上限的工作拆成顺序轮次
 - 哪些任务根本不需要走并行治理
 
 它解决的是“并行能不能开、开到什么程度、超过上限怎么办”。
@@ -163,41 +164,35 @@
 
 那些内容应该留在对应 `SKILL.md`。
 
-#### `Skill Boundary`
+#### `Behavioral Guidelines`
 
-这部分是整个模板里最关键的“职责分界线”，它负责反复强调：
+这部分是整个模板里最关键的“通用执行基线”，它负责反复强调：
 
-- governance 文件不是 skill manual
-- 哪些内容必须留在模板里
-- 哪些内容必须回到 `SKILL.md`
+- 先思考再编码
+- 默认追求最小实现
+- 只做与目标直接相关的改动
+- 先定义成功标准和验证方式，再推进执行
 
-它解决的是“为什么模板不能越写越像技能百科”。
+它解决的是“为什么同一个 skill 在不同任务里仍需要统一的执行纪律”。
 
-维护时，如果你在判断一段新内容该写到哪里，先回到这一节。  
-很多模板膨胀问题，本质上都不是规则不够，而是 boundary 失守。
+维护时，如果你在判断一条规则应该放在 governance 还是 skill 里，先问它是不是跨技能、跨任务都成立的通用执行约束。
+如果答案是是，它更可能属于这里；如果它只对某个 skill 成立，就应回到对应 `SKILL.md`。
 
-#### `Governance Fast-Path`
+#### `Scope & Ownership` / `Validation Rules` / `Communication Rules`
 
-这部分定义“根本不需要加载 skill 的情况”，例如：
+这几节共同定义的是治理层的轻量约束，而不是完整 skill。
 
-- 直接回答
-- 单个命令
-- 已知路径的小范围只读操作
-- 单文件低风险修改
+- `Scope & Ownership` 负责强调不要覆盖用户已有改动，也不要越界清理不相关内容
+- `Validation Rules` 负责定义“最小充分验证”和残余风险披露
+- `Communication Rules` 负责要求输出简洁、更新聚焦于新增信息
 
-它解决的是“什么时候 governance 层本身就够了”。
+它们解决的是“即使还没进入具体 skill，基础治理也要先约束哪些行为”。
 
-这一节非常重要，因为如果没有 fast-path，系统会把很多本该直接完成的小任务也强行送进完整 skill 流程，导致：
+维护时，这里只应该保留跨任务通用的约束，不要把它们扩写成具体 skill 的决策树。
 
-- 输出变重
-- 执行成本上升
-- 使用体验变僵
+#### `Escalation Rules`
 
-维护时，这里只应该保留表层可判断的快速分流规则，不要把它扩写成细粒度技能判断树。
-
-#### `Skill Escalation`
-
-这部分定义的是：当 governance 层不够时，应该升级到哪个完整 skill。
+这部分定义的是：当基础治理不够时，应该升级到哪个完整 skill。
 
 它解决的是“什么时候基础治理已经不足，必须把判断权交给更完整的 skill 文件”。
 
@@ -230,7 +225,7 @@
 
 不要把它写成技能执行清单；它关注的是运行态管理，不是任务正文。
 
-#### `Skill Protocol v2`
+#### `Skill Protocol`
 
 这部分定义的是 skill-driven execution 的统一协议块格式。
 
@@ -257,29 +252,16 @@
 - 某个具体 skill 的个性化输出示例堆叠
 - 与单个仓库绑定的业务约束
 
-#### `Skill Family Concurrency Budgets`
+#### `Common Flow Patterns`
 
-这部分不是讲“要不要并行”，而是讲“已经加载的技能可以同时活跃到什么程度”。
-
-它解决的是执行过程中 active skills 无限制增长的问题。  
-和 `Multi-Agent Rules` 的区别在于：
-
-- `Multi-Agent Rules` 约束的是代理并行
-- `Skill Family Concurrency Budgets` 约束的是技能并发与 family 级预算
-
-维护时要特别注意 family 维度，而不是简单追求一个全局数字。  
-否则很容易把执行技能、编排技能、phase 技能混成同一类预算。
-
-#### `Skill Chain Triggers`
-
-这部分记录的是最常见、最值得标准化的 handoff 与 fallback 路径。
+这部分记录的是最常见、最值得标准化的 handoff 路径。
 
 它解决的是“技能之间应该怎样交接，哪些回退路径是被明确允许的”。
 
 维护时可以把它理解成一张 canonical routing map：
 
-- forward handoffs 负责说明正常推进路径
-- fallbacks 负责说明失败或不确定时如何回退
+- 常见链路负责说明正常推进路径
+- 它们为 skill authoring、模板维护和示例文档提供统一参考
 
 这里不需要覆盖所有理论上可能存在的组合。  
 只有那些高频、稳定、值得跨任务复用的链路，才应该进入模板。
@@ -349,7 +331,7 @@
 - governance 模板怎样拆 section
 - section 注入顺序怎样维护
 - `manage-governance.py` 的模式与内部边界
-- `--project`、`--global`、`--sync-local` 的实现区别
+- `install project`、`install user`、`mirror sync/verify` 的实现区别
 - local mirror 如何校验漂移
 - 改动 skill 或模板后该怎么验证
 

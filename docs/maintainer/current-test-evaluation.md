@@ -3,6 +3,10 @@
 > 日期：2026-04-27
 > 范围：`agent-skills` 仓库当前已存在的测试资产、执行入口、自动化程度与主要缺口
 
+**Status**: Historical snapshot
+
+> Historical note: this evaluation predates the 2026-05 skill-family retirement and the later governance cleanup. References to `phase-contract-tools` and the phase test stack are preserved as a point-in-time assessment, not current live architecture guidance.
+
 ---
 
 ## 结论摘要

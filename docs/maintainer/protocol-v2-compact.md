@@ -5,6 +5,8 @@
 **Status**: Draft  
 **Scope**: Repository governance templates and skill execution
 
+**Current example note**: Examples below use the live 14-skill governance model. Retired skills such as `plan-before-action`, `minimal-change-strategy`, and phase-family skills are not part of the current examples.
+
 ## Overview
 
 Protocol v2 introduces a compact, inline representation of skill execution protocol blocks. It coexists with the existing v1 verbose YAML-style blocks and is designed to reduce token footprint in governance templates, skill examples, and agent execution traces.
@@ -70,24 +72,24 @@ action: proceed
 task: "Fix authentication timeout in user service"
 evaluated:
   - scoped-tasking: ✓ TRIGGER
-  - read-and-locate: ⏸ DEFER
   - bugfix-workflow: ✓ TRIGGER
-  - plan-before-action: ✗ SKIP
+  - self-review: ⏸ DEFER
+  - design-before-plan: ✗ SKIP
 activated_now: [scoped-tasking, bugfix-workflow]
-deferred: [read-and-locate]
+deferred: [self-review]
 [/trigger-evaluation]
 ```
 
 **v2 (compact):**
 
 ```
-[triggers: scoped-tasking bugfix-workflow | defer: read-and-locate]
+[triggers: scoped-tasking bugfix-workflow | defer: self-review]
 ```
 
 **v2 with skip detail (optional):**
 
 ```
-[triggers: scoped-tasking bugfix-workflow | skip: plan-before-action "single file" | defer: read-and-locate]
+[triggers: scoped-tasking bugfix-workflow | skip: design-before-plan "behavior clear" | defer: self-review]
 ```
 
 ### Precondition Check
@@ -132,20 +134,20 @@ signals:
   working_set_size: 2
   hypotheses_tested: 3
 recommendations:
-  next_skill: minimal-change-strategy
+  next_skill: self-review
 [/skill-output]
 ```
 
 **v2 (compact):**
 
 ```
-[output: bugfix-workflow | completed high | root_cause:"Auth token expires too quickly in session.py:42" | next:minimal-change-strategy]
+[output: bugfix-workflow | completed high | root_cause:"Auth token expires too quickly in session.py:42" | next:self-review]
 ```
 
 **v2 partial/failed:**
 
 ```
-[output: bugfix-workflow | partial medium | root_cause:"narrowed to auth module" | next:read-and-locate]
+[output: bugfix-workflow | partial medium | root_cause:"narrowed to auth module" | next:scoped-tasking]
 ```
 
 ### Output Validation
@@ -180,16 +182,16 @@ result: PASS
 
 ```yaml
 [skill-deactivation: bugfix-workflow]
-reason: "Root cause confirmed, fix handed to minimal-change-strategy"
-outputs_consumed_by: [minimal-change-strategy]
-remaining_active: [minimal-change-strategy, targeted-validation]
+reason: "Root cause confirmed, fix handed to self-review"
+outputs_consumed_by: [self-review]
+remaining_active: [self-review]
 [/skill-deactivation]
 ```
 
 **v2 (compact):**
 
 ```
-[drop: bugfix-workflow | reason:"root cause confirmed" | active: minimal-change-strategy targeted-validation]
+[drop: bugfix-workflow | reason:"root cause confirmed" | active: self-review]
 ```
 
 ### Loop Detection
@@ -197,7 +199,7 @@ remaining_active: [minimal-change-strategy, targeted-validation]
 **v1 (verbose):**
 
 ```yaml
-[loop-detected: read-and-locate]
+[loop-detected: scoped-tasking]
 reason: "Re-activating without new evidence after 2 previous attempts"
 last_activation: "3 actions ago"
 [/loop-detected]
@@ -206,7 +208,7 @@ last_activation: "3 actions ago"
 **v2 (compact):**
 
 ```
-[loop: read-and-locate | "re-activating without new evidence"]
+[loop: scoped-tasking | "re-activating without new evidence"]
 ```
 
 ## When to Use v2
@@ -283,14 +285,14 @@ Fields can be omitted when they follow standard defaults:
 [drop: scoped-tasking | "boundary confirmed" | active: bugfix-workflow]
 
 [precheck: bugfix-workflow | PASS]
-[output: bugfix-workflow | completed high | root_cause:"session timeout" fix:"session.py:42" | next:minimal-change-strategy]
+[output: bugfix-workflow | completed high | root_cause:"session timeout" fix:"session.py:42" | next:self-review]
 [validate: bugfix-workflow | PASS]
-[drop: bugfix-workflow | "root cause found" | active: minimal-change-strategy]
+[drop: bugfix-workflow | "root cause found" | active: self-review]
 
-[precheck: minimal-change-strategy | PASS]
-[output: minimal-change-strategy | completed high | changed:1 lines:3 | next:self-review]
-[validate: minimal-change-strategy | PASS]
-[drop: minimal-change-strategy | "patch minimal" | active: self-review]
+[precheck: self-review | PASS]
+[output: self-review | completed high | issues:"none" scope:"clean" validation:"targeted smoke check" | next:targeted-validation]
+[validate: self-review | PASS]
+[drop: self-review | "diff checked" | active: targeted-validation]
 ```
 
 ### Mixed v1/v2 (Allowed)
@@ -342,21 +344,19 @@ recommendations:
 
 ## Governance Template Integration
 
-### Current v1 Reference (Keep)
+### Current Compact Reference
 
-The "Skill Protocol v1" section in governance templates should remain as the canonical reference with full YAML examples.
+Current governance templates already use compact inline protocol blocks as the live reference form.
 
-### Add v2 Note
+### Keep Template Examples Aligned
 
-Add a subsection after "Minimum Block Shape":
+When updating governance templates, keep protocol examples aligned with the compact block set already used in `AGENTS.md` / `CLAUDE.md`:
 
 ```markdown
-### Protocol v2 (Compact)
-
 For simple cases, use compact inline format:
 
 - `[task-validation: PASS | clarity:✓ scope:✓ safety:✓ skill_match:✓ | action:proceed]`
-- `[triggers: scoped-tasking plan-before-action]`
+- `[triggers: scoped-tasking bugfix-workflow | defer: self-review]`
 - `[precheck: skill-name | PASS]`
 - `[output: skill-name | completed high | <key outputs> | next:next-skill]`
 - `[validate: skill-name | PASS]`
@@ -379,8 +379,7 @@ python3 maintainer/scripts/install/run_manage_governance_smoke.py
 
 ```bash
 python3 maintainer/scripts/install/manage-governance.py \
-  --project /tmp/test-gov-v2 \
-  --mode both
+  install project /tmp/test-gov-v2
 ```
 
 Verify:

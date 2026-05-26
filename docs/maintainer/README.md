@@ -46,9 +46,9 @@
 - 我在维护手册、手册预览、本地 mirror 或仓库内部文档：  
   [`manual-and-repo-development.md`](manual-and-repo-development.md)
 
-- 我在做技能测试、场景验证或维护者视角的评估：  
-  [`skill-system-evaluation.md`](skill-system-evaluation.md)  
-  [`current-test-evaluation.md`](current-test-evaluation.md)  
+- 我在做技能测试、场景验证或维护者视角的评估：
+  [`skill-system-evaluation.md`](skill-system-evaluation.md)（历史快照，待重写）
+  [`current-test-evaluation.md`](current-test-evaluation.md)（历史快照）
   [`../user/SKILL-TESTING-QUICK-START.md`](../user/SKILL-TESTING-QUICK-START.md)
 
 - 我在做 Claude 交互式场景验证：  

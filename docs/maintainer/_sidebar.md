@@ -12,8 +12,6 @@
   - [Review-Loop 主链实施计划](review-loop-mainchain-plan.md)
 
 - **部分实现与维护评估**
-  - [技能系统评价](skill-system-evaluation.md)
-  - [当前项目测试评价](current-test-evaluation.md)
   - [Claude 交互式测试清单](claude-interactive-test-checklist.md)
   - [Claude 交互式测试实施计划](claude-interactive-test-implementation-plan.md)
 
@@ -22,6 +20,8 @@
   - [Protocol v2 迁移跟踪](protocol-v2-migration-tracker.md)
 
 - **历史报告与快照**
+  - [技能系统评价](skill-system-evaluation.md)
+  - [当前项目测试评价](current-test-evaluation.md)
   - [优化完成清单](optimization-completion-checklist.md)
   - [Token 优化最终报告](token-optimization-final-report.md)
   - [模板 Rollout 计划](template-rollout-plan.md)
