@@ -15,6 +15,7 @@
   - [Protocol v2 迁移跟踪](protocol-v2-migration-tracker.md)
   - [Skill Chain Aliases](skill-chain-aliases.md)
   - [Chain Alias 维护说明](chain-alias-maintenance.md)
+  - [低人工介入 Agent 工作协议](low-intervention-agent-workflow.md)
 
 - **Review-Loop 主链 5 件套**
   - [设计文档](review-loop-mainchain-design.md)

@@ -25,6 +25,9 @@
 - 我在维护治理模板、平台注入边界或 `AGENTS.md` / `CLAUDE.md` 的来源：  
   [`skill-and-governance-architecture.md`](skill-and-governance-architecture.md)
 
+- 我在设计如何让外部项目中的 agent 少问确认、自动串联开发流程：  
+  [`low-intervention-agent-workflow.md`](low-intervention-agent-workflow.md)
+
 - 我想知道模板里该放什么、不该放什么，当前各 section 在负责什么：  
   [`skill-and-governance-architecture.md`](skill-and-governance-architecture.md)
 
