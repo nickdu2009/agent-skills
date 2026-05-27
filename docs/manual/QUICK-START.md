@@ -93,7 +93,7 @@ python3 maintainer/scripts/install/manage-governance.py install project /path/to
 
 - `verify user` 能正常通过
 - 重启对应 Agent 后能重新发现已安装技能
-- 如果你使用 Cursor，已手动把治理规则复制到 Cursor User Rules；更新旧规则时要替换旧的 `Behavioral Guidelines` 段落
+- 如果你使用 Cursor，已手动把治理规则复制到 Cursor User Rules；更新旧规则时要确认 `Behavioral Guidelines` §4 已包含 `[parallelism: ...]` 计划块
 
 ```bash
 python3 maintainer/scripts/install/manage-governance.py verify user

@@ -22,7 +22,7 @@
 - `scoped-tasking`
 - `targeted-validation`
 
-计划环节使用 `AGENTS.md` 行为指南 §4 的轻量 "plan + verify"，无需独立技能。
+计划环节使用 `AGENTS.md` 行为指南 §4 的轻量计划块（含 `[parallelism: ...]` 和验证点），无需独立技能。
 
 ### 如何运行
 <div class="title-en">How It Runs</div>
@@ -52,7 +52,7 @@
 
 - `scoped-tasking`
 
-计划环节使用 `AGENTS.md` 行为指南 §4 的轻量 "plan + verify"。
+计划环节使用 `AGENTS.md` 行为指南 §4 的轻量计划块（含 `[parallelism: ...]` 和验证点）。
 
 ### 如何运行
 <div class="title-en">How It Runs</div>
@@ -144,7 +144,7 @@
 - `multi-agent-protocol`
 - `targeted-validation`
 
-整体编排遵循 `AGENTS.md` 行为指南 §4 的 "plan + verify" 节奏，无需独立的计划技能。
+整体编排遵循 `AGENTS.md` 行为指南 §4 的轻量计划块节奏，无需独立的计划技能。
 
 ### 如何运行
 <div class="title-en">How It Runs</div>

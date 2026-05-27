@@ -88,8 +88,8 @@
 所以它们不是多出来的技能正文，而是技能之外的治理规则载体。  
 如果你想看更完整的使用者解释，去读[关键机制](KEY-MECHANISMS.md)。
 
-## 我是不是一开始就要用阶段技能
-<div class="title-en">Do I Need Phase Skills Right Away</div>
+## 我是不是一开始就要上更重的大任务编排
+<div class="title-en">Do I Need Heavier Planning or Orchestration Right Away</div>
 
 通常不需要。
 
@@ -98,7 +98,7 @@
 - `scoped-tasking`
 - `targeted-validation`
 
-并结合 `AGENTS.md` 行为指南 §4 的 "plan + verify" 做轻量计划。
+并结合 `AGENTS.md` 行为指南 §4 的轻量计划块（含 `[parallelism: ...]` 和验证点）。
 
 因为最容易失控的情况，就是编辑点还没找到，工作集已经膨胀了。
 

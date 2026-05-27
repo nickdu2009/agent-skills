@@ -9,13 +9,13 @@
 这一章回答的是“为什么此时更适合选 A，而不是 B”。  
 默认你已经知道这套手册的基本方法论和关键机制；如果还没有，建议先读[设计理念](DESIGN-PHILOSOPHY.md)和[关键机制](KEY-MECHANISMS.md)。
 
-## 为什么小任务不该直接上阶段技能
-<div class="title-en">Why Small Tasks Should Not Start With Phase Skills</div>
+## 为什么小任务不该直接上更重的大任务编排
+<div class="title-en">Why Small Tasks Should Not Start With Heavier Planning or Orchestration</div>
 
-如果把它们直接用在小任务上，通常会出现反效果：
+如果把更重的编排方式直接用在小任务上，通常会出现反效果：
 
 - 任务本身很小，但协调流程变得很重
-- 为了执行一个局部补丁，额外引入波次、工件、审查门
+- 为了执行一个局部补丁，过早引入额外的拆分、协调和汇总成本
 - 使用成本高于实际收益
 
 所以对小任务来说，更合理的默认路径通常是：
@@ -23,9 +23,9 @@
 - `scoped-tasking`
 - `targeted-validation`
 
-并由 `AGENTS.md` 行为指南 §4 在编辑前提供轻量的 "plan + verify"。
+并由 `AGENTS.md` 行为指南 §4 在编辑前提供轻量计划块（含 `[parallelism: ...]` 和验证点）。
 
-只有当任务真的跨越多个阶段、多个 PR、多个依赖关系时，这类阶段技能才值得上场。
+只有当任务真的跨越多个 PR、多个依赖关系，或需要显式的大任务拆分与并行裁决时，才值得升级到更重的编排方式。
 
 当编辑点不明确时，最危险的动作就是开始无边界地阅读仓库。
 

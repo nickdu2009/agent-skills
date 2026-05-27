@@ -6,7 +6,7 @@
 
 这部分的重点不是“把所有命令列出来”，而是先帮助你选对路径。
 
-普通使用者的公开安装入口是 `manage-governance.py`。当前推荐的公开语法是 `install` / `verify` / `mirror` 子命令，这份手册以下面这组命令模型为准。
+普通使用者的公开安装入口是 `manage-governance.py`。当前推荐的公开语法是 `install` / `verify` 子命令；旧的 repo-local `mirror` 路径已经移除，这份手册以下面这组命令模型为准。
 
 对普通使用者来说，它面向两种安装方式：
 
