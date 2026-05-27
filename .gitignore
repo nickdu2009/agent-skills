@@ -13,3 +13,20 @@ env/
 /maintainer/reports/runs/*
 !/maintainer/reports/runs/.gitkeep
 /.worktrail/
+
+# BEGIN WORKTRAIL MANAGED BLOCK
+# Worktrail local integration installs. These are generated per developer.
+.agents/
+.codex/
+.claude/
+
+# Worktrail runtime/local state. Formal project knowledge files under
+# .worktrail/ remain trackable by default.
+.worktrail/state/
+.worktrail/candidates/
+.worktrail/raw/
+.worktrail/index/
+.worktrail/logs/
+.worktrail/.cache/
+.worktrail/exports/
+# END WORKTRAIL MANAGED BLOCK
