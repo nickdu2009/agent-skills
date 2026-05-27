@@ -32,6 +32,24 @@ ANALYSIS_DIR = SCRIPTS_DIR / "analysis"
 AUDITS_DIR = REPO_ROOT / "maintainer" / "data" / "audits"
 
 
+def _hardcoded_baseline() -> dict[str, Any]:
+    """Fallback baseline when no audit report is available.
+
+    Reflects the post-cleanup skill set (14 skills) measured 2026-Q3 after the
+    2026-05 governance refactor and the quality checker calibration. Update
+    alongside ``run_quarterly_audit.BASELINE_TARGETS`` so the two stay aligned.
+    """
+    return {
+        "quality_pass_rate": 100,
+        "quality_passing": 14,
+        "quality_total": 14,
+        "total_tokens": 16143,
+        "avg_tokens": 1153,
+        "broken_refs": 0,
+        "over_500": 0,
+    }
+
+
 # Thresholds
 THRESHOLDS = {
     "quality_drop_warning": 1,  # Even 1 skill regression is a warning
@@ -426,27 +444,11 @@ def main() -> None:
         if not baseline:
             print(f"Warning: Could not parse baseline from {baseline_file}", file=sys.stderr)
             print("Using hardcoded baseline targets instead", file=sys.stderr)
-            baseline = {
-                "quality_pass_rate": 100,
-                "quality_passing": 18,
-                "quality_total": 18,
-                "total_tokens": 41783,
-                "avg_tokens": 2321,
-                "broken_refs": 0,
-                "over_500": 0,
-            }
+            baseline = _hardcoded_baseline()
     else:
         print("Warning: No audit reports found in audits/", file=sys.stderr)
         print("Using hardcoded baseline targets", file=sys.stderr)
-        baseline = {
-            "quality_pass_rate": 100,
-            "quality_passing": 18,
-            "quality_total": 18,
-            "total_tokens": 41783,
-            "avg_tokens": 2321,
-            "broken_refs": 0,
-            "over_500": 0,
-        }
+        baseline = _hardcoded_baseline()
 
     # Collect current metrics
     current = collect_current_metrics()

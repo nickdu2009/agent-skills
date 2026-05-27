@@ -74,6 +74,17 @@ def parse_skill_file(skill_file: Path) -> dict[str, Any]:
     }
 
 
+def _normalize_description(description: str) -> str:
+    """Strip surrounding quotes and an optional `WHAT:` marker for prefix checks."""
+    text = description.strip()
+    if text.startswith(('"', "'")):
+        text = text[1:].lstrip()
+    upper = text.upper()
+    if upper.startswith("WHAT:"):
+        text = text[len("WHAT:"):].lstrip()
+    return text
+
+
 def check_description_has_what_and_when(description: str) -> dict[str, Any]:
     """Check if description contains 'what' and 'when' triggers.
 
@@ -95,7 +106,8 @@ def check_description_has_what_and_when(description: str) -> dict[str, Any]:
     ]
     has_when = any(indicator in desc_lower for indicator in when_indicators)
 
-    # Check for 'what' indicators (purpose/capability words)
+    # Check for 'what' indicators (purpose/capability words).
+    # Keep this list aligned with action_verbs in check_third_person_phrasing.
     what_indicators = [
         "find",
         "guide",
@@ -120,6 +132,14 @@ def check_description_has_what_and_when(description: str) -> dict[str, Any]:
         "define",
         "validate",
         "verify",
+        "launch",
+        "coordinate",
+        "initialize",
+        "manage",
+        "update",
+        "check",
+        "load",
+        "report",
     ]
     has_what = any(indicator in desc_lower for indicator in what_indicators)
 
@@ -146,24 +166,33 @@ def check_third_person_phrasing(description: str) -> dict[str, Any]:
     """
     desc_lower = description.lower()
 
-    # Check for first-person indicators (bad)
-    first_person_indicators = ["i ", " i ", "we ", " we ", "our ", " our "]
-    has_first_person = any(indicator in desc_lower for indicator in first_person_indicators)
+    # Word-boundary matching avoids false positives like "API " or "AI coding"
+    # being read as the first-person pronoun "I".
+    first_person_pattern = re.compile(r"\b(i|we|our|us|me|my)\b")
+    has_first_person = bool(first_person_pattern.search(desc_lower))
 
     # Check for second-person imperatives (acceptable in skill but prefer third-person in description)
-    second_person_indicators = ["you ", " you "]
-    has_second_person = any(indicator in desc_lower for indicator in second_person_indicators)
+    second_person_pattern = re.compile(r"\b(you|your|yours)\b")
+    has_second_person = bool(second_person_pattern.search(desc_lower))
 
-    # Check if starts with action verb (good for third-person)
+    # Normalize away surrounding quotes and an optional `WHAT:` marker so the
+    # prefix-based heuristics can see the real first verb.
+    desc_normalized = _normalize_description(description).lower()
+
+    # Check if starts with action verb (good for third-person).
+    # Keep this list aligned with what_indicators above.
     action_verbs = [
         "find", "guide", "force", "teach", "prevent", "require",
         "assess", "review", "compare", "narrow", "constrain",
         "choose", "split", "execute", "design", "clarify",
+        "diagnose", "launch", "coordinate", "initialize",
+        "manage", "update", "check", "load", "verify", "validate",
+        "report", "provide", "define",
     ]
-    starts_with_action = any(description.lower().startswith(verb) for verb in action_verbs)
+    starts_with_action = any(desc_normalized.startswith(verb) for verb in action_verbs)
 
     # Check for "Skill that [verb]..." pattern (valid third-person)
-    starts_with_skill_that = description.lower().startswith("skill that ")
+    starts_with_skill_that = desc_normalized.startswith("skill that ")
 
     # Check for third-person verb forms (Provides, Diagnoses, etc.)
     third_person_verbs = [
@@ -172,9 +201,11 @@ def check_third_person_phrasing(description: str) -> dict[str, Any]:
         "compares", "narrows", "constrains", "chooses", "splits",
         "executes", "designs", "clarifies", "defines", "ensures",
         "triggers", "activates", "loads", "validates", "verifies",
+        "launches", "coordinates", "initializes", "manages", "updates",
+        "checks", "reports",
     ]
     starts_with_third_person_verb = any(
-        description.lower().startswith(verb) for verb in third_person_verbs
+        desc_normalized.startswith(verb) for verb in third_person_verbs
     )
 
     is_third_person = (

@@ -1,18 +1,22 @@
 # Token Efficiency Baseline Report
 
-**Date:** 2026-04-11  
+**Date:** 2026-04-11 (initial); refreshed 2026-05-27 after governance + quality cleanup  
 **Purpose:** Establish baseline measurements for token efficiency optimization  
 **Token Counting:** tiktoken cl100k_base (actual token counts)
 
 ## Executive Summary
 
-This baseline captures the prompt surface area across governance templates, skill documentation, and evaluation infrastructure. Total prompt surface measured: **~52,600 tokens** (**~247KB** text) across templates, governance, and skills.
+This baseline captures the prompt surface area across governance templates, skill documentation, and evaluation infrastructure. The original 2026-04 figures (18 skills, ~52,600 tokens) preceded the 2026-05 governance refactor that reduced the canonical skill set to 14 and tightened SKILL.md descriptions.
 
-**Key Findings:**
-- 18 skills with average 2,341 tokens/skill (~251 lines)
-- 9/18 skills (50%) pass all quality checks
-- Governance templates inject 4,556 tokens (444 lines, ~18.9KB) into every project
+**Key Findings (current, 2026-05-27):**
+- 14 skills, total 16,143 tokens, average ~1,153 tokens/skill (~123 body lines)
+- Largest skill: `design-before-plan` at 3,483 tokens
+- 14/14 skills (100%) pass all quality checks after the 2026-Q3 calibration
+- Governance templates inject 3,119 tokens (314 lines) into every project; rendered AGENTS.md + CLAUDE.md total 3,266 tokens
+- 0 broken cross-references (`check_cross_references.py --fail-on-broken`)
 - Character-based estimate overestimates by ~17% (use `--actual-tokens` for precision)
+
+**Historical Baseline (2026-Q2, 18-skill set):** 18 skills, 42,346 total tokens, 2,353 avg, governance 5,945 tokens. Preserved in `maintainer/data/audits/2026-Q2-audit-report.md`. The legacy "18/18 skills" figure below in §Measurement Details is point-in-time and superseded by the current snapshot above.
 
 ## Measurement Details
 

@@ -32,6 +32,20 @@
 
 修订规则：优先修正 Current authority；Proposal 和 Partial implementation 补状态说明；Historical snapshot 只加醒目的历史提示，不大面积重写正文。
 
+## Deprecated Terminology
+
+下列术语在 2026-05 治理 cleanup 后已退场。如果在历史文档（plan / tracker / report / `*-2026-04-*.md` / 已退役 v 版本等）里看到它们，请按下表回到当前权威：
+
+| 已废弃术语 | 当前权威 |
+|---|---|
+| `Skill Chain Triggers` | `AGENTS.md` / `CLAUDE.md` § Common Flow Patterns 与 `templates/governance/AGENTS-template.md` 的同名段 |
+| `Skill Protocol v1` / `Skill Protocol v2` | `AGENTS.md` / `CLAUDE.md` § Skill Protocol（已合并、不再分版本） |
+| `Skill Family Concurrency Budgets` | `AGENTS.md` § Multi-Agent Rules 的 Tier 1/2 + Overflow，以及 `multi-agent-protocol` 技能 |
+| `minimal-change-strategy`、`plan-before-action`、phase-* 技能 | 已退役；规划与 surgical 约束并入 `AGENTS.md` § Behavioral Guidelines §3-§4 |
+| `.cursor/skills/` / `.claude/skills/` 仓库内镜像 | 已弃用；canonical source 仅 `skills/`，安装由 `maintainer/scripts/install/manage-governance.py` 注入 |
+
+历史文档中保留这些术语用于追溯决策；当前实现请以仓库根 `AGENTS.md` / `CLAUDE.md` 与 `templates/governance/` 为准。如某历史文件没有头部 `**Status**` 标记，默认按 *Historical snapshot* 解读（除非从 [Start Here](#start-here) 入口被显式引用为当前权威）。
+
 ## Go By Task
 
 - 我在维护治理模板、平台注入边界或 `AGENTS.md` / `CLAUDE.md` 的来源：  

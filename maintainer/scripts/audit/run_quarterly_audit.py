@@ -35,14 +35,19 @@ AUDITS_DIR = REPO_ROOT / "maintainer" / "data" / "audits"
 BASELINE_FILE = REPO_ROOT / "maintainer" / "data" / "token_efficiency_baseline.md"
 
 
-# Baseline targets (from token_efficiency_baseline.md)
+# Baseline targets (refreshed 2026-Q3, see token_efficiency_baseline.md).
+# Reflects the post-cleanup skill set (14 skills) after the 2026-05 governance
+# refactor and the 2026-Q3 quality checker calibration.
 BASELINE_TARGETS = {
-    "quality_pass_rate": 100,  # 18/18 skills passing (100%)
-    "total_skill_tokens": 41783,  # Current baseline
-    "avg_tokens_per_skill": 2321,  # Current baseline
-    "max_skill_tokens": 5177,  # phase acceptance review
-    "governance_tokens": 5912,  # Generated governance
-    "template_tokens": 4556,  # Templates
+    "quality_pass_rate": 100,  # 14/14 skills passing (100%)
+    "quality_passing": 14,  # Skills passing all quality checks
+    "quality_total": 14,  # Total skills measured
+    "total_skill_tokens": 16143,  # Current baseline (tiktoken cl100k_base)
+    "avg_tokens_per_skill": 1153,  # Current baseline
+    "max_skill_tokens": 3382,  # design-before-plan body tokens (compared
+                                # against max_skill_body_tokens, not full file)
+    "governance_tokens": 3266,  # Generated AGENTS.md + CLAUDE.md
+    "template_tokens": 3119,  # AGENTS-template.md + CLAUDE-template.md
     "cross_references_broken": 0,  # Target: 0 broken refs
     "skills_over_500_lines": 0,  # Target: 0 skills
 }
@@ -388,7 +393,7 @@ def generate_markdown_report(audit_data: dict[str, Any]) -> str:
         f"| Metric | Current | Baseline | Status |",
         f"|--------|---------|----------|--------|",
         f"| Pass rate | {audit_data['metrics']['quality']['pass_rate']:.1f}% | {BASELINE_TARGETS['quality_pass_rate']}% | {'✓' if audit_data['metrics']['quality']['pass_rate'] >= BASELINE_TARGETS['quality_pass_rate'] - THRESHOLDS['quality_drop_critical'] else '✗'} |",
-        f"| Passing skills | {audit_data['metrics']['quality']['passing_skills']}/{audit_data['metrics']['quality']['total_skills']} | 18/18 | {'✓' if audit_data['metrics']['quality']['pass_rate'] >= 90 else '✗'} |",
+        f"| Passing skills | {audit_data['metrics']['quality']['passing_skills']}/{audit_data['metrics']['quality']['total_skills']} | {BASELINE_TARGETS['quality_passing']}/{BASELINE_TARGETS['quality_total']} | {'✓' if audit_data['metrics']['quality']['pass_rate'] >= 90 else '✗'} |",
         f"| Failing skills | {audit_data['metrics']['quality']['failing_skills']} | 0 | {'✓' if audit_data['metrics']['quality']['failing_skills'] == 0 else '✗'} |",
         "",
     ])
