@@ -1,7 +1,9 @@
 # Governance Chain Trigger Fix Plan
 
-Status: Implemented
+**Status**: Historical snapshot
 Date: 2026-04-11
+
+> Historical note: this document captures a 2026-04 follow-up that fixed template-driven governance injection before the later 2026-05 governance cleanup. References to `minimal-change-strategy`, `Skill Chain Triggers`, `Skill Protocol v1`, and `Skill Family Concurrency Budgets` are preserved here as point-in-time terms, not current governance guidance.
 
 ## Summary
 

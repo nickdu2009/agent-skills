@@ -2,8 +2,10 @@
 
 **Version**: 2.0  
 **Date**: 2026-04-11  
-**Status**: Draft  
+**Status**: Historical snapshot
 **Scope**: Repository-only
+
+> Historical note: this plan records the 2026-04 repository-only optimization roadmap before the later 2026-05 maintainer cleanup. Parts of the plan were implemented or reframed in later docs; references here to keeping verbose protocol `v1` as an active reference do not describe the current compact-first governance templates.
 
 ## Executive Summary
 

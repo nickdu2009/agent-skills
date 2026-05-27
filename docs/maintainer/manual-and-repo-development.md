@@ -1,5 +1,8 @@
 # Manual And Repo Development
 
+**Status**: Current authority
+**Current implementation note**: This guide reflects the current repo-maintainer workflow and the post-2026-05 governance model. Planning examples should follow `AGENTS.md` / `CLAUDE.md` Behavioral Guidelines, not retired planning skills.
+
 ## Scope
 
 这篇文档面向正在开发 `agent-skills` 仓库本身的人，而不是把这套 skills 接入外部项目的普通使用者。
@@ -129,7 +132,7 @@ python3 maintainer/scripts/install/run_manage_governance_smoke.py
 ### 一条线补阅读路径图，一条线补工作流案例
 
 - 任务场景：你想同时增强手册的“怎么读”和“怎么用”两部分内容，一条线处理 `docs/manual/README.md`，一条线处理 `docs/manual/COMMON-WORKFLOWS.md`。
-- 推荐 skill 组合：`plan-before-action` + `multi-agent-protocol` + `targeted-validation`
+- 推荐 skill 组合：治理里的规划纪律（`AGENTS.md` / `CLAUDE.md` Behavioral Guidelines） + `multi-agent-protocol` + `targeted-validation`
 - 执行顺序：
   1. 先判断这两项工作是否低耦合。
   2. 把工作拆成两条独立子线，避免交叉编辑。
