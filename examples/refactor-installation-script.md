@@ -46,18 +46,18 @@ The `maintainer/scripts/install/manage-governance.py` script may contain repeate
    - Preserve exact output format.
 
 5. **Self-review for behavior changes.**
-   - Compare: does `--project /path` still work identically?
-   - Compare: does `--sync-local cursor` still produce the same tree?
-   - Compare: does `--check-local claude` still output the same messages?
+   - Compare: does `install project /path` still work identically?
+   - Compare: does `verify user` still report the same installation state?
+   - Compare: does `verify project /tmp/test-repo` still report the same installation state?
    - Check: are all exit codes unchanged?
 
 6. **Validate with real scenarios.**
    ```bash
-   # Test local mirror sync
-   python3 maintainer/scripts/install/manage-governance.py --check-local cursor
+   # Test user-level verification
+   python3 maintainer/scripts/install/manage-governance.py verify user
    
-   # Test skill-only install
-   python3 maintainer/scripts/install/manage-governance.py --project /tmp/test-repo --skills-only --dry-run
+   # Test full project install with overwrite behavior
+   python3 maintainer/scripts/install/manage-governance.py install project /tmp/test-repo --overwrite-skills
    ```
 
 ## Expected Behavior

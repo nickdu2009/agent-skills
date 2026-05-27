@@ -2,7 +2,7 @@
 
 ## Scenario
 
-You changed one or more `SKILL.md` files and want a repeatable way to verify that the repository mirror is current, the intended behavior is still visible in agent runs, and regression notes can be captured without building a heavyweight evaluation harness.
+You changed one or more `SKILL.md` files and want a repeatable way to verify that repository references are still intact, the intended behavior is still visible in agent runs, and regression notes can be captured without building a heavyweight evaluation harness.
 
 ## Recommended Skill Composition
 
@@ -15,7 +15,7 @@ Implementation follows `AGENTS.md` Behavioral Guidelines §4 (plan + verify).
 
 ```mermaid
 flowchart TD
-    A[Edit one or more skills] --> B[Run mirror sync check]
+    A[Edit one or more skills] --> B[Run static repository checks]
     B --> C[Choose one or more example scenarios]
     C --> D[Run the scenario with the intended skill composition]
     D --> E[Score behavior using a fixed checklist]
@@ -24,7 +24,7 @@ flowchart TD
 
 ## Why This Flow
 
-- The mirror sync check catches local discovery drift for Cursor.
+- Static repository checks catch broken references before scenario testing.
 - Example scenarios act as behavior-focused acceptance tests.
 - A fixed checklist keeps reviews consistent across multiple test runs.
 - A lightweight report template makes regression comparisons easier.
@@ -34,13 +34,13 @@ flowchart TD
 Run:
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --check-local cursor
+python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
 ```
 
 If needed:
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --sync-local cursor
+python3 maintainer/scripts/install/run_manage_governance_smoke.py
 ```
 
 ## Scenario Matrix
@@ -200,7 +200,7 @@ A false negative (skill should have loaded but didn't) is more serious than a fa
 
 ## Guardrails
 
-- Do not treat mirror sync as a behavior test.
+- Do not treat static repository checks as a behavior test.
 - Do not treat trigger testing as a behavior test — it only checks which skills are loaded, not how well they are followed.
 - Do not score only the final answer; score the execution pattern.
 - Do not widen the scenario during review unless the original prompt is insufficient.
@@ -237,7 +237,7 @@ deferred: []
 [/trigger-evaluation]
 
 # Implementation sequence follows AGENTS.md Behavioral Guidelines §4 (plan + verify):
-#   1. run mirror/static checks    → verify: no drift in .cursor/.claude mirrors
+#   1. run static checks           → verify: references and installer smoke are healthy
 #   2. run trigger checks          → verify: expected triggers fire on sampled prompts
 #   3. run scenario-based acceptance → verify: rubric pass on selected examples
 
@@ -253,13 +253,14 @@ status: completed
 confidence: high
 outputs:
   checks_to_run:
-    - "mirror sync check on changed skills"
+    - "cross-reference integrity check"
+    - "installer smoke on temporary project"
     - "trigger smoke on sampled prompts"
     - "scenario acceptance against rubric"
   risks_not_covered:
     - "long-tail prompts outside the sampled trigger set"
   pass_criteria:
-    - "no mirror drift"
+    - "no broken references"
     - "expected triggers fire; no unexpected triggers"
     - "rubric score >= threshold for the touched skills"
 [/skill-output]

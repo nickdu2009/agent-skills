@@ -1,11 +1,11 @@
 # Agent 技能库评价报告
 
 > 评价日期：2026-03-28
+> 评价对象：agent-skills 仓库（14 个技能 + AGENTS.md + 测试/工具体系）
 
 **Status**: Historical snapshot
 
 > Historical note: this evaluation reflects the repository state before the 2026-05 governance and skill-family cleanup. References to phase skills or older execution chains are preserved as point-in-time analysis, not current architecture guidance.
-> 评价对象：agent-skills 仓库（14 个技能 + AGENTS.md + 测试/工具体系）
 
 ---
 
@@ -88,7 +88,7 @@
 
 测试基础设施包括：
 
-- **静态检查**：`manage-governance.py --check-local <cursor|claude>` 检测本地镜像漂移
+- **静态检查**：`maintainer/scripts/analysis/check_cross_references.py --fail-on-broken` 检测文档与技能引用完整性
 - **Claude Code 冒烟**：`run_claude_trigger_smoke.py` 在干净临时工作区里执行非交互触发验证
 - **CI**：GitHub Actions 检查 `SKILL.md` 位置、frontmatter 格式，以及治理安装相关冒烟
 - **场景测试**：5 个 `examples/` 场景作为行为验收测试

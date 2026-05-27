@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Single public installer for governance skills, rules injection, and local mirrors."""
+"""Single public installer for the published skill bundle and governance templates."""
 
 from __future__ import annotations
 
 import argparse
 import filecmp
-import hashlib
 import os
 import shutil
 import sys
@@ -19,13 +18,6 @@ SKILL_FILE = "SKILL.md"
 MANAGED_MARKER = ".agent-skills-managed"
 AGENTS_TEMPLATE_PATH = REPO_ROOT / "templates" / "governance" / "AGENTS-template.md"
 CLAUDE_TEMPLATE_PATH = REPO_ROOT / "templates" / "governance" / "CLAUDE-template.md"
-@dataclass(frozen=True)
-class MirrorTarget:
-    key: str
-    display_name: str
-    target_dir: Path
-
-
 @dataclass(frozen=True)
 class GovernanceSection:
     heading: str
@@ -41,20 +33,16 @@ class GovernanceTemplate:
 
 
 INSTALL_DISPLAY_NAME = "Skill Governance Setup"
-
-LOCAL_MIRROR_TARGETS = {
-    "cursor": MirrorTarget(
-        key="cursor",
-        display_name="Cursor",
-        target_dir=REPO_ROOT / ".cursor" / "skills",
-    ),
-    "claude": MirrorTarget(
-        key="claude",
-        display_name="Claude",
-        target_dir=REPO_ROOT / ".claude" / "skills",
-    ),
+REMOVED_LEGACY_FLAGS = {
+    "--global",
+    "--project",
+    "--check",
+    "--skills-only",
+    "--rules-only",
+    "--components",
+    "--force",
+    "--update",
 }
-
 
 def detect_platforms() -> list[str]:
     platforms: list[str] = []
@@ -67,14 +55,6 @@ def detect_platforms() -> list[str]:
     if shutil.which("claude"):
         platforms.append("claude-code")
     return platforms
-
-
-def file_sha256(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 def discover_source_skills() -> list[Path]:
@@ -90,23 +70,6 @@ def discover_source_skills() -> list[Path]:
 
 def discover_installable_skills() -> list[Path]:
     return discover_source_skills()
-
-
-def discover_target_skills(target: MirrorTarget) -> list[Path]:
-    if not target.target_dir.exists():
-        return []
-    return [child for child in sorted(target.target_dir.iterdir()) if child.is_dir()]
-
-
-def collect_rel_files(root: Path) -> dict[str, Path]:
-    if not root.exists():
-        return {}
-
-    out: dict[str, Path] = {}
-    for path in root.rglob("*"):
-        if path.is_file():
-            out[path.relative_to(root).as_posix()] = path
-    return out
 
 
 def get_skill_root_dir(platform: str, project_dir: Path | None = None) -> Path | None:
@@ -316,7 +279,7 @@ def inject_rule_sections(
                 text = replace_section(text, section.heading, section.text)
                 changed = True
             else:
-                print(f"  EXISTS: {target_file} already has {section.heading} (use --update to replace)")
+                print(f"  EXISTS: {target_file} already has {section.heading} (use --replace-rules to replace)")
             continue
 
         if section.heading == "## Multi-Agent Rules":
@@ -406,7 +369,7 @@ def install_skill(skill_name: str, platform: str, *, force: bool, project_dir: P
             print(f"  OVERWRITE: {target_dir}")
             shutil.rmtree(target_dir)
         else:
-            print(f"  EXISTS: {target_dir} (use --force to overwrite)")
+            print(f"  EXISTS: {target_dir} (use --overwrite-skills to overwrite)")
             return False
 
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -471,180 +434,267 @@ def check_stale_installed_skills(skill_dirs: list[Path], platform: str, project_
     return extra_count
 
 
-def check_local_mirror(skill_dirs: list[Path], target: MirrorTarget) -> int:
-    drift_found = False
-    source_names = {skill_dir.name for skill_dir in skill_dirs}
-
-    for skill_dir in sorted(skill_dirs, key=lambda p: p.name):
-        dst_root = target.target_dir / skill_dir.name
-        src_files = collect_rel_files(skill_dir)
-        dst_files = collect_rel_files(dst_root) if dst_root.exists() else {}
-
-        src_keys = set(src_files.keys())
-        dst_keys = set(dst_files.keys())
-
-        for rel in sorted(src_keys - dst_keys):
-            drift_found = True
-            print(f"MISSING {dst_root.relative_to(REPO_ROOT) / rel}")
-
-        for rel in sorted(dst_keys - src_keys):
-            drift_found = True
-            print(f"EXTRA {dst_root.relative_to(REPO_ROOT) / rel}")
-
-        for rel in sorted(src_keys & dst_keys):
-            if file_sha256(src_files[rel]) != file_sha256(dst_files[rel]):
-                drift_found = True
-                print(f"OUTDATED {dst_root.relative_to(REPO_ROOT) / rel}")
-
-    for target_dir in sorted(discover_target_skills(target), key=lambda p: p.name):
-        if target_dir.name not in source_names:
-            drift_found = True
-            print(f"EXTRA {target_dir.relative_to(REPO_ROOT)}")
-
-    if drift_found:
-        print(f"{target.display_name} skill mirror is out of sync.")
-        return 1
-
-    print(f"{target.display_name} skill mirror is up to date.")
-    return 0
+def get_option_value(argv: list[str], option: str, fallback: str) -> str:
+    try:
+        idx = argv.index(option)
+    except ValueError:
+        return fallback
+    if idx + 1 >= len(argv):
+        return fallback
+    value = argv[idx + 1]
+    if value.startswith("-"):
+        return fallback
+    return value
 
 
-def remove_stale_target_skills(skill_dirs: list[Path], target: MirrorTarget) -> None:
-    source_names = {skill_dir.name for skill_dir in skill_dirs}
+def build_legacy_replacement(argv: list[str]) -> str | None:
+    if "--global" in argv or "--project" in argv:
+        command: list[str] = ["verify" if "--check" in argv else "install"]
+        if "--global" in argv:
+            command.append("user")
+        else:
+            project_dir = get_option_value(argv, "--project", "DIR")
+            command.extend(["project", project_dir])
 
-    for target_dir in discover_target_skills(target):
-        if target_dir.name in source_names:
-            continue
+        platform = get_option_value(argv, "--platform", "")
+        if platform:
+            command.extend(["--platform", platform])
+        if "--force" in argv:
+            command.append("--overwrite-skills")
+        if "--update" in argv or "--rules-only" in argv:
+            command.append("--replace-rules")
+        return " ".join(command)
 
-        shutil.rmtree(target_dir)
-        print(f"REMOVED {target_dir.relative_to(REPO_ROOT)}")
-
-
-def sync_local_mirror(skill_dirs: list[Path], target: MirrorTarget) -> int:
-    target.target_dir.mkdir(parents=True, exist_ok=True)
-    remove_stale_target_skills(skill_dirs, target)
-    synced = 0
-
-    for skill_dir in skill_dirs:
-        dst = target.target_dir / skill_dir.name
-        shutil.copytree(skill_dir, dst, dirs_exist_ok=True)
-        synced += 1
-        print(f"SYNCED {dst.relative_to(REPO_ROOT)}")
-
-    print(f"Synced {synced} {target.display_name} skill(s).")
-    return 0
+    return None
 
 
-def build_parser(entrypoint_name: str) -> argparse.ArgumentParser:
+def reject_removed_legacy_flags(
+    argv: list[str], parser: argparse.ArgumentParser, entrypoint_name: str
+) -> None:
+    if argv and argv[0] == "mirror":
+        parser.error(
+            "\n".join(
+                [
+                    "Repo-local mirror support has been removed.",
+                    "The public installer now only supports install/verify for user-level and project-level targets.",
+                    "",
+                    "Use one of:",
+                    f"  python3 maintainer/scripts/install/{entrypoint_name} install user",
+                    f"  python3 maintainer/scripts/install/{entrypoint_name} verify user",
+                    f"  python3 maintainer/scripts/install/{entrypoint_name} install project DIR",
+                    f"  python3 maintainer/scripts/install/{entrypoint_name} verify project DIR",
+                ]
+            )
+        )
+
+    legacy_flags = [token for token in argv if token in REMOVED_LEGACY_FLAGS]
+    if not legacy_flags:
+        return
+
+    if "--sync-local" in argv or "--check-local" in argv:
+        parser.error(
+            "\n".join(
+                [
+                    "Repo-local mirror support has been removed.",
+                    "The public installer now only supports install/verify for user-level and project-level targets.",
+                    "",
+                    "Use one of:",
+                    f"  python3 maintainer/scripts/install/{entrypoint_name} install user",
+                    f"  python3 maintainer/scripts/install/{entrypoint_name} verify user",
+                    f"  python3 maintainer/scripts/install/{entrypoint_name} install project DIR",
+                    f"  python3 maintainer/scripts/install/{entrypoint_name} verify project DIR",
+                ]
+            )
+        )
+
+    if "--components" in argv:
+        parser.error(
+            "\n".join(
+                [
+                    "Partial installation is no longer supported.",
+                    "This installer always installs the full bundle: skills plus governance templates.",
+                    "",
+                    "Use one of:",
+                    f"  python3 maintainer/scripts/install/{entrypoint_name} install user",
+                    f"  python3 maintainer/scripts/install/{entrypoint_name} install project DIR",
+                    "",
+                    "Adjustment flags:",
+                    "  --overwrite-skills",
+                    "  --replace-rules",
+                ]
+            )
+        )
+
+    replacement = build_legacy_replacement(argv)
+    lines = [
+        "Legacy flag syntax has been removed.",
+        "Use the subcommand-based CLI instead.",
+    ]
+    if replacement is not None:
+        lines.extend(
+            [
+                "",
+                "Closest replacement:",
+                f"  python3 maintainer/scripts/install/{entrypoint_name} {replacement}",
+            ]
+        )
+
+    lines.extend(
+        [
+            "",
+            "Key migrations:",
+            "  --global -> install user / verify user",
+            "  --project DIR -> install project DIR / verify project DIR",
+            "  partial install is no longer supported; install always installs the full bundle",
+            "  --force -> --overwrite-skills",
+            "  --update -> --replace-rules",
+        ]
+    )
+    parser.error("\n".join(lines))
+
+
+def build_modern_parser(entrypoint_name: str) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog=entrypoint_name,
         description=(
-            "Install governance skills and inject AGENTS.md/CLAUDE.md rules. "
-            "This is the single public installer entrypoint for consumers and maintainers."
+            "Install and verify governance skills and AGENTS.md/CLAUDE.md rules. "
+            "This is the single public CLI entrypoint for end users."
         ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    subparsers = parser.add_subparsers(dest="command")
+    subparsers.required = True
+
+    install_parser = subparsers.add_parser(
+        "install",
+        help="Install the full bundle: skills plus governance templates.",
+    )
+    install_targets = install_parser.add_subparsers(dest="scope")
+    install_targets.required = True
+
+    install_user = install_targets.add_parser(
+        "user",
+        help="Install into user-level platform locations.",
+    )
+    install_user.add_argument(
+        "--platform",
+        help="Force platform: codex, cursor, cursor-cli, claude-code (auto-detected by default)",
+    )
+    install_user.add_argument(
+        "--overwrite-skills",
+        action="store_true",
+        help="Overwrite existing managed skill installations.",
+    )
+    install_user.add_argument(
+        "--replace-rules",
+        action="store_true",
+        help="Replace existing managed governance sections instead of skipping them.",
     )
 
-    # --- Target (mutually exclusive) ---
-    target = parser.add_mutually_exclusive_group()
-    target.add_argument(
-        "--project", metavar="DIR",
-        help="Install skills + rules into project directory (skills go to DIR/.claude/skills/ etc.).",
+    install_project = install_targets.add_parser(
+        "project",
+        help="Install into a target project directory.",
     )
-    target.add_argument(
-        "--global", action="store_true", dest="global_install",
-        help="Install skills + user-level rules to global platform directories (~/.claude/skills/ etc.).",
+    install_project.add_argument("directory", metavar="DIR", help="Target project directory.")
+    install_project.add_argument(
+        "--platform",
+        help="Force platform: codex, cursor, cursor-cli, claude-code (auto-detected by default)",
     )
-    target.add_argument(
-        "--sync-local",
-        choices=tuple(LOCAL_MIRROR_TARGETS),
-        metavar="TARGET",
-        help="Sync the repo-local skill mirror for TARGET: cursor or claude.",
+    install_project.add_argument(
+        "--overwrite-skills",
+        action="store_true",
+        help="Overwrite existing managed skill installations.",
     )
-
-    # --- Action modifier ---
-    parser.add_argument(
-        "--check", action="store_true",
-        help="Verify installed skills and governance rules instead of installing. Works with any target.",
+    install_project.add_argument(
+        "--replace-rules",
+        action="store_true",
+        help="Replace existing managed governance sections instead of skipping them.",
     )
 
-    # --- Install modifiers (--project / --global only) ---
-    parser.add_argument(
-        "--rules-only", action="store_true",
-        help="Skip skill installation, inject rules only (requires --project or --global).",
+    verify_parser = subparsers.add_parser(
+        "verify",
+        help="Verify the installed bundle: skills plus governance templates.",
     )
-    parser.add_argument(
-        "--skills-only", action="store_true",
-        help="Skip rule injection, install skills only (requires --project or --global).",
+    verify_targets = verify_parser.add_subparsers(dest="scope")
+    verify_targets.required = True
+
+    verify_user = verify_targets.add_parser(
+        "user",
+        help="Verify user-level platform installation.",
+    )
+    verify_user.add_argument(
+        "--platform",
+        help="Force platform: codex, cursor, cursor-cli, claude-code (auto-detected by default)",
     )
 
-    # --- Options ---
-    parser.add_argument("--platform", help="Force platform: codex, cursor, cursor-cli, claude-code (auto-detected by default)")
-    parser.add_argument("--force", action="store_true", help="Overwrite existing skill installations")
-    parser.add_argument("--update", action="store_true", help="Replace existing rule sections instead of skipping")
+    verify_project = verify_targets.add_parser(
+        "project",
+        help="Verify a project installation.",
+    )
+    verify_project.add_argument("directory", metavar="DIR", help="Target project directory.")
+    verify_project.add_argument(
+        "--platform",
+        help="Force platform: codex, cursor, cursor-cli, claude-code (auto-detected by default)",
+    )
 
     parser.epilog = "\n".join(
         [
             "Examples:",
-            f"  python3 maintainer/scripts/install/{entrypoint_name} --global",
-            f"  python3 maintainer/scripts/install/{entrypoint_name} --global --check",
-            f"  python3 maintainer/scripts/install/{entrypoint_name} --global --rules-only",
-            f"  python3 maintainer/scripts/install/{entrypoint_name} --project /path/to/my-repo",
-            f"  python3 maintainer/scripts/install/{entrypoint_name} --project /path/to/my-repo --rules-only",
-            f"  python3 maintainer/scripts/install/{entrypoint_name} --project /path/to/my-repo --check",
-            f"  python3 maintainer/scripts/install/{entrypoint_name} --sync-local cursor",
-            f"  python3 maintainer/scripts/install/{entrypoint_name} --sync-local cursor --check",
+            f"  python3 maintainer/scripts/install/{entrypoint_name} install user",
+            f"  python3 maintainer/scripts/install/{entrypoint_name} verify user",
+            f"  python3 maintainer/scripts/install/{entrypoint_name} install user --replace-rules",
+            f"  python3 maintainer/scripts/install/{entrypoint_name} install project /path/to/my-repo",
+            f"  python3 maintainer/scripts/install/{entrypoint_name} verify project /path/to/my-repo",
         ]
     )
     return parser
 
 
+def modern_args_to_runtime_namespace(
+    args: argparse.Namespace, parser: argparse.ArgumentParser
+) -> argparse.Namespace:
+    if args.command not in {"install", "verify"}:
+        parser.error(f"Unsupported command: {args.command}")
+
+    overwrite_skills = bool(getattr(args, "overwrite_skills", False))
+    replace_rules = bool(getattr(args, "replace_rules", False))
+
+    return argparse.Namespace(
+        project=args.directory if args.scope == "project" else None,
+        user_install=args.scope == "user",
+        check=args.command == "verify",
+        platform=getattr(args, "platform", None),
+        force=overwrite_skills,
+        update=replace_rules,
+    )
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     entrypoint_name = Path(sys.argv[0]).name
-    parser = build_parser(entrypoint_name)
-    return parser.parse_args(argv)
+    modern_parser = build_modern_parser(entrypoint_name)
+    reject_removed_legacy_flags(list(argv), modern_parser, entrypoint_name)
+    modern_args = modern_parser.parse_args(argv)
+    return modern_args_to_runtime_namespace(modern_args, modern_parser)
 
 
 def validate_mode(args: argparse.Namespace) -> tuple[str, Path | None]:
     has_project = bool(args.project)
-    has_global = args.global_install
-    has_sync_local = bool(args.sync_local)
+    has_user = args.user_install
 
-    target_count = sum([has_project, has_global, has_sync_local])
+    target_count = sum([has_project, has_user])
     if target_count == 0:
-        raise SystemExit("No target specified. Use --project DIR, --global, or --sync-local TARGET.")
+        raise SystemExit(
+            "No target specified. Use install user, install project DIR, verify user, or verify project DIR."
+        )
 
-    if (args.rules_only or args.skills_only) and has_sync_local:
-        raise SystemExit("--rules-only and --skills-only do not apply to --sync-local.")
-    if args.rules_only and args.skills_only:
-        raise SystemExit("Cannot use --rules-only and --skills-only together.")
-
-    if has_sync_local:
-        return ("check-local" if args.check else "sync-local"), None
-
-    if has_global:
+    if has_user:
         if args.check:
-            if args.rules_only:
-                return "check-rules-global", None
-            if args.skills_only:
-                return "check-skills-global", None
-            return "check-global", None
-        if args.rules_only:
-            return "rules-global", None
-        if args.skills_only:
-            return "skills-global", None
-        return "global", None
+            return "check-user", None
+        return "user", None
 
     project_dir = Path(args.project)
     if args.check:
-        if args.rules_only:
-            return "check-rules-project", project_dir
-        if args.skills_only:
-            return "check-skills-project", project_dir
         return "check-project", project_dir
-    if args.rules_only:
-        return "rules", project_dir
-    if args.skills_only:
-        return "skills-project", project_dir
     return "project", project_dir
 
 
@@ -653,54 +703,23 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     mode, project_dir = validate_mode(args)
 
-    # --- sync-local / check-local ---
-    if mode in {"sync-local", "check-local"}:
-        if args.platform:
-            print("ERROR: --platform does not apply to local mirror modes")
-            return 1
-
-        target_key = args.sync_local
-        assert target_key is not None
-        target = LOCAL_MIRROR_TARGETS[target_key]
-
-        try:
-            skill_dirs = discover_installable_skills()
-        except FileNotFoundError as exc:
-            print(str(exc), file=sys.stderr)
-            return 2
-
-        if not skill_dirs:
-            print(f"No source skills found in {SOURCE_DIR}", file=sys.stderr)
-            return 2
-
-        print("")
-        print(f"=== {target.display_name} Local Mirror ===")
-        print("")
-        if mode == "check-local":
-            return check_local_mirror(skill_dirs, target)
-        return sync_local_mirror(skill_dirs, target)
-
-    # --- check-global / check-project ---
+    # --- check-user / check-project ---
     if mode in {
-        "check-global",
-        "check-skills-global",
-        "check-rules-global",
+        "check-user",
         "check-project",
-        "check-skills-project",
-        "check-rules-project",
     }:
         platforms = [args.platform] if args.platform else detect_platforms()
         if not platforms:
             print("No supported platform detected. Install Cursor, Codex, or Claude Code first.")
             return 1
 
-        is_project_check = mode in {"check-project", "check-skills-project", "check-rules-project"}
+        is_project_check = mode == "check-project"
         check_dir = project_dir if is_project_check else None
-        location = f"project ({project_dir})" if check_dir else "global"
+        location = f"project ({project_dir})" if check_dir else "user-level"
         skill_dirs = discover_installable_skills()
         skill_names = tuple(skill_dir.name for skill_dir in skill_dirs)
-        check_skills = mode in {"check-global", "check-skills-global", "check-project", "check-skills-project"}
-        check_rules = mode in {"check-global", "check-rules-global", "check-project", "check-rules-project"}
+        check_skills = True
+        check_rules = True
 
         print("")
         print(f"=== Verifying Skill Governance Setup ({location}) ===")
@@ -733,7 +752,7 @@ def main(argv: list[str] | None = None) -> int:
         print("All checked skills and governance rules match source.")
         return 0
 
-    # --- install modes: global, project, skills-only, rules-only ---
+    # --- install modes: user or project ---
     print("")
     print(f"=== {INSTALL_DISPLAY_NAME} ===")
     print("")
@@ -748,15 +767,15 @@ def main(argv: list[str] | None = None) -> int:
 
     skill_dirs = discover_installable_skills()
     skill_names = tuple(skill_dir.name for skill_dir in skill_dirs)
-    do_install_skills = mode in {"global", "project", "skills-project", "skills-global"}
-    do_inject_rules = mode in {"global", "project", "rules", "rules-global"}
-    skill_target_dir = project_dir if mode in {"project", "skills-project"} else None
+    do_install_skills = mode in {"user", "project"}
+    do_inject_rules = mode in {"user", "project"}
+    skill_target_dir = project_dir if mode == "project" else None
 
     installed_count = 0
     injected_count = 0
 
     if do_install_skills:
-        location = f"project ({project_dir})" if skill_target_dir else "global"
+        location = f"project ({project_dir})" if skill_target_dir else "user-level"
         print(f"--- Installing skills ({location}) ---")
         synced_skill_roots: set[Path] = set()
         for platform in platforms:
@@ -781,7 +800,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print("=== Summary ===")
     if do_install_skills:
-        location = f"project ({project_dir})" if skill_target_dir else "global"
+        location = f"project ({project_dir})" if skill_target_dir else "user-level"
         print(f"Installed {installed_count} skill(s) ({location})")
     if do_inject_rules:
         location = "project AGENTS.md/CLAUDE.md" if project_dir else "user-level AGENTS.md/CLAUDE.md"

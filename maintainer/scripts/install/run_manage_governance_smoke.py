@@ -43,6 +43,22 @@ def run_cli(args: list[str], *, home: Path | None = None) -> subprocess.Complete
     return result
 
 
+def run_cli_allow_failure(args: list[str], *, home: Path | None = None) -> subprocess.CompletedProcess[str]:
+    env = os.environ.copy()
+    if home is not None:
+        env["HOME"] = str(home)
+        env["CODEX_HOME"] = str(home / ".codex")
+
+    return subprocess.run(
+        [sys.executable, str(INSTALLER_PATH), *args],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+
+
 def load_installer_module():
     spec = importlib.util.spec_from_file_location("manage_governance_module", INSTALLER_PATH)
     if spec is None or spec.loader is None:
@@ -111,7 +127,7 @@ def test_project_install_installs_installable_skills(module) -> None:
         (stale_skill / "SKILL.md").write_text("# removed\n", encoding="utf-8")
         (stale_skill / module.MANAGED_MARKER).write_text("agent-skills\n", encoding="utf-8")
 
-        run_cli(["--project", str(project), "--platform", "claude-code", "--force"])
+        run_cli(["install", "project", str(project), "--platform", "claude-code", "--overwrite-skills"])
         assert_missing(stale_skill)
 
         for skill_dir in module.discover_installable_skills():
@@ -140,7 +156,7 @@ def test_agents_template_selection() -> None:
     with tempfile.TemporaryDirectory(prefix="install-project-") as project_dir:
         project = Path(project_dir)
 
-        run_cli(["--project", str(project), "--platform", "codex", "--force"])
+        run_cli(["install", "project", str(project), "--platform", "codex", "--overwrite-skills"])
 
         agents_md = project / "AGENTS.md"
         assert_exists(agents_md)
@@ -150,15 +166,15 @@ def test_agents_template_selection() -> None:
         assert_no_forbidden_runtime_references(project, agents_md)
 
 
-def test_global_install_installs_user_level_governance(module) -> None:
-    with tempfile.TemporaryDirectory(prefix="install-global-home-") as home_dir:
+def test_user_install_installs_user_level_governance(module) -> None:
+    with tempfile.TemporaryDirectory(prefix="install-user-home-") as home_dir:
         home = Path(home_dir)
         stale_codex_skill = home / ".codex" / "skills" / "removed-skill"
         stale_codex_skill.mkdir(parents=True)
         (stale_codex_skill / "SKILL.md").write_text("# removed\n", encoding="utf-8")
         (stale_codex_skill / module.MANAGED_MARKER).write_text("agent-skills\n", encoding="utf-8")
 
-        run_cli(["--global", "--platform", "codex", "--force"], home=home)
+        run_cli(["install", "user", "--platform", "codex", "--overwrite-skills"], home=home)
         assert_missing(stale_codex_skill)
         codex_agents = home / ".codex" / "AGENTS.md"
         assert_exists(codex_agents)
@@ -168,14 +184,14 @@ def test_global_install_installs_user_level_governance(module) -> None:
         for skill_dir in module.discover_installable_skills():
             assert_exists(home / ".codex" / "skills" / skill_dir.name / "SKILL.md")
 
-        run_cli(["--global", "--platform", "codex", "--check"], home=home)
+        run_cli(["verify", "user", "--platform", "codex"], home=home)
 
         stale_claude_skill = home / ".claude" / "skills" / "removed-skill"
         stale_claude_skill.mkdir(parents=True)
         (stale_claude_skill / "SKILL.md").write_text("# removed\n", encoding="utf-8")
         (stale_claude_skill / module.MANAGED_MARKER).write_text("agent-skills\n", encoding="utf-8")
 
-        run_cli(["--global", "--platform", "claude-code", "--force"], home=home)
+        run_cli(["install", "user", "--platform", "claude-code", "--overwrite-skills"], home=home)
         assert_missing(stale_claude_skill)
         claude_md = home / ".claude" / "CLAUDE.md"
         assert_exists(claude_md)
@@ -185,45 +201,43 @@ def test_global_install_installs_user_level_governance(module) -> None:
         for skill_dir in module.discover_installable_skills():
             assert_exists(home / ".claude" / "skills" / skill_dir.name / "SKILL.md")
 
-        run_cli(["--global", "--platform", "claude-code", "--check"], home=home)
+        run_cli(["verify", "user", "--platform", "claude-code"], home=home)
 
 
-def test_local_mirror_sync_and_check(module) -> None:
-    with tempfile.TemporaryDirectory(prefix="install-mirror-", dir=REPO_ROOT) as temp_dir:
-        temp_root = Path(temp_dir)
-        mirror_target = module.MirrorTarget(
-            key="cursor",
-            display_name="Cursor",
-            target_dir=temp_root / ".cursor" / "skills",
-        )
-        original_targets = module.LOCAL_MIRROR_TARGETS
+def test_legacy_flag_syntax_is_rejected() -> None:
+    result = run_cli_allow_failure(["--global"])
+    if result.returncode == 0:
+        fail("expected legacy --global syntax to be rejected")
+    if "Legacy flag syntax has been removed." not in result.stderr:
+        fail(f"expected legacy-removal guidance, got stderr:\n{result.stderr}")
+    if "install user" not in result.stderr:
+        fail(f"expected replacement command in stderr, got stderr:\n{result.stderr}")
 
-        try:
-            module.LOCAL_MIRROR_TARGETS = {"cursor": mirror_target}
 
-            if module.main(["--sync-local", "cursor"]) != 0:
-                fail("expected local mirror sync to succeed")
+def test_partial_install_options_are_rejected() -> None:
+    result = run_cli_allow_failure(["install", "user", "--components", "skills"])
+    if result.returncode == 0:
+        fail("expected partial install options to be rejected")
+    if "Partial installation is no longer supported." not in result.stderr:
+        fail(f"expected partial-install guidance, got stderr:\n{result.stderr}")
 
-            assert_missing(mirror_target.target_dir / "scoped-tasking" / "scripts")
 
-            if module.main(["--sync-local", "cursor", "--check"]) != 0:
-                fail("expected local mirror check to pass after sync")
-
-            skill_file = mirror_target.target_dir / "scoped-tasking" / "SKILL.md"
-            skill_file.write_text(skill_file.read_text(encoding="utf-8") + "\n# drift\n", encoding="utf-8")
-
-            if module.main(["--sync-local", "cursor", "--check"]) != 1:
-                fail("expected local mirror check to detect drift")
-        finally:
-            module.LOCAL_MIRROR_TARGETS = original_targets
+def test_mirror_command_is_rejected() -> None:
+    result = run_cli_allow_failure(["mirror", "sync", "cursor"])
+    if result.returncode == 0:
+        fail("expected mirror command to be rejected")
+    if "Repo-local mirror support has been removed." not in result.stderr:
+        fail(f"expected mirror-removal guidance, got stderr:\n{result.stderr}")
 
 
 def main() -> int:
     module = load_installer_module()
     test_project_install_installs_installable_skills(module)
     test_agents_template_selection()
-    test_global_install_installs_user_level_governance(module)
-    test_local_mirror_sync_and_check(module)
+    test_user_install_installs_user_level_governance(module)
+    test_legacy_flag_syntax_is_rejected()
+    test_partial_install_options_are_rejected()
+    test_mirror_command_is_rejected()
     print("OK: manage-governance temporary-directory smoke tests passed")
     return 0
 

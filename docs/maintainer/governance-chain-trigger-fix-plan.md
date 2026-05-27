@@ -27,7 +27,7 @@ Prior behavior:
 
 - Full-profile rule injection only wrote `## Multi-Agent Rules`, `## Skill Escalation`, and
   `## Skill Lifecycle`.
-- Fresh installs or `--update` runs could omit:
+- Fresh installs or `--replace-rules` runs could omit:
   - `## Skill Activation`
   - `## Skill Chain Triggers`
   - `## Skill Protocol v1`
@@ -60,13 +60,13 @@ Fix:
 
 Prior behavior:
 
-- `--sync-local ... --check` only verified the local skill mirror.
+- The old repo-local mirror checks only verified the local skill mirror.
 - That check does not validate generated `AGENTS.md` or `CLAUDE.md` content.
 
 Fix:
 
 - Validate rule injection through a temporary project created with `git init`.
-- Use `manage-governance.py --project <temp-dir>` to generate governance files.
+- Use `manage-governance.py install project <temp-dir>` to generate governance files.
 - Inspect the generated governance docs directly for the expected sections.
 
 ## Implementation Details
@@ -100,16 +100,15 @@ Fix:
 ## Validation
 
 1. Create a temporary directory and initialize it with `git init`.
-2. Run `python3 maintainer/scripts/install/manage-governance.py --project <temp-dir> --rules-only --update --platform cursor`.
+2. Run `python3 maintainer/scripts/install/manage-governance.py install project <temp-dir> --replace-rules --platform cursor`.
 3. Verify generated `AGENTS.md` contains:
    - `## Skill Activation`
    - `## Skill Chain Triggers`
    - `## Skill Protocol v1`
    - `## Skill Family Concurrency Budgets`
-4. Run `python3 maintainer/scripts/install/manage-governance.py --project <temp-dir> --rules-only --update --platform claude-code`.
+4. Run `python3 maintainer/scripts/install/manage-governance.py install project <temp-dir> --replace-rules --platform claude-code`.
 5. Verify generated `CLAUDE.md` contains the same sections.
-6. Optionally run `--sync-local cursor --check` and `--sync-local claude --check` for skill mirror
-   validation only.
+6. Optionally run `python3 maintainer/scripts/install/run_manage_governance_smoke.py` for installer validation.
 
 ## Notes
 

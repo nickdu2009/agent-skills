@@ -28,8 +28,8 @@
 
 先回答一个问题：你是想让这套技能和治理规则成为你机器上的默认能力，还是想把它接入某个具体项目？
 
-### 方案 A：全局安装
-<div class="title-en">Option A: Global Install</div>
+### 方案 A：用户级安装
+<div class="title-en">Option A: User Install</div>
 
 适合你如果：
 
@@ -40,7 +40,7 @@
 最短命令路径：
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --global
+python3 maintainer/scripts/install/manage-governance.py install user
 ```
 
 安装完成后，你通常会得到：
@@ -64,7 +64,7 @@ python3 maintainer/scripts/install/manage-governance.py --global
 最短命令路径：
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo
+python3 maintainer/scripts/install/manage-governance.py install project /path/to/my-repo
 ```
 
 安装完成后，你通常会得到：
@@ -79,7 +79,7 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 - 平台对应的技能安装目录里已经出现技能
 - Agent 在真实任务里开始表现出更稳定的边界控制、计划和验证习惯
 
-如果你需要更细的安装模式，可以后续再看[安装说明](INSTALLATION.md)里的 `--skills-only` 和 `--rules-only`。
+如果你需要调整已有安装结果，可以后续再看[安装说明](INSTALLATION.md)里的 `--overwrite-skills` 和 `--replace-rules`。
 
 ## 首次验证
 <div class="title-en">First Validation</div>
@@ -89,14 +89,14 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 ### 1. 确认技能可以被发现
 <div class="title-en">Confirm Skills Are Discoverable</div>
 
-如果你走的是全局安装，优先确认：
+如果你走的是用户级安装，优先确认：
 
-- `--global --check` 能正常通过
+- `verify user` 能正常通过
 - 重启对应 Agent 后能重新发现已安装技能
 - 如果你使用 Cursor，已手动把治理规则复制到 Cursor User Rules；更新旧规则时要替换旧的 `Behavioral Guidelines` 段落
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --global --check
+python3 maintainer/scripts/install/manage-governance.py verify user
 ```
 
 如果你走的是项目安装，优先确认：
@@ -105,7 +105,7 @@ python3 maintainer/scripts/install/manage-governance.py --global --check
 - 对应平台的技能安装目录已经出现技能内容
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo --check
+python3 maintainer/scripts/install/manage-governance.py verify project /path/to/my-repo
 ```
 
 ### 2. 跑一个最小场景
@@ -123,5 +123,5 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 ## 两个常见误区
 <div class="title-en">Two Common Mistakes</div>
 
-- 不要把全局安装误当成项目安装。全局安装会按已检测平台写入 Codex 或 Claude Code 的用户级治理规则；Cursor 仍需手动复制到 User Rules，而且不会往项目里写入 `AGENTS.md` 或 `CLAUDE.md`。
-- 不要把“只装技能”误解成第三条安装路径。它只是跳过治理规则注入的安装变体。
+- 不要把用户级安装误当成项目安装。用户级安装会按已检测平台写入 Codex 或 Claude Code 的用户级治理规则；Cursor 仍需手动复制到 User Rules，而且不会往项目里写入 `AGENTS.md` 或 `CLAUDE.md`。
+- 不要把安装对象理解成可拆分部件。这个库的公开安装对象始终是整套技能和治理模板。

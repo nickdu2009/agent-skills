@@ -441,7 +441,7 @@ Use only repository-controlled validation.
    - `python3 maintainer/scripts/install/run_manage_governance_smoke.py`
 
 3. Temporary-project generation checks
-   - use `manage-governance.py --project <temp-dir>` to verify generated
+   - use `manage-governance.py install project <temp-dir>` to verify generated
      `AGENTS.md` / `CLAUDE.md`
 
 4. Portable-core guardrail review

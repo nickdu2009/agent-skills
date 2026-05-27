@@ -312,7 +312,7 @@
 以下内容应该放在 `docs/manual/`：
 
 - 最终使用者如何理解 `skill` 和 `governance`
-- 只装技能与装治理规则的使用差异
+- 技能与治理模板为什么一起发布和安装
 - `AGENTS.md` 为什么不是技能正文
 - 从使用角度看，治理规则会带来什么体验变化
 - 安装、选型、工作流、排错
@@ -331,8 +331,8 @@
 - governance 模板怎样拆 section
 - section 注入顺序怎样维护
 - `manage-governance.py` 的模式与内部边界
-- `install project`、`install user`、`mirror sync/verify` 的实现区别
-- local mirror 如何校验漂移
+- `install project` 与 `install user` 的实现区别
+- 改动 skill 或模板后该怎么验证
 - 改动 skill 或模板后该怎么验证
 
 换句话说，这里回答的是：

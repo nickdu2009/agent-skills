@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import subprocess
 import sys
 from pathlib import Path
 
@@ -17,7 +16,6 @@ from skill_test_data import EXAMPLE_CASES, GLOBAL_RUBRIC_DIMENSIONS, SKILL_RUBRI
 
 
 EXAMPLES_DIR = REPO_ROOT / "examples"
-SYNC_SCRIPT = REPO_ROOT / "maintainer" / "scripts" / "install" / "manage-governance.py"
 
 
 def parse_args() -> argparse.Namespace:
@@ -29,11 +27,6 @@ def parse_args() -> argparse.Namespace:
         choices=("markdown", "json"),
         default="markdown",
         help="Output format for the scenario matrix.",
-    )
-    parser.add_argument(
-        "--check-sync",
-        action="store_true",
-        help="Run the local Cursor mirror sync check before printing the matrix.",
     )
     parser.add_argument(
         "--write-report",
@@ -54,15 +47,6 @@ def validate_examples_exist() -> None:
     if missing:
         missing_text = ", ".join(missing)
         raise FileNotFoundError(f"Missing example files referenced by the report generator: {missing_text}")
-
-
-def run_sync_check() -> int:
-    result = subprocess.run(
-        [sys.executable, str(SYNC_SCRIPT), "--check-local", "cursor"],
-        cwd=REPO_ROOT,
-        check=False,
-    )
-    return result.returncode
 
 
 def render_markdown_matrix() -> str:
@@ -108,7 +92,7 @@ def render_report() -> str:
         "- Tester:",
         "- Agent / model:",
         "- Repository revision:",
-        "- Mirror sync status:",
+        "- Static validation status:",
         "",
         "## Global Notes",
         "",
@@ -265,11 +249,6 @@ def main() -> int:
     except FileNotFoundError as exc:
         print(str(exc), file=sys.stderr)
         return 2
-
-    if args.check_sync:
-        sync_exit_code = run_sync_check()
-        if sync_exit_code != 0:
-            return sync_exit_code
 
     if args.write_report:
         write_report(args.write_report)

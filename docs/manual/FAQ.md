@@ -15,8 +15,8 @@
 
 普通使用者的公开安装入口是 `manage-governance.py`，但有两种使用方式：
 
-- 想在你自己的机器上跨项目复用，选全局安装：`--global`
-- 想让某个项目自己携带技能和治理规则，选项目安装：`--project /path/to/my-repo`
+- 想在你自己的机器上跨项目复用，选用户级安装：`install user`
+- 想让某个项目自己携带技能和治理规则，选项目安装：`install project /path/to/my-repo`
 
 如果你想看完整说明，先读[安装说明](INSTALLATION.md)。
 
@@ -40,27 +40,23 @@
 那一章会按类别介绍每个技能是做什么的、适合在什么情况下作为起点。  
 如果你已经带着具体任务来选技能，再继续读[技能选择](SKILL-SELECTION.md)。
 
-## 全局安装和项目安装的区别是什么
-<div class="title-en">What Is the Difference Between Global and Project Install</div>
+## 用户级安装和项目安装的区别是什么
+<div class="title-en">What Is the Difference Between User and Project Install</div>
 
 最核心的区别是“安装结果落在哪里”。
 
-- 全局安装把技能装到用户级平台目录，适合个人默认环境
+- 用户级安装把技能装到用户级平台目录，适合个人默认环境
 - 项目安装把技能装到目标项目里，并可同时注入 `AGENTS.md` 或 `CLAUDE.md`
 
-如果你需要项目内可见的治理规则，就不要只做全局安装。
+如果你需要项目内可见的治理规则，就不要只做用户级安装。
 
 ## 我可以只安装一个技能吗
 <div class="title-en">Can I Install Just One Skill</div>
 
 当前公开支持的安装入口不是“单个技能安装”，而是通过 `manage-governance.py` 安装当前支持的技能库，并按需要选择是否同时注入治理规则。Legacy KDD 源码保留在仓库中用于迁移参考，但不再安装。
 
-如果你只是想减少对目标项目的改动，可以使用：
-
-- `--skills-only`
-- `--rules-only`
-
-如果你想看完整命令，去读[安装说明](INSTALLATION.md)。
+公开支持的安装对象始终是整套技能和治理模板，不支持只安装其中一部分。  
+如果你需要调整已有结果，请看[安装说明](INSTALLATION.md)里的 `--overwrite-skills` 和 `--replace-rules`。
 
 ## 为什么 `AGENTS.md` 看起来不像技能手册
 <div class="title-en">Why `AGENTS.md` Does Not Look Like a Skill Manual</div>

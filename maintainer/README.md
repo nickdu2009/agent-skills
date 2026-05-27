@@ -4,7 +4,7 @@ This directory contains repository-internal tooling and evaluation assets and sh
 
 ## Placement Rules
 
-- Keep the unified install and local mirror entrypoint in `scripts/install/`.
+- Keep the public install/verify entrypoint in `scripts/install/`.
 - Run `python3 maintainer/scripts/install/validate_repo_layout.py` after `git add` so the index matches your intended tree; CI enforces the same rules on the pushed commit.
 - Put shared rubric data, scenario matrices, and trigger fixtures in `data/`.
 - Put maintainer-only evaluation scripts in `scripts/evaluation/`.

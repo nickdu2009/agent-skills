@@ -74,34 +74,34 @@ For most coding tasks, start with the smallest skill set that fits the work. Add
 Install governance skills and user-level rules:
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --global
+python3 maintainer/scripts/install/manage-governance.py install user
 ```
 
 Check the user-level installation:
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --global --check
+python3 maintainer/scripts/install/manage-governance.py verify user
 ```
 
 Install both governance skills and project rules for a shared repository:
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo
+python3 maintainer/scripts/install/manage-governance.py install project /path/to/my-repo
 ```
 
-Install only skills:
+Reinstall and replace existing managed governance sections:
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --global --skills-only
+python3 maintainer/scripts/install/manage-governance.py install user --replace-rules
 ```
 
-Install only rules:
+Reinstall and overwrite existing managed skill installations:
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --global --rules-only
+python3 maintainer/scripts/install/manage-governance.py install user --overwrite-skills
 ```
 
-Cursor does not have an official user-level `AGENTS.md` path. Global install still installs Cursor skills, but copy the governance content into Cursor User Rules manually when you want the same user-level routing behavior in Cursor. If you already copied older rules, replace the old `Behavioral Guidelines` section so the parallelism decision block is present.
+Cursor does not have an official user-level `AGENTS.md` path. User install still installs Cursor skills, but copy the governance content into Cursor User Rules manually when you want the same user-level routing behavior in Cursor. If you already copied older rules, replace the old `Behavioral Guidelines` section so the parallelism decision block is present.
 
 ## Repository Layout
 
@@ -135,11 +135,6 @@ maintainer/
 
 ## Maintainer Notes
 
-The canonical published skill source is `skills/`. Local `.cursor/` and `.claude/` mirrors are generated outputs and can be rebuilt with:
-
-```bash
-python3 maintainer/scripts/install/manage-governance.py --sync-local cursor
-python3 maintainer/scripts/install/manage-governance.py --sync-local claude
-```
+The canonical published skill source is `skills/`. The repository no longer maintains repo-local `.cursor/skills/` or `.claude/skills/` mirrors.
 
 After changing skills, run targeted repository checks and one temporary-project install smoke test before publishing.

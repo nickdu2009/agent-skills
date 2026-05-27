@@ -470,7 +470,7 @@ test-review-loop
 | `requirements` 复数与兄弟单数不齐导致视觉违和 | 低 | 在本文件 §6.2 解释原因；可接受 |
 | 新增 3 个 skill 拖累 trigger 准确率 | 中 | 分 PR 增量，每次新增后跑触发回归测试 |
 | 修订本文档或落地 SKILL.md 时未做波及面扫描，引入自相矛盾 | 中 | 每轮修订后强制三步：① grep 关联术语；② 跨章节交叉读相关条目；③ 扫所有同名概念。该 checklist 固化在 §13 后续动作中执行 |
-| Skill 改名时 `.cursor/skills/` 与 `.claude/skills/` 本地缓存反向同步，导致旧目录反复"复活"、新目录反复"消失" | 高 | 任何 skill 改名/删除操作，必须同步清理 `.cursor/skills/<old-name>/` 与 `.claude/skills/<old-name>/`；在 git add 后用 `git status` 与 `ls .cursor/skills/` 双重确认；该步骤固化在 §13 后续动作中 |
+| Skill 改名时 canonical `skills/` 树与文档引用未同步，导致旧名字在多处残留 | 高 | 任何 skill 改名/删除操作，都必须同步更新 canonical `skills/` 树相关引用，并运行 `python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken`；该步骤固化在 §13 后续动作中 |
 
 ## 12. 未列入主链的 review 场景
 
@@ -496,8 +496,7 @@ test-review-loop
    - ① 对被改动的关键术语在全文做 grep
    - ② 跨章节交叉读所有命中条目，确认语义一致
    - ③ 修订记录写入 PR 描述或对话中
-6. **Skill 改名清理规范（强制，缓解 §11 风险表"本地缓存反向同步"风险）**：任何 skill 改名或删除操作，落地步骤必须包含：
-   - ① `rm -rf .cursor/skills/<old-name>/`
-   - ② `rm -rf .claude/skills/<old-name>/`
-   - ③ `git add -f <new-paths>` 把新文件锁定到 git index，防止 IDE watcher 反向回滚
-   - ④ `ls .cursor/skills/ .claude/skills/` 双重确认无残留
+6. **Skill 改名清理规范（强制，缓解 §11 风险表"引用残留"风险）**：任何 skill 改名或删除操作，落地步骤必须包含：
+   - ① 更新 canonical `skills/` 树中的目录与引用
+   - ② 运行 `python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken`
+   - ③ `git add <changed-paths>` 后用 `git status` 确认无旧名字残留

@@ -16,14 +16,14 @@
 
 先确认你走的是哪一种最终使用者安装方式：
 
-- 全局安装：先跑 `--global --check`
-- 项目安装：先看目标项目里是否已有 `AGENTS.md`，再跑 `--project /path/to/my-repo --check`
+- 用户级安装：先跑 `verify user`
+- 项目安装：先看目标项目里是否已有 `AGENTS.md`，再跑 `verify project /path/to/my-repo`
 
 常见原因：
 
 - 安装命令没有真正完成
 - 装到了你没预期的平台目录
-- 把全局安装和项目安装的预期结果混在了一起
+- 把用户级安装和项目安装的预期结果混在了一起
 - 目标项目路径写错了
 
 ### 安装后出现重复技能
@@ -33,7 +33,7 @@
 
 常见原因：
 
-- 同时做了全局安装和项目安装
+- 同时做了用户级安装和项目安装
 - 同一个项目里残留了多份安装结果
 - 不同平台目录中的产物被同时当成有效来源
 
@@ -45,7 +45,7 @@
 例如项目安装时：
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo --skills-only --platform codex --force
+python3 maintainer/scripts/install/manage-governance.py install project /path/to/my-repo --platform codex --overwrite-skills
 ```
 
 如果你只是要确认是否是平台识别问题，先不要一边改规则一边排查，先把安装路径和目标平台单独确认清楚。

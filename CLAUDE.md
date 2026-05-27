@@ -107,7 +107,7 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
-**Project-specific rule:** When renaming or deleting a skill directory, also remove its stale copy under `.cursor/skills/<old-name>/` and `.claude/skills/<old-name>/`, then `git add -f` the new paths and verify with `ls .cursor/skills/ .claude/skills/`. IDE caches otherwise reverse-sync the old directory and silently roll back the change.
+**Project-specific rule:** The repository no longer maintains repo-local `.cursor/skills/` or `.claude/skills/` mirrors. When renaming or deleting a skill directory, update references from the canonical `skills/` tree and verify with `python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken`.
 
 ### 4. Goal-Driven Execution
 
@@ -142,4 +142,4 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## Validation Rules
 
-Start with the smallest sufficient validation. State residual risk for anything unvalidated. When testing skills, use a temporary project and `python3 maintainer/scripts/install/manage-governance.py --project <temp-dir>`.
+Start with the smallest sufficient validation. State residual risk for anything unvalidated. When testing skills, use a temporary project and `python3 maintainer/scripts/install/manage-governance.py install project <temp-dir>`.

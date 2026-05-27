@@ -6,18 +6,20 @@
 
 这部分的重点不是“把所有命令列出来”，而是先帮助你选对路径。
 
-普通使用者的公开安装入口是 `manage-governance.py`，它面向两种使用方式：
+普通使用者的公开安装入口是 `manage-governance.py`。当前推荐的公开语法是 `install` / `verify` / `mirror` 子命令，这份手册以下面这组命令模型为准。
 
-- 全局安装：把技能和治理规则装到你自己的用户级平台目录
+对普通使用者来说，它面向两种安装方式：
+
+- 用户级安装：把技能和治理规则装到你自己的用户级平台目录
 - 项目安装：把技能和治理规则装到某个具体项目里
 
 一个简单判断方法是：
 
-- 想在你自己的机器上跨项目复用这套技能和治理规则，用全局安装
+- 想在你自己的机器上跨项目复用这套技能和治理规则，用用户级安装
 - 想让某个项目自己携带团队共享规则，用项目安装
 
-## 全局安装
-<div class="title-en">Global Install</div>
+## 用户级安装
+<div class="title-en">User Install</div>
 
 ### 何时选择
 <div class="title-en">When to Choose It</div>
@@ -32,36 +34,31 @@
 <div class="title-en">Standard Install</div>
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --global
+python3 maintainer/scripts/install/manage-governance.py install user
 ```
 
-### 全局安装变体
-<div class="title-en">Global Variants</div>
+### 常用修饰参数
+<div class="title-en">Common Modifiers</div>
 
-以下变体仍然属于全局安装，不是第三条独立安装路径。
+公开安装契约始终是“整库一起安装”：技能和治理模板会一起处理，不支持只装其中一部分。  
+如果你需要调整安装行为，主要使用下面两个修饰参数。
 
-#### 仅安装技能
-<div class="title-en">Skills Only</div>
+#### 替换已有治理章节
+<div class="title-en">Replace Existing Governance Sections</div>
 
-如果你只想先装技能，不写入用户级治理规则：
+如果目标治理文件里已经有同名章节，默认会跳过；需要替换已有章节时，请加 `--replace-rules`：
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --global --skills-only
+python3 maintainer/scripts/install/manage-governance.py install user --replace-rules
 ```
 
-#### 仅注入规则
-<div class="title-en">Rules Only</div>
+#### 覆盖已有技能安装
+<div class="title-en">Overwrite Existing Skill Installations</div>
 
-如果技能已经存在，只想更新或补充用户级治理规则：
-
-```bash
-python3 maintainer/scripts/install/manage-governance.py --global --rules-only
-```
-
-如果目标治理文件里已经有同名章节，默认会跳过；需要替换已有章节时，请加 `--update`：
+如果你需要覆盖已有的受管技能安装结果，请加 `--overwrite-skills`：
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --global --rules-only --update
+python3 maintainer/scripts/install/manage-governance.py install user --overwrite-skills
 ```
 
 ### 你会得到什么
@@ -82,13 +79,13 @@ python3 maintainer/scripts/install/manage-governance.py --global --rules-only --
 - 重启对应 Agent，让它重新发现新安装的技能
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --global --check
+python3 maintainer/scripts/install/manage-governance.py verify user
 ```
 
-如果你已经装过旧版治理规则，并希望把模板更新同步到 Codex 或 Claude Code 的已有用户级规则文件，请使用 `--update`：
+如果你已经装过旧版治理规则，并希望把模板更新同步到 Codex 或 Claude Code 的已有用户级规则文件，请使用 `--replace-rules`：
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --global --rules-only --update
+python3 maintainer/scripts/install/manage-governance.py install user --replace-rules
 ```
 
 ## 项目安装
@@ -108,7 +105,7 @@ python3 maintainer/scripts/install/manage-governance.py --global --rules-only --
 <div class="title-en">Standard Install</div>
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo
+python3 maintainer/scripts/install/manage-governance.py install project /path/to/my-repo
 ```
 
 这条命令的目标是一次性完成两件事：
@@ -116,36 +113,20 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 - 安装当前支持的技能库
 - 注入项目级治理规则
 
-### 项目安装变体
-<div class="title-en">Project Variants</div>
+### 常用修饰参数
+<div class="title-en">Common Modifiers</div>
 
-以下变体仍然属于项目安装，不是第三条独立安装路径。
-
-#### 仅安装技能
-<div class="title-en">Skills Only</div>
-
-如果你只想先装技能，不改项目规则：
+项目安装同样始终处理整库内容，不支持把技能和治理模板拆开安装。  
+如果自动检测到的平台不是你想要的目标，可以显式指定；如果你还想覆盖已有技能安装，再加 `--overwrite-skills`：
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo --skills-only
+python3 maintainer/scripts/install/manage-governance.py install project /path/to/my-repo --platform codex --overwrite-skills
 ```
 
-#### 仅注入规则
-<div class="title-en">Rules Only</div>
-
-如果技能已经存在，只想补治理规则：
+如果你需要替换项目里的已有治理章节，请加 `--replace-rules`：
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo --rules-only
-```
-
-#### 强制指定平台
-<div class="title-en">Force a Specific Platform</div>
-
-如果自动检测到的平台不是你想要的目标，可以显式指定：
-
-```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo --skills-only --platform codex --force
+python3 maintainer/scripts/install/manage-governance.py install project /path/to/my-repo --replace-rules
 ```
 
 ### 你会得到什么
@@ -166,35 +147,35 @@ python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-re
 - Agent 在真实任务里是否开始表现出更稳定的边界控制、计划和验证习惯
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --project /path/to/my-repo --check
+python3 maintainer/scripts/install/manage-governance.py verify project /path/to/my-repo
 ```
 
 ## 常见误区
 <div class="title-en">Common Pitfalls</div>
 
-### 不要把全局安装和项目安装混成一件事
-<div class="title-en">Do Not Confuse Global Install with Project Install</div>
+### 不要把用户级安装和项目安装混成一件事
+<div class="title-en">Do Not Confuse User Install with Project Install</div>
 
-全局安装解决的是“我这台机器默认可用”，现在会同时安装用户级技能和用户级治理规则。  
+用户级安装解决的是“我这台机器默认可用”，现在会同时安装用户级技能和用户级治理规则。  
 项目安装解决的是“这个项目自己携带技能和治理规则”，适合团队共享。
 
-如果你需要把 `AGENTS.md` 或 `CLAUDE.md` 提交进某个仓库，只做全局安装是不够的。
+如果你需要把 `AGENTS.md` 或 `CLAUDE.md` 提交进某个仓库，只做用户级安装是不够的。
 
-### 不要把“只装技能”误解成另一条安装路径
-<div class="title-en">Do Not Treat Skills Only as a Separate Install Path</div>
+### 不要把安装对象理解成可拆分部件
+<div class="title-en">Do Not Treat the Bundle as Separately Installable Parts</div>
 
-`--skills-only` 适合想先减少规则文件改动的人，但它不是另一套独立安装体系。  
-它可以和全局安装或项目安装一起使用，只是跳过治理规则注入。
+这个库的公开安装对象是“整套技能 + 治理模板”，不是可以自由拆开的两个独立部件。  
+如果你需要调整已有结果，应使用 `--overwrite-skills` 或 `--replace-rules`，而不是尝试只安装其中一部分。
 
-### Cursor 没有全局 AGENTS.md
-<div class="title-en">Cursor Has No Global AGENTS.md</div>
+### Cursor 没有用户级 AGENTS.md
+<div class="title-en">Cursor Has No User-Level AGENTS.md</div>
 
-Cursor 官方文档把 `AGENTS.md` 定位为项目根目录或子目录中的规则文件。用户级全局规则对应的是 Cursor Settings 里的 User Rules，而不是 `~/.cursor/AGENTS.md`。
+Cursor 官方文档把 `AGENTS.md` 定位为项目根目录或子目录中的规则文件。用户级规则对应的是 Cursor Settings 里的 User Rules，而不是 `~/.cursor/AGENTS.md`。
 
-因此，全局安装会自动安装 Cursor skills，但不会写入一个非官方的全局 `AGENTS.md`。如果你希望 Cursor 也使用同一套治理规则，请打开 Cursor Settings -> Rules，把 `templates/governance/AGENTS-template.md` 的主体内容复制到 User Rules 中。更新旧规则时，尤其要确认 `Behavioral Guidelines` §4 包含 `[parallelism: ...]` 执行计划块。
+因此，用户级安装会自动安装 Cursor skills，但不会写入一个非官方的用户级 `AGENTS.md`。如果你希望 Cursor 也使用同一套治理规则，请打开 Cursor Settings -> Rules，把 `templates/governance/AGENTS-template.md` 的主体内容复制到 User Rules 中。更新旧规则时，尤其要确认 `Behavioral Guidelines` §4 包含 `[parallelism: ...]` 执行计划块。
 
-### 不要把 `--sync-local` 当作普通安装路径
-<div class="title-en">Do Not Treat `--sync-local` as a User Install Path</div>
+### 公开安装器不再维护本地镜像
+<div class="title-en">The Public Installer No Longer Maintains Local Mirrors</div>
 
-`--sync-local` 的职责是同步仓库内的本地镜像（例如 `.cursor/skills`、`.claude/skills`），主要用于当前仓库的维护与发布准备。  
-普通使用者安装仍应优先使用 `--global` 或 `--project`。
+公开安装器现在只面向两类目标：用户级安装和项目安装。  
+仓库内的 repo-local mirror 体系已经移除，因此普通使用者只需要 `install user`、`install project`、`verify user` 和 `verify project`。

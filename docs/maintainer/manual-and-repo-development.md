@@ -7,7 +7,7 @@
 这里集中放三类内容：
 
 - `docs/manual/` 的本地预览方式
-- local mirror 的同步与排错
+- 当前仓库的静态校验与安装冒烟
 - 与当前仓库维护直接相关的工作流示例
 
 ## Manual Preview
@@ -36,38 +36,6 @@ make docs-maintainer-serve
 make docs-maintainer-serve PORT=3001
 ```
 
-## Local Mirror
-
-### When To Use It
-
-local mirror 只用于开发当前仓库本身。
-
-适合以下场景：
-
-- 你正在修改 `skills/`，想让本地工具重新发现技能
-- 你正在调试手册、示例或技能引用
-- 你需要验证 canonical `skills/` 树与本地工具目录是否一致
-
-它不是：
-
-- 外部项目的正式安装入口
-- 发布源
-- canonical source 的替代品
-
-### Sync Local Mirror
-
-```bash
-python3 maintainer/scripts/install/manage-governance.py --sync-local cursor
-python3 maintainer/scripts/install/manage-governance.py --sync-local claude
-```
-
-### Check Local Mirror
-
-```bash
-python3 maintainer/scripts/install/manage-governance.py --check-local cursor
-python3 maintainer/scripts/install/manage-governance.py --check-local claude
-```
-
 ## Canonical Source
 
 `skills/` 是唯一 canonical source。
@@ -75,37 +43,32 @@ python3 maintainer/scripts/install/manage-governance.py --check-local claude
 这意味着：
 
 - 每个 skill 只在一个正式位置维护
-- 本地 mirror 只是从 `skills/` 生成出来的便利层
+- 仓库内不再维护 repo-local `.cursor/skills/` 或 `.claude/skills/`
 - `.cursor/`、`.claude/` 等目录不应被当成正式源头继续手工维护
 
-如果出现不一致，默认以 `skills/` 为准，不以 mirror 为准。
+如果出现不一致，默认以 `skills/` 为准。
 
-## Local Mirror Troubleshooting
+## Repository Validation
 
-### `--check-local` 失败怎么办
+### 何时使用
 
-先不要手工修镜像目录，优先重新同步：
+适合以下场景：
+
+- 你刚改了 `SKILL.md` 或相关文档，想先做静态完整性检查
+- 你刚改了安装器或治理模板，想做一次安装冒烟
+- 你需要确认 canonical `skills/` 树和相关文档引用仍然一致
+
+### 常用检查
 
 ```bash
-python3 maintainer/scripts/install/manage-governance.py --sync-local cursor
-python3 maintainer/scripts/install/manage-governance.py --sync-local claude
+python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
+python3 maintainer/scripts/install/run_manage_governance_smoke.py
 ```
 
-然后再重新检查：
+### 如果静态检查失败怎么办
 
-```bash
-python3 maintainer/scripts/install/manage-governance.py --check-local cursor
-python3 maintainer/scripts/install/manage-governance.py --check-local claude
-```
-
-### 本地镜像与 `skills/` 不一致怎么办
-
-默认以 `skills/` 为准。  
-local mirror 是从 canonical source 生成出来的便利层，不是你应该手工维护的主副本。
-
-### 为什么 local mirror 不应该提交为发布源
-
-因为一旦把它当成主源，就会破坏“`skills/` 是唯一 canonical source”这个前提，后续安装、扫描、验证都会变得混乱。
+先回到 canonical `skills/` 树和相关文档引用本身，不要尝试在仓库里补一层本地镜像来掩盖问题。  
+修正源内容后，再重新运行静态检查或安装冒烟。
 
 ## Repository Workflows
 
@@ -126,7 +89,7 @@ local mirror 是从 canonical source 生成出来的便利层，不是你应该�
 
 ### 先判断安装说明该改在哪一章
 
-- 任务场景：使用者仍分不清 `manage-governance.py` 和 local mirror 的区别，但你还不确定真正 edit point 在 `docs/manual/QUICK-START.md`、`docs/manual/INSTALLATION.md` 还是 `docs/manual/TROUBLESHOOTING.md`。
+- 任务场景：使用者仍分不清 `install user` 和 `install project` 的区别，但你还不确定真正 edit point 在 `docs/manual/QUICK-START.md`、`docs/manual/INSTALLATION.md` 还是 `docs/manual/TROUBLESHOOTING.md`。
 - 执行顺序：
   1. 先看 `docs/manual/QUICK-START.md` 的首次上手路径。
   2. 再看 `docs/manual/INSTALLATION.md` 的安装路径分工。
