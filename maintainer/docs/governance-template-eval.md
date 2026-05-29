@@ -122,6 +122,16 @@ maintainer/
 uv run maintainer/governance_eval/run_eval.py
 ```
 
+### Current baseline
+
+当前已固化的真实 CLI 基线：
+
+- `maintainer/reports/baselines/governance-template-eval-baseline-2026-05-30.md`
+
+对应原始 run 记录：
+
+- `maintainer/reports/runs/governance-template-eval-2026-05-30-sonnet.txt`
+
 ### Single case smoke
 
 ```bash
