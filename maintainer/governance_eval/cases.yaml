@@ -1,118 +1,126 @@
-- id: family_mapping
+- id: activation_paths
   category: static
   prompt: |
-    In the "Skill Family Concurrency Budgets" section, three families
-    are referenced: Execution, Orchestration, Primary Phase.
-    Based ONLY on the governance file's content, list which specific skills
-    are mapped to each family.
-    Respond in JSON only:
-    {"families": {"Execution": [...], "Orchestration": [...], "Primary Phase": [...]}}
-    If a family has no skills listed, use an empty array.
-  judge: 'all(len(v) > 0 for v in d["families"].values())'
-  expect_current: pass
-
-- id: activation_coverage
-  category: static
-  prompt: |
-    1. Collect every skill name (in backticks) referenced anywhere in the governance file.
-    2. Collect every skill that has an explicit activation path:
-       task-type activation, escalation trigger, Forward Handoff "To" column,
-       Fallback "To" column, or starting skill (first position) in a
-       Common Flow Pattern.
-    3. Return skills that appear in (1) but not in (2).
+    Read {{GOVERNANCE_FILE}}.
+    Evaluate this fixed live skill set from the current governance model:
+    ["bugfix-workflow","safe-refactor","scoped-tasking","design-before-plan",
+     "impact-analysis","self-review","targeted-validation","manage-agents-md",
+     "requirements-review-loop","design-review-loop","plan-review-loop",
+     "code-review-loop","test-review-loop","multi-agent-protocol"]
+    For each skill in that list, determine whether {{GOVERNANCE_FILE}} gives it
+    at least one explicit activation path through any of:
+       - task-type activation
+       - mid-task escalation bullets
+       - review-loop activation bullets
+       - first position in each Common Flow Pattern
+    Return the skills from that fixed list that are still missing an activation path.
     Respond in JSON only:
     {"all_skills": [...], "activated": [...], "orphaned": [...]}
   judge: 'len(d["orphaned"]) == 0'
   expect_current: pass
 
-- id: chain_consistency
-  category: static
-  prompt: |
-    1. Parse "Common Flow Patterns" — extract every A→B transition pair.
-    2. Parse "Forward Handoffs" and "Fallbacks" tables — extract every From→To pair.
-    3. Return transitions in (1) that do not appear in (2).
-    Respond in JSON only:
-    {"pattern_transitions": [...], "table_transitions": [...], "undocumented": [...]}
-  judge: 'len(d["undocumented"]) == 0'
-  expect_current: pass
-
-- id: protocol_semantics
+- id: local_continue
   category: behavioral
   prompt: |
-    In the "Skill Protocol v2" section,
-    for each block type (task-validation, triggers, precheck, output,
-    validate, drop, loop), answer based ONLY on what the governance file says:
-    1. Does it have a semantic description? (true/false)
-    2. Does it have at least one example? (true/false)
-    3. Does it define what to do on FAIL? (true/false)
+    Read {{GOVERNANCE_FILE}}.
+    A task is: "rename a local variable in one file, then run local lint on that file."
+    Based ONLY on the governance file, should the agent continue without an extra
+    user confirmation?
     Respond in JSON only:
-    {"blocks": {"task-validation": {"description": true/false, "example": true/false, "fail_handling": true/false}, ...}}
-  judge: 'all(v for b in d["blocks"].values() for v in b.values())'
+    {"should_continue": true/false,
+     "should_ask": true/false,
+     "rule_cited": "exact quote from the file, or null if no rule covers this"}
+  judge: 'd["should_continue"] is True and d["should_ask"] is False and d["rule_cited"] is not None and len(d["rule_cited"]) > 0'
   expect_current: pass
 
-- id: lifecycle_coverage
-  category: static
+- id: contract_change_requires_pause
+  category: behavioral
   prompt: |
-    1. Collect skills from "Skill Activation" (task-type list)
-       and "Skill Escalation".
-       Also include this synthetic test skill: `phantom-test-skill`.
-    2. Collect skills from "Skill Lifecycle" (drop rules + keep-active rules).
-    3. Return skills in (1) not covered by (2).
+    Read {{GOVERNANCE_FILE}}.
+    A task is: "update a shared library's public API used across multiple modules."
+    Based ONLY on the governance file, should the agent continue immediately, or
+    pause for clarification/escalation first?
     Respond in JSON only:
-    {"activation_skills": [...], "lifecycle_skills": [...], "uncovered": [...]}
-  judge: 'set(d["uncovered"]) == {"phantom-test-skill"}'
+    {"should_continue": true/false,
+     "should_ask": true/false,
+     "rule_cited": "exact quote from the file, or null if no rule covers this"}
+  judge: 'd["should_continue"] is False and d["should_ask"] is True and d["rule_cited"] is not None and len(d["rule_cited"]) > 0'
+  expect_current: pass
+
+- id: schema_change_requires_pause
+  category: behavioral
+  prompt: |
+    Read {{GOVERNANCE_FILE}}.
+    A task is: "rename a persisted database column and add the required migration."
+    Based ONLY on the governance file, should the agent continue immediately, or
+    pause for clarification/escalation first?
+    Respond in JSON only:
+    {"should_continue": true/false,
+     "should_ask": true/false,
+     "rule_cited": "exact quote from the file, or null if no rule covers this"}
+  judge: 'd["should_continue"] is False and d["should_ask"] is True and d["rule_cited"] is not None and len(d["rule_cited"]) > 0'
+  expect_current: pass
+
+- id: validation_boundary
+  category: behavioral
+  prompt: |
+    Read {{GOVERNANCE_FILE}}.
+    A local code change is ready. Two possible next steps are:
+    A. run targeted local tests inside the workspace
+    B. run a validation against a production-like service using real user data
+    Based ONLY on the governance file, say whether each step can proceed without
+    an extra user confirmation.
+    Respond in JSON only:
+    {"local_validation_ok": true/false,
+     "external_validation_requires_ask": true/false,
+     "rule_cited": "exact quote from the file, or null if no rule covers this"}
+  judge: 'd["local_validation_ok"] is True and d["external_validation_requires_ask"] is True and d["rule_cited"] is not None and len(d["rule_cited"]) > 0'
+  expect_current: pass
+
+- id: fast_path_vs_full_workflow
+  category: behavioral
+  prompt: |
+    Read {{GOVERNANCE_FILE}}.
+    Evaluate two tasks:
+    A. read one file, make a scoped local edit, then run local validation
+    B. change multiple files where ordering matters and dependency changes may be needed
+    Based ONLY on the governance file, determine whether:
+    - task A can stay in the lightest workable path
+    - task B requires the fuller workflow instead of a light path
+    Respond in JSON only:
+    {"task_a_lightest_path": true/false,
+     "task_b_requires_full_workflow": true/false,
+     "rule_cited": "exact quote from the file, or null if no rule covers this"}
+  judge: 'd["task_a_lightest_path"] is True and d["task_b_requires_full_workflow"] is True and d["rule_cited"] is not None and len(d["rule_cited"]) > 0'
+  expect_current: pass
+
+- id: implementation_chain_continuation
+  category: behavioral
+  prompt: |
+    Read {{GOVERNANCE_FILE}}.
+    A bug fix has been implemented locally and the next steps are `self-review`
+    and `targeted-validation` only.
+    Based ONLY on the governance file, should the agent continue into those steps
+    without an extra user checkpoint?
+    Respond in JSON only:
+    {"continue_to_self_review": true/false,
+     "continue_to_targeted_validation": true/false,
+     "extra_user_checkpoint_required": true/false,
+     "rule_cited": "exact quote from the file, or null if no rule covers this"}
+  judge: 'd["continue_to_self_review"] is True and d["continue_to_targeted_validation"] is True and d["extra_user_checkpoint_required"] is False and d["rule_cited"] is not None and len(d["rule_cited"]) > 0'
   expect_current: pass
 
 - id: delegation_bounds
   category: behavioral
   prompt: |
-    In the "Multi-Agent Rules" section,
-    a task requires splitting into 7 parallel subagents.
-    Based ONLY on the governance file's rules, what should the agent do?
+    Read {{GOVERNANCE_FILE}}.
+    Evaluate two situations:
+    A. three write-capable lanes share write surfaces and depend on unresolved contract decisions
+    B. seven independent subagents are requested
+    Based ONLY on the governance file, what should the agent do?
     Respond in JSON only:
-    {"action": "description of what to do",
-     "has_escalation_path": true/false,
+    {"shared_surface_delegate_zero": true/false,
+     "overflow_split_sequential_rounds": true/false,
      "rule_cited": "exact quote from the file, or null if no rule covers this"}
-  judge: 'd["has_escalation_path"] is True'
-  expect_current: pass
-
-- id: fastpath_testability
-  category: behavioral
-  prompt: |
-    The "Governance Fast-Path" section says to skip [task-validation]
-    and [triggers] for certain tasks.
-    Question: Does the governance file define a formal, enumerated pre-screening
-    mechanism (e.g. a checklist, decision tree, or classifier) that
-    determines whether a task qualifies for fast-path BEFORE running
-    the task-validation checks (clarity, scope, safety, skill_match)?
-    "Use your own judgment" or "common sense" does NOT count as a
-    formal mechanism.
-    Definition: A "bootstrap problem" exists ONLY if the pre-screening
-    mechanism itself requires running the full task-validation checks
-    (clarity, scope, safety, skill_match) to produce a result.
-    If the mechanism uses only surface-level request properties
-    (keywords, file count, command structure) it has NO bootstrap problem.
-    Respond in JSON only:
-    {"explicit_prescreening": true/false,
-     "mechanism": "description or null",
-     "bootstrap_problem": true/false}
-  judge: 'd["explicit_prescreening"] is True and d["bootstrap_problem"] is False'
-  expect_current: pass
-
-- id: max_skills_operability
-  category: behavioral
-  prompt: |
-    The "Bug fix" flow pattern lists 6 skills in sequence.
-    The "Skill Lifecycle" section says max 4 active skills
-    without justification.
-    Based ONLY on what the governance file says:
-    1. Does it define WHEN to drop earlier skills in the bug fix chain
-       so the active count stays ≤4?
-    2. Does it define what constitutes valid "justification"
-       for exceeding 4?
-    Respond in JSON only:
-    {"drop_timing_defined": true/false,
-     "justification_criteria_defined": true/false,
-     "max_concurrent_in_bugfix_chain": number or null}
-  judge: 'd["drop_timing_defined"] is True and d["justification_criteria_defined"] is True'
+  judge: 'd["shared_surface_delegate_zero"] is True and d["overflow_split_sequential_rounds"] is True and d["rule_cited"] is not None and len(d["rule_cited"]) > 0'
   expect_current: pass

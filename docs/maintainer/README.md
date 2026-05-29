@@ -54,6 +54,12 @@
 - 我在设计如何让外部项目中的 agent 少问确认、自动串联开发流程：  
   [`low-intervention-agent-workflow.md`](low-intervention-agent-workflow.md)
 
+- 我已经确认治理权威在模板里，想规划 template-first 的治理演进顺序：  
+  [`template-first-governance-roadmap.md`](template-first-governance-roadmap.md)
+
+- 我想开始按 template-first 路线图落地，先看分 PR 的实施步骤：  
+  [`template-first-governance-implementation-plan.md`](template-first-governance-implementation-plan.md)
+
 - 我想知道模板里该放什么、不该放什么，当前各 section 在负责什么：  
   [`skill-and-governance-architecture.md`](skill-and-governance-architecture.md)
 

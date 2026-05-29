@@ -1,5 +1,7 @@
 # AGENTS.md
 
+<!-- Repo overlay contract: only blocks wrapped in repo-overlay markers may differ from templates/governance/*.md -->
+
 ## Behavioral Guidelines
 
 Behavioral guidelines to reduce common LLM coding mistakes. These supplement skills with general dispositions. Merge with project-specific instructions as needed.
@@ -49,7 +51,9 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
+<!-- repo-overlay:start no-local-skill-mirrors -->
 **Project-specific rule:** The repository no longer maintains repo-local `.cursor/skills/` or `.claude/skills/` mirrors. When renaming or deleting a skill directory, update references from the canonical `skills/` tree and verify with `python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken`.
+<!-- repo-overlay:end no-local-skill-mirrors -->
 
 ### 4. Goal-Driven Execution
 
@@ -76,6 +80,10 @@ Before substantial or multi-step implementation, state a brief plan that starts 
 3. [Step] → verify: [check]
 ```
 
+Continue without an extra user confirmation when the next step is local, non-destructive, and already implied by the current task or accepted plan (for example: read-only exploration, scoped edits, self-review, or local validation).
+
+Stop and ask when the next step would change requirements, public interfaces, cross-module contracts, persistence schema, dependencies or tooling, bulk file layout, or any remote or destructive operation.
+
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
 ---
@@ -88,7 +96,14 @@ Assume the working tree may contain user changes. Preserve unrelated edits, and 
 
 ## Validation Rules
 
-Start with the smallest sufficient validation. State residual risk for anything unvalidated. When testing skills, use a temporary project and `python3 maintainer/scripts/install/manage-governance.py install project <temp-dir>`.
+Start with the smallest sufficient validation. State residual risk for anything unvalidated.
+
+- Default to local, workspace-only checks when they are sufficient to verify the change.
+- Stop and ask before validations that touch external services, production-like systems, real user data, or unusually expensive/manual environments.
+
+<!-- repo-overlay:start skill-test-temp-project -->
+When testing skills, use a temporary project and `python3 maintainer/scripts/install/manage-governance.py install project <temp-dir>`.
+<!-- repo-overlay:end skill-test-temp-project -->
 
 ## Communication Rules
 
@@ -97,6 +112,16 @@ Report what changed, what was validated, and any residual risk. Keep status upda
 ## Skill Activation
 
 Task-type activation: `bugfix-workflow`, `safe-refactor`, `scoped-tasking`, `design-before-plan`, `impact-analysis`, `self-review`, `targeted-validation`, and `manage-agents-md` activate when task shape requires their guidance.
+
+Fast path:
+
+- Stay in the lightest workable path when the task is read-only, single-surface, or a local implementation step whose next action is obvious and non-destructive.
+
+Use the full workflow when:
+
+- ordering across multiple files matters
+- acceptance criteria or ownership boundaries are unclear
+- public interfaces, shared contracts, persistence schema, or dependencies may change
 
 Mid-task escalation:
 
@@ -116,7 +141,13 @@ Review-loop activation (pick by artifact type, mutually exclusive):
 
 ## Escalation Rules
 
-Ask for clarification when acceptance criteria, ownership boundaries, or destructive actions are unclear. Do not proceed by guessing across those boundaries.
+Ask for clarification when:
+
+- acceptance criteria, ownership boundaries, or destructive actions are unclear
+- a step may change public APIs, cross-module contracts, persistence schema, or migration strategy
+- a step may add dependencies, change tooling/runtime, or require commit/push/deploy/release actions
+
+Do not proceed by guessing across those boundaries.
 
 ## Skill Lifecycle
 
@@ -146,6 +177,14 @@ Parallel:     multi-agent-protocol -> synthesis
 Review loop:  pick one of requirements-review-loop / design-review-loop / plan-review-loop / code-review-loop / test-review-loop -> revise -> re-review until review_result: clean
 ```
 
+Automatic continuation:
+
+- Continue from implementation to `self-review` and `targeted-validation` without an extra user checkpoint when the next step is local and non-destructive.
+
+Stop conditions:
+
+- Pause the current chain and ask before continuing if the work expands into public-contract changes, schema/migration work, dependency/toolchain changes, bulk file moves, or remote/destructive actions.
+
 ## Multi-Agent Rules
 
 Full protocol: `multi-agent-protocol` skill.
@@ -153,5 +192,9 @@ Full protocol: `multi-agent-protocol` skill.
 **Tier 1 (read-only):** Launch read-only subagents anytime. Subagents return structured results; the primary agent synthesizes.
 
 **Tier 2 (write-capable):** Before launching write-capable subagents, emit: `[delegate: <count 2-4> | split:<dimension> | risk:<low|medium|high>]`. If not cleanly splittable: `[delegate: 0 | reason:<why>]`.
+
+Delegation default:
+
+- Parallelism is opt-in, not automatic. Use `[delegate: 0 | reason:<why>]` when lanes share write surfaces, require strict sequencing, or depend on unresolved contract decisions.
 
 **Overflow:** If the task requires more than 4 parallel subagents, split the work into sequential rounds instead of launching all lanes at once.

@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-"""Lint governance sync between templates and rendered AGENTS.md / CLAUDE.md.
+"""Lint governance sync between templates and root AGENTS.md / CLAUDE.md.
 
-The repository contract (AGENTS.md §Behavioral Guidelines §3 + Governance Chain
-Trigger Fix Plan) treats ``templates/governance/AGENTS-template.md`` as the
-source of truth for the governance section list. The repo-root ``AGENTS.md``
-and ``CLAUDE.md`` may add project-specific content but must contain every H2
-section the template defines, in the same order.
+The repository contract treats ``templates/governance/*.md`` as the shared
+governance source of truth. Repo-root ``AGENTS.md`` / ``CLAUDE.md`` may carry
+small repo-only overlay blocks, but those overlays must be explicitly marked
+and the remaining shared governance body must stay synchronized with the
+templates.
 
-This lint enforces three invariants:
+This lint enforces four invariants:
 
-1. ``AGENTS-template.md`` and ``CLAUDE-template.md`` define the same H2 set
-   (they are documented as byte-mirrors with different headers).
-2. The H2 set of the template is a contiguous, in-order subsequence of the
-   root ``AGENTS.md`` and ``CLAUDE.md`` H2 set.
-3. Root ``AGENTS.md`` and ``CLAUDE.md`` have identical content (mirror).
+1. ``AGENTS-template.md`` and ``CLAUDE-template.md`` define the same H2 set.
+2. Root ``AGENTS.md`` and ``CLAUDE.md`` contain that H2 set in order.
+3. After stripping repo-overlay blocks from the root files, every governance
+   section body matches the corresponding template section body exactly.
+4. Root ``AGENTS.md`` and ``CLAUDE.md`` remain identical mirrors.
 
 Usage::
 
@@ -34,17 +34,108 @@ TEMPLATE_AGENTS = REPO_ROOT / "templates" / "governance" / "AGENTS-template.md"
 TEMPLATE_CLAUDE = REPO_ROOT / "templates" / "governance" / "CLAUDE-template.md"
 ROOT_AGENTS = REPO_ROOT / "AGENTS.md"
 ROOT_CLAUDE = REPO_ROOT / "CLAUDE.md"
+REPO_OVERLAY_CONTRACT_PREFIX = "<!-- Repo overlay contract:"
+REPO_OVERLAY_START = "<!-- repo-overlay:start "
+REPO_OVERLAY_END = "<!-- repo-overlay:end "
 
 
-def extract_h2(path: Path) -> list[str]:
-    """Return ordered list of '## ...' headings in *path*."""
-    if not path.exists():
-        return []
+def extract_h2_from_text(text: str) -> list[str]:
+    """Return ordered list of '## ...' headings in *text*."""
     headings: list[str] = []
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in text.splitlines():
         if line.startswith("## ") and not line.startswith("### "):
             headings.append(line[3:].strip())
     return headings
+
+
+def extract_h2(path: Path) -> list[str]:
+    if not path.exists():
+        return []
+    return extract_h2_from_text(path.read_text(encoding="utf-8"))
+
+
+def extract_sections_from_text(text: str) -> dict[str, str]:
+    """Return mapping of H2 section name -> full section body."""
+    sections: dict[str, str] = {}
+    current_section: str | None = None
+    current_lines: list[str] = []
+    for line in text.splitlines():
+        if line.startswith("## ") and not line.startswith("### "):
+            if current_section is not None:
+                sections[current_section] = "\n".join(current_lines).strip()
+            current_section = line[3:].strip()
+            current_lines = [line]
+            continue
+        if current_section is not None:
+            current_lines.append(line)
+    if current_section is not None:
+        sections[current_section] = "\n".join(current_lines).strip()
+    return sections
+
+
+def normalize_text_block(text: str) -> str:
+    """Normalize blank-line noise introduced by stripping overlay blocks."""
+    normalized_lines: list[str] = []
+    blank_run = 0
+    for line in text.splitlines():
+        stripped_line = line.rstrip()
+        if stripped_line == "":
+            blank_run += 1
+            if blank_run > 1:
+                continue
+            normalized_lines.append("")
+            continue
+        blank_run = 0
+        normalized_lines.append(stripped_line)
+    return "\n".join(normalized_lines).strip()
+
+
+def _parse_overlay_name(line: str, prefix: str) -> str:
+    remainder = line.strip()[len(prefix):]
+    if remainder.endswith("-->"):
+        remainder = remainder[:-3]
+    return remainder.strip()
+
+
+def strip_repo_overlay(text: str) -> tuple[str, list[str]]:
+    """Strip explicit repo-overlay blocks from root governance files."""
+    issues: list[str] = []
+    stripped_lines: list[str] = []
+    current_overlay: str | None = None
+    for line_no, line in enumerate(text.splitlines(), start=1):
+        stripped = line.strip()
+        if stripped.startswith(REPO_OVERLAY_CONTRACT_PREFIX):
+            continue
+        if stripped.startswith(REPO_OVERLAY_START):
+            overlay_name = _parse_overlay_name(stripped, REPO_OVERLAY_START)
+            if current_overlay is not None:
+                issues.append(
+                    f"nested repo-overlay start at line {line_no}: "
+                    f"{overlay_name} inside {current_overlay}"
+                )
+            current_overlay = overlay_name
+            continue
+        if stripped.startswith(REPO_OVERLAY_END):
+            overlay_name = _parse_overlay_name(stripped, REPO_OVERLAY_END)
+            if current_overlay is None:
+                issues.append(
+                    f"repo-overlay end without start at line {line_no}: {overlay_name}"
+                )
+            elif current_overlay != overlay_name:
+                issues.append(
+                    f"repo-overlay end mismatch at line {line_no}: "
+                    f"expected {current_overlay}, got {overlay_name}"
+                )
+                current_overlay = None
+            else:
+                current_overlay = None
+            continue
+        if current_overlay is not None:
+            continue
+        stripped_lines.append(line)
+    if current_overlay is not None:
+        issues.append(f"repo-overlay start without end: {current_overlay}")
+    return ("\n".join(stripped_lines).strip() + "\n", issues)
 
 
 def is_ordered_subsequence(needle: list[str], haystack: list[str]) -> tuple[bool, list[str]]:
@@ -66,10 +157,15 @@ def is_ordered_subsequence(needle: list[str], haystack: list[str]) -> tuple[bool
 
 
 def check() -> dict[str, Any]:
-    template_agents = extract_h2(TEMPLATE_AGENTS)
-    template_claude = extract_h2(TEMPLATE_CLAUDE)
-    root_agents = extract_h2(ROOT_AGENTS)
-    root_claude = extract_h2(ROOT_CLAUDE)
+    template_agents_text = TEMPLATE_AGENTS.read_text(encoding="utf-8") if TEMPLATE_AGENTS.exists() else ""
+    template_claude_text = TEMPLATE_CLAUDE.read_text(encoding="utf-8") if TEMPLATE_CLAUDE.exists() else ""
+    root_agents_text = ROOT_AGENTS.read_text(encoding="utf-8") if ROOT_AGENTS.exists() else ""
+    root_claude_text = ROOT_CLAUDE.read_text(encoding="utf-8") if ROOT_CLAUDE.exists() else ""
+
+    template_agents = extract_h2_from_text(template_agents_text)
+    template_claude = extract_h2_from_text(template_claude_text)
+    root_agents = extract_h2_from_text(root_agents_text)
+    root_claude = extract_h2_from_text(root_claude_text)
 
     issues: list[str] = []
 
@@ -103,13 +199,41 @@ def check() -> dict[str, Any]:
             "CLAUDE.md is missing template sections (in order): " + ", ".join(missing)
         )
 
-    # Invariant 3: AGENTS.md == CLAUDE.md (after stripping the leading H1).
-    # We compare the whole file body so any drift (typo, missing bullet) is
-    # caught even if the H2 set still matches.
+    # Invariant 3: shared governance body matches template after stripping
+    # explicit repo-only overlay blocks from root files.
+    if ROOT_AGENTS.exists():
+        stripped_root_agents, overlay_issues = strip_repo_overlay(root_agents_text)
+        issues.extend(f"AGENTS.md {issue}" for issue in overlay_issues)
+        template_sections = extract_sections_from_text(template_agents_text)
+        root_sections = extract_sections_from_text(stripped_root_agents)
+        for section_name, template_body in template_sections.items():
+            root_body = root_sections.get(section_name)
+            if root_body is None:
+                issues.append(f"AGENTS.md missing section body after overlay stripping: {section_name}")
+                continue
+            if normalize_text_block(root_body) != normalize_text_block(template_body):
+                issues.append(
+                    f"AGENTS.md section body diverged from template: {section_name}"
+                )
+
+    if ROOT_CLAUDE.exists():
+        stripped_root_claude, overlay_issues = strip_repo_overlay(root_claude_text)
+        issues.extend(f"CLAUDE.md {issue}" for issue in overlay_issues)
+        template_sections = extract_sections_from_text(template_claude_text)
+        root_sections = extract_sections_from_text(stripped_root_claude)
+        for section_name, template_body in template_sections.items():
+            root_body = root_sections.get(section_name)
+            if root_body is None:
+                issues.append(f"CLAUDE.md missing section body after overlay stripping: {section_name}")
+                continue
+            if normalize_text_block(root_body) != normalize_text_block(template_body):
+                issues.append(
+                    f"CLAUDE.md section body diverged from template: {section_name}"
+                )
+
+    # Invariant 4: root AGENTS.md == root CLAUDE.md verbatim.
     if ROOT_AGENTS.exists() and ROOT_CLAUDE.exists():
-        agents_body = ROOT_AGENTS.read_text(encoding="utf-8")
-        claude_body = ROOT_CLAUDE.read_text(encoding="utf-8")
-        if agents_body != claude_body:
+        if root_agents_text != root_claude_text:
             issues.append("root AGENTS.md and CLAUDE.md content diverged (mirror drift)")
 
     return {

@@ -68,6 +68,34 @@ python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
 python3 maintainer/scripts/install/run_manage_governance_smoke.py
 ```
 
+### 改治理模板时的固定顺序
+
+如果这次改动落在 `templates/governance/`，按下面顺序检查：
+
+```bash
+python3 maintainer/scripts/analysis/check_governance_sync.py
+python3 maintainer/scripts/install/run_manage_governance_smoke.py
+uv run maintainer/governance_eval/run_eval.py --case local_continue --runs 1
+uv run maintainer/governance_eval/run_eval.py --case delegation_bounds --runs 1
+python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
+```
+
+说明：
+
+- `check_governance_sync.py` 检查模板与仓库根治理文件的共享正文是否同步
+- `run_manage_governance_smoke.py` 检查安装投影链路是否仍可生成预期治理文件
+- `governance_eval/run_eval.py` 检查 agent 在隔离工作区里能否正确读出治理边界
+- `check_cross_references.py` 检查文档与 skill 引用是否仍然完整
+
+### Repo Overlay Contract
+
+仓库根 `AGENTS.md` / `CLAUDE.md` 允许保留少量 repo-only overlay，但必须满足：
+
+- 只出现在根文件，不写回模板
+- 用 `repo-overlay` 注释块显式标记
+- 每一块 overlay 都能说清楚“为什么只属于本仓库”
+- 修改模板共享正文时，不要顺手改动未标记的根文件内容
+
 ### 如果静态检查失败怎么办
 
 先回到 canonical `skills/` 树和相关文档引用本身，不要尝试在仓库里补一层本地镜像来掩盖问题。  

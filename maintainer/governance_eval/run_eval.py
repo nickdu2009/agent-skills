@@ -9,7 +9,7 @@ Usage:
   uv run maintainer/governance_eval/run_eval.py
   uv run maintainer/governance_eval/run_eval.py --model sonnet   # cheaper, less accurate
   uv run maintainer/governance_eval/run_eval.py --runs 1         # fast smoke test
-  uv run maintainer/governance_eval/run_eval.py --case lifecycle_coverage
+  uv run maintainer/governance_eval/run_eval.py --case local_continue
 """
 
 import argparse, json, re, subprocess, shutil, tempfile, sys
@@ -239,7 +239,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--runs", type=int, default=None,
                    help="Override run count for all cases (default: 3 static, 5 behavioral)")
     p.add_argument("--case", type=str, default=None,
-                   help="Run only this case ID (e.g. lifecycle_coverage)")
+                   help="Run only this case ID (e.g. local_continue)")
     p.add_argument("--skip-preflight", action="store_true",
                    help="Skip CLI preflight check")
     p.add_argument("--verbose", action="store_true",

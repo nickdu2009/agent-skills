@@ -8,6 +8,8 @@
 
 - **提案与路线图**
   - [低人工介入 Agent 工作协议](low-intervention-agent-workflow.md)
+  - [Template-First 治理路线图](template-first-governance-roadmap.md)
+  - [Template-First 治理实施计划](template-first-governance-implementation-plan.md)
   - [Review-Loop 主链设计](review-loop-mainchain-design.md)
   - [Review-Loop 主链实施计划](review-loop-mainchain-plan.md)
 
