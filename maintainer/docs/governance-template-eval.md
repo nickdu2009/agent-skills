@@ -137,16 +137,24 @@ uv run maintainer/governance_eval/run_eval.py
 
 ### Current baseline
 
-当前已固化的真实 CLI 基线：
+当前已固化的真实 CLI 基线（21-case cross-CLI）：
 
 - `maintainer/reports/baselines/governance-template-eval-baseline-2026-05-30.md`
 
-注意：这份基线当前只覆盖 2026-05-30 时已固化的 11-case cross-CLI run。  
-live suite 后续新增的 case，如果只做了增量 smoke 而未刷新 full baseline，不应被这份基线误解为“已完成同等范围的三 CLI 固化”。
+对应原始 run 记录（按 CLI 并行生成后合并）：
 
-对应原始 run 记录：
+- `maintainer/reports/runs/governance-template-eval-2026-05-30-claude-sonnet.txt`
+- `maintainer/reports/runs/governance-template-eval-2026-05-30-cursor-sonnet.txt`
+- `maintainer/reports/runs/governance-template-eval-2026-05-30-codex-sonnet.txt`
+- `maintainer/reports/runs/governance-template-eval-2026-05-30-sonnet.txt`（合并视图）
 
-- `maintainer/reports/runs/governance-template-eval-2026-05-30-sonnet.txt`
+### Parallel full run (per CLI)
+
+```bash
+uv run maintainer/governance_eval/run_eval.py --cli claude --model sonnet --runs 1
+uv run maintainer/governance_eval/run_eval.py --cli cursor --model sonnet --runs 1
+uv run maintainer/governance_eval/run_eval.py --cli codex --model sonnet --runs 1
+```
 
 ### Single case smoke
 
