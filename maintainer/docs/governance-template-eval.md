@@ -77,7 +77,7 @@ maintainer/
 
 ## Current Live Cases
 
-当前 live suite 包含 21 个 case，全部面向当前治理模型：
+当前 live suite 包含 22 个 case，全部面向当前治理模型：
 
 | ID | Category | What it validates | Expected now |
 |---|---|---|---|
@@ -102,6 +102,7 @@ maintainer/
 | `overwrite_user_changes_requires_pause` | behavioral | 会覆盖现有用户改动时是否必须停下 | `pass` |
 | `bulk_file_moves_require_pause` | behavioral | 批量文件移动 / 布局重组是否必须停下 | `pass` |
 | `delegation_bounds` | behavioral | 并行默认值、共享写面与 overflow 规则是否可判定 | `pass` |
+| `parallelism_not_automatic` | behavioral | 未显式 opt-in 时并行是否默认关闭 | `pass` |
 
 ## Calibration Model
 
@@ -137,9 +138,11 @@ uv run maintainer/governance_eval/run_eval.py
 
 ### Current baseline
 
-当前已固化的真实 CLI 基线（21-case cross-CLI）：
+当前已固化的真实 CLI 基线（2026-05-30 的 21-case cross-CLI）：
 
 - `maintainer/reports/baselines/governance-template-eval-baseline-2026-05-30.md`
+
+注意：live suite 目前已继续扩到 22 个 case；若新增 case 只做了增量 smoke 而未刷新 full baseline，这份基线仍只代表 21-case cross-CLI 固化结果。
 
 对应原始 run 记录（按 CLI 并行生成后合并）：
 
@@ -219,6 +222,7 @@ uv run maintainer/governance_eval/run_eval.py --case requirements_change_require
 uv run maintainer/governance_eval/run_eval.py --case manual_or_expensive_validation_requires_pause --runs 1
 uv run maintainer/governance_eval/run_eval.py --case dependency_or_tooling_change_requires_pause --runs 1
 uv run maintainer/governance_eval/run_eval.py --case delegation_bounds --runs 1
+uv run maintainer/governance_eval/run_eval.py --case parallelism_not_automatic --runs 1
 ```
 
 如果本地凭据、模型权限或 CLI 信任配置不可用，至少要做：
