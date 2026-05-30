@@ -3,17 +3,18 @@
 # requires-python = ">=3.10"
 # dependencies = ["pyyaml"]
 # ///
-"""run_eval.py — Run governance template evaluation on both CLIs.
+"""run_eval.py — Run governance template evaluation on one or more CLIs.
 
 Usage:
   uv run maintainer/governance_eval/run_eval.py
   uv run maintainer/governance_eval/run_eval.py --model sonnet   # cheaper, less accurate
   uv run maintainer/governance_eval/run_eval.py --runs 1         # fast smoke test
   uv run maintainer/governance_eval/run_eval.py --case local_continue
+  uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue --case delegation_bounds --runs 1
 """
 
 import argparse, json, re, subprocess, shutil, tempfile, sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
@@ -108,6 +109,48 @@ def build_clis(model_override: Optional[str] = None) -> list:
         CodexCLI("codex", "templates/governance/AGENTS-template.md",
                  "AGENTS.md", models["codex"]),
     ]
+
+
+# --- Selection helpers ---
+
+def normalize_requested_values(values: Optional[list[str]]) -> list[str]:
+    requested = []
+    seen = set()
+    for value in values or []:
+        for item in value.split(","):
+            name = item.strip()
+            if not name or name in seen:
+                continue
+            seen.add(name)
+            requested.append(name)
+    return requested
+
+
+def select_cases(all_cases: list[dict], requested_case_args: Optional[list[str]]) -> list[dict]:
+    requested_case_ids = normalize_requested_values(requested_case_args)
+    if not requested_case_ids:
+        return all_cases
+
+    case_map = {case["id"]: case for case in all_cases}
+    missing = [case_id for case_id in requested_case_ids if case_id not in case_map]
+    if missing:
+        raise ValueError(f"case(s) not found: {', '.join(missing)}")
+    return [case_map[case_id] for case_id in requested_case_ids]
+
+
+def select_clis(all_clis: list[CLIDef], requested_cli_args: Optional[list[str]]) -> list[CLIDef]:
+    requested_cli_names = normalize_requested_values(requested_cli_args)
+    if not requested_cli_names:
+        return all_clis
+
+    cli_map = {cli.name: cli for cli in all_clis}
+    missing = [cli_name for cli_name in requested_cli_names if cli_name not in cli_map]
+    if missing:
+        raise ValueError(
+            f"cli name(s) not found: {', '.join(missing)} "
+            f"(expected one of: {', '.join(cli_map)})"
+        )
+    return [cli_map[cli_name] for cli_name in requested_cli_names]
 
 
 # --- Isolation ---
@@ -236,10 +279,12 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Governance template evaluation")
     p.add_argument("--model", choices=list(MODEL_MAP), default=None,
                    help="Override model for both CLIs (default: opus)")
+    p.add_argument("--cli", action="append", default=None,
+                   help="Run only selected CLI(s); repeat flag or pass comma-separated names (claude,cursor,codex)")
     p.add_argument("--runs", type=int, default=None,
                    help="Override run count for all cases (default: 3 static, 5 behavioral)")
-    p.add_argument("--case", type=str, default=None,
-                   help="Run only this case ID (e.g. local_continue)")
+    p.add_argument("--case", action="append", default=None,
+                   help="Run only selected case ID(s); repeat flag or pass comma-separated IDs")
     p.add_argument("--skip-preflight", action="store_true",
                    help="Skip CLI preflight check")
     p.add_argument("--verbose", action="store_true",
@@ -249,13 +294,18 @@ def parse_args() -> argparse.Namespace:
 
 def main():
     args = parse_args()
-    cases = yaml.safe_load(CASES_FILE.read_text())
-    if args.case:
-        cases = [c for c in cases if c["id"] == args.case]
-        if not cases:
-            print(f"Error: case '{args.case}' not found", file=sys.stderr)
-            sys.exit(2)
-    clis = build_clis(args.model)
+    all_cases = yaml.safe_load(CASES_FILE.read_text())
+    try:
+        cases = select_cases(all_cases, args.case)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(2)
+
+    try:
+        clis = select_clis(build_clis(args.model), args.cli)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(2)
 
     results: dict = {}
 

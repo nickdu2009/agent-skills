@@ -154,6 +154,18 @@ live suite 后续新增的 case，如果只做了增量 smoke 而未刷新 full 
 uv run maintainer/governance_eval/run_eval.py --case local_continue --runs 1
 ```
 
+### Single CLI with multiple cases
+
+```bash
+uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue --case delegation_bounds --runs 1
+```
+
+也可以在一个参数里传逗号分隔的 case 列表：
+
+```bash
+uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue,delegation_bounds --runs 1
+```
+
 ### Cheaper model
 
 ```bash
