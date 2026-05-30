@@ -144,6 +144,14 @@ uv run maintainer/governance_eval/run_eval.py
 
 注意：live suite 目前已继续扩到 22 个 case；若新增 case 只做了增量 smoke 而未刷新 full baseline，这份基线仍只代表 21-case cross-CLI 固化结果。
 
+第 22 个新增 case `parallelism_not_automatic` 已额外完成 cross-CLI 增量验证（未刷新 full baseline）：
+
+- `uv run maintainer/governance_eval/run_eval.py --cli claude --model sonnet --case parallelism_not_automatic --runs 1`
+- `uv run maintainer/governance_eval/run_eval.py --cli cursor --model sonnet --case parallelism_not_automatic --runs 1`
+- `uv run maintainer/governance_eval/run_eval.py --cli codex --model sonnet --case parallelism_not_automatic --runs 1`
+
+结果：`claude` / `cursor` / `codex` 三侧均为 `PASS (calibrated)`。
+
 对应原始 run 记录（按 CLI 并行生成后合并）：
 
 - `maintainer/reports/runs/governance-template-eval-2026-05-30-claude-sonnet.txt`
