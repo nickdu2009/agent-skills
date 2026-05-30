@@ -75,7 +75,7 @@ python3 maintainer/scripts/install/run_manage_governance_smoke.py
 ```bash
 python3 maintainer/scripts/analysis/check_governance_sync.py
 python3 maintainer/scripts/install/run_manage_governance_smoke.py
-uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue,scoped_tasking_entrypoint,multi_file_plan_then_continue,design_before_plan_escalation,impact_analysis_escalation,review_clean_next_step_continuation,delegation_bounds,parallelism_not_automatic --runs 1
+uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue,scoped_tasking_entrypoint,fast_path_protocol_optional,task_validation_required_for_skill_chain,precheck_only_for_real_prerequisite,triggered_skill_requires_output_validate_drop,repeated_skill_retry_requires_rescope,delegation_bounds,parallelism_not_automatic --runs 1
 python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
 ```
 

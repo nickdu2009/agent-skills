@@ -137,6 +137,13 @@ Workflow routing:
 - Stay on the selected implementation workflow when scope is clear and no escalation signal appears; do not trigger `design-before-plan` or `impact-analysis` by default.
 - If escalation signals appear mid-task, stop the current implementation path and switch to `design-before-plan` and/or `impact-analysis` before continuing more implementation work.
 
+Protocol routing vocabulary:
+
+- `trigger`: start a skill-driven path when the activation rules or the accepted plan explicitly select it.
+- `defer`: keep the current chain when the conditions for escalation or a different skill path are not met yet.
+- `escalate`: switch to a higher-ceremony skill path or human clarification when the current chain crosses a governance boundary.
+- `stop`: pause the current chain and seek clarification instead of continuing execution.
+
 ## Escalation Rules
 
 Ask for clarification when:
@@ -162,7 +169,16 @@ Use compact inline blocks when skill-driven execution needs visible traceability
 5. `[validate: <skill> | ...]`
 6. `[drop: <skill> | ...]`
 
-Each triggered skill should produce or be summarized by an `[output]` block. The calling agent is responsible for emitting matching `[validate]` and `[drop]` blocks when validation completes or the skill is no longer active.
+Fast paths may omit the full protocol block set. Use these blocks when a non-trivial skill chain, review loop, escalation path, or cross-skill handoff needs explicit traceability.
+
+- The task-validation protocol block records the scoped goal, key constraints, and validation boundary before a non-trivial skill chain or review loop.
+- `triggers`: emit when moving from plain execution into a skill-driven path so the active skills and their reasons are explicit.
+- `precheck`: emit only when a skill has a real prerequisite, unresolved assumption, or boundary that must be checked before running it.
+- `output`: summarize the concrete deliverable from the active skill; every triggered skill should produce or be summarized by one before handoff or completion.
+- `validate`: record the smallest check that confirms the skill deliverable or handoff is sound.
+- `drop`: explicitly retire the skill when its deliverable is complete, superseded, or handed off downstream.
+
+If the same skill path is retried without new evidence, stop and re-scope, escalate, or ask instead of looping on the same action.
 
 ## Common Flow Patterns
 

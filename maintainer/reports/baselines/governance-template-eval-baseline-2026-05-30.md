@@ -4,18 +4,18 @@
 > Evaluator: automated via `maintainer/governance_eval/run_eval.py`
 > Command: parallel per-CLI full run with `--model sonnet --runs 1 --skip-preflight`
 > Templates under test: `templates/governance/AGENTS-template.md`, `templates/governance/CLAUDE-template.md`
-> Live case catalog: `maintainer/governance_eval/cases.yaml` (28 cases)
+> Live case catalog: `maintainer/governance_eval/cases.yaml` (33 cases)
 > Raw runs:
 > - `maintainer/reports/runs/governance-template-eval-2026-05-30-claude-sonnet.txt`
 > - `maintainer/reports/runs/governance-template-eval-2026-05-30-cursor-sonnet.txt`
 > - `maintainer/reports/runs/governance-template-eval-2026-05-30-codex-sonnet.txt`
 > Combined raw run: `maintainer/reports/runs/governance-template-eval-2026-05-30-sonnet.txt`
-> Previous baseline: 21-case cross-CLI run (same date, superseded by this refresh)
+> Previous baseline: 28-case cross-CLI run (same date, superseded by this refresh)
 
 ## Why This Baseline Exists
 
-这份基线记录 template-first 治理 live evaluator 在 **28-case** live suite 上的真实 CLI 对齐结果。  
-它不是安装 smoke，也不是静态引用检查，而是验证三类 agent CLI 在隔离工作区里是否都能从治理模板中读出同一套 continue / stop / routing / delegate 边界。
+这份基线记录 template-first 治理 live evaluator 在 **33-case** live suite 上的真实 CLI 对齐结果。  
+它不是安装 smoke，也不是静态引用检查，而是验证三类 agent CLI 在隔离工作区里是否都能从治理模板中读出同一套 continue / stop / routing / protocol / delegate 边界。
 
 ## Validation Performed
 
@@ -27,14 +27,15 @@ uv run maintainer/governance_eval/run_eval.py --cli cursor --model sonnet --runs
 uv run maintainer/governance_eval/run_eval.py --cli codex --model sonnet --runs 1 --skip-preflight
 ```
 
-本次基线前还补做了两类定向验证：
+本次基线前还补做了三类定向验证：
 
 - 新增 routing cases 的增量 smoke
+- 新增 protocol semantics cases 的增量 smoke
 - `release_actions_require_pause` 与 `parallelism_not_automatic` 的定向复跑，用于消除 prompt 歧义和并行 opt-in 语义残留
 
 ## Change Made Before Baseline
 
-相对先前 21-case 基线，本次刷新前 live suite 继续扩展，新增覆盖例如：
+相对先前 28-case 基线，本次刷新前 live suite 继续扩展，新增覆盖例如：
 
 - `scoped-tasking` 作为 bugfix / unclear-boundary 入口
 - clear local work 不默认升级到 `design-before-plan` / `impact-analysis`
@@ -42,6 +43,10 @@ uv run maintainer/governance_eval/run_eval.py --cli codex --model sonnet --runs 
 - `design-before-plan` / `impact-analysis` 的升级路径
 - `review_result: clean` 后的默认继续
 - `Tier 1` read-only subagent 与 “parallelism is opt-in, not automatic” 的一致化语义
+- fast path 是否可以省略完整 protocol block set
+- non-trivial skill chain 前的 `task-validation`
+- `precheck` / `output` / `validate` / `drop` 的最小协议要求
+- 无新证据重复尝试时的最小 loop guard
 
 ## Full Results
 
@@ -66,6 +71,11 @@ uv run maintainer/governance_eval/run_eval.py --cli codex --model sonnet --runs 
 | `design_before_plan_escalation` | pass | pass | pass |
 | `impact_analysis_escalation` | pass | pass | pass |
 | `review_clean_next_step_continuation` | pass | pass | pass |
+| `fast_path_protocol_optional` | pass | pass | pass |
+| `task_validation_required_for_skill_chain` | pass | pass | pass |
+| `precheck_only_for_real_prerequisite` | pass | pass | pass |
+| `triggered_skill_requires_output_validate_drop` | pass | pass | pass |
+| `repeated_skill_retry_requires_rescope` | pass | pass | pass |
 | `release_actions_require_pause` | pass | pass | pass |
 | `force_push_requires_pause` | pass | pass | pass |
 | `implementation_chain_continuation` | pass | pass | pass |
@@ -80,14 +90,14 @@ uv run maintainer/governance_eval/run_eval.py --cli codex --model sonnet --runs 
 
 ### By CLI
 
-- Claude: `28 pass`, `0 fail`, `0 miscalibrated`
-- Cursor: `28 pass`, `0 fail`, `0 miscalibrated`
-- Codex: `28 pass`, `0 fail`, `0 miscalibrated`
+- Claude: `33 pass`, `0 fail`, `0 miscalibrated`
+- Cursor: `33 pass`, `0 fail`, `0 miscalibrated`
+- Codex: `33 pass`, `0 fail`, `0 miscalibrated`
 
 ### Baseline status
 
 这份 governance template baseline 是 **pass**。  
-当前 live evaluator、当前模板、以及三类真实 CLI 环境在 28 个 live cases 上达成完全一致的 calibrated 结果。
+当前 live evaluator、当前模板、以及三类真实 CLI 环境在 33 个 live cases 上达成完全一致的 calibrated 结果。
 
 ## Residual Risk
 

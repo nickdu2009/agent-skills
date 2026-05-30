@@ -112,6 +112,14 @@ ROUTING_SEMANTICS_SNIPPETS = (
     "Continue after a review loop returns `review_result: clean` when the next step is explicit, local, and non-destructive.",
     "Once an escalation path is triggered, stop the current implementation path and move into `design-before-plan` or `impact-analysis`",
 )
+PROTOCOL_SEMANTICS_SNIPPETS = (
+    "Fast paths may omit the full protocol block set.",
+    "The task-validation protocol block records the scoped goal, key constraints, and validation boundary before a non-trivial skill chain or review loop.",
+    "`precheck`: emit only when a skill has a real prerequisite",
+    "`output`: summarize the concrete deliverable from the active skill;",
+    "`drop`: explicitly retire the skill when its deliverable is complete, superseded, or handed off downstream.",
+    "If the same skill path is retried without new evidence, stop and re-scope, escalate, or ask instead of looping on the same action.",
+)
 
 
 def assert_no_forbidden_runtime_references(project: Path, governance_file: Path) -> None:
@@ -139,6 +147,12 @@ def assert_governance_boundaries(governance_file: Path) -> None:
 def assert_routing_semantics(governance_file: Path) -> None:
     assert_exists(governance_file)
     for snippet in ROUTING_SEMANTICS_SNIPPETS:
+        assert_contains(governance_file, snippet)
+
+
+def assert_protocol_semantics(governance_file: Path) -> None:
+    assert_exists(governance_file)
+    for snippet in PROTOCOL_SEMANTICS_SNIPPETS:
         assert_contains(governance_file, snippet)
 
 
@@ -174,6 +188,7 @@ def test_project_install_installs_installable_skills(module) -> None:
         assert_parallelism_plan_template(claude_md)
         assert_governance_boundaries(claude_md)
         assert_routing_semantics(claude_md)
+        assert_protocol_semantics(claude_md)
         assert_no_forbidden_runtime_references(project, claude_md)
 
 
@@ -190,6 +205,7 @@ def test_agents_template_selection() -> None:
         assert_parallelism_plan_template(agents_md)
         assert_governance_boundaries(agents_md)
         assert_routing_semantics(agents_md)
+        assert_protocol_semantics(agents_md)
         assert_no_forbidden_runtime_references(project, agents_md)
 
 
@@ -210,6 +226,7 @@ def test_user_install_installs_user_level_governance(module) -> None:
         assert_parallelism_plan_template(codex_agents)
         assert_governance_boundaries(codex_agents)
         assert_routing_semantics(codex_agents)
+        assert_protocol_semantics(codex_agents)
         for skill_dir in module.discover_installable_skills():
             assert_exists(home / ".codex" / "skills" / skill_dir.name / "SKILL.md")
 
@@ -229,6 +246,7 @@ def test_user_install_installs_user_level_governance(module) -> None:
         assert_parallelism_plan_template(claude_md)
         assert_governance_boundaries(claude_md)
         assert_routing_semantics(claude_md)
+        assert_protocol_semantics(claude_md)
         for skill_dir in module.discover_installable_skills():
             assert_exists(home / ".claude" / "skills" / skill_dir.name / "SKILL.md")
 
