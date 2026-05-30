@@ -7,6 +7,49 @@ on:
     branches: [main]
 
 jobs:
+  governance-changes:
+    name: Detect governance changes
+    runs-on: ubuntu-latest
+    outputs:
+      governance: ${{ steps.filter.outputs.governance }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            governance:
+              - 'templates/governance/**'
+              - 'AGENTS.md'
+              - 'CLAUDE.md'
+              - 'maintainer/governance_eval/**'
+              - 'maintainer/scripts/analysis/check_governance_sync.py'
+              - 'maintainer/scripts/install/run_manage_governance_smoke.py'
+              - 'maintainer/scripts/analysis/check_cross_references.py'
+              - 'maintainer/docs/governance-template-eval.md'
+              - 'docs/maintainer/manual-and-repo-development.md'
+
+  validate-governance:
+    name: Validate governance changes
+    runs-on: ubuntu-latest
+    needs: governance-changes
+    if: needs.governance-changes.outputs.governance == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check governance template/root sync
+        run: python3 maintainer/scripts/analysis/check_governance_sync.py
+
+      - name: Run governance installer smoke tests
+        run: python3 maintainer/scripts/install/run_manage_governance_smoke.py
+
+      - name: Check governance cross references
+        run: python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
+
   validate-skills:
     name: Validate skill format
     runs-on: ubuntu-latest

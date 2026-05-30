@@ -1,7 +1,7 @@
 # Low-Intervention Agent Workflow
 
-**Status**: Proposal / not implemented
-**Implementation note**: This document records the intended protocol. It does not currently create an `autonomous-coding-workflow` skill, update governance templates, or add trigger tests.
+**Status**: Partial implementation
+**Implementation note**: Core continue / ask / escalation boundaries now live in `templates/governance/*-template.md`, their root-file projections, installer smoke, and governance evaluator coverage. This document still records the broader protocol shape; it does not yet add a dedicated `autonomous-coding-workflow` skill or a separate trigger-test suite.
 
 ## Purpose
 
@@ -241,6 +241,12 @@ Low-Intervention Mode:
 3. 用触发测试验证不会导致过度自动化
 4. 观察外部项目使用反馈
 5. 如果稳定，再考虑新增 `autonomous-coding-workflow`
+
+当前仓库状态：
+
+- 第 1、2 步已经部分落地到治理模板、根文件投影和维护者校验链。
+- 第 3 步当前主要依赖 `maintainer/governance_eval/` 的 live cases，而不是单独的 trigger-test 套件。
+- 第 5 步仍属于未来可选项，不是当前治理模板工作的前置条件。
 
 成功标准：
 

@@ -106,6 +106,12 @@ GOVERNANCE_BOUNDARY_SNIPPETS = (
     "Stop and ask when the next step would change requirements, public interfaces, cross-module contracts, persistence schema",
     "Parallelism is opt-in, not automatic.",
 )
+ROUTING_SEMANTICS_SNIPPETS = (
+    "Stay on the selected implementation workflow when scope is clear and no escalation signal appears;",
+    "Continue from a completed plan into implementation, `self-review`, and `targeted-validation`",
+    "Continue after a review loop returns `review_result: clean` when the next step is explicit, local, and non-destructive.",
+    "Once an escalation path is triggered, stop the current implementation path and move into `design-before-plan` or `impact-analysis`",
+)
 
 
 def assert_no_forbidden_runtime_references(project: Path, governance_file: Path) -> None:
@@ -127,6 +133,12 @@ def assert_parallelism_plan_template(governance_file: Path) -> None:
 def assert_governance_boundaries(governance_file: Path) -> None:
     assert_exists(governance_file)
     for snippet in GOVERNANCE_BOUNDARY_SNIPPETS:
+        assert_contains(governance_file, snippet)
+
+
+def assert_routing_semantics(governance_file: Path) -> None:
+    assert_exists(governance_file)
+    for snippet in ROUTING_SEMANTICS_SNIPPETS:
         assert_contains(governance_file, snippet)
 
 
@@ -161,6 +173,7 @@ def test_project_install_installs_installable_skills(module) -> None:
         assert_contains(claude_md, "## Common Flow Patterns")
         assert_parallelism_plan_template(claude_md)
         assert_governance_boundaries(claude_md)
+        assert_routing_semantics(claude_md)
         assert_no_forbidden_runtime_references(project, claude_md)
 
 
@@ -176,6 +189,7 @@ def test_agents_template_selection() -> None:
         assert_contains(agents_md, "## Skill Activation")
         assert_parallelism_plan_template(agents_md)
         assert_governance_boundaries(agents_md)
+        assert_routing_semantics(agents_md)
         assert_no_forbidden_runtime_references(project, agents_md)
 
 
@@ -195,6 +209,7 @@ def test_user_install_installs_user_level_governance(module) -> None:
         assert_contains(codex_agents, "## Skill Activation")
         assert_parallelism_plan_template(codex_agents)
         assert_governance_boundaries(codex_agents)
+        assert_routing_semantics(codex_agents)
         for skill_dir in module.discover_installable_skills():
             assert_exists(home / ".codex" / "skills" / skill_dir.name / "SKILL.md")
 
@@ -213,6 +228,7 @@ def test_user_install_installs_user_level_governance(module) -> None:
         assert_contains(claude_md, "## Skill Activation")
         assert_parallelism_plan_template(claude_md)
         assert_governance_boundaries(claude_md)
+        assert_routing_semantics(claude_md)
         for skill_dir in module.discover_installable_skills():
             assert_exists(home / ".claude" / "skills" / skill_dir.name / "SKILL.md")
 

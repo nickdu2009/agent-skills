@@ -70,13 +70,12 @@ python3 maintainer/scripts/install/run_manage_governance_smoke.py
 
 ### 改治理模板时的固定顺序
 
-如果这次改动落在 `templates/governance/`，按下面顺序检查：
+如果这次改动落在 `templates/governance/`、根 `AGENTS.md` / `CLAUDE.md`，或治理评测/投影链路，按下面顺序检查：
 
 ```bash
 python3 maintainer/scripts/analysis/check_governance_sync.py
 python3 maintainer/scripts/install/run_manage_governance_smoke.py
-uv run maintainer/governance_eval/run_eval.py --case local_continue --runs 1
-uv run maintainer/governance_eval/run_eval.py --case delegation_bounds --runs 1
+uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue,scoped_tasking_entrypoint,multi_file_plan_then_continue,design_before_plan_escalation,impact_analysis_escalation,review_clean_next_step_continuation,delegation_bounds,parallelism_not_automatic --runs 1
 python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
 ```
 
@@ -84,8 +83,9 @@ python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
 
 - `check_governance_sync.py` 检查模板与仓库根治理文件的共享正文是否同步
 - `run_manage_governance_smoke.py` 检查安装投影链路是否仍可生成预期治理文件
-- `governance_eval/run_eval.py` 检查 agent 在隔离工作区里能否正确读出治理边界
+- `governance_eval/run_eval.py` 是 authenticated maintainer lane；先跑这次新增/改动的 case，再用上面的组合命令做一轮代表性回归 smoke
 - `check_cross_references.py` 检查文档与 skill 引用是否仍然完整
+- `.github/workflows/ci.yml` 现在会在治理相关路径变更时自动 gate `sync + smoke + cross-ref`；behavior eval 仍保留在本地维护者链路，不放进公共 CI
 
 ### Repo Overlay Contract
 

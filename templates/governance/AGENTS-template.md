@@ -131,6 +131,12 @@ Review-loop activation (pick by artifact type, mutually exclusive):
 - `code-review-loop`: user asks to review a diff / commit / PR / specified files of already-implemented code.
 - `test-review-loop`: user asks to review test cases / test strategy / coverage / 测试用例本身 (not the production code under test).
 
+Workflow routing:
+
+- Start with `scoped-tasking` when a bug fix, refactor, multi-file change, or design/review request still needs boundary definition before execution.
+- Stay on the selected implementation workflow when scope is clear and no escalation signal appears; do not trigger `design-before-plan` or `impact-analysis` by default.
+- If escalation signals appear mid-task, stop the current implementation path and switch to `design-before-plan` and/or `impact-analysis` before continuing more implementation work.
+
 ## Escalation Rules
 
 Ask for clarification when:
@@ -169,19 +175,27 @@ Parallel:     multi-agent-protocol -> synthesis
 Review loop:  pick one of requirements-review-loop / design-review-loop / plan-review-loop / code-review-loop / test-review-loop -> revise -> re-review until review_result: clean
 ```
 
+Normal vs escalation paths:
+
+- `Bug fix`, `Refactor`, `Multi-file`, and `Review loop` are the default execution paths when the task stays within its accepted scope.
+- `Design-first` is the escalation path when the work crosses into multiple approaches, unclear acceptance criteria, public-contract changes, shared data models, or broad caller impact.
+
 Automatic continuation:
 
 - Continue from implementation to `self-review` and `targeted-validation` without an extra user checkpoint when the next step is local and non-destructive.
+- Continue from a completed plan into implementation, `self-review`, and `targeted-validation` when the next step remains local, non-destructive, and within the accepted task boundary.
+- Continue after a review loop returns `review_result: clean` when the next step is explicit, local, and non-destructive.
 
 Stop conditions:
 
 - Pause the current chain and ask before continuing if the work expands into public-contract changes, schema/migration work, dependency/toolchain changes, bulk file moves, or remote/destructive actions.
+- Once an escalation path is triggered, stop the current implementation path and move into `design-before-plan` or `impact-analysis` before continuing more implementation work.
 
 ## Multi-Agent Rules
 
 Full protocol: `multi-agent-protocol` skill.
 
-**Tier 1 (read-only):** Launch read-only subagents anytime. Subagents return structured results; the primary agent synthesizes.
+**Tier 1 (read-only):** Launch read-only subagents when the user explicitly asks for parallel work or the active plan/workflow has already chosen a parallel investigation path. Subagents return structured results; the primary agent synthesizes.
 
 **Tier 2 (write-capable):** Before launching write-capable subagents, emit: `[delegate: <count 2-4> | split:<dimension> | risk:<low|medium|high>]`. If not cleanly splittable: `[delegate: 0 | reason:<why>]`.
 

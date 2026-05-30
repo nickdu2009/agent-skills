@@ -22,7 +22,8 @@ import yaml
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]  # maintainer/governance_eval/ → project root
 CASES_FILE = Path(__file__).with_name("cases.yaml")
-TIMEOUT = 120  # seconds per CLI invocation
+TIMEOUT = 240  # seconds per CLI invocation
+PREFLIGHT_TIMEOUT = 240  # seconds for lightweight CLI availability check
 
 assert (PROJECT_ROOT / "templates" / "governance").is_dir(), (
     f"PROJECT_ROOT miscalculated: {PROJECT_ROOT} — "
@@ -260,14 +261,14 @@ def preflight_check(cli: CLIDef, workspace: Path) -> Optional[str]:
     try:
         proc = subprocess.run(
             cli.build_cmd("Respond with exactly: {\"ok\":true}", workspace),
-            cwd=workspace, capture_output=True, text=True, timeout=60,
+            cwd=workspace, capture_output=True, text=True, timeout=PREFLIGHT_TIMEOUT,
             stdin=subprocess.DEVNULL,
         )
         err = is_cli_error(proc)
         if err:
             return err
     except subprocess.TimeoutExpired:
-        return "preflight timed out after 60s"
+        return f"preflight timed out after {PREFLIGHT_TIMEOUT}s"
     except FileNotFoundError:
         return f"CLI '{cli.name}' not found in PATH"
     return None
@@ -382,6 +383,7 @@ def main():
 
                 if error_count == runs:
                     verdict = "ERROR"
+                    calibrated = False
                     cal = "(all runs errored)"
                 else:
                     verdict = "PASS" if pass_count >= majority else "FAIL"
@@ -392,7 +394,7 @@ def main():
                 print(f"  {case_id:<25} {verdict:<5} {cal}", flush=True)
                 cli_results.append({
                     "id": case_id, "verdict": verdict,
-                    "calibrated": verdict == "ERROR" or calibrated,
+                    "calibrated": calibrated,
                     "runs": runs, "pass_count": pass_count,
                     "error_count": error_count,
                 })
