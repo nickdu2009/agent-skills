@@ -82,6 +82,7 @@ python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
 说明：
 
 - `check_governance_sync.py` 检查模板与仓库根治理文件的共享正文是否同步
+- `check_governance_sync.py` 也会检查两份治理模板除顶部 mirror 注释外是否仍保持正文镜像；如果未来真要引入平台差异，先更新约束与校验，再改模板
 - `run_manage_governance_smoke.py` 检查安装投影链路是否仍可生成预期治理文件
 - `governance_eval/run_eval.py` 是 authenticated maintainer lane；先跑这次新增/改动的 case，再用上面的组合命令做一轮代表性回归 smoke
 - `check_cross_references.py` 检查文档与 skill 引用是否仍然完整

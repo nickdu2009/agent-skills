@@ -1,4 +1,4 @@
-<!-- Governance mirror: keep in sync with CLAUDE-template.md (identical content, different header) -->
+<!-- Governance mirror: keep body identical to CLAUDE-template.md; only this mirror comment may differ unless a documented platform-specific exception is added -->
 
 # AGENTS.md
 

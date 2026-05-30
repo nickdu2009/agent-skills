@@ -9,7 +9,9 @@ templates.
 
 This lint enforces four invariants:
 
-1. ``AGENTS-template.md`` and ``CLAUDE-template.md`` define the same H2 set.
+1. ``AGENTS-template.md`` and ``CLAUDE-template.md`` remain mirror templates:
+   after stripping the top-level governance mirror comment, their bodies match
+   exactly.
 2. Root ``AGENTS.md`` and ``CLAUDE.md`` contain that H2 set in order.
 3. After stripping repo-overlay blocks from the root files, every governance
    section body matches the corresponding template section body exactly.
@@ -37,6 +39,7 @@ ROOT_CLAUDE = REPO_ROOT / "CLAUDE.md"
 REPO_OVERLAY_CONTRACT_PREFIX = "<!-- Repo overlay contract:"
 REPO_OVERLAY_START = "<!-- repo-overlay:start "
 REPO_OVERLAY_END = "<!-- repo-overlay:end "
+GOVERNANCE_MIRROR_PREFIX = "<!-- Governance mirror:"
 
 
 def extract_h2_from_text(text: str) -> list[str]:
@@ -88,6 +91,31 @@ def normalize_text_block(text: str) -> str:
         blank_run = 0
         normalized_lines.append(stripped_line)
     return "\n".join(normalized_lines).strip()
+
+
+def strip_governance_mirror_comment(text: str) -> str:
+    """Strip the top mirror comment; it is the only allowed template delta."""
+    lines = text.splitlines()
+    if lines and lines[0].strip().startswith(GOVERNANCE_MIRROR_PREFIX):
+        lines = lines[1:]
+        if lines and lines[0].strip() == "":
+            lines = lines[1:]
+    return "\n".join(lines)
+
+
+def first_mismatch(a: str, b: str) -> tuple[int, str, str] | None:
+    """Return first differing line between *a* and *b*, if any."""
+    a_lines = a.splitlines()
+    b_lines = b.splitlines()
+    for idx, (a_line, b_line) in enumerate(zip(a_lines, b_lines), start=1):
+        if a_line != b_line:
+            return (idx, a_line, b_line)
+    if len(a_lines) != len(b_lines):
+        idx = min(len(a_lines), len(b_lines)) + 1
+        a_line = a_lines[idx - 1] if idx - 1 < len(a_lines) else "<EOF>"
+        b_line = b_lines[idx - 1] if idx - 1 < len(b_lines) else "<EOF>"
+        return (idx, a_line, b_line)
+    return None
 
 
 def _parse_overlay_name(line: str, prefix: str) -> str:
@@ -178,12 +206,30 @@ def check() -> dict[str, Any]:
     if not ROOT_CLAUDE.exists():
         issues.append("missing root CLAUDE.md")
 
-    # Invariant 1: template mirror parity
+    # Invariant 1a: template section sets still align.
     if template_agents != template_claude:
         issues.append(
             "template H2 mismatch between AGENTS-template.md and CLAUDE-template.md: "
             f"agents={template_agents} claude={template_claude}"
         )
+
+    # Invariant 1b: template bodies remain mirrors except the top mirror comment.
+    stripped_template_agents = normalize_text_block(strip_governance_mirror_comment(template_agents_text))
+    stripped_template_claude = normalize_text_block(strip_governance_mirror_comment(template_claude_text))
+    if stripped_template_agents != stripped_template_claude:
+        mismatch = first_mismatch(stripped_template_agents, stripped_template_claude)
+        if mismatch is None:
+            issues.append(
+                "template body mismatch between AGENTS-template.md and "
+                "CLAUDE-template.md after stripping governance mirror comments"
+            )
+        else:
+            line_no, agents_line, claude_line = mismatch
+            issues.append(
+                "template body mismatch between AGENTS-template.md and "
+                "CLAUDE-template.md after stripping governance mirror comments: "
+                f"line {line_no}: agents={agents_line!r} claude={claude_line!r}"
+            )
 
     # Invariant 2a: template ⊆ root AGENTS.md (in order)
     ok, missing = is_ordered_subsequence(template_agents, root_agents)
