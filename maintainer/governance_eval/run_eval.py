@@ -20,6 +20,8 @@ from typing import Any, Optional
 
 import yaml
 
+from eval_payload import summarize_cli_results, summarize_overall_results
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]  # maintainer/governance_eval/ → project root
 CASES_FILE = Path(__file__).with_name("cases.yaml")
 TIMEOUT = 240  # seconds per CLI invocation
@@ -272,63 +274,6 @@ def preflight_check(cli: CLIDef, workspace: Path) -> Optional[str]:
     except FileNotFoundError:
         return f"CLI '{cli.name}' not found in PATH"
     return None
-
-
-def summarize_cli_results(cli_results: list[dict[str, Any]], *, skipped: bool = False) -> dict[str, Any]:
-    """Return summary counts for one CLI."""
-    if skipped:
-        return {
-            "status": "skipped",
-            "pass_count": 0,
-            "fail_count": 0,
-            "error_count": 0,
-            "calibrated_count": 0,
-            "miscalibrated_count": 0,
-            "executed_case_count": 0,
-        }
-
-    pass_count = sum(1 for r in cli_results if r["verdict"] == "PASS")
-    fail_count = sum(1 for r in cli_results if r["verdict"] == "FAIL")
-    error_count = sum(1 for r in cli_results if r["verdict"] == "ERROR")
-    calibrated_count = sum(1 for r in cli_results if r["calibrated"])
-    miscalibrated_count = len(cli_results) - calibrated_count
-    status = "pass" if all(r["calibrated"] for r in cli_results) else "fail"
-    return {
-        "status": status,
-        "pass_count": pass_count,
-        "fail_count": fail_count,
-        "error_count": error_count,
-        "calibrated_count": calibrated_count,
-        "miscalibrated_count": miscalibrated_count,
-        "executed_case_count": len(cli_results),
-    }
-
-
-def summarize_overall_results(results: dict[str, dict[str, Any]], requested_case_count: int) -> dict[str, Any]:
-    """Return aggregate summary across all requested CLIs."""
-    executed = [case for cli_data in results.values() for case in cli_data["cases"]]
-    pass_count = sum(1 for r in executed if r["verdict"] == "PASS")
-    fail_count = sum(1 for r in executed if r["verdict"] == "FAIL")
-    error_count = sum(1 for r in executed if r["verdict"] == "ERROR")
-    calibrated_count = sum(1 for r in executed if r["calibrated"])
-    miscalibrated_count = len(executed) - calibrated_count
-    skipped_cli_count = sum(1 for cli_data in results.values() if cli_data["skipped_preflight"])
-    if skipped_cli_count:
-        status = "blocked"
-    else:
-        status = "pass" if all(r["calibrated"] for r in executed) else "fail"
-    return {
-        "status": status,
-        "requested_case_count": requested_case_count,
-        "requested_cli_count": len(results),
-        "skipped_cli_count": skipped_cli_count,
-        "executed_case_count": len(executed),
-        "pass_count": pass_count,
-        "fail_count": fail_count,
-        "error_count": error_count,
-        "calibrated_count": calibrated_count,
-        "miscalibrated_count": miscalibrated_count,
-    }
 
 
 # --- Main ---

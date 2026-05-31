@@ -5,15 +5,21 @@
 > Scope: deterministic governance checks + explicit codex eval attachment
 > Deterministic snapshot command:
 > `python3 maintainer/scripts/analysis/check_governance_health.py --json`
+> Companion JSON baseline:
+> `maintainer/reports/baselines/governance-health-baseline-2026-05-31.json`
 > Eval JSON source command:
 > `uv run maintainer/governance_eval/run_eval.py --cli codex --model sonnet --runs 1 --skip-preflight --json > maintainer/reports/runs/governance-health-eval-codex-2026-05-31.json`
 > Combined snapshot command:
 > `python3 maintainer/scripts/analysis/check_governance_health.py --json --eval-json maintainer/reports/runs/governance-health-eval-codex-2026-05-31.json`
+> Compare command:
+> `python3 maintainer/scripts/analysis/compare_governance_health_baseline.py --baseline maintainer/reports/baselines/governance-health-baseline-2026-05-31.json --current maintainer/reports/runs/governance-health-current.json`
 
 ## Why This Baseline Exists
 
 这份基线记录 `P2` 治理健康度指标首增量的**第一份单次运行快照**。  
 它的目标不是替代模板、sync lint、安装 smoke 或 live evaluator，而是把当前已经稳定存在的治理检查结果收敛成一个可复用的健康度观察面。
+
+从这一轮开始，Markdown 基线旁边维护**同名 companion JSON**，用于做机器 compare / regression；Markdown 继续承担人类可读解释，JSON 负责稳定比较契约。
 
 ## Included Metrics
 

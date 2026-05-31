@@ -227,6 +227,8 @@ uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue,
 
 如果要把行为回归指标纳入治理健康度快照，先单独生成这份 JSON，再显式传给 `check_governance_health.py --eval-json <path>`；默认不要让 deterministic 健康度链隐式重跑 live eval。
 
+如果要做显式 multi-CLI attach，建议按 CLI 分别保存 JSON，再在健康度链路里重复传多个 `--eval-json`，而不是让健康度脚本自己调度 evaluator。
+
 ### Cheaper model
 
 ```bash

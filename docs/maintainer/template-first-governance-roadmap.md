@@ -166,6 +166,11 @@
    - `run_eval.py --json`（仅在显式提供 eval 结果时纳入）
 
    这一步先把“当前能可靠机器统计什么”说清楚，不在首增量里承诺真实会话级的额外确认率或长期 routing 误判趋势。
+   
+   后续如果要继续推进这两项 follow-on 指标，应额外维护一层独立的 curated session observability：
+   - decision points / gold labels 独立存放
+   - 通过专用 runner 产出 `extra_confirmation_rate` 与 `routing_misjudgment_rate`
+   - 不把这层观测面伪装成默认 deterministic 健康度快照
 
 ### P2 Verify
 

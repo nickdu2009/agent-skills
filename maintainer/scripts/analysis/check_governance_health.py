@@ -4,16 +4,28 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 ANALYSIS_DIR = REPO_ROOT / "maintainer" / "scripts" / "analysis"
 INSTALL_DIR = REPO_ROOT / "maintainer" / "scripts" / "install"
+GOVERNANCE_EVAL_DIR = REPO_ROOT / "maintainer" / "governance_eval"
+
+EVAL_PAYLOAD_SPEC = importlib.util.spec_from_file_location(
+    "governance_eval_eval_payload",
+    GOVERNANCE_EVAL_DIR / "eval_payload.py",
+)
+if EVAL_PAYLOAD_SPEC is None or EVAL_PAYLOAD_SPEC.loader is None:
+    raise ImportError("unable to load maintainer/governance_eval/eval_payload.py")
+EVAL_PAYLOAD_MODULE = importlib.util.module_from_spec(EVAL_PAYLOAD_SPEC)
+EVAL_PAYLOAD_SPEC.loader.exec_module(EVAL_PAYLOAD_MODULE)
+load_eval_payload = EVAL_PAYLOAD_MODULE.load_eval_payload
+merge_eval_payloads = EVAL_PAYLOAD_MODULE.merge_eval_payloads
 
 
 def run_json_command(command: list[str]) -> tuple[dict[str, Any] | None, subprocess.CompletedProcess[str]]:
@@ -119,36 +131,39 @@ def collect_cross_ref_status() -> dict[str, Any]:
     }
 
 
-def load_eval_status(path: Path) -> dict[str, Any]:
-    if not path.exists():
-        return {
-            "status": "blocked",
-            "error": f"eval JSON not found: {path}",
-        }
-
+def load_eval_status(paths: list[Path]) -> dict[str, Any]:
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
+        payloads = [load_eval_payload(path) for path in paths]
+        payload = merge_eval_payloads(payloads)
+    except ValueError as exc:
         return {
             "status": "blocked",
-            "error": f"invalid eval JSON: {exc}",
+            "error": str(exc),
         }
 
-    summary = payload.get("summary")
-    results = payload.get("results")
-    if not isinstance(summary, dict) or not isinstance(results, dict):
-        return {
-            "status": "blocked",
-            "error": "eval JSON missing summary/results payload",
-        }
-
+    summary = payload["summary"]
+    results = payload["results"]
+    config = payload["config"]
+    requested_cli_names = list(config.get("requested_clis", list(results)))
+    requested_case_ids = list(config.get("requested_case_ids", []))
+    runs_override = config.get("runs_override")
+    model_override = config.get("model_override")
+    skip_preflight = config.get("skip_preflight")
     executed_case_count = int(summary.get("executed_case_count", 0))
     if executed_case_count == 0:
         return {
             "status": "skipped",
-            "source": str(path),
+            "sources": [str(path) for path in paths],
+            "attached_eval_json_count": len(paths),
+            "cli_names": list(results),
+            "requested_cli_names": requested_cli_names,
             "requested_cli_count": summary.get("requested_cli_count", 0),
+            "requested_case_ids": requested_case_ids,
             "requested_case_count": summary.get("requested_case_count", 0),
+            "runs_override": runs_override,
+            "model_override": model_override,
+            "skip_preflight": skip_preflight,
+            "skipped_cli_count": int(summary.get("skipped_cli_count", 0)),
             "executed_case_count": 0,
             "pass_count": 0,
             "fail_count": 0,
@@ -167,9 +182,17 @@ def load_eval_status(path: Path) -> dict[str, Any]:
     miscalibrated_count = int(summary.get("miscalibrated_count", 0))
     return {
         "status": "included",
-        "source": str(path),
+        "sources": [str(path) for path in paths],
+        "attached_eval_json_count": len(paths),
+        "cli_names": list(results),
+        "requested_cli_names": requested_cli_names,
         "requested_cli_count": int(summary.get("requested_cli_count", len(results))),
+        "requested_case_ids": requested_case_ids,
         "requested_case_count": int(summary.get("requested_case_count", 0)),
+        "runs_override": runs_override,
+        "model_override": model_override,
+        "skip_preflight": skip_preflight,
+        "skipped_cli_count": int(summary.get("skipped_cli_count", 0)),
         "executed_case_count": executed_case_count,
         "pass_count": pass_count,
         "fail_count": fail_count,
@@ -182,15 +205,15 @@ def load_eval_status(path: Path) -> dict[str, Any]:
     }
 
 
-def collect_health(eval_json_path: Path | None = None) -> dict[str, Any]:
+def collect_health(eval_json_paths: list[Path] | None = None) -> dict[str, Any]:
     sync = collect_sync_status()
     smoke = collect_smoke_status()
     cross_ref = collect_cross_ref_status()
 
-    if eval_json_path is None:
+    if not eval_json_paths:
         evaluation = {"status": "not_included"}
     else:
-        evaluation = load_eval_status(eval_json_path)
+        evaluation = load_eval_status(eval_json_paths)
 
     deterministic_ok = sync["ok"] and smoke["pass"] and cross_ref["ok"]
     overall_status = "pass"
@@ -274,8 +297,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--eval-json",
         type=Path,
+        action="append",
         default=None,
-        help="Optional path to run_eval.py --json output to include eval metrics",
+        help="Optional path(s) to run_eval.py --json output to include eval metrics",
     )
     return parser.parse_args()
 

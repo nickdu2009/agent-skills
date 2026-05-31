@@ -96,14 +96,35 @@ python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
 python3 maintainer/scripts/analysis/check_governance_health.py --json
 ```
 
-如果本次需要把行为回归指标一起记进健康度快照，先单独生成 eval JSON，再显式传入：
+如果要和已晋升 baseline 做 regression / compare，使用 companion JSON：
+
+```bash
+python3 maintainer/scripts/analysis/compare_governance_health_baseline.py \
+  --baseline maintainer/reports/baselines/governance-health-baseline-2026-05-31.json \
+  --current maintainer/reports/runs/governance-health-current.json
+```
+
+如果本次需要把行为回归指标一起记进健康度快照，先单独生成一个或多个 eval JSON，再显式传入：
 
 ```bash
 uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue,fast_path_protocol_optional,delegation_bounds --runs 1 --json > maintainer/reports/runs/governance-health-eval-smoke.json
 python3 maintainer/scripts/analysis/check_governance_health.py --json --eval-json maintainer/reports/runs/governance-health-eval-smoke.json
 ```
 
+如果这次要做 cross-CLI attach，就按 CLI 各自产出 JSON，再重复传 `--eval-json`：
+
+```bash
+uv run maintainer/governance_eval/run_eval.py --cli claude --model sonnet --runs 1 --skip-preflight --json > maintainer/reports/runs/governance-health-eval-claude.json
+uv run maintainer/governance_eval/run_eval.py --cli cursor --model sonnet --runs 1 --skip-preflight --json > maintainer/reports/runs/governance-health-eval-cursor.json
+uv run maintainer/governance_eval/run_eval.py --cli codex --model sonnet --runs 1 --skip-preflight --json > maintainer/reports/runs/governance-health-eval-codex.json
+python3 maintainer/scripts/analysis/check_governance_health.py --json \
+  --eval-json maintainer/reports/runs/governance-health-eval-claude.json \
+  --eval-json maintainer/reports/runs/governance-health-eval-cursor.json \
+  --eval-json maintainer/reports/runs/governance-health-eval-codex.json
+```
+
 默认不要让健康度脚本隐式重跑 live eval；保持 deterministic 检查与 authenticated maintainer lane 分层。
+如果把 attach 范围从单 CLI 扩成 cross-CLI，应该晋升新的 baseline 文件，而不是直接覆写旧 baseline。
 
 ### Repo Overlay Contract
 

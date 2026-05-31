@@ -15,6 +15,9 @@ This directory contains repository-internal tooling and evaluation assets and sh
 ## Useful Evaluation Entrypoints
 
 - `python3 maintainer/scripts/install/run_manage_governance_smoke.py`
+- `python3 maintainer/scripts/analysis/check_governance_health.py --json`
+- `python3 maintainer/scripts/analysis/compare_governance_health_baseline.py --baseline <baseline.json> --current <snapshot.json>`
+- `uv run maintainer/governance_observability/run_observability_eval.py --json`
 - `python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode report`
 - `python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode api --compact-mode`
 - `python3 maintainer/scripts/evaluation/run_claude_trigger_smoke.py`
