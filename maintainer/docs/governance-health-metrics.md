@@ -49,6 +49,12 @@ python3 maintainer/scripts/analysis/compare_governance_health_baseline.py \
   --current maintainer/reports/runs/governance-health-current.json
 ```
 
+如果要快速确认 follow-on 里的 compare scope / observability mapping 合同仍然成立：
+
+```bash
+python3 maintainer/scripts/analysis/check_governance_followon_contracts.py
+```
+
 当 baseline 和 current 都包含 eval attach 时，compare 会按完整 scope 元数据判断兼容性，例如：
 
 - `requested_cli_names`
