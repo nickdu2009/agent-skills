@@ -77,7 +77,7 @@ maintainer/
 
 ## Current Live Cases
 
-当前 live suite 包含 33 个 case，全部面向当前治理模型：
+当前 live suite 包含 36 个 case，全部面向当前治理模型：
 
 | ID | Category | What it validates | Expected now |
 |---|---|---|---|
@@ -100,6 +100,9 @@ maintainer/
 | `design_before_plan_escalation` | behavioral | 多方案 / 公共契约 / 验收不清时是否升级到 `design-before-plan` | `pass` |
 | `impact_analysis_escalation` | behavioral | shared model / broad caller impact 时是否升级到 `impact-analysis` | `pass` |
 | `review_clean_next_step_continuation` | behavioral | `review_result: clean` 后的明确非破坏性下一步是否可自动继续 | `pass` |
+| `review_loop_no_drop_on_issues_found` | behavioral | `review_result: issues_found` 后 review-loop 是否仍保持 active 且不得 `drop` | `pass` |
+| `review_loop_revise_then_rereview` | behavioral | 同一文件 artifact 的 `修订` 是否留在原 review-loop 且必须自动 re-review | `pass` |
+| `review_loop_chat_artifact_continuation` | behavioral | chat-only / in-thread artifact 的 `修订` 是否仍留在原 review-loop 且必须自动 re-review | `pass` |
 | `fast_path_protocol_optional` | behavioral | fast path 是否可以省略完整 protocol block set | `pass` |
 | `task_validation_required_for_skill_chain` | behavioral | non-trivial skill chain 前是否需要 `task-validation` | `pass` |
 | `precheck_only_for_real_prerequisite` | behavioral | `precheck` 是否只在真实前置条件下出现 | `pass` |
@@ -137,6 +140,7 @@ maintainer/
 - `task-validation`
 - `precheck`
 - `output / validate / drop`
+- review-loop continuation: no `drop` on `issues_found`, same-artifact `修订` stays in-loop, and revision must re-enter review before completion
 - repeated retry without new evidence 的最小 loop guard
 
 这些语义的模板落点是：
@@ -176,9 +180,9 @@ uv run maintainer/governance_eval/run_eval.py
 
 ### Current baseline
 
-当前已固化的真实 CLI 基线（2026-05-30 的 33-case cross-CLI）：
+当前已固化的真实 CLI 基线（2026-05-31 的 36-case cross-CLI）：
 
-- `maintainer/reports/baselines/governance-template-eval-baseline-2026-05-30.md`
+- `maintainer/reports/baselines/governance-template-eval-baseline-2026-05-31.md`
 
 这份基线使用的是：
 
@@ -188,10 +192,10 @@ uv run maintainer/governance_eval/run_eval.py
 
 对应原始 run 记录（按 CLI 并行生成后合并）：
 
-- `maintainer/reports/runs/governance-template-eval-2026-05-30-claude-sonnet.txt`
-- `maintainer/reports/runs/governance-template-eval-2026-05-30-cursor-sonnet.txt`
-- `maintainer/reports/runs/governance-template-eval-2026-05-30-codex-sonnet.txt`
-- `maintainer/reports/runs/governance-template-eval-2026-05-30-sonnet.txt`（合并视图）
+- `maintainer/reports/runs/governance-template-eval-2026-05-31-claude-sonnet.txt`
+- `maintainer/reports/runs/governance-template-eval-2026-05-31-cursor-sonnet.txt`
+- `maintainer/reports/runs/governance-template-eval-2026-05-31-codex-sonnet.txt`
+- `maintainer/reports/runs/governance-template-eval-2026-05-31-sonnet.txt`（合并视图）
 
 ### Parallel full run (per CLI)
 
@@ -204,19 +208,19 @@ uv run maintainer/governance_eval/run_eval.py --cli codex --model sonnet --runs 
 ### Single case smoke
 
 ```bash
-uv run maintainer/governance_eval/run_eval.py --case local_continue --runs 1
+uv run maintainer/governance_eval/run_eval.py --case review_loop_revise_then_rereview --runs 1
 ```
 
 ### Single CLI with multiple cases
 
 ```bash
-uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue --case scoped_tasking_entrypoint --case fast_path_protocol_optional --case triggered_skill_requires_output_validate_drop --case delegation_bounds --runs 1
+uv run maintainer/governance_eval/run_eval.py --cli codex --case review_loop_no_drop_on_issues_found --case review_loop_revise_then_rereview --case review_loop_chat_artifact_continuation --case local_continue --case fast_path_protocol_optional --case delegation_bounds --runs 1
 ```
 
 也可以在一个参数里传逗号分隔的 case 列表：
 
 ```bash
-uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue,scoped_tasking_entrypoint,fast_path_protocol_optional,triggered_skill_requires_output_validate_drop,delegation_bounds --runs 1
+uv run maintainer/governance_eval/run_eval.py --cli codex --case review_loop_no_drop_on_issues_found,review_loop_revise_then_rereview,review_loop_chat_artifact_continuation,local_continue,fast_path_protocol_optional,delegation_bounds --runs 1
 ```
 
 ### JSON summary
@@ -251,6 +255,7 @@ uv run maintainer/governance_eval/run_eval.py --model sonnet
 - judge 表达式尽量简单、可解释
 - case 名称直接对应当前治理能力
 - 失败能够区分“模板真有问题”与“评测本身没跟上”
+- 如果 full run 只出现单个 miscalibrated case，先重跑该单 case 再决定是否修改模板或 baseline，避免把一次性模型波动当成治理缺口
 
 ### Do Not Keep In The Live Suite
 
@@ -269,7 +274,7 @@ uv run maintainer/governance_eval/run_eval.py --model sonnet
 - 条件允许时，再补跑一组代表性旧 case，确认没有把已有 judge / prompt 路径带坏
 
 ```bash
-uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue,requirements_change_requires_pause,scoped_tasking_entrypoint,fast_path_protocol_optional,task_validation_required_for_skill_chain,precheck_only_for_real_prerequisite,triggered_skill_requires_output_validate_drop,repeated_skill_retry_requires_rescope,delegation_bounds,parallelism_not_automatic --runs 1
+uv run maintainer/governance_eval/run_eval.py --cli codex --case review_loop_no_drop_on_issues_found,review_loop_revise_then_rereview,review_loop_chat_artifact_continuation,local_continue,requirements_change_requires_pause,fast_path_protocol_optional,task_validation_required_for_skill_chain,precheck_only_for_real_prerequisite,triggered_skill_requires_output_validate_drop,repeated_skill_retry_requires_rescope,delegation_bounds,parallelism_not_automatic --runs 1
 ```
 
 如果本地凭据、模型权限或 CLI 信任配置不可用，至少要做：

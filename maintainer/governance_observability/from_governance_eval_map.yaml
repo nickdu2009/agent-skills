@@ -19,3 +19,9 @@ links:
     governance_eval_case: implementation_chain_continuation
   - decision_point: code_review_request_routes_correctly
     governance_eval_case: activation_paths
+  - decision_point: review_loop_drop_after_issues
+    governance_eval_case: review_loop_no_drop_on_issues_found
+  - decision_point: review_loop_revise_without_rereview
+    governance_eval_case: review_loop_revise_then_rereview
+  - decision_point: review_loop_chat_artifact_rereview_ok
+    governance_eval_case: review_loop_chat_artifact_continuation

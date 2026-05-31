@@ -292,6 +292,52 @@
   judge: 'd["continue_to_next_step"] is True and d["extra_user_checkpoint_required"] is False and d["rule_cited"] is not None and len(d["rule_cited"]) > 0'
   expect_current: pass
 
+- id: review_loop_no_drop_on_issues_found
+  category: behavioral
+  prompt: |
+    Read {{GOVERNANCE_FILE}}.
+    A `design-review-loop` run already returned `review_result: issues_found`
+    for the current artifact. No handoff, superseding task, ownership change, or
+    boundary change has happened yet.
+    Based ONLY on the governance file, respond in JSON only:
+    {"can_drop_after_issues_found": true/false,
+     "revise_stays_in_same_review_loop": true/false,
+     "must_rereview_after_revision": true/false,
+     "rule_cited": "exact quote from the file, or null if no rule covers this"}
+  judge: 'd["can_drop_after_issues_found"] is False and d["revise_stays_in_same_review_loop"] is True and d["must_rereview_after_revision"] is True and d["rule_cited"] is not None and len(d["rule_cited"]) > 0'
+  expect_current: pass
+
+- id: review_loop_revise_then_rereview
+  category: behavioral
+  prompt: |
+    Read {{GOVERNANCE_FILE}}.
+    A `code-review-loop` run returned `review_result: issues_found` for a local
+    file. The user then asks for `修订` of that same file, and the scope,
+    ownership boundary, and artifact identity have not changed.
+    Based ONLY on the governance file, respond in JSON only:
+    {"can_drop_after_issues_found": true/false,
+     "revise_stays_in_same_review_loop": true/false,
+     "must_rereview_after_revision": true/false,
+     "rule_cited": "exact quote from the file, or null if no rule covers this"}
+  judge: 'd["can_drop_after_issues_found"] is False and d["revise_stays_in_same_review_loop"] is True and d["must_rereview_after_revision"] is True and d["rule_cited"] is not None and len(d["rule_cited"]) > 0'
+  expect_current: pass
+
+- id: review_loop_chat_artifact_continuation
+  category: behavioral
+  prompt: |
+    Read {{GOVERNANCE_FILE}}.
+    A `plan-review-loop` run reviewed an in-thread draft artifact that has not
+    been written to a file yet and returned `review_result: issues_found`. The
+    user asks for `修订` of that same draft, and the scope, ownership boundary,
+    and artifact identity still have not changed.
+    Based ONLY on the governance file, respond in JSON only:
+    {"can_drop_after_issues_found": true/false,
+     "revise_stays_in_same_review_loop": true/false,
+     "must_rereview_after_revision": true/false,
+     "rule_cited": "exact quote from the file, or null if no rule covers this"}
+  judge: 'd["can_drop_after_issues_found"] is False and d["revise_stays_in_same_review_loop"] is True and d["must_rereview_after_revision"] is True and d["rule_cited"] is not None and len(d["rule_cited"]) > 0'
+  expect_current: pass
+
 - id: fast_path_protocol_optional
   category: behavioral
   prompt: |

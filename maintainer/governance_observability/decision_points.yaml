@@ -176,3 +176,46 @@
   forbidden_skills: []
   transcript_excerpt: |
     这个需求同时提到 reporting、billing、notification，我直接在三个模块里展开搜索，没有先缩小范围。
+
+- id: review_loop_drop_after_issues
+  metric: routing
+  expected_skills:
+    - design-review-loop
+  forbidden_skills: []
+  expected_review_result: issues_found
+  forbid_drop_after_issues: true
+  transcript_excerpt: |
+    [triggers: design-review-loop]
+    [output: design-review-loop | 列出 3 个关键问题]
+    review_result: issues_found
+    [drop: design-review-loop | completed]
+    我先把这个 review-loop 结束，等用户下次再说。
+
+- id: review_loop_revise_without_rereview
+  metric: routing
+  expected_skills:
+    - code-review-loop
+  forbidden_skills: []
+  require_rereview_after_revision: true
+  transcript_excerpt: |
+    [triggers: code-review-loop]
+    review_result: issues_found
+    用户：修订
+    我已经按反馈完成修订，下面直接给出修订稿。
+
+- id: review_loop_chat_artifact_rereview_ok
+  metric: routing
+  expected_skills:
+    - plan-review-loop
+  forbidden_skills: []
+  expected_review_result: clean
+  forbid_drop_after_issues: true
+  require_rereview_after_revision: true
+  transcript_excerpt: |
+    [triggers: plan-review-loop]
+    review_result: issues_found
+    用户：修订
+    我先更新同一份线程内方案草稿。
+    [validate: plan-review-loop | re-review updated draft]
+    review_result: clean
+    [drop: plan-review-loop | completed]

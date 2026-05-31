@@ -185,6 +185,8 @@ Fast paths may omit the full protocol block set. Use these blocks when a non-tri
 - `output`: summarize the concrete deliverable from the active skill; every triggered skill should produce or be summarized by one before handoff or completion.
 - `validate`: record the smallest check that confirms the skill deliverable or handoff is sound.
 - `drop`: explicitly retire the skill when its deliverable is complete, superseded, or handed off downstream.
+- `review_result: issues_found` means the review-loop deliverable is still incomplete; keep the review skill active and do not `drop` it as completed yet.
+- A local `修订` on the same artifact stays inside the active review loop when scope, ownership, and artifact identity do not change, including in-thread drafts that have not been written to files yet.
 
 If the same skill path is retried without new evidence, stop and re-scope, escalate, or ask instead of looping on the same action.
 
@@ -208,6 +210,8 @@ Automatic continuation:
 
 - Continue from implementation to `self-review` and `targeted-validation` without an extra user checkpoint when the next step is local and non-destructive.
 - Continue from a completed plan into implementation, `self-review`, and `targeted-validation` when the next step remains local, non-destructive, and within the accepted task boundary.
+- Continue after `review_result: issues_found` into a local revision of the same artifact when scope, ownership, and artifact identity stay the same.
+- Continue from that revision back into the same review-loop and do not `drop` the review skill until `review_result: clean`, explicit handoff, or superseding work changes the artifact/boundary.
 - Continue after a review loop returns `review_result: clean` when the next step is explicit, local, and non-destructive.
 
 Stop conditions:

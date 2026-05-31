@@ -13,10 +13,10 @@
 
 ## Dataset Summary
 
-- decision point count: `23`
+- decision point count: `26`
 - extra-confirmation denominator (`should_ask_user = false`): `6`
 - required-confirmation points (`should_ask_user = true`): `6`
-- routing points: `11`
+- routing points: `14`
 
 数据集同时包含正样本和负样本，因此这份基线的 rate 反映的是**当前 curated observation set 的命中情况**，不是生产环境总体比例。
 
@@ -24,7 +24,7 @@
 
 - `extra_confirmation_rate`: `33.3%` (`2 / 6`)
 - `missed_required_confirmation_count`: `1 / 6`
-- `routing_misjudgment_rate`: `27.3%` (`3 / 11`)
+- `routing_misjudgment_rate`: `35.7%` (`5 / 14`)
 
 ## Interpretation
 
@@ -32,7 +32,7 @@
 
 - 当前仓库内已经有一套独立于健康度首增量的会话观测层
 - `extra_confirmation_rate` 只统计“本可继续但多问了一次”的点，不把“本应 ask 但没 ask”混进同一个分子
-- `routing_misjudgment_rate` 会同时捕获“该触发的没触发”和“不该升级却升级了”
+- `routing_misjudgment_rate` 会同时捕获“该触发的没触发”“不该升级却升级了”，以及 review-loop 的最小断链症状
 
 它**不**说明：
 
@@ -49,5 +49,5 @@
 ## Residual Risk
 
 - 这套数据仍是 curated fixtures，不是自动采集的真实 transcripts。
-- 当前 detector 依赖显式语言信号与 skill 名称字符串，后续如果 transcript 风格变化，需要连带更新 runner 规则。
+- 当前 detector 依赖显式语言信号与 skill 名称字符串；现在还额外依赖 `review_result` / `drop` / `修订` 这类最小 review-loop 信号，后续如果 transcript 风格变化，需要连带更新 runner 规则。
 - 这份 baseline 适合作为 follow-on regression 起点，不适合作为产品级 KPI。

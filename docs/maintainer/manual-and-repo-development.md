@@ -75,7 +75,7 @@ python3 maintainer/scripts/install/run_manage_governance_smoke.py
 ```bash
 python3 maintainer/scripts/analysis/check_governance_sync.py
 python3 maintainer/scripts/install/run_manage_governance_smoke.py
-uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue,scoped_tasking_entrypoint,fast_path_protocol_optional,task_validation_required_for_skill_chain,precheck_only_for_real_prerequisite,triggered_skill_requires_output_validate_drop,repeated_skill_retry_requires_rescope,delegation_bounds,parallelism_not_automatic --runs 1
+uv run maintainer/governance_eval/run_eval.py --cli codex --case review_loop_no_drop_on_issues_found,review_loop_revise_then_rereview,review_loop_chat_artifact_continuation,local_continue,fast_path_protocol_optional,task_validation_required_for_skill_chain,precheck_only_for_real_prerequisite,triggered_skill_requires_output_validate_drop,repeated_skill_retry_requires_rescope,delegation_bounds,parallelism_not_automatic --runs 1
 python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
 ```
 
@@ -84,7 +84,7 @@ python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
 - `check_governance_sync.py` 检查模板与仓库根治理文件的共享正文是否同步
 - `check_governance_sync.py` 也会检查两份治理模板除顶部 mirror 注释外是否仍保持正文镜像；如果未来真要引入平台差异，先更新约束与校验，再改模板
 - `run_manage_governance_smoke.py` 检查安装投影链路是否仍可生成预期治理文件
-- `governance_eval/run_eval.py` 是 authenticated maintainer lane；先跑这次新增/改动的 case，再用上面的组合命令做一轮代表性回归 smoke
+- `governance_eval/run_eval.py` 是 authenticated maintainer lane；先跑这次新增/改动的 case，再用上面的组合命令做一轮代表性回归 smoke。review-loop 相关修复至少覆盖 `review_loop_no_drop_on_issues_found`、`review_loop_revise_then_rereview`、`review_loop_chat_artifact_continuation`
 - `check_cross_references.py` 检查文档与 skill 引用是否仍然完整
 - `.github/workflows/ci.yml` 现在会在治理相关路径变更时自动 gate `sync + smoke + cross-ref`；behavior eval 仍保留在本地维护者链路，不放进公共 CI
 
@@ -102,6 +102,12 @@ python3 maintainer/scripts/analysis/check_governance_health.py --json
 python3 maintainer/scripts/analysis/compare_governance_health_baseline.py \
   --baseline maintainer/reports/baselines/governance-health-baseline-2026-05-31.json \
   --current maintainer/reports/runs/governance-health-current.json
+```
+
+如果要快速验证 follow-on 合同没有退化：
+
+```bash
+python3 maintainer/scripts/analysis/check_governance_followon_contracts.py
 ```
 
 如果本次需要把行为回归指标一起记进健康度快照，先单独生成一个或多个 eval JSON，再显式传入：

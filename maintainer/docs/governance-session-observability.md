@@ -34,9 +34,9 @@
 `routing_misjudgment_rate` 的定义是：
 
 - 分母：`metric = routing` 的 decision points
-- 分子：缺失 `expected_skills` 或命中了 `forbidden_skills` 的 points
+- 分子：缺失 `expected_skills`、命中了 `forbidden_skills`，或出现 review-loop 断链信号的 points
 
-这对应的是“该触发的没触发，或不该升级的被升级了”。
+这对应的是“该触发的没触发、不该升级的被升级了，或 orchestration 把 review-loop 提前断开了”。
 
 ## Dataset Contract
 
@@ -47,6 +47,12 @@
 - `transcript_excerpt`
 - `should_ask_user`（仅 extra confirmation）
 - `expected_skills` / `forbidden_skills`（仅 routing）
+
+其中 routing points 还可以携带最小 loop-breakage 口径：
+
+- `expected_review_result`
+- `forbid_drop_after_issues`
+- `require_rereview_after_revision`
 
 这套数据集要求：
 
@@ -66,6 +72,9 @@ uv run maintainer/governance_observability/run_observability_eval.py --json
 - `extra_confirmation_rate`
 - `missed_required_confirmation_count`
 - `routing_misjudgment_rate`
+- `observed_review_result`
+- `observed_drop_after_issues`
+- `observed_rereview_after_revision`
 - 每个 point 的逐项判定结果
 
 ## Relationship To Existing Eval
@@ -74,6 +83,7 @@ uv run maintainer/governance_observability/run_observability_eval.py --json
 
 - `governance_eval` 仍然负责模板行为回归
 - `governance_observability` 负责把“额外确认”和“routing 误判”拆成独立口径
+- review-loop 的 `issues_found -> revise -> re-review` 断链症状归入 orchestration / routing misjudgment，而不是 extra confirmation
 - `from_governance_eval_map.yaml` 只做 closest-case traceability，不让两套数据强耦合，也不要求一一精确同构
 
 ## Non-Goals
@@ -88,5 +98,6 @@ uv run maintainer/governance_observability/run_observability_eval.py --json
 ## Refresh Rules
 
 - 改动治理模板中 continue / ask / stop / routing 语义时，应同步复核 `decision_points.yaml`
+- 改动 review-loop contract 时，应同步复核 loop-breakage decision points 和 runner 的定向检测逻辑
 - 如果修改了 runner 规则，应重跑观测基线并更新对应 baseline 文档
 - 需要新增样本时，优先补 decision point，而不是临时改 metric 定义

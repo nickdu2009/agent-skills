@@ -109,6 +109,8 @@ GOVERNANCE_BOUNDARY_SNIPPETS = (
 ROUTING_SEMANTICS_SNIPPETS = (
     "Stay on the selected implementation workflow when scope is clear and no escalation signal appears;",
     "Continue from a completed plan into implementation, `self-review`, and `targeted-validation`",
+    "Continue after `review_result: issues_found` into a local revision of the same artifact when scope, ownership, and artifact identity stay the same.",
+    "Continue from that revision back into the same review-loop and do not `drop` the review skill until `review_result: clean`, explicit handoff, or superseding work changes the artifact/boundary.",
     "Continue after a review loop returns `review_result: clean` when the next step is explicit, local, and non-destructive.",
     "Once an escalation path is triggered, stop the current implementation path and move into `design-before-plan` or `impact-analysis`",
 )
@@ -118,6 +120,8 @@ PROTOCOL_SEMANTICS_SNIPPETS = (
     "`precheck`: emit only when a skill has a real prerequisite",
     "`output`: summarize the concrete deliverable from the active skill;",
     "`drop`: explicitly retire the skill when its deliverable is complete, superseded, or handed off downstream.",
+    "`review_result: issues_found` means the review-loop deliverable is still incomplete; keep the review skill active and do not `drop` it as completed yet.",
+    "A local `修订` on the same artifact stays inside the active review loop when scope, ownership, and artifact identity do not change, including in-thread drafts that have not been written to files yet.",
     "If the same skill path is retried without new evidence, stop and re-scope, escalate, or ask instead of looping on the same action.",
 )
 

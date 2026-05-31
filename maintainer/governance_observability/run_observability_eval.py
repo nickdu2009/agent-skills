@@ -47,6 +47,9 @@ ASK_PATTERNS = [
     r"should i",
     r"confirm",
 ]
+REVIEW_RESULT_PATTERN = re.compile(r"review_result:\s*([a-z_]+)", flags=re.IGNORECASE)
+DROP_PATTERN = re.compile(r"\[drop:\s*([a-z0-9_-]+)", flags=re.IGNORECASE)
+REVISION_PATTERN = re.compile(r"修订|revise|revision|revised", flags=re.IGNORECASE)
 
 
 def load_points(path: Path) -> list[dict[str, Any]]:
@@ -71,6 +74,43 @@ def detect_skills(text: str) -> list[str]:
     return detected
 
 
+def detect_review_result(text: str) -> str | None:
+    matches = REVIEW_RESULT_PATTERN.findall(text)
+    if not matches:
+        return None
+    return matches[-1].lower()
+
+
+def detect_drop_after_issues(text: str) -> bool:
+    event_pattern = re.compile(
+        r"review_result:\s*([a-z_]+)|\[drop:\s*([a-z0-9_-]+)",
+        flags=re.IGNORECASE,
+    )
+    unresolved_issues = False
+    for match in event_pattern.finditer(text):
+        review_result = match.group(1)
+        drop_skill = match.group(2)
+        if review_result is not None:
+            unresolved_issues = review_result.lower() == "issues_found"
+            continue
+        if drop_skill is None:
+            continue
+        if "review-loop" in drop_skill.lower() and unresolved_issues:
+            return True
+    return False
+
+
+def detect_rereview_after_revision(text: str) -> bool:
+    revision_matches = list(REVISION_PATTERN.finditer(text))
+    if not revision_matches:
+        return False
+    last_revision_start = revision_matches[-1].start()
+    return any(
+        review_match.start() > last_revision_start
+        for review_match in REVIEW_RESULT_PATTERN.finditer(text)
+    )
+
+
 def evaluate_point(point: dict[str, Any]) -> dict[str, Any]:
     point_id = point.get("id")
     metric = point.get("metric")
@@ -80,12 +120,18 @@ def evaluate_point(point: dict[str, Any]) -> dict[str, Any]:
 
     observed_asked_user = detect_asked_user(text)
     observed_skills = detect_skills(text)
+    observed_review_result = detect_review_result(text)
+    observed_drop_after_issues = detect_drop_after_issues(text)
+    observed_rereview_after_revision = detect_rereview_after_revision(text)
 
     result: dict[str, Any] = {
         "id": point_id,
         "metric": metric,
         "observed_asked_user": observed_asked_user,
         "observed_skills": observed_skills,
+        "observed_review_result": observed_review_result,
+        "observed_drop_after_issues": observed_drop_after_issues,
+        "observed_rereview_after_revision": observed_rereview_after_revision,
     }
 
     if metric == "extra_confirmation":
@@ -107,17 +153,39 @@ def evaluate_point(point: dict[str, Any]) -> dict[str, Any]:
         forbidden_skills = point.get("forbidden_skills", [])
         if not isinstance(expected_skills, list) or not isinstance(forbidden_skills, list):
             raise ValueError(f"routing point must use list fields: {point_id}")
+        expected_review_result = point.get("expected_review_result")
+        forbid_drop_after_issues = point.get("forbid_drop_after_issues", False)
+        require_rereview_after_revision = point.get("require_rereview_after_revision", False)
+        if expected_review_result is not None and not isinstance(expected_review_result, str):
+            raise ValueError(f"expected_review_result must be a string when present: {point_id}")
+        if not isinstance(forbid_drop_after_issues, bool):
+            raise ValueError(f"forbid_drop_after_issues must be a bool: {point_id}")
+        if not isinstance(require_rereview_after_revision, bool):
+            raise ValueError(f"require_rereview_after_revision must be a bool: {point_id}")
 
         missing_expected = [skill for skill in expected_skills if skill not in observed_skills]
         present_forbidden = [skill for skill in forbidden_skills if skill in observed_skills]
+        loop_breakage_signals: list[str] = []
+        if expected_review_result is not None and observed_review_result != expected_review_result:
+            loop_breakage_signals.append("review_result_mismatch")
+        if forbid_drop_after_issues and observed_drop_after_issues:
+            loop_breakage_signals.append("drop_after_issues_found")
+        if require_rereview_after_revision and not observed_rereview_after_revision:
+            loop_breakage_signals.append("missing_rereview_after_revision")
         result.update(
             {
                 "expected_skills": expected_skills,
                 "forbidden_skills": forbidden_skills,
+                "expected_review_result": expected_review_result,
+                "forbid_drop_after_issues": forbid_drop_after_issues,
+                "require_rereview_after_revision": require_rereview_after_revision,
                 "missing_expected_skills": missing_expected,
                 "present_forbidden_skills": present_forbidden,
-                "routing_misjudgment": bool(missing_expected or present_forbidden),
-                "calibrated": not missing_expected and not present_forbidden,
+                "loop_breakage_signals": loop_breakage_signals,
+                "routing_misjudgment": bool(
+                    missing_expected or present_forbidden or loop_breakage_signals
+                ),
+                "calibrated": not missing_expected and not present_forbidden and not loop_breakage_signals,
             }
         )
         return result
