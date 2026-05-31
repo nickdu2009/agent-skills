@@ -16,7 +16,7 @@ Usage:
 import argparse, json, re, subprocess, shutil, tempfile, sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import yaml
 
@@ -274,6 +274,63 @@ def preflight_check(cli: CLIDef, workspace: Path) -> Optional[str]:
     return None
 
 
+def summarize_cli_results(cli_results: list[dict[str, Any]], *, skipped: bool = False) -> dict[str, Any]:
+    """Return summary counts for one CLI."""
+    if skipped:
+        return {
+            "status": "skipped",
+            "pass_count": 0,
+            "fail_count": 0,
+            "error_count": 0,
+            "calibrated_count": 0,
+            "miscalibrated_count": 0,
+            "executed_case_count": 0,
+        }
+
+    pass_count = sum(1 for r in cli_results if r["verdict"] == "PASS")
+    fail_count = sum(1 for r in cli_results if r["verdict"] == "FAIL")
+    error_count = sum(1 for r in cli_results if r["verdict"] == "ERROR")
+    calibrated_count = sum(1 for r in cli_results if r["calibrated"])
+    miscalibrated_count = len(cli_results) - calibrated_count
+    status = "pass" if all(r["calibrated"] for r in cli_results) else "fail"
+    return {
+        "status": status,
+        "pass_count": pass_count,
+        "fail_count": fail_count,
+        "error_count": error_count,
+        "calibrated_count": calibrated_count,
+        "miscalibrated_count": miscalibrated_count,
+        "executed_case_count": len(cli_results),
+    }
+
+
+def summarize_overall_results(results: dict[str, dict[str, Any]], requested_case_count: int) -> dict[str, Any]:
+    """Return aggregate summary across all requested CLIs."""
+    executed = [case for cli_data in results.values() for case in cli_data["cases"]]
+    pass_count = sum(1 for r in executed if r["verdict"] == "PASS")
+    fail_count = sum(1 for r in executed if r["verdict"] == "FAIL")
+    error_count = sum(1 for r in executed if r["verdict"] == "ERROR")
+    calibrated_count = sum(1 for r in executed if r["calibrated"])
+    miscalibrated_count = len(executed) - calibrated_count
+    skipped_cli_count = sum(1 for cli_data in results.values() if cli_data["skipped_preflight"])
+    if skipped_cli_count:
+        status = "blocked"
+    else:
+        status = "pass" if all(r["calibrated"] for r in executed) else "fail"
+    return {
+        "status": status,
+        "requested_case_count": requested_case_count,
+        "requested_cli_count": len(results),
+        "skipped_cli_count": skipped_cli_count,
+        "executed_case_count": len(executed),
+        "pass_count": pass_count,
+        "fail_count": fail_count,
+        "error_count": error_count,
+        "calibrated_count": calibrated_count,
+        "miscalibrated_count": miscalibrated_count,
+    }
+
+
 # --- Main ---
 
 def parse_args() -> argparse.Namespace:
@@ -290,6 +347,8 @@ def parse_args() -> argparse.Namespace:
                    help="Skip CLI preflight check")
     p.add_argument("--verbose", action="store_true",
                    help="Print extracted content and judge details")
+    p.add_argument("--json", action="store_true",
+                   help="Emit machine-readable JSON summary")
     return p.parse_args()
 
 
@@ -308,11 +367,24 @@ def main():
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
 
-    results: dict = {}
+    results: dict[str, dict[str, Any]] = {}
+
+    def emit(message: str = "") -> None:
+        if not args.json:
+            print(message, flush=True)
 
     for cli in clis:
-        print(f"\n=== {cli.name} (model: {cli.model}) ===", flush=True)
+        emit(f"\n=== {cli.name} (model: {cli.model}) ===")
         cli_results = []
+        cli_payload: dict[str, Any] = {
+            "model": cli.model,
+            "template_source": cli.template_source,
+            "target_name": cli.target_name,
+            "requested_case_count": len(cases),
+            "skipped_preflight": False,
+            "preflight_error": None,
+            "cases": [],
+        }
 
         template_path = PROJECT_ROOT / cli.template_source
         ws = setup_isolated_workspace(template_path, cli.target_name)
@@ -320,13 +392,19 @@ def main():
         try:
             # Preflight check
             if not args.skip_preflight:
-                print(f"  [preflight] ...", end="", flush=True)
+                if not args.json:
+                    print(f"  [preflight] ...", end="", flush=True)
                 err = preflight_check(cli, ws)
                 if err:
-                    print(f" SKIP ({err})", flush=True)
-                    results[cli.name] = []
+                    if not args.json:
+                        print(f" SKIP ({err})", flush=True)
+                    cli_payload["skipped_preflight"] = True
+                    cli_payload["preflight_error"] = err
+                    cli_payload["summary"] = summarize_cli_results([], skipped=True)
+                    results[cli.name] = cli_payload
                     continue
-                print(" ok", flush=True)
+                if not args.json:
+                    print(" ok", flush=True)
 
             for case in cases:
                 case_id = case["id"]
@@ -354,8 +432,7 @@ def main():
                         err = is_cli_error(proc)
                         if err:
                             error_count += 1
-                            print(f"    [{case_id} run {run_i+1}] CLI error: {err}",
-                                  flush=True)
+                            emit(f"    [{case_id} run {run_i+1}] CLI error: {err}")
                             continue
                         # Codex uses -o file; others use stdout
                         if hasattr(cli, 'read_output'):
@@ -364,22 +441,18 @@ def main():
                         else:
                             content = extract_response(proc.stdout)
                         if args.verbose:
-                            print(f"    [{case_id} run {run_i+1}] extracted: {content[:300]}",
-                                  flush=True)
+                            emit(f"    [{case_id} run {run_i+1}] extracted: {content[:300]}")
                         if evaluate_judge(content, judge_expr):
                             pass_count += 1
                         elif args.verbose:
                             try:
                                 d = json.loads(content)
-                                print(f"    [{case_id} run {run_i+1}] judge FAIL on parsed JSON",
-                                      flush=True)
+                                emit(f"    [{case_id} run {run_i+1}] judge FAIL on parsed JSON")
                             except Exception as e:
-                                print(f"    [{case_id} run {run_i+1}] JSON parse error: {e}",
-                                      flush=True)
+                                emit(f"    [{case_id} run {run_i+1}] JSON parse error: {e}")
                     except subprocess.TimeoutExpired:
                         error_count += 1
-                        print(f"    [{case_id} run {run_i+1}] timeout",
-                              flush=True)
+                        emit(f"    [{case_id} run {run_i+1}] timeout")
 
                 if error_count == runs:
                     verdict = "ERROR"
@@ -391,38 +464,56 @@ def main():
                     cal = ("(calibrated)" if calibrated
                            else f"(MISCALIBRATED: expected {expected})")
 
-                print(f"  {case_id:<25} {verdict:<5} {cal}", flush=True)
+                emit(f"  {case_id:<25} {verdict:<5} {cal}")
                 cli_results.append({
                     "id": case_id, "verdict": verdict,
                     "calibrated": calibrated,
                     "runs": runs, "pass_count": pass_count,
                     "error_count": error_count,
+                    "category": category,
+                    "expected": expected,
                 })
         finally:
             teardown_isolated_workspace(ws)
 
-        results[cli.name] = cli_results
+        cli_payload["cases"] = cli_results
+        cli_payload["summary"] = summarize_cli_results(cli_results)
+        results[cli.name] = cli_payload
 
     # --- Summary ---
-    print(flush=True)
-    for name, cli_results in results.items():
-        if not cli_results:
-            print(f"  {name}: SKIPPED (preflight failed)", flush=True)
-            continue
-        p = sum(1 for r in cli_results if r["verdict"] == "PASS")
-        f = sum(1 for r in cli_results if r["verdict"] == "FAIL")
-        e = sum(1 for r in cli_results if r["verdict"] == "ERROR")
-        cal = sum(1 for r in cli_results if r["calibrated"])
-        mis = len(cli_results) - cal
-        parts = [f"{p} pass", f"{f} fail"]
-        if e:
-            parts.append(f"{e} error")
-        print(f"  {name}: {', '.join(parts)} "
-              f"({cal} calibrated, {mis} miscalibrated)", flush=True)
+    overall = summarize_overall_results(results, len(cases))
 
-    sys.exit(0 if all(
-        r["calibrated"] for v in results.values() for r in v
-    ) else 1)
+    if args.json:
+        payload = {
+            "config": {
+                "model_override": args.model,
+                "requested_clis": [cli.name for cli in clis],
+                "requested_case_ids": [case["id"] for case in cases],
+                "runs_override": args.runs,
+                "skip_preflight": args.skip_preflight,
+            },
+            "results": results,
+            "summary": overall,
+        }
+        print(json.dumps(payload, indent=2))
+    else:
+        print(flush=True)
+        for name, cli_data in results.items():
+            if cli_data["skipped_preflight"]:
+                print(f"  {name}: SKIPPED (preflight failed)", flush=True)
+                continue
+            summary = cli_data["summary"]
+            parts = [f"{summary['pass_count']} pass", f"{summary['fail_count']} fail"]
+            if summary["error_count"]:
+                parts.append(f"{summary['error_count']} error")
+            print(
+                f"  {name}: {', '.join(parts)} "
+                f"({summary['calibrated_count']} calibrated, "
+                f"{summary['miscalibrated_count']} miscalibrated)",
+                flush=True,
+            )
+
+    sys.exit(0 if overall["status"] == "pass" else 1)
 
 if __name__ == "__main__":
     main()

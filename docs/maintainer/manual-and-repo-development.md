@@ -88,6 +88,23 @@ python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
 - `check_cross_references.py` 检查文档与 skill 引用是否仍然完整
 - `.github/workflows/ci.yml` 现在会在治理相关路径变更时自动 gate `sync + smoke + cross-ref`；behavior eval 仍保留在本地维护者链路，不放进公共 CI
 
+### 治理健康度快照
+
+治理健康度首增量只做**单次运行快照**，默认汇总 deterministic 检查：
+
+```bash
+python3 maintainer/scripts/analysis/check_governance_health.py --json
+```
+
+如果本次需要把行为回归指标一起记进健康度快照，先单独生成 eval JSON，再显式传入：
+
+```bash
+uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue,fast_path_protocol_optional,delegation_bounds --runs 1 --json > maintainer/reports/runs/governance-health-eval-smoke.json
+python3 maintainer/scripts/analysis/check_governance_health.py --json --eval-json maintainer/reports/runs/governance-health-eval-smoke.json
+```
+
+默认不要让健康度脚本隐式重跑 live eval；保持 deterministic 检查与 authenticated maintainer lane 分层。
+
 ### Repo Overlay Contract
 
 仓库根 `AGENTS.md` / `CLAUDE.md` 允许保留少量 repo-only overlay，但必须满足：

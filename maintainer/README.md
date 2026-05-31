@@ -10,6 +10,7 @@ This directory contains repository-internal tooling and evaluation assets and sh
 - Put maintainer-only evaluation scripts in `scripts/evaluation/`.
 - Put durable, reference-worthy outputs in `reports/baselines/`.
 - Put scratch runs and local report output in `reports/runs/`, then promote only the small subset that becomes a stable baseline.
+- Governance health snapshots follow the same rule: default JSON runs belong in `reports/runs/`; promote only explicit, reference-worthy summaries to `reports/baselines/`.
 
 ## Useful Evaluation Entrypoints
 

@@ -164,6 +164,7 @@ maintainer/
 - preflight 失败时把该 CLI 标为 `SKIPPED`
 - 已在当前会话确认 CLI 可用时，可用 `--skip-preflight` 把 suite 结果和 preflight 抖动分开
 - 只要有 case 失去 calibration，或出现 `ERROR`，就以非零退出
+- `--json` 会输出机器可读 summary，适合被治理健康度快照显式消费；默认文本模式仍保留给维护者直接阅读
 
 ## Commands
 
@@ -217,6 +218,14 @@ uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue 
 ```bash
 uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue,scoped_tasking_entrypoint,fast_path_protocol_optional,triggered_skill_requires_output_validate_drop,delegation_bounds --runs 1
 ```
+
+### JSON summary
+
+```bash
+uv run maintainer/governance_eval/run_eval.py --cli codex --case local_continue,fast_path_protocol_optional,delegation_bounds --runs 1 --json
+```
+
+如果要把行为回归指标纳入治理健康度快照，先单独生成这份 JSON，再显式传给 `check_governance_health.py --eval-json <path>`；默认不要让 deterministic 健康度链隐式重跑 live eval。
 
 ### Cheaper model
 

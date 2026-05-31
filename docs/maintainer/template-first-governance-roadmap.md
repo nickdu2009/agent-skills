@@ -159,6 +159,14 @@
    - routing 误判率是否下降
    - mirror drift 事件数
 
+   建议的首增量应先做成**单次运行快照**，优先消费已经稳定存在的治理检查与评测产物：
+   - `check_governance_sync.py --json`
+   - `run_manage_governance_smoke.py` 退出码
+   - `check_cross_references.py --json`
+   - `run_eval.py --json`（仅在显式提供 eval 结果时纳入）
+
+   这一步先把“当前能可靠机器统计什么”说清楚，不在首增量里承诺真实会话级的额外确认率或长期 routing 误判趋势。
+
 ### P2 Verify
 
 - 模板仍然是唯一共享权威，不出现“脚本另有真相”或“生成结果另有真相”
