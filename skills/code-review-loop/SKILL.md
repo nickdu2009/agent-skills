@@ -11,7 +11,7 @@ Use this skill to run a strict review, fix, validation, and re-review loop for i
 
 ## Goal
 
-Review the target diff or commit, find real implementation defects first, fix them, validate the fix, and repeat until the review is clean. This is not a style-only review. Focus on correctness, regressions, safety, scope control, data compatibility, and test coverage.
+Review the target diff or commit, find real implementation defects first, fix them, validate the fix, and repeat until the review is clean. This is not a style-only review. Focus on requirement alignment, correctness, regressions, security, compatibility, scope control, and test coverage.
 
 ## Required loop
 
@@ -24,19 +24,26 @@ Review the target diff or commit, find real implementation defects first, fix th
    - pull request diff
 2. Inspect repository status before making any changes; distinguish user-existing changes from current task changes.
 3. Review the target using findings-first code review. Each finding must include: severity (`blocking` / `warning` / `low-risk`), affected file or area, problem, impact, required fix.
-4. Cover at minimum these dimensions:
-   - correctness: behavior correctness, boundary handling, error handling
-   - regression: no behavior regression; tests cover key paths
+4. Cover at minimum these core dimensions:
+   - requirement alignment: matches the confirmed requirements, acceptance criteria, plan, or contract; no missed behavior, wrong behavior, or over-implementation. If explicit requirement evidence is incomplete, infer the narrowest likely user intent from the task wording and visible context, then ask the user to confirm before treating the inferred intent as a review basis. Until confirmed, keep `review_result` as `issues_found` and pause the review at that point.
+   - correctness: behavior correctness, boundary handling, error handling, failure paths
+   - regression: no unintended behavior regression; key paths and adjacent behavior remain intact
    - security: injection, authz, sensitive data, secrets
-   - data compatibility: schema, serialization, migration compatibility
-   - scope control: no unrelated changes smuggled in
-   - test: new logic has tests; existing tests not bypassed
-5. Classify every finding as `blocking`, `warning`, or `low-risk`.
-6. Fix only issues related to the reviewed implementation.
-7. Run the minimum necessary validation (see Validation).
-8. Re-check the diff after changes.
-9. Re-run the review.
-10. Continue until `review_result` is `clean`.
+   - compatibility: data, API, serialization, migration, and upstream/downstream compatibility
+   - scope control: no unrelated changes smuggled in; changes stay within the accepted task boundary
+   - test: new logic has sufficient verification; existing tests are not bypassed or weakened
+5. Add applicable additional dimensions based on the change type:
+   - performance: hot paths, queries, caching, rendering, batch/IO-heavy changes
+   - concurrency / idempotency: races, retries, duplicate execution, transaction/locking boundaries
+   - operability / observability: logs, metrics, alerts, tracing, diagnosability, recovery
+   - rollout / config risk: flags, dependency upgrades, config defaults, rollout/rollback, deployment ordering
+   - accessibility / UX states: empty/error/loading states, keyboard access, disabled states, feedback
+6. Classify every finding as `blocking`, `warning`, or `low-risk`.
+7. Fix only issues related to the reviewed implementation.
+8. Run the minimum necessary validation (see Validation).
+9. Re-check the diff after changes.
+10. Re-run the review.
+11. Continue until `review_result` is `clean`.
 
 ## Optional checks
 
@@ -102,6 +109,7 @@ Only return `review_result: clean` when:
 - fixes have been applied for all findings
 - minimum necessary validation has been run or explicitly justified
 - no unrelated files were changed
+- requirement alignment does not depend on unconfirmed inferred user intent
 
 If any issue remains, fix it and review again.
 
@@ -141,7 +149,7 @@ Then finish with the compact protocol line:
 
 ## Constraints
 
-- Do not stop after only reporting findings.
+- Do not stop after only reporting findings, except when `requirement alignment` depends on unconfirmed inferred user intent and user confirmation is required before continuing.
 - Do not mark the result clean while any issue remains.
 - Do not fix unrelated code.
 - Do not mix user-existing changes into the task result.
