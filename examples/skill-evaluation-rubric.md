@@ -9,7 +9,7 @@ You want a repeatable scoring standard for reviewing whether an agent actually d
 - `scoped-tasking`
 - `targeted-validation`
 
-Planning behavior is scored against `AGENTS.md` Behavioral Guidelines §4 rather than a dedicated skill.
+Planning behavior is scored against `AGENTS.md` Behavioral Guidelines §4 for lightweight planning and against `implementation-planning` for durable implementation plans.
 
 ## Review Model
 
@@ -49,10 +49,15 @@ Score these dimensions for every scenario:
 - Pass: proposes a bounded initial working set and explains each scope expansion.
 - Fail: scans widely by reflex or expands scope without stating why.
 
-### AGENTS.md §4 Plan
+### AGENTS.md §4 Short Plan
 
 - Pass: states goal, assumptions, intended files, and per-step verify checks before non-trivial edits.
 - Fail: starts editing while the plan or verify steps are still fuzzy.
+
+### `implementation-planning`
+
+- Pass: produces a durable plan artifact with ordered steps, file landing, per-step verify checks, rollback notes, and acceptance traceability.
+- Fail: stops at a short inline plan, leaves file landing vague, or omits rollback / acceptance coverage for multi-file work.
 
 - Pass: selects a local, reviewable patch and defers unrelated cleanup.
 - Fail: mixes the main task with cosmetic rewrites, renames, or opportunistic refactors.
@@ -91,7 +96,7 @@ Score these dimensions for every scenario:
 - Pass: traces outward from edit point, produces structured impact summary with blast radius, stops at framework boundaries or 8-file threshold.
 - Fail: skips impact assessment and goes directly to planning, or reads the entire repo during impact analysis.
 
-- Pass: splits plan into 2–4 mergeable increments with explicit dependencies and acceptance criteria; each increment keeps the system runnable; escalates to `design-before-plan` or asks the user when the work outgrows simple incremental delivery.
+- Pass: `implementation-planning` splits the work into 2–4 mergeable increments with explicit dependencies and acceptance criteria; each increment keeps the system runnable; escalates to `design-before-plan` or asks the user when the work outgrows simple incremental delivery.
 
 ### `self-review`
 

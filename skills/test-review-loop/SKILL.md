@@ -118,6 +118,67 @@ Then finish with the compact protocol line:
 
 `[output: test-review-loop | completed <confidence> | review_result:"clean|issues_found" issues:"<count by severity>" changes:"..." validation:"..." | next:<action>]`
 
+## Contract
+
+### Preconditions
+
+- A test artifact exists to review (test files, test strategy, test matrix, or test cases).
+- The production behavior under test is known well enough to evaluate the test artifact.
+- The artifact is test-focused, not production implementation, requirements, design, or planning.
+
+### Postconditions
+
+- `status: completed` includes `review_result`, `issues`, `changes`, and `validation`.
+- The reviewed test set is either clean or blocked by explicit test-quality issues.
+- Revisions stay limited to the test artifact under review.
+
+### Invariants
+
+- The review evaluates tests, not the production code under test.
+- Every issue is resolved before the result is marked clean.
+- Validation runs the tests that were reviewed whenever feasible.
+
+### Downstream Signals
+
+- `review_result` tells downstream work whether the test artifact is ready.
+- `issues` records remaining test-quality defects or confirms none remain.
+- `changes` summarizes how the test artifact was revised.
+- `validation` records the test runs or closest available checks used to support the review.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The artifact is actually production code or a planning/design document.
+- The tests do not clearly map to expected behavior or acceptance criteria.
+- The reviewed tests cannot be run or do not exercise the intended surface.
+
+### Retry Policy
+
+- Re-review after each test revision until no issues remain.
+- If the same unclear behavior expectation blocks the review twice, stop and ask for the expected behavior explicitly.
+
+### Fallback
+
+- Hand off to `code-review-loop` if the user is really asking to review production code.
+- Hand off to `requirements-review-loop` if the missing piece is testable acceptance criteria rather than test implementation.
+
+### Low Confidence Handling
+
+- Record residual uncertainty when tests are the best available proxy but cannot fully prove behavior.
+- Do not mark the review clean while major coverage or assertion gaps remain.
+
+## Output Example
+
+```
+[output: test-review-loop | completed high | review_result:"clean" issues:"0 blocking, 0 warning, 0 low-risk" changes:"added partial-failure assertions and removed brittle internal-call expectation" validation:"pytest tests/notifications/test_preferences.py" | next:done]
+```
+
+## Deactivation Trigger
+
+- The test artifact is clean and handed back to the user or the next delivery step.
+- The artifact changes type or scope enough that a new review cycle is required.
+
 ## Constraints
 
 - Do not stop after only reporting issues.

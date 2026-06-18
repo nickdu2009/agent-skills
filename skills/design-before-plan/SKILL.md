@@ -79,7 +79,7 @@ Force the agent to complete requirements clarification and design decision-makin
    - Note framework limitations or platform constraints.
    - Document compatibility requirements (API versions, dependency constraints).
 
-7. **Output the design brief** (structured contract for the subsequent implementation plan per AGENTS.md Behavioral Guidelines §4).
+7. **Output the design brief** (structured contract for the subsequent `implementation-planning` step).
 
 # Input Contract
 
@@ -202,7 +202,7 @@ Keep anti-pattern guidance self-contained; installed skills must not depend on m
 
 Entry point for `design-first` and core component of `large-task` chains (see the project governance file § Skill Chain Triggers).
 
-Role: Clarify requirements, compare design alternatives, establish interface contracts before planning. Receives boundary from scoped-tasking, produces design brief, hands to the implementation step (per AGENTS.md Behavioral Guidelines §4).
+Role: Clarify requirements, compare design alternatives, establish interface contracts before planning. Receives boundary from scoped-tasking, produces design brief, hands to `implementation-planning`.
 
 Standard forward flow:
 
@@ -211,7 +211,7 @@ Fallbacks:
 - To `impact-analysis` when caller/module impact is speculative
 - To `scoped-tasking` when task boundary itself is unstable
 
-Drop after the implementation plan (per AGENTS.md Behavioral Guidelines §4) consumes the design brief.
+Drop after `implementation-planning` consumes the design brief.
 
 # Example
 
@@ -245,7 +245,7 @@ After scoped-tasking establishes the boundary (payment client wrapper + tests), 
 **Constraints:**
 - Must preserve idempotency token in retry headers.
 
-Hand off design brief to the implementation step (per AGENTS.md Behavioral Guidelines §4 plan). Do not start editing.
+Hand off the design brief to `implementation-planning`. Do not start editing.
 
 ## Contract
 
@@ -259,7 +259,7 @@ Hand off design brief to the implementation step (per AGENTS.md Behavioral Guide
 
 - `status: completed` includes `requirements`, `alternatives`, `chosen_design`, and `acceptance_criteria`.
 - Cross-module or public-contract work also records interface expectations and compatibility constraints.
-- The result is specific enough for the implementation step (per AGENTS.md Behavioral Guidelines §4 plan) to produce an implementation sequence without reopening design.
+- The result is specific enough for `implementation-planning` to produce an implementation sequence without reopening design.
 
 ### Invariants
 
@@ -301,11 +301,11 @@ Hand off design brief to the implementation step (per AGENTS.md Behavioral Guide
 ## Output Example
 
 ```
-[output: design-before-plan | completed medium | requirements:"Retry flaky payment-status calls up to 3 times." alternatives:"Inline retry in payment client, Reusable retry wrapper" chosen_design:"Inline retry in payment client" acceptance_criteria:"Retries complete within 10 seconds total, Idempotency headers are preserved on every retry" | next:implementation]
+[output: design-before-plan | completed medium | requirements:"Retry flaky payment-status calls up to 3 times." alternatives:"Inline retry in payment client, Reusable retry wrapper" chosen_design:"Inline retry in payment client" acceptance_criteria:"Retries complete within 10 seconds total, Idempotency headers are preserved on every retry" | next:implementation-planning]
 ```
 
 ## Deactivation Trigger
 
-- Deactivate once the implementation plan (per AGENTS.md Behavioral Guidelines §4) has consumed the design brief.
+- Deactivate once `implementation-planning` has consumed the design brief.
 - Deactivate when the user chooses a different design direction and the brief must be regenerated from scratch.
 - Deactivate if the task is reframed into a direct implementation with no remaining design decisions.

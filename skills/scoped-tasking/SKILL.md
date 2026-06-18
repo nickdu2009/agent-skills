@@ -97,7 +97,7 @@ Entry point for most execution chains: `bugfix-standard`, `refactor-safe`, `mult
 
 Standard forward handoffs:
 
-- → implementation (per AGENTS.md Behavioral Guidelines §4 plan) when boundary is confirmed and ready for implementation
+- → `implementation-planning` when boundary is confirmed but the work still needs durable sequencing, file landing, or rollback planning before implementation
 - → `design-before-plan` when boundary is known but design choices remain open
 
 Validation alignment: downstream `targeted-validation` inherits the same boundary to keep verification focused.

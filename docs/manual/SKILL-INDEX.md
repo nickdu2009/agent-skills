@@ -24,16 +24,16 @@
 - `scoped-tasking`
 - `targeted-validation`
 
-这组组合的作用是先把边界缩小、控制改动规模，再做最小充分验证。计划环节由 `AGENTS.md` 行为指南 §4（Goal-Driven Execution）统一规范，无需独立技能。
+这组组合的作用是先把边界缩小、控制改动规模，再做最小充分验证。对小任务，计划环节仍可用 `AGENTS.md` 行为指南 §4（Goal-Driven Execution）的轻量计划块；只有在多文件、多步骤、需要落盘或需要被审查时，才升级到 `implementation-planning`。
 
 ## 整合后的技能簇
 <div class="title-en">Consolidated Skill Clusters</div>
 
-为了降低选择成本，可以先把 14 个技能按职责整合为 5 个技能簇来理解：
+为了降低选择成本，可以先把 17 个技能按职责整合为 5 个技能簇来理解：
 
 - 执行与质量：`scoped-tasking`、`targeted-validation`、`self-review`
 - 缺陷与重构：`bugfix-workflow`、`safe-refactor`
-- 影响与设计：`impact-analysis`、`design-before-plan`
+- 需求、影响与设计：`requirement-interview`、`impact-analysis`、`design-before-plan`、`architecture-design`、`implementation-planning`
 - 评审回环：`requirements-review-loop`、`design-review-loop`、`plan-review-loop`、`code-review-loop`、`test-review-loop`
 - 治理与协作：`manage-agents-md`、`multi-agent-protocol`
 
@@ -61,6 +61,10 @@
 
 当你还不确定编辑点、根因或影响面时，这组技能用于先找证据再动手。
 
+### `requirement-interview`
+
+在写代码前充当“业务访谈员”，通过多轮动态追问把模糊的功能需求问清楚。不写代码、不出技术方案，只澄清“要做什么 / 为什么做 / 给谁用”，并产出结构化的“需求澄清结果”。每轮最多问 3~5 个，维护“已确认 / 未确认 / 暂定假设”三本账，需求成熟前不进入设计或编码。
+
 ### `bugfix-workflow`
 
 按“先证据、后修改”的方式处理缺陷，先确认症状、缩小故障域，再做最小修复。
@@ -77,6 +81,14 @@
 
 当真正卡住你的不是“怎么排步骤”，而是“方案到底怎么选”时，先做设计澄清再规划实施。
 
+### `architecture-design`
+
+当任务需要一份完整的架构设计文档——组件分解、数据架构、接口契约、非功能设计、部署拓扑、架构决策记录（ADR）——而不仅是选一个方案方向时使用。可独立使用，也可在 `design-before-plan` 选定方向后展开。按任务规模自动调整详细程度（系统级/子系统级/模块级）。
+
+### `implementation-planning`
+
+当需求和设计方向已经定下来，但真正难点变成“按什么顺序做、落到哪些文件、每步怎么验证、风险怎么回滚”时，用这个技能把实施计划写成可落盘、可审查的计划文档。
+
 ## 评审回环技能
 <div class="title-en">Review-Loop Skills</div>
 
@@ -92,7 +104,7 @@
 
 ### `plan-review-loop`
 
-审核实施计划 / 迁移方案 / 重构计划 / 任务计划 / 路线图。中文“实施方案 / 迁移方案”归这里。
+审核实施计划 / 迁移方案 / 重构计划 / 任务计划 / 路线图。中文“实施方案 / 迁移方案”归这里，常见上游产物就是 `implementation-planning` 生成的计划文档。
 
 ### `code-review-loop`
 
@@ -116,17 +128,19 @@
 
 把确实适合并行的任务拆成低耦合子问题，并协调多个代理如何分工、汇总和验证。
 
-并行子线出现冲突时，按证据显式裁决；中等规模任务的 2 到 4 个增量拆分由 `AGENTS.md` 行为指南 §4 的计划块统一约束。
+并行子线出现冲突时，按证据显式裁决；中等规模任务的 2 到 4 个增量拆分通常先由 `implementation-planning` 写成实施计划，再由 `AGENTS.md` 行为指南 §4 提供并行与 verify 纪律。
 
 ## 一页判断法
 <div class="title-en">One-Page Decision Guide</div>
 
 如果你只想快速判断该从哪个技能开始，可以先用这几条：
 
+- 需求在业务层面就模糊（目标/角色/主流程/边界/验收不清）：`requirement-interview`
 - 范围太大或太散：`scoped-tasking`
-- 需要先计划：参考 `AGENTS.md` 行为指南 §4（无需独立技能）
+- 需要先结构化实施计划（多文件 / 多步骤 / 多 PR / 需要落盘或被审查）：`implementation-planning`
 - 是缺陷且根因不明：`bugfix-workflow`
 - 是结构整理：`safe-refactor`
+- 需要系统/子系统/模块级架构设计（组件分解、技术选型、非功能设计）：`architecture-design`
 - 可能影响很多调用方：`impact-analysis`
 - 想并行但不确定值不值得：`multi-agent-protocol`
 - 只想把验证缩到最小：`targeted-validation`

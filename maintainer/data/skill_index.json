@@ -16,6 +16,20 @@
       ]
     },
     {
+      "name": "requirement-interview",
+      "description": "WHAT: Clarify a vague software feature request by acting as a business interviewer, using multi-round dynamic questioning before any coding or design begins, tracking confirmed facts, open gaps, and explicit assumptions, and producing a structured requirement-clarification result. WHEN: Use when a user states a fuzzy feature need (\"加个审批\", \"做个报表\", \"希望能导出\"), when business goal / roles / main flow / scope / acceptance criteria are missing, or when a request has several plausible interpretations. Terms like 需求讨论 / 需求澄清 / 把需求问清楚 belong here. Do NOT use to review an already-written requirements doc (use requirements-review-loop), to scope a clear task (use scoped-tasking), or to compare design alternatives once the requirement is clear (use design-before-plan).",
+      "directory": "skills/requirement-interview",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "requirements",
+        "clarification",
+        "interview"
+      ]
+    },
+    {
       "name": "design-before-plan",
       "description": "Clarify requirements, compare design alternatives, define interface contracts, and establish acceptance criteria before planning implementation. Use when (1) task involves choosing between multiple approaches, (2) mentions \"changes the public interface\" or \"touches contract\", (3) cross-module contracts need coordination, or (4) acceptance criteria are unclear.",
       "directory": "skills/design-before-plan",
@@ -27,6 +41,33 @@
         "orchestration",
         "design",
         "requirements"
+      ]
+    },
+    {
+      "name": "architecture-design",
+      "description": "Guide architecture design for a system, subsystem, or module by producing a structured design document covering component decomposition, data architecture, interface contracts, non-functional design, deployment topology, and ADRs. Includes approach comparison when design direction is not yet settled. WHEN: Use when the user asks for architecture design / system design / technical proposal / 架构设计 / 系统设计 / 出个架构 / 写个技术方案, when a task involves 3+ components or a new subsystem, when technology selection decisions are needed, or when non-functional requirements (scalability, availability, security) require architectural treatment. Do NOT use for single-module internal design choices where design-before-plan suffices, for requirements clarification (use requirement-interview), or for reviewing an existing design doc (use design-review-loop).",
+      "directory": "skills/architecture-design",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "architecture",
+        "design",
+        "system-design"
+      ]
+    },
+    {
+      "name": "implementation-planning",
+      "description": "Guide implementation planning by turning a settled requirement/design into a concrete plan that is sequenced, file-grounded, verifiable, and reviewable. The skill writes or proposes a plan document, not production code. Use when a task is ready to implement but still needs explicit execution ordering, per-step validation, rollback thinking, or multi-file / multi-PR coordination. Accepts either a design brief or a requirement document whose design direction is already clear. Do NOT use for small single-file edits where AGENTS.md §4 short planning is enough, or when major design choices are still open (use design-before-plan first).",
+      "directory": "skills/implementation-planning",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration",
+        "planning"
       ]
     },
     {

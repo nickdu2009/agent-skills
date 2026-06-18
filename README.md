@@ -6,16 +6,20 @@ This repository is a reusable skill library for coding agents. It focuses on exe
 
 ```mermaid
 flowchart TD
+    T[Task] --> RI[requirement-interview]
+    RI --> S[scoped-tasking]
     T[Task] --> S[scoped-tasking]
     S --> B[bugfix-workflow]
-    S --> P["AGENTS.md §4 plan"]
+    S --> IP[implementation-planning]
     S --> D[design-before-plan]
     D --> IA[impact-analysis]
-    IA --> P
-    P --> SR[self-review]
+    IA --> IP
+    IP --> PR[plan-review-loop]
+    IP --> SR[self-review]
+    PR --> SR
     B --> SR
     SR --> V[targeted-validation]
-    P --> O[multi-agent-protocol]
+    IP --> O[multi-agent-protocol]
 ```
 
 ## What This Repository Is
@@ -28,6 +32,7 @@ flowchart TD
 
 ### Execution Skills
 
+- `requirement-interview`
 - `scoped-tasking`
 - `targeted-validation`
 - `safe-refactor`
@@ -35,6 +40,8 @@ flowchart TD
 - `impact-analysis`
 - `self-review`
 - `design-before-plan`
+- `architecture-design`
+- `implementation-planning`
 - `requirements-review-loop`
 - `design-review-loop`
 - `plan-review-loop`
@@ -53,8 +60,9 @@ flowchart TD
 
 For most coding tasks, start with the smallest skill set that fits the work. Add skills only when the task shape justifies them.
 
+- Use `requirement-interview` when a feature request is vague at the business level (unclear goal, roles, main flow, scope, or acceptance criteria) and must be clarified before coding or design.
 - Use `scoped-tasking` for broad or ambiguous requests.
-- For multi-file or uncertain sequencing, follow `AGENTS.md` Behavioral Guidelines §4 (parallelism decision + plan + verify), including when using built-in Plan tools or modes; no dedicated skill is required.
+- For multi-file or uncertain sequencing, use `AGENTS.md` Behavioral Guidelines §4 for lightweight short planning, and upgrade to `implementation-planning` when the work needs a durable, reviewable plan artifact.
 - Use `bugfix-workflow` for unconfirmed failures.
 - Use `safe-refactor` for behavior-preserving structural cleanup.
 - Use `impact-analysis` for shared interfaces or broad caller impact.
@@ -110,12 +118,15 @@ README.md
 skills/
   bugfix-workflow/
   code-review-loop/
+  architecture-design/
   design-before-plan/
   design-review-loop/
   impact-analysis/
+  implementation-planning/
   multi-agent-protocol/
   plan-review-loop/
   manage-agents-md/
+  requirement-interview/
   requirements-review-loop/
   safe-refactor/
   scoped-tasking/

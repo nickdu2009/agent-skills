@@ -10,7 +10,7 @@ An API returns `500` when an optional marketing profile is missing. The intended
 - `bugfix-workflow`
 - `targeted-validation`
 
-Editing follows `AGENTS.md` Behavioral Guidelines §4 (plan + verify), no dedicated skill required.
+Editing follows `AGENTS.md` Behavioral Guidelines §4 short planning (plan + verify); this bugfix is intentionally small enough that `implementation-planning` is not needed.
 
 ## Why This Composition
 

@@ -97,7 +97,7 @@ FORBIDDEN_RUNTIME_SNIPPETS = (
     "docs/maintainer/protocol-v2-compact.md",
 )
 PARALLELISM_PLAN_SNIPPETS = (
-    "Built-in planning tools and modes count as planning:",
+    "Use `implementation-planning` when the work spans multiple files, steps, or PR-sized increments and needs a written, reviewable plan artifact.",
     "[parallelism:",
     "- delegation: <delegate count, or 0 with reason>",
 )
@@ -108,11 +108,11 @@ GOVERNANCE_BOUNDARY_SNIPPETS = (
 )
 ROUTING_SEMANTICS_SNIPPETS = (
     "Stay on the selected implementation workflow when scope is clear and no escalation signal appears;",
-    "Continue from a completed plan into implementation, `self-review`, and `targeted-validation`",
+    "Continue from a completed `implementation-planning` plan into implementation, `self-review`, and `targeted-validation`",
     "Continue after `review_result: issues_found` into a local revision of the same artifact when scope, ownership, and artifact identity stay the same.",
     "Continue from that revision back into the same review-loop and do not `drop` the review skill until `review_result: clean`, explicit handoff, or superseding work changes the artifact/boundary.",
     "Continue after a review loop returns `review_result: clean` when the next step is explicit, local, and non-destructive.",
-    "Once an escalation path is triggered, stop the current implementation path and move into `design-before-plan` or `impact-analysis`",
+    "Once an escalation path is triggered, stop the current implementation path and move into `design-before-plan`, `architecture-design`, or `impact-analysis`",
 )
 PROTOCOL_SEMANTICS_SNIPPETS = (
     "Fast paths may omit the full protocol block set.",
@@ -257,6 +257,30 @@ def test_user_install_installs_user_level_governance(module) -> None:
         run_cli(["verify", "user", "--platform", "claude-code"], home=home)
 
 
+def test_cursor_user_install_creates_mdc_rule(module) -> None:
+    with tempfile.TemporaryDirectory(prefix="install-cursor-user-") as home_dir:
+        home = Path(home_dir)
+
+        run_cli(["install", "user", "--platform", "cursor", "--overwrite-skills"], home=home)
+
+        mdc_file = home / ".cursor" / "rules" / "agent-skills.mdc"
+        assert_exists(mdc_file)
+        assert_contains(mdc_file, "alwaysApply: true")
+        assert_contains(mdc_file, "# AGENTS.md")
+        assert_contains(mdc_file, "## Behavioral Guidelines")
+        assert_contains(mdc_file, "## Skill Activation")
+        assert_contains(mdc_file, "## Multi-Agent Rules")
+        assert_parallelism_plan_template(mdc_file)
+        assert_governance_boundaries(mdc_file)
+        assert_routing_semantics(mdc_file)
+        assert_protocol_semantics(mdc_file)
+
+        for skill_dir in module.discover_installable_skills():
+            assert_exists(home / ".cursor" / "skills" / skill_dir.name / "SKILL.md")
+
+        run_cli(["verify", "user", "--platform", "cursor"], home=home)
+
+
 def test_legacy_flag_syntax_is_rejected() -> None:
     result = run_cli_allow_failure(["--global"])
     if result.returncode == 0:
@@ -288,6 +312,7 @@ def main() -> int:
     test_project_install_installs_installable_skills(module)
     test_agents_template_selection()
     test_user_install_installs_user_level_governance(module)
+    test_cursor_user_install_creates_mdc_rule(module)
     test_legacy_flag_syntax_is_rejected()
     test_partial_install_options_are_rejected()
     test_mirror_command_is_rejected()

@@ -3,7 +3,7 @@
 **Version**: 1.0  
 **Date**: 2026-04-11  
 **Status**: Current authority
-**Current implementation note**: Updated for the 14-skill post-2026-05 governance model. The old plan-before-action, phase, and minimal-change-strategy skills are retired; planning discipline now lives in `AGENTS.md` / `CLAUDE.md` Behavioral Guidelines §4.
+**Current implementation note**: Updated for the 17-skill post-2026-06 governance model. The old plan-before-action, phase, and minimal-change-strategy skills are retired; lightweight planning still lives in `AGENTS.md` / `CLAUDE.md` Behavioral Guidelines §4, while durable implementation planning now routes through `implementation-planning`.
 
 ## Purpose
 
@@ -74,7 +74,7 @@ They do not:
 ### multi-file-planned
 
 **Full chain:**  
-`scoped-tasking` → Behavioral Guidelines §4 plan → `self-review` → `targeted-validation`
+`scoped-tasking` → `implementation-planning` → `self-review` → `targeted-validation`
 
 **Use when:**
 
@@ -94,7 +94,7 @@ They do not:
 ### design-first
 
 **Full chain:**  
-`scoped-tasking` → `design-before-plan` → `impact-analysis`
+`scoped-tasking` → `design-before-plan` → `impact-analysis` → `implementation-planning`
 
 **Use when:**
 
@@ -104,8 +104,8 @@ They do not:
 - Design decisions block planning
 
 **Entry point:** `scoped-tasking` confirms the boundary  
-**Handoff:** `design-before-plan` → `impact-analysis` when shared callers, data models, or public contracts need blast-radius review
-**Exit:** an implementation plan under Behavioral Guidelines §4, followed by `targeted-validation` after code changes
+**Handoff:** `design-before-plan` → `impact-analysis` when shared callers, data models, or public contracts need blast-radius review; `impact-analysis` → `implementation-planning` when sequencing is ready
+**Exit:** an implementation plan under `implementation-planning`, followed by `targeted-validation` after code changes
 
 **Deactivation note:** Drop `design-before-plan` after the design brief is accepted or handed to implementation planning — it does not stay active during implementation.
 
@@ -115,7 +115,7 @@ They do not:
 
 ### large-task
 
-**Status:** Historical alias retained for older maintainer reports. Current governance handles this with `scoped-tasking`, `design-before-plan`, `impact-analysis`, Behavioral Guidelines §4 planning, and optional `multi-agent-protocol`; there is no dedicated phase or incremental-delivery skill in the live 14-skill set.
+**Status:** Historical alias retained for older maintainer reports. Current governance handles this with `scoped-tasking`, `design-before-plan`, `impact-analysis`, `implementation-planning`, and optional `multi-agent-protocol`; there is no dedicated phase or incremental-delivery skill in the live 17-skill set.
 
 **Full chain:**  
 No active canonical chain. Use the current common flow patterns instead.
@@ -131,7 +131,7 @@ No active canonical chain. Use the current common flow patterns instead.
 **Handoffs:**
 
 1. `design-before-plan` → `impact-analysis` when caller/module impact is still speculative
-2. `impact-analysis` → Behavioral Guidelines §4 planning after the impact summary is produced
+2. `impact-analysis` → `implementation-planning` after the impact summary is produced
 
 **Escalation:**
 
@@ -231,7 +231,7 @@ In `scoped-tasking/SKILL.md`:
 
 ```markdown
 Combine with:
-- Behavioral Guidelines §4 planning to convert the scoped boundary into a concrete work plan
+- implementation-planning to convert the scoped boundary into a durable work plan when sequencing and rollback matter
 - targeted-validation to keep verification aligned to the same boundary
 ```
 
@@ -248,7 +248,7 @@ In `scoped-tasking/SKILL.md`:
 
 ```markdown
 Common flows:
-- multi-file-planned: scoped-tasking → Behavioral Guidelines §4 plan → ...
+- multi-file-planned: scoped-tasking → implementation-planning → ...
 
 (Full definitions: docs/maintainer/skill-chain-aliases.md)
 ```
@@ -265,8 +265,8 @@ This section records current live-chain status. Older optimization reports may m
 |---|---|---|
 | `bugfix-standard` | Current | `scoped-tasking` → `bugfix-workflow` → `self-review` → `targeted-validation` |
 | `refactor-safe` | Current | `scoped-tasking` → `safe-refactor` → `self-review` → `targeted-validation` |
-| `multi-file-planned` | Current | `scoped-tasking` → Behavioral Guidelines §4 plan → `self-review` → `targeted-validation` |
-| `design-first` | Current | `scoped-tasking` → `design-before-plan` → `impact-analysis` |
+| `multi-file-planned` | Current | `scoped-tasking` → `implementation-planning` → `self-review` → `targeted-validation` |
+| `design-first` | Current | `scoped-tasking` → `design-before-plan` → `impact-analysis` → `implementation-planning` |
 | `parallel` | Current | `multi-agent-protocol` → synthesis |
 | `large-task` | Historical | Retained for older reports; use current common flow patterns instead |
 

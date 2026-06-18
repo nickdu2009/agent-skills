@@ -8,7 +8,7 @@ metadata:
 
 # Purpose
 
-Trace outward from a planned edit point to identify affected callers, dependents, modules, and contracts. The goal is to produce a structured impact summary so that the subsequent implementation plan (per AGENTS.md Behavioral Guidelines §4) can make informed scope and sequencing decisions.
+Trace outward from a planned edit point to identify affected callers, dependents, modules, and contracts. The goal is to produce a structured impact summary so that the subsequent implementation plan can make informed scope, sequencing, and rollback decisions.
 
 # When to Use
 
@@ -106,7 +106,7 @@ Fallbacks:
 
 - To `design-before-plan` when contract migration becomes multi-stage or externally constrained
 
-Drop after the implementation plan (per AGENTS.md Behavioral Guidelines §4) consumes the impact summary.
+Drop after `implementation-planning` consumes the impact summary.
 
 # Example
 
@@ -121,7 +121,7 @@ Apply impact-analysis:
 - Blast radius: 8 files, 2 modules.
 - Invariants: all callers must destructure the new return shape; no caller should compare the result to true/false directly.
 
-Hand off the summary to the implementation step (per AGENTS.md Behavioral Guidelines §4 plan). Do not start editing.
+Hand off the summary to `implementation-planning`. Do not start editing.
 
 ## Contract
 
@@ -134,7 +134,7 @@ Hand off the summary to the implementation step (per AGENTS.md Behavioral Guidel
 ### Postconditions
 
 - `status: completed` includes `affected_callers`, `contracts`, and `compatibility_risks`.
-- The blast radius is described concretely enough for planning and sequencing.
+- The blast radius is described concretely enough for `implementation-planning` to sequence execution safely.
 - The analysis stops at declared framework boundaries instead of drifting into full-repo tracing.
 
 ### Invariants
@@ -145,7 +145,7 @@ Hand off the summary to the implementation step (per AGENTS.md Behavioral Guidel
 
 ### Downstream Signals
 
-- `affected_callers` tells planning which modules or layers must be coordinated.
+- `affected_callers` tells `implementation-planning` which modules or layers must be coordinated.
 - `contracts` records the public or shared surfaces that may need migration.
 - `compatibility_risks` identifies where rollback, phased rollout, or caller updates matter.
 
@@ -175,10 +175,10 @@ Hand off the summary to the implementation step (per AGENTS.md Behavioral Guidel
 ## Output Example
 
 ```
-[output: impact-analysis | completed high | affected_callers:"auth/middleware, admin dashboard route handlers" contracts:"validateToken() return shape" compatibility_risks:"boolean comparisons must be migrated before rollout" | next:implementation]
+[output: impact-analysis | completed high | affected_callers:"auth/middleware, admin dashboard route handlers" contracts:"validateToken() return shape" compatibility_risks:"boolean comparisons must be migrated before rollout" | next:implementation-planning]
 ```
 
 ## Deactivation Trigger
 
-- Deactivate once the implementation plan (AGENTS.md Behavioral Guidelines §4) has absorbed the impact summary.
+- Deactivate once `implementation-planning` has absorbed the impact summary.
 - Deactivate when the change is downgraded to a local internal edit with no shared-contract impact.

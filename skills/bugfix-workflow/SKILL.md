@@ -37,3 +37,64 @@ Weak evidence includes naming similarity, nearby code smell, or intuition withou
 ## Output
 
 `[output: bugfix-workflow | completed <confidence> | symptom:"..." cause:"..." fix:"..." validation:"..." | next:<action>]`
+
+## Contract
+
+### Preconditions
+
+- A bug symptom, failing test, or unexpected behavior has been reported.
+- The root cause is not yet confirmed.
+- The agent can gather evidence before editing.
+
+### Postconditions
+
+- `status: completed` includes `symptom`, `cause`, `fix`, and `validation`.
+- The chosen fix is tied to a confirmed failure path rather than guesswork.
+- Validation checks the original symptom first.
+
+### Invariants
+
+- Evidence precedes editing.
+- Confirmed causes remain distinct from hypotheses.
+- The fix stays scoped to the confirmed fault path.
+
+### Downstream Signals
+
+- `symptom` preserves the user-visible failure for later verification.
+- `cause` records the confirmed failure path that justified the fix.
+- `fix` explains the chosen repair direction for downstream review.
+- `validation` tells downstream checks how the original symptom was re-tested.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The symptom cannot be reproduced or tied to a concrete path.
+- Multiple root-cause hypotheses remain plausible with no evidence to rank them.
+- The requested fix expands into a refactor or redesign instead of a bounded repair.
+
+### Retry Policy
+
+- Gather one stronger piece of evidence before broadening the search.
+- If two rounds of evidence gathering still do not narrow the fault domain, stop and ask or re-scope.
+
+### Fallback
+
+- Hand off to `scoped-tasking` if the task boundary is still too broad.
+- Hand off to `targeted-validation` if the main question becomes "which test should I run first".
+
+### Low Confidence Handling
+
+- State the remaining uncertainty explicitly instead of forcing a fix.
+- Prefer no edit over a speculative patch.
+
+## Output Example
+
+```
+[output: bugfix-workflow | completed high | symptom:"optional profile path returns 500" cause:"nullable profile lookup is dereferenced in account service" fix:"add guard at first optional-profile access and return 404" validation:"rerun profile-missing endpoint test and confirm non-profile account updates still pass" | next:self-review]
+```
+
+## Deactivation Trigger
+
+- The confirmed fix direction is applied and handed to validation or review.
+- The task is re-scoped into design, refactor, or broader investigation work.

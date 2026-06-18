@@ -6,17 +6,28 @@ import re
 
 
 EXECUTION_SKILLS: tuple[str, ...] = (
-    "scoped-tasking",
-    "design-before-plan",
-    "smallest-change discipline",
-    "targeted-validation",
-    "context discipline",
-    "built-in code search",
-    "safe-refactor",
+    "architecture-design",
     "bugfix-workflow",
+    "code-review-loop",
+    "design-before-plan",
+    "design-review-loop",
     "impact-analysis",
+    "implementation-planning",
+    "manage-agents-md",
+    "plan-review-loop",
+    "requirement-interview",
+    "requirements-review-loop",
+    "safe-refactor",
+    "scoped-tasking",
     "self-review",
+    "targeted-validation",
+    "test-review-loop",
+
+    # Historical protocol families retained for compatibility with old traces.
+    "built-in code search",
+    "context discipline",
     "increment planning",
+    "smallest-change discipline",
     "durable project knowledge",
 )
 
@@ -54,16 +65,37 @@ SKILL_REQUIRED_SECTIONS: dict[str, tuple[str, ...]] = {
 }
 
 SKILL_OUTPUT_FIELDS: dict[str, tuple[str, ...]] = {
+    "architecture-design": (
+        "components",
+        "data_architecture",
+        "interface_contracts",
+        "adrs",
+        "acceptance_criteria",
+    ),
+    "bugfix-workflow": ("symptom", "repro", "fault_domain", "fix_hypothesis"),
+    "code-review-loop": ("review_result", "issues", "fixes", "validation"),
     "scoped-tasking": ("objective", "analysis_boundary", "excluded_areas"),
     "design-before-plan": ("requirements", "alternatives", "chosen_design", "acceptance_criteria"),
+    "design-review-loop": ("review_result", "issues", "changes", "validation"),
+    "impact-analysis": ("affected_callers", "contracts", "compatibility_risks"),
+    "implementation-planning": (
+        "sequence",
+        "file_landing",
+        "verify",
+        "risks",
+        "traceability",
+    ),
+    "manage-agents-md": ("operation", "path", "validation", "assumptions"),
+    "plan-review-loop": ("review_result", "issues", "changes", "validation"),
+    "requirement-interview": ("maturity", "requirement_type", "confirmed", "open_questions"),
+    "requirements-review-loop": ("review_result", "issues", "changes", "validation"),
     "smallest-change discipline": ("change_boundary", "scope_guardrails", "stop_conditions"),
     "targeted-validation": ("checks_to_run", "risks_not_covered", "pass_criteria"),
     "context discipline": ("current_state", "dropped_hypotheses", "open_questions"),
     "built-in code search": ("entry_points", "candidate_files", "edit_points"),
     "safe-refactor": ("behavior_invariants", "refactor_boundary", "rollback_notes"),
-    "bugfix-workflow": ("symptom", "repro", "fault_domain", "fix_hypothesis"),
-    "impact-analysis": ("affected_callers", "contracts", "compatibility_risks"),
     "self-review": ("findings", "residual_risks", "scope_violations"),
+    "test-review-loop": ("review_result", "issues", "changes", "validation"),
     "increment planning": ("increments", "merge_order", "gates"),
     "durable project knowledge": (
         "knowledge_root",

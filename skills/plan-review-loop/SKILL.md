@@ -120,6 +120,67 @@ Then finish with the compact protocol line:
 
 `[output: plan-review-loop | completed <confidence> | review_result:"clean|issues_found" issues:"<count by severity>" changes:"..." validation:"..." | next:<action>]`
 
+## Contract
+
+### Preconditions
+
+- A plan artifact exists to review.
+- The repository provides enough context to validate landing surfaces, sequencing, and verification.
+- The artifact is an implementation/refactor/migration/task plan, not requirements, design, code, or tests.
+
+### Postconditions
+
+- `status: completed` includes `review_result`, `issues`, `changes`, and `validation`.
+- The plan is either clean or blocked by explicit planning defects.
+- Revisions stay inside the target plan artifact.
+
+### Invariants
+
+- The review stays plan-focused, not code-focused.
+- Every issue is resolved before `review_result: clean`.
+- File-level landing, validation, and risk coverage remain explicit.
+
+### Downstream Signals
+
+- `review_result` tells implementation whether the plan is ready to execute.
+- `issues` records any remaining planning defects or confirms none remain.
+- `changes` summarizes how the plan was revised.
+- `validation` records the repository checks used to support the review.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The artifact is not actually a plan.
+- The plan references files, modules, or contracts that do not exist.
+- Sequencing, rollback, or validation remains too vague to execute safely.
+
+### Retry Policy
+
+- Re-review after each plan revision until no issues remain.
+- If the same planning gap recurs twice, stop and escalate upstream rather than looping blindly.
+
+### Fallback
+
+- Hand off to `design-review-loop` if the artifact is actually a design doc.
+- Hand off to `code-review-loop` if the artifact is already implemented and the user really wants code review.
+
+### Low Confidence Handling
+
+- Preserve residual assumptions with explicit validation methods.
+- Do not mark the plan clean while execution still depends on guessed sequencing or landing.
+
+## Output Example
+
+```
+[output: plan-review-loop | completed high | review_result:"clean" issues:"0 blocking, 0 warning, 0 low-risk" changes:"added missing rollback note and tied AC3 to step 4" validation:"confirmed referenced files and checks exist in repo" | next:implementation]
+```
+
+## Deactivation Trigger
+
+- The plan artifact is clean and handed to implementation.
+- The plan is reframed into a different artifact type and needs a different review loop.
+
 ## Constraints
 
 - Do not stop after only reporting issues.

@@ -147,6 +147,67 @@ Then finish with the compact protocol line:
 
 `[output: code-review-loop | completed <confidence> | review_result:"clean|issues_found" issues:"<count by severity>" fixes:"..." validation:"..." | next:<action>]`
 
+## Contract
+
+### Preconditions
+
+- A completed implementation diff, commit, PR, or specified file set exists to review.
+- The artifact under review is code or implementation behavior, not a requirements/design/plan/test artifact.
+- Repository status has been checked so user-existing changes can be distinguished from current-task changes.
+
+### Postconditions
+
+- `status: completed` includes `review_result`, `issues`, `fixes`, and `validation`.
+- All findings are tied to correctness, regression, security, compatibility, scope, or test sufficiency.
+- The reviewed implementation is either clean or explicitly blocked by unresolved findings.
+
+### Invariants
+
+- Findings come before summaries.
+- Fixes stay scoped to review findings only.
+- Minimum useful validation is run after fixes when feasible.
+
+### Downstream Signals
+
+- `review_result` tells downstream work whether implementation can proceed or must stop.
+- `issues` records the remaining findings and their severity.
+- `fixes` summarizes what review-driven changes were applied.
+- `validation` records the checks that support the review outcome.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The artifact under review is the wrong type for code review.
+- Requirement alignment depends on unconfirmed user intent.
+- User-existing changes are mixed with current-task changes and ownership is ambiguous.
+
+### Retry Policy
+
+- Re-review immediately after scoped fixes and validation.
+- If a finding depends on unresolved user intent, stop and ask before continuing.
+
+### Fallback
+
+- Hand off to `requirements-review-loop`, `design-review-loop`, `plan-review-loop`, or `test-review-loop` if the artifact type is wrong.
+- Ask the user how to proceed if unrelated user changes prevent a clean scoped review.
+
+### Low Confidence Handling
+
+- Keep `review_result: issues_found` if any finding depends on an unconfirmed assumption.
+- Prefer reporting a residual risk over overstating confidence.
+
+## Output Example
+
+```
+[output: code-review-loop | completed high | review_result:"clean" issues:"0 blocking, 0 warning, 0 low-risk" fixes:"tightened retry guard and removed stale debug log" validation:"pytest tests/auth/test_retry.py -k login_retry" | next:done]
+```
+
+## Deactivation Trigger
+
+- The reviewed implementation is clean and handed to the user or the next execution step.
+- The artifact under review changes materially and needs a fresh review pass.
+
 ## Constraints
 
 - Do not stop after only reporting findings, except when `requirement alignment` depends on unconfirmed inferred user intent and user confirmation is required before continuing.

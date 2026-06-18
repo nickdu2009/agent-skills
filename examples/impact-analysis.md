@@ -11,12 +11,12 @@ The function is called by 4 route handlers across 2 modules, plus 3 test files.
 - scoped-tasking
 - impact-analysis
 
-Planning follows `AGENTS.md` Behavioral Guidelines §4 (plan + verify).
+Impact findings feed into `implementation-planning`; lightweight §4 planning still handles only small local follow-through.
 
 ## Why This Composition
 
 - impact-analysis traces outward from the edit point to assess blast radius.
-- AGENTS.md §4 uses the impact summary to declare a per-step implementation plan.
+- `implementation-planning` uses the impact summary to declare a per-step implementation plan.
 
 ## Example Execution
 
@@ -28,7 +28,7 @@ Planning follows `AGENTS.md` Behavioral Guidelines §4 (plan + verify).
    - blast_radius: 8 files, 2 modules
    - risk: high (public interface change)
    - invariants: all callers must handle the new return shape
-4. AGENTS.md §4 plan uses impact summary to sequence edits with per-step verify checks.
+4. `implementation-planning` uses the impact summary to sequence edits with per-step verify checks.
 5. Execution proceeds with informed scope.
 
 ## Guardrails
@@ -44,7 +44,7 @@ Planning follows `AGENTS.md` Behavioral Guidelines §4 (plan + verify).
 ```
 [task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
 [precheck: impact-analysis | result:PASS | checks:edit_point_known shared_contract_risk_present]
-[output: impact-analysis | status:completed | confidence:high | affected_callers:"4 route handlers, 3 test files" | contracts:"validateToken() return type" | compatibility_risks:"boolean comparisons must be migrated" | blast_radius:"8 files across 2 modules" | next:implementation]
+[output: impact-analysis | status:completed | confidence:high | affected_callers:"4 route handlers, 3 test files" | contracts:"validateToken() return type" | compatibility_risks:"boolean comparisons must be migrated" | blast_radius:"8 files across 2 modules" | next:implementation-planning]
 [validate: impact-analysis | result:PASS | checks:affected_callers compatibility_risks]
-[drop: impact-analysis | reason:"impact summary ready for AGENTS.md §4 plan" | active:none]
+[drop: impact-analysis | reason:"impact summary ready for implementation-planning" | active:none]
 ```

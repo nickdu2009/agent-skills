@@ -25,7 +25,7 @@
 - 改动有没有被压到最小
 - 验证有没有先从最小充分开始
 
-编辑前的"先想清楚 / 列计划"环节，由 `AGENTS.md` 行为指南 §4（Goal-Driven Execution）统一规范，无需单独激活技能。
+编辑前的"先想清楚 / 列计划"仍然先看 `AGENTS.md` 行为指南 §4（Goal-Driven Execution）：如果只是小任务、局部改动、顺序显然，用轻量计划块即可；如果需要多文件排序、可落盘计划或后续计划评审，再升级到 `implementation-planning`。
 
 如果你还不确定从哪里开始，先从这组默认组合起步，通常比一开始就上更重的技能更稳。
 
@@ -36,7 +36,7 @@
 
 1. 执行与质量：`scoped-tasking` + `targeted-validation`（必要时加 `self-review`）
 2. 缺陷与重构：`bugfix-workflow` / `safe-refactor`
-3. 影响与设计：`impact-analysis` / `design-before-plan`
+3. 需求、影响与设计：`requirement-interview`（需求模糊时最先用）/ `impact-analysis` / `design-before-plan` / `architecture-design` / `implementation-planning`
 4. 评审回环：按产物类型选择一个 `*-review-loop`
 5. 治理与协作：`manage-agents-md` / `multi-agent-protocol`
 
@@ -47,6 +47,7 @@
 
 选技能时，可以按下面顺序问自己：
 
+0. 需求在业务层面问清楚了吗（目标/角色/主流程/边界/验收）
 1. 任务边界清楚吗
 2. 编辑点清楚吗
 3. 当前问题是普通改动、缺陷修复，还是结构性整理
@@ -58,6 +59,24 @@
 
 ## 按任务形态选择
 <div class="title-en">Selection by Task Shape</div>
+
+### 需求在业务层面还没问清楚
+<div class="title-en">Requirement is unclear at the business level</div>
+
+优先考虑：
+
+- `requirement-interview`
+
+适用场景：
+
+- 用户用一句模糊话提出功能需求（如“加个审批”“做个报表”）
+- 业务目标、使用角色、主流程、范围边界或验收标准还缺失
+- 同一需求存在多种合理解读，无法直接确定要做什么
+
+结束信号：
+
+- 已产出“需求澄清结果”，业务目标、角色、主流程、边界、验收都已确认
+- 可以移交 `scoped-tasking` 或 `design-before-plan`；如果设计方向也已经明确，可进一步进入 `implementation-planning`
 
 ### 范围不清楚
 <div class="title-en">Scope is unclear</div>
@@ -128,6 +147,26 @@
 - 结构问题已经缓解
 - 对外行为和接口仍保持稳定
 
+### 需要系统级或模块级架构设计
+<div class="title-en">System-level or module-level architecture design needed</div>
+
+优先考虑：
+
+- `architecture-design`
+
+适用场景：
+
+- 新建系统、子系统或重要新模块
+- 涉及 3+ 组件的职责分解
+- 需要技术选型决策（数据库、消息队列、缓存、框架等）
+- 非功能需求（可扩展性、可用性、安全性）需要架构层面的方案
+- 用户说"架构设计"/"系统设计"/"出个架构"/"写个技术方案"
+
+结束信号：
+
+- 架构设计文档已产出，包含组件分解、数据架构、接口契约、ADR
+- 可以进入 `design-review-loop` 评审，或进入 `implementation-planning` 排实施计划
+
 ### 共享接口或多调用方改动
 <div class="title-en">Shared API or multi-caller change</div>
 
@@ -143,7 +182,7 @@
 结束信号：
 
 - 影响范围已经从“猜测”变成“有证据的调用面”
-- 可以进入计划，而不是边改边猜
+- 可以进入 `implementation-planning`，而不是边改边猜
 
 ### 任务可拆成低耦合子问题
 <div class="title-en">Task can be split into low-coupling subproblems</div>
@@ -168,7 +207,7 @@
 
 优先考虑：
 
-- `AGENTS.md` 行为指南 §4（先判断并行价值，再按计划块拆增量）
+- `implementation-planning`（先写出 2 到 4 个增量、依赖、verify 与回滚点）
 - `multi-agent-protocol`（仅当确有低耦合并行子问题）
 
 适用场景：
@@ -213,6 +252,9 @@
 
 如果你只想要几组最常用组合，可以先从这里开始：
 
+- 需求模糊先澄清：`requirement-interview` → `scoped-tasking` → `design-before-plan`
+- 系统级架构设计：`requirement-interview`（如需）→ `architecture-design` → `design-review-loop`（如需）→ `implementation-planning`
+- 设计已定后进入实施：`design-before-plan` → `implementation-planning` → `plan-review-loop`（如需审计划）→ 实现
 - 小范围普通改动：`scoped-tasking` + `targeted-validation`
 - 缺陷修复：`scoped-tasking` + `bugfix-workflow` + `targeted-validation`
 - 安全重构：`scoped-tasking` + `safe-refactor` + `self-review` + `targeted-validation`

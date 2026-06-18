@@ -98,7 +98,7 @@
 - `scoped-tasking`
 - `targeted-validation`
 
-并结合 `AGENTS.md` 行为指南 §4 的轻量计划块（含 `[parallelism: ...]` 和验证点）。
+并结合 `AGENTS.md` 行为指南 §4 的轻量计划块（含 `[parallelism: ...]` 和验证点）。只有在需要多文件排序、持久计划文档或计划评审时，才升级到 `implementation-planning`。
 
 因为最容易失控的情况，就是编辑点还没找到，工作集已经膨胀了。
 

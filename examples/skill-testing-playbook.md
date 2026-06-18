@@ -9,7 +9,7 @@ You changed one or more `SKILL.md` files and want a repeatable way to verify tha
 - `scoped-tasking`
 - `targeted-validation`
 
-Implementation follows `AGENTS.md` Behavioral Guidelines §4 (plan + verify).
+Implementation follows `AGENTS.md` Behavioral Guidelines §4 for short planning, and `implementation-planning` when a durable plan artifact is part of the test surface.
 
 ## Test Flow
 
@@ -49,6 +49,7 @@ python3 maintainer/scripts/install/run_manage_governance_smoke.py
 | --- | --- | --- |
 | `single-agent-bugfix.md` | diagnosis before edit | symptom clarity, fault-domain narrowing, smallest viable fix, narrow validation |
 | `safe-refactor.md` | behavior-preserving structure change | invariants stated, extraction in small steps, validation after meaningful steps |
+| `implementation-planning.md` | durable implementation planning | acceptance map, file landing, verify checks, rollback notes, handoff to plan review |
 | `context-budgeted-debugging.md` | context compression and restart | stale hypotheses dropped, compressed summary, focused next step |
 | `multi-agent-root-cause-analysis.md` | justified parallelism | low-coupling split, clear subagent assignments, merge and adjudication discipline |
 | `impact-analysis.md` | blast radius assessment before planning | outward tracing from edit point, structured impact summary, stop at framework boundaries, result feeds into plan |
@@ -223,7 +224,7 @@ checks:
     reason: "Checks are validation-only."
   skill_match:
     status: PASS
-    reason: "targeted-validation directly supports this flow; planning follows AGENTS.md §4."
+    reason: "targeted-validation directly supports this flow; planning uses AGENTS.md §4 short planning unless a durable plan artifact is under test."
 result: PASS
 action: proceed
 [/task-input-validation]
@@ -236,7 +237,7 @@ activated_now: [targeted-validation]
 deferred: []
 [/trigger-evaluation]
 
-# Implementation sequence follows AGENTS.md Behavioral Guidelines §4 (plan + verify):
+# Implementation sequence follows AGENTS.md Behavioral Guidelines §4 short planning (or `implementation-planning` when the changed surface includes durable planning behavior):
 #   1. run static checks           → verify: references and installer smoke are healthy
 #   2. run trigger checks          → verify: expected triggers fire on sampled prompts
 #   3. run scenario-based acceptance → verify: rubric pass on selected examples

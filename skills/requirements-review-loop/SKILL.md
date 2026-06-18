@@ -118,6 +118,67 @@ Then finish with the compact protocol line:
 
 `[output: requirements-review-loop | completed <confidence> | review_result:"clean|issues_found" issues:"<count by severity>" changes:"..." validation:"..." | next:<action>]`
 
+## Contract
+
+### Preconditions
+
+- A requirements artifact exists to review (PRD, user story, problem statement, or acceptance criteria draft).
+- The repository provides enough context to validate scope, feasibility, and terminology.
+- The artifact is requirements-focused, not design, implementation plan, code, or tests.
+
+### Postconditions
+
+- `status: completed` includes `review_result`, `issues`, `changes`, and `validation`.
+- The requirements are either clean or blocked by explicit requirement defects.
+- Revisions stay limited to the target requirements artifact.
+
+### Invariants
+
+- The review stays at the requirements level rather than jumping into implementation design.
+- Every issue is resolved before the result is marked clean.
+- Acceptance criteria remain observable and business-facing.
+
+### Downstream Signals
+
+- `review_result` tells downstream design or planning whether the requirements are ready.
+- `issues` records any remaining requirement gaps or confirms none remain.
+- `changes` summarizes how the requirements artifact was revised.
+- `validation` records the repository/context checks used to support the review.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The artifact is actually design or planning material.
+- Business goal, roles, scope, or acceptance criteria are still too ambiguous to validate.
+- Repository terminology or constraints contradict the written requirements.
+
+### Retry Policy
+
+- Re-review after each revision until no issues remain.
+- If requirements ambiguity remains after two revision passes, stop and ask for clarification.
+
+### Fallback
+
+- Hand off to `requirement-interview` if the artifact is still too vague and needs interactive clarification.
+- Hand off to `design-review-loop` if the artifact is actually a technical design doc.
+
+### Low Confidence Handling
+
+- Keep unresolved requirement assumptions visible.
+- Do not mark the review clean while business-critical ambiguity remains.
+
+## Output Example
+
+```
+[output: requirements-review-loop | completed high | review_result:"clean" issues:"0 blocking, 0 warning, 0 low-risk" changes:"made acceptance criteria observable and split must-have vs later scope" validation:"checked terminology and referenced modules against repo docs" | next:design-before-plan]
+```
+
+## Deactivation Trigger
+
+- The requirements artifact is clean and handed to design or planning.
+- The artifact changes scope substantially and needs a fresh review cycle.
+
 ## Constraints
 
 - Do not stop after only reporting issues.

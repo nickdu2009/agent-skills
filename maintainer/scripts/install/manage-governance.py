@@ -18,6 +18,8 @@ SKILL_FILE = "SKILL.md"
 MANAGED_MARKER = ".agent-skills-managed"
 AGENTS_TEMPLATE_PATH = REPO_ROOT / "templates" / "governance" / "AGENTS-template.md"
 CLAUDE_TEMPLATE_PATH = REPO_ROOT / "templates" / "governance" / "CLAUDE-template.md"
+CURSOR_MDC_TEMPLATE_PATH = REPO_ROOT / "templates" / "governance" / "cursor-agent-skills.mdc"
+CURSOR_MDC_PLACEHOLDER = "{{GOVERNANCE_BODY}}"
 @dataclass(frozen=True)
 class GovernanceSection:
     heading: str
@@ -167,6 +169,53 @@ AGENTS_TEMPLATE = load_governance_template(AGENTS_TEMPLATE_PATH)
 CLAUDE_TEMPLATE = load_governance_template(CLAUDE_TEMPLATE_PATH)
 
 
+def render_cursor_mdc() -> str:
+    """Render the Cursor .mdc rule by replacing the placeholder with governance body."""
+    mdc_raw = read_text(CURSOR_MDC_TEMPLATE_PATH)
+    parts = ["# AGENTS.md"]
+    for section in AGENTS_TEMPLATE.sections:
+        parts.append(section.text.rstrip("\n"))
+    body = "\n\n".join(parts)
+    return ensure_trailing_newline(mdc_raw.replace(CURSOR_MDC_PLACEHOLDER, body))
+
+
+def get_cursor_mdc_target() -> Path:
+    return Path.home() / ".cursor" / "rules" / "agent-skills.mdc"
+
+
+def install_cursor_mdc(*, update: bool) -> bool:
+    target = get_cursor_mdc_target()
+    rendered = render_cursor_mdc()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        if not update:
+            print(f"  EXISTS: {target} (use --replace-rules to replace)")
+            return False
+        existing = read_text(target)
+        if existing == rendered:
+            print(f"  UP-TO-DATE: {target}")
+            return False
+        print(f"  UPDATE: {target}")
+    else:
+        print(f"  CREATE: {target}")
+    target.write_text(rendered, encoding="utf-8")
+    return True
+
+
+def check_cursor_mdc() -> bool:
+    target = get_cursor_mdc_target()
+    if not target.is_file():
+        print(f"  NOT INSTALLED: Cursor .mdc rule -> {target}")
+        return False
+    rendered = render_cursor_mdc()
+    existing = read_text(target)
+    if existing == rendered:
+        print(f"  OK: Cursor .mdc rule -> {target}")
+        return True
+    print(f"  OUTDATED: Cursor .mdc rule -> {target}")
+    return False
+
+
 def all_template_sections(template: GovernanceTemplate) -> tuple[GovernanceSection, ...]:
     return template.sections
 
@@ -310,7 +359,11 @@ def inject_rules(project_dir: Path | None, platforms: list[str], *, update: bool
         target_info = get_governance_target(platform, project_dir)
         if target_info is None:
             if project_dir is None and platform in {"cursor", "cursor-cli"}:
-                print(f"  SKIP: {platform} has no official user-level AGENTS.md target; use Cursor User Rules")
+                mdc_target = get_cursor_mdc_target()
+                if mdc_target not in seen_targets:
+                    seen_targets.add(mdc_target)
+                    if install_cursor_mdc(update=update):
+                        changed_count += 1
             else:
                 print(f"  SKIP: unknown platform '{platform}'")
             continue
@@ -325,12 +378,20 @@ def inject_rules(project_dir: Path | None, platforms: list[str], *, update: bool
     return changed_count
 
 
-def check_governance(platform: str, project_dir: Path | None = None) -> bool:
+def check_governance(
+    platform: str,
+    project_dir: Path | None = None,
+    seen: set[Path] | None = None,
+) -> bool:
     target_info = get_governance_target(platform, project_dir)
     if target_info is None:
         if project_dir is None and platform in {"cursor", "cursor-cli"}:
-            print(f"  SKIP CHECK: {platform} has no official user-level AGENTS.md target; use Cursor User Rules")
-            return True
+            mdc_target = get_cursor_mdc_target()
+            if seen is not None:
+                if mdc_target in seen:
+                    return True
+                seen.add(mdc_target)
+            return check_cursor_mdc()
         print(f"  SKIP CHECK: unknown platform '{platform}'")
         return False
     target, template = target_info
@@ -741,9 +802,10 @@ def main(argv: list[str] | None = None) -> int:
                 print("")
         if check_rules:
             print("--- Verifying governance rules ---")
+            checked_governance_targets: set[Path] = set()
             for platform in platforms:
                 print(f"Platform: {platform}")
-                if not check_governance(platform, check_dir):
+                if not check_governance(platform, check_dir, checked_governance_targets):
                     failed += 1
                 print("")
         if failed:
@@ -816,7 +878,7 @@ def main(argv: list[str] | None = None) -> int:
         if project_dir:
             print("  - Review governance sections in project AGENTS.md/CLAUDE.md")
         else:
-            print("  - Review user-level governance files; configure Cursor User Rules manually if needed")
+            print("  - Review user-level governance files (Cursor: ~/.cursor/rules/agent-skills.mdc)")
     print("")
     return 0
 

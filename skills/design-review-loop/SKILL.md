@@ -118,6 +118,67 @@ Then finish with the compact protocol line:
 
 `[output: design-review-loop | completed <confidence> | review_result:"clean|issues_found" issues:"<count by severity>" changes:"..." validation:"..." | next:<action>]`
 
+## Contract
+
+### Preconditions
+
+- A design document, RFC, ADR, interface design, data model, or technical proposal exists to review.
+- The repository contains enough surrounding context to validate executability and alignment.
+- The artifact is design-focused, not requirements, implementation plan, code, or tests.
+
+### Postconditions
+
+- `status: completed` includes `review_result`, `issues`, `changes`, and `validation`.
+- The reviewed design is either clean or blocked by explicit design issues.
+- Design revisions stay inside the target document.
+
+### Invariants
+
+- Review stays design-focused, not implementation-focused.
+- Every issue is classified and resolved before clean exit.
+- Repository reality is checked against the proposed design.
+
+### Downstream Signals
+
+- `review_result` tells downstream planning or implementation whether the design is ready.
+- `issues` records unresolved design defects or confirms none remain.
+- `changes` summarizes how the document was revised.
+- `validation` records the repository checks used to support the review.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The artifact is not actually a design document.
+- The design references repository paths, contracts, or conventions that do not exist.
+- Requirements are still too unclear to validate the design.
+
+### Retry Policy
+
+- Re-review after each revision until no issues remain.
+- If requirement ambiguity blocks the review twice, stop and escalate upstream.
+
+### Fallback
+
+- Hand off to `requirements-review-loop` if the document is really a requirements artifact.
+- Hand off to `plan-review-loop` if the document is really an implementation plan.
+
+### Low Confidence Handling
+
+- Keep unresolved assumptions explicit in the document.
+- Do not mark the review clean while the design still depends on guessed repository reality.
+
+## Output Example
+
+```
+[output: design-review-loop | completed high | review_result:"clean" issues:"0 blocking, 0 warning, 0 low-risk" changes:"clarified queue ownership, tightened API versioning note" validation:"cross-checked module paths and interface names against repo" | next:implementation-planning]
+```
+
+## Deactivation Trigger
+
+- The design document is clean and handed to planning or implementation.
+- The design scope changes enough that a fresh review cycle is required.
+
 ## Constraints
 
 - Do not stop after only reporting issues.

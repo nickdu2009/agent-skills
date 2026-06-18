@@ -58,3 +58,70 @@ When subagent conclusions disagree:
 ## Output
 
 `[output: multi-agent-protocol | completed <confidence> | lanes:"..." synthesis:"..." uncertainty:"..." | next:<action>]`
+
+## Delegation Contract
+
+### Preconditions
+
+- The task can be split into 2-4 independent lanes.
+- Each lane has a clear objective and bounded scope.
+- Parallel work will save more time than it creates in merge overhead.
+
+### Postconditions
+
+- Delegated lanes are explicit enough that subagents can run without overlapping responsibilities.
+- Tier 2 launches include an explicit `[delegate: ...]` gate when write-capable work is involved.
+- The parent agent remains accountable for final integration.
+
+### Invariants
+
+- Parallelism stays opt-in, not automatic.
+- Overlapping write surfaces are avoided unless explicitly justified.
+- Lane prompts remain concrete about scope and expected evidence.
+
+## Synthesis Contract
+
+### Preconditions
+
+- Lane outputs are available or the parent agent has enough evidence to compare them.
+- The parent agent can normalize claims into a comparable format.
+
+### Postconditions
+
+- `status: completed` includes `lanes`, `synthesis`, and `uncertainty`.
+- Conflicting findings are adjudicated by evidence quality rather than preference.
+- Remaining ambiguity is preserved when the evidence does not settle it.
+
+### Invariants
+
+- The parent agent owns the final conclusion.
+- Synthesis is more than concatenation; claims are compared and resolved.
+- Uncertainty is not erased to force consensus.
+
+## Failure Handling
+
+### Common Failure Causes
+
+- The task was split across overlapping or tightly coupled lanes.
+- Subagent prompts were too vague to produce comparable outputs.
+- Conflicts remain but the parent agent cannot justify a resolution.
+
+### Retry Policy
+
+- Re-split once if the first lane design is clearly wrong.
+- If a second split still overlaps or stalls, stop parallelization and resume serial investigation.
+
+### Fallback
+
+- Collapse back to single-agent execution when the work is too coupled.
+- Use a smallest follow-up check when conflicting lane outputs cannot yet be adjudicated.
+
+### Low Confidence Handling
+
+- Keep unresolved claims visible with evidence and confidence notes.
+- Prefer narrower synthesis claims over overconfident conclusions.
+
+## Deactivation Trigger
+
+- Lane assignments are complete and handed to subagents, or synthesis is complete and handed back to implementation or reporting.
+- The task is re-scoped into a serial path where parallelism no longer helps.

@@ -61,7 +61,7 @@ Transform tasks into verifiable goals:
 - "Fix the bug" → "Write a test that reproduces it, then make it pass"
 - "Refactor X" → "Ensure tests pass before and after"
 
-Before substantial or multi-step implementation, state a brief plan that starts by deciding whether parallel work is justified. Built-in planning tools and modes count as planning: when Codex or Cursor asks for a plan, include this block at the top of the plan body before numbered steps.
+Before substantial or multi-step implementation, first decide whether the task needs durable planning. Use `implementation-planning` when the work spans multiple files, steps, or PR-sized increments and needs a written, reviewable plan artifact. When the task is small, local, and obvious, a brief §4 short plan is enough. For that lightweight path, include this block at the top of the plan body before numbered steps.
 
 ```text
 [parallelism:
@@ -76,7 +76,7 @@ Before substantial or multi-step implementation, state a brief plan that starts 
 3. [Step] → verify: [check]
 ```
 
-Continue without an extra user confirmation when the next step is local, non-destructive, and already implied by the current task or accepted plan (for example: read-only exploration, scoped edits, self-review, or local validation).
+Continue without an extra user confirmation when the next step is local, non-destructive, and already implied by the current task or accepted plan (for example: read-only exploration, scoped edits, implementation from an accepted `implementation-planning` artifact, self-review, or local validation).
 
 Stop and ask when the next step would change requirements, public interfaces, cross-module contracts, persistence schema, dependencies or tooling, bulk file layout, or any remote or destructive operation.
 
@@ -103,7 +103,7 @@ Report what changed, what was validated, and any residual risk. Keep status upda
 
 ## Skill Activation
 
-Task-type activation: `bugfix-workflow`, `safe-refactor`, `scoped-tasking`, `design-before-plan`, `impact-analysis`, `self-review`, `targeted-validation`, and `manage-agents-md` activate when task shape requires their guidance.
+Task-type activation: `requirement-interview`, `bugfix-workflow`, `safe-refactor`, `scoped-tasking`, `design-before-plan`, `architecture-design`, `implementation-planning`, `impact-analysis`, `self-review`, `targeted-validation`, and `manage-agents-md` activate when task shape requires their guidance.
 
 Fast path:
 
@@ -117,7 +117,10 @@ Use the full workflow when:
 
 Mid-task escalation:
 
+- `requirement-interview`: the user's feature request is too vague to scope or design (missing business goal, roles, main flow, scope, or acceptance criteria).
 - `design-before-plan`: multiple approaches, public API or cross-module contract changes, or unclear acceptance criteria.
+- `architecture-design`: the task requires system/subsystem/module-level architecture work — component decomposition, technology selection, non-functional design, or deployment topology.
+- `implementation-planning`: scope and design are clear, but sequencing, file landing, rollback, or multi-step validation still need a durable plan artifact.
 - `impact-analysis`: shared interfaces, public APIs, shared data models, or broad caller impact.
 - `self-review`: multi-file edits complete or user requests diff review.
 - `targeted-validation`: validation choice is non-obvious or expensive.
@@ -133,8 +136,11 @@ Review-loop activation (pick by artifact type, mutually exclusive):
 
 Workflow routing:
 
+- Start with `requirement-interview` when the user's feature request is vague and needs business clarification (goal, roles, main flow, scope, acceptance criteria) before scoping or design.
 - Start with `scoped-tasking` when a bug fix, refactor, multi-file change, or design/review request still needs boundary definition before execution.
-- Stay on the selected implementation workflow when scope is clear and no escalation signal appears; do not trigger `design-before-plan` or `impact-analysis` by default.
+- Trigger `implementation-planning` when scope is clear and the work still needs durable execution sequencing, rollback thinking, or a reviewable plan artifact before coding.
+- Trigger `architecture-design` when the task requires system/subsystem/module-level architecture — component decomposition, technology selection, non-functional design, or deployment topology.
+- Stay on the selected implementation workflow when scope is clear and no escalation signal appears; do not trigger `design-before-plan`, `architecture-design`, `implementation-planning`, or `impact-analysis` by default.
 - If escalation signals appear mid-task, stop the current implementation path and switch to `design-before-plan` and/or `impact-analysis` before continuing more implementation work.
 
 Protocol routing vocabulary:
@@ -185,23 +191,28 @@ If the same skill path is retried without new evidence, stop and re-scope, escal
 ## Common Flow Patterns
 
 ```text
+Clarify:      requirement-interview -> scoped-tasking -> design-before-plan -> implementation-planning
 Bug fix:      scoped-tasking -> bugfix-workflow -> self-review -> targeted-validation
 Refactor:     scoped-tasking -> safe-refactor -> self-review -> targeted-validation
-Multi-file:   scoped-tasking -> (Behavioral Guidelines §4 plan) -> self-review -> targeted-validation
-Design-first: scoped-tasking -> design-before-plan -> impact-analysis
+Multi-file:   scoped-tasking -> implementation-planning -> self-review -> targeted-validation
+Design-first: scoped-tasking -> design-before-plan -> impact-analysis -> implementation-planning
+Architecture: requirement-interview (optional) -> architecture-design -> design-review-loop (optional) -> implementation-planning
+Plan:         design-before-plan -> implementation-planning -> plan-review-loop
 Parallel:     multi-agent-protocol -> synthesis
 Review loop:  pick one of requirements-review-loop / design-review-loop / plan-review-loop / code-review-loop / test-review-loop -> revise -> re-review until review_result: clean
 ```
 
 Normal vs escalation paths:
 
+- `Clarify` is the pre-execution path when a feature request is too vague to scope or design, and runs before the others.
 - `Bug fix`, `Refactor`, `Multi-file`, and `Review loop` are the default execution paths when the task stays within its accepted scope.
 - `Design-first` is the escalation path when the work crosses into multiple approaches, unclear acceptance criteria, public-contract changes, shared data models, or broad caller impact.
+- `Architecture` is the path for system/subsystem/module-level architecture work requiring component decomposition, technology selection, or non-functional architecture design.
 
 Automatic continuation:
 
 - Continue from implementation to `self-review` and `targeted-validation` without an extra user checkpoint when the next step is local and non-destructive.
-- Continue from a completed plan into implementation, `self-review`, and `targeted-validation` when the next step remains local, non-destructive, and within the accepted task boundary.
+- Continue from a completed `implementation-planning` plan into implementation, `self-review`, and `targeted-validation` when the next step remains local, non-destructive, and within the accepted task boundary.
 - Continue after `review_result: issues_found` into a local revision of the same artifact when scope, ownership, and artifact identity stay the same.
 - Continue from that revision back into the same review-loop and do not `drop` the review skill until `review_result: clean`, explicit handoff, or superseding work changes the artifact/boundary.
 - Continue after a review loop returns `review_result: clean` when the next step is explicit, local, and non-destructive.
@@ -209,7 +220,7 @@ Automatic continuation:
 Stop conditions:
 
 - Pause the current chain and ask before continuing if the work expands into public-contract changes, schema/migration work, dependency/toolchain changes, bulk file moves, or remote/destructive actions.
-- Once an escalation path is triggered, stop the current implementation path and move into `design-before-plan` or `impact-analysis` before continuing more implementation work.
+- Once an escalation path is triggered, stop the current implementation path and move into `design-before-plan`, `architecture-design`, or `impact-analysis` before continuing more implementation work.
 
 ## Multi-Agent Rules
 

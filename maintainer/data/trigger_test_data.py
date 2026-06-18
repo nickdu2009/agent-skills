@@ -104,6 +104,16 @@ BOUNDARY_CASES: tuple[TriggerCase, ...] = (
         notes='Tiny single-file fix. AGENTS.md rules suffice. No skill should be loaded.',
     ),
     TriggerCase(
+        id='implementation-planning-not-needed-single-file',
+        prompt='Update the error message string in auth/errors.ts to match the product copy change. No other files or behavior need to change.',
+        expected_triggers=(),
+        expected_non_triggers=(
+        'implementation-planning',
+    ),
+        category='agents-md-boundary',
+        notes='Tiny single-file text change. This should stay in AGENTS.md §4 short planning, not escalate to durable implementation planning.',
+    ),
+    TriggerCase(
         id='multi-file-uncertain',
         prompt="Add retry logic to the payment service — I'm not sure if the retry config lives in the service layer or the client wrapper, and the tests will need updating too.",
         expected_triggers=(
@@ -338,6 +348,30 @@ PRE_PHASE_CASES: tuple[TriggerCase, ...] = (
         notes='Design already documented and frozen. design-before-plan should NOT trigger.',
     ),
     TriggerCase(
+        id='implementation-planning-from-requirement-doc',
+        prompt='The requirement doc at docs/requirements/notification-preferences.md already fixes the endpoint shape, additive schema change, validation rules, and acceptance criteria. Please turn it into a 2-PR implementation plan before coding starts.',
+        expected_triggers=(
+        'implementation-planning',
+    ),
+        expected_non_triggers=(
+        'design-before-plan',
+    ),
+        category='pre-phase',
+        notes='Requirement documentation already carries a settled design direction. implementation-planning should trigger directly instead of reopening design.',
+    ),
+    TriggerCase(
+        id='implementation-planning-blocked-by-open-design',
+        prompt='We have a requirement doc for notification preferences, but it still leaves the storage model open (user table vs separate preferences service) and the API payload shape undecided. Before coding, help me figure out the plan.',
+        expected_triggers=(
+        'design-before-plan',
+    ),
+        expected_non_triggers=(
+        'implementation-planning',
+    ),
+        category='pre-phase',
+        notes='The user asks for a plan, but design choices remain open. design-before-plan must trigger before implementation-planning.',
+    ),
+    TriggerCase(
         id='design-not-needed-bugfix',
         prompt='Fix the null pointer exception in the email service when the recipient list is empty.',
         expected_triggers=(
@@ -461,6 +495,28 @@ PRE_PHASE_CASES: tuple[TriggerCase, ...] = (
         category='pre-phase',
         notes="built-in code search produced 4 candidate files. impact-analysis should now assess the blast radius. Matches 'built-in code search produced 3+ tentative leads'.",
     ),
+    TriggerCase(
+        id='requirement-vague-feature',
+        prompt='给我们的系统加一个审批功能。',
+        expected_triggers=(
+        'requirement-interview',
+    ),
+        expected_non_triggers=(
+        'design-before-plan',
+    ),
+        category='pre-phase',
+        notes='Vague feature request missing business goal, roles, main flow, scope, and acceptance criteria. requirement-interview should trigger to clarify before scoping or design; design-before-plan should NOT trigger yet.',
+    ),
+    TriggerCase(
+        id='requirement-not-needed-clear-spec',
+        prompt='Add an "emailVerified" boolean field to the User model and show it on the admin user detail page, defaulting to false.',
+        expected_triggers=(),
+        expected_non_triggers=(
+        'requirement-interview',
+    ),
+        category='pre-phase',
+        notes='Feature request is concrete with clear object, behavior, and acceptance. requirement-interview should NOT trigger.',
+    ),
 )
 
 
@@ -479,10 +535,11 @@ CHAIN_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         id='chain-locate-to-plan',
         prompt='built-in code search found the edit points: auth/token.ts and auth/session.ts. Now I need a plan for the changes.',
         expected_triggers=(
+        'implementation-planning',
     ),
         expected_non_triggers=(),
         category='chain-trigger',
-        notes='Location discovery complete, now needs sequencing. Implementation follows AGENTS.md Behavioral Guidelines §4 plan.',
+        notes='Location discovery complete, now needs durable sequencing and verification. implementation-planning should trigger.',
     ),
     TriggerCase(
         id='chain-bugfix-to-cba',
@@ -645,12 +702,13 @@ CONFUSION_BOUNDARY_CASES: tuple[TriggerCase, ...] = (
         id='plan-vs-scope',
         prompt='The scope is clear: add retry logic to the three API clients in pkg/http/. I need to figure out the right order of changes and what assumptions to validate first.',
         expected_triggers=(
+        'implementation-planning',
     ),
         expected_non_triggers=(
         'scoped-tasking',
     ),
         category='confusion-boundary',
-        notes='Scope is already defined (3 files in pkg/http/). Sequencing and assumptions need a plan, not further scoping.',
+        notes='Scope is already defined (3 files in pkg/http/). Sequencing and assumptions now belong to implementation-planning, not further scoping.',
     ),
 )
 
@@ -850,6 +908,16 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
     ),
         category='agents-md-boundary',
         notes='Tiny single-file fix. AGENTS.md rules suffice. No skill should be loaded.',
+    ),
+    TriggerCase(
+        id='implementation-planning-not-needed-single-file',
+        prompt='Update the error message string in auth/errors.ts to match the product copy change. No other files or behavior need to change.',
+        expected_triggers=(),
+        expected_non_triggers=(
+        'implementation-planning',
+    ),
+        category='agents-md-boundary',
+        notes='Tiny single-file text change. This should stay in AGENTS.md §4 short planning, not escalate to durable implementation planning.',
     ),
     TriggerCase(
         id='multi-file-uncertain',
@@ -1067,6 +1135,30 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         notes='Design already documented and frozen. design-before-plan should NOT trigger.',
     ),
     TriggerCase(
+        id='implementation-planning-from-requirement-doc',
+        prompt='The requirement doc at docs/requirements/notification-preferences.md already fixes the endpoint shape, additive schema change, validation rules, and acceptance criteria. Please turn it into a 2-PR implementation plan before coding starts.',
+        expected_triggers=(
+        'implementation-planning',
+    ),
+        expected_non_triggers=(
+        'design-before-plan',
+    ),
+        category='pre-phase',
+        notes='Requirement documentation already carries a settled design direction. implementation-planning should trigger directly instead of reopening design.',
+    ),
+    TriggerCase(
+        id='implementation-planning-blocked-by-open-design',
+        prompt='We have a requirement doc for notification preferences, but it still leaves the storage model open (user table vs separate preferences service) and the API payload shape undecided. Before coding, help me figure out the plan.',
+        expected_triggers=(
+        'design-before-plan',
+    ),
+        expected_non_triggers=(
+        'implementation-planning',
+    ),
+        category='pre-phase',
+        notes='The user asks for a plan, but design choices remain open. design-before-plan must trigger before implementation-planning.',
+    ),
+    TriggerCase(
         id='design-not-needed-bugfix',
         prompt='Fix the null pointer exception in the email service when the recipient list is empty.',
         expected_triggers=(
@@ -1204,10 +1296,11 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         id='chain-locate-to-plan',
         prompt='built-in code search found the edit points: auth/token.ts and auth/session.ts. Now I need a plan for the changes.',
         expected_triggers=(
+        'implementation-planning',
     ),
         expected_non_triggers=(),
         category='chain-trigger',
-        notes='Location discovery complete, now needs sequencing. Implementation follows AGENTS.md Behavioral Guidelines §4 plan.',
+        notes='Location discovery complete, now needs durable sequencing and verification. implementation-planning should trigger.',
     ),
     TriggerCase(
         id='chain-bugfix-to-cba',
@@ -1362,12 +1455,13 @@ ALL_TRIGGER_CASES: tuple[TriggerCase, ...] = (
         id='plan-vs-scope',
         prompt='The scope is clear: add retry logic to the three API clients in pkg/http/. I need to figure out the right order of changes and what assumptions to validate first.',
         expected_triggers=(
+        'implementation-planning',
     ),
         expected_non_triggers=(
         'scoped-tasking',
     ),
         category='confusion-boundary',
-        notes='Scope is already defined (3 files in pkg/http/). Sequencing and assumptions need a plan, not further scoping.',
+        notes='Scope is already defined (3 files in pkg/http/). Sequencing and assumptions now belong to implementation-planning, not further scoping.',
     ),
     TriggerCase(
         id='discover-analyze-plan',
@@ -1670,36 +1764,3 @@ def resolve_trigger_case(case_id: str) -> TriggerCase:
         if c.id == case_id:
             return c
     raise KeyError(f'no TriggerCase with id={case_id!r}')
-
-    raise KeyError(f'no TriggerCase with id={case_id!r}')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

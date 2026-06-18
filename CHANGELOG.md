@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - 2026-06-19: `requirement-interview`, `architecture-design`, and `implementation-planning` Skills
+
+- Added the `requirement-interview` skill to clarify vague feature requests through a multi-round business interview before any scoping, design, or coding begins.
+- Added the `architecture-design` skill to produce structured architecture design documents (component decomposition, data architecture, interface contracts, non-functional design, deployment topology, ADRs) for system/subsystem/module-level work.
+- Added the `implementation-planning` skill to create durable implementation plan artifacts between `design-before-plan` and coding.
+- Restored dedicated planning as a live execution skill for multi-file, multi-step, or reviewable implementation work, while keeping `AGENTS.md` / `CLAUDE.md` §4 short planning for small local tasks.
+- Updated governance (`AGENTS.md`, `CLAUDE.md`, `templates/governance/{AGENTS,CLAUDE}-template.md`) to route requirement clarification, architecture design, and durable planning through the three new skills.
+- Added the Cursor user-level rule template (`templates/governance/cursor-agent-skills.mdc`) and taught `manage-governance.py` to install/verify `~/.cursor/rules/agent-skills.mdc`.
+- Updated skill metadata (`skill_index.json`), protocol evaluator output fields, trigger test data, manual docs, README, skill-chain aliases, downstream handoffs, and examples to reference the three new skills.
+
 ### Removed - 2026-05-18: `plan-before-action` Skill Retirement
 
 - Removed the `plan-before-action` skill (live + `.cursor/` and `.claude/` mirrors). Its discipline is now absorbed by the new `Behavioral Guidelines §4 Goal-Driven Execution` section in governance files.
