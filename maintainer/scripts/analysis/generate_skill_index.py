@@ -44,6 +44,22 @@ sys.path.insert(0, str(REPO_ROOT / "maintainer" / "scripts" / "evaluation"))
 from skill_protocol_v1 import SKILL_FAMILY
 
 
+def _unquote_scalar(value: str) -> str:
+    """Strip surrounding YAML quotes from a scalar value, if present.
+
+    Mirrors the quote handling already applied to metadata fields so that
+    quoted top-level scalars (e.g. `description: "..."`) are not stored with
+    their surrounding quotes.
+    """
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+        inner = value[1:-1]
+        if value[0] == '"':
+            inner = inner.replace('\\"', '"').replace("\\\\", "\\")
+        return inner
+    return value
+
+
 def extract_frontmatter(skill_file: Path) -> dict[str, str | dict]:
     """Extract YAML frontmatter from SKILL.md file.
 
@@ -78,7 +94,7 @@ def extract_frontmatter(skill_file: Path) -> dict[str, str | dict]:
         if line.startswith("metadata:"):
             in_metadata = True
             if current_key:
-                result[current_key] = " ".join(current_value_lines).strip()
+                result[current_key] = _unquote_scalar(" ".join(current_value_lines))
             current_key = None
             current_value_lines = []
             continue
@@ -98,7 +114,7 @@ def extract_frontmatter(skill_file: Path) -> dict[str, str | dict]:
         else:
             # New key
             if current_key:
-                result[current_key] = " ".join(current_value_lines).strip()
+                result[current_key] = _unquote_scalar(" ".join(current_value_lines))
 
             key_part, _, value_part = line.partition(":")
             current_key = key_part.strip()
@@ -106,7 +122,7 @@ def extract_frontmatter(skill_file: Path) -> dict[str, str | dict]:
 
     # Handle last key
     if current_key:
-        result[current_key] = " ".join(current_value_lines).strip()
+        result[current_key] = _unquote_scalar(" ".join(current_value_lines))
 
     if metadata:
         result["metadata"] = metadata

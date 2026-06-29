@@ -29,9 +29,14 @@ CLAUDE_MD = REPO_ROOT / "CLAUDE.md"
 
 # Non-skill terms that look like skill names but aren't (field names, placeholders, etc.)
 NON_SKILL_TERMS = {
-    "re-reads",           # Field name in context discipline
-    "best-of-n-runner",   # Subagent type in multi-agent-protocol
-    "low-risk",           # Review severity label, not a skill
+    "re-reads",            # Field name in context discipline
+    "best-of-n-runner",    # Subagent type in multi-agent-protocol
+    "low-risk",            # Review severity label, not a skill
+    "review-only",         # design-review-loop review mode, not a skill
+    "review-and-revise",   # design-review-loop review mode, not a skill
+    "adr-rfc",             # design-review-loop artifact type, not a skill
+    "data-model",          # design-review-loop artifact type, not a skill
+    "technical-proposal",  # design-review-loop artifact type, not a skill
 }
 
 

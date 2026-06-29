@@ -1,32 +1,43 @@
 {
   "schema_version": "0.1.0",
-  "generated_at": "2026-05-14T07:45:07.543223+00:00",
+  "generated_at": "2026-06-29T09:45:16.866100+00:00",
   "skills": [
+    {
+      "name": "architecture-design",
+      "description": "Guide architecture design for a system, subsystem, or module by producing a structured design document covering component decomposition, data architecture, interface contracts, non-functional design, deployment topology, and ADRs. Includes approach comparison when design direction is not yet settled. WHEN: Use when the user asks for architecture design / system design / technical proposal / 架构设计 / 系统设计 / 出个架构 / 写个技术方案, when a task involves 3+ components or a new subsystem, when technology selection decisions are needed, or when non-functional requirements (scalability, availability, security) require architectural treatment. Do NOT use for single-module internal design choices where design-before-plan suffices, for requirements clarification (use requirement-interview), or for reviewing an existing design doc (use design-review-loop).",
+      "directory": "skills/architecture-design",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "coding",
+        "agents",
+        "architecture",
+        "design",
+        "system-design"
+      ]
+    },
     {
       "name": "bugfix-workflow",
       "description": "Diagnose, narrow, fix, and verify bugs through an evidence-first workflow. Use when a bug or unexpected behavior is reported, test failures need investigation, intermittent issues surface in production, or the root cause is not yet confirmed. Triggers on \"broken\", \"failing\", \"error\", \"bug\", or \"unexpected behavior\" keywords.",
       "directory": "skills/bugfix-workflow",
       "family": "execution",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tags": [
         "coding",
-        "agents",
-        "orchestration",
-        "efficiency"
+        "debugging",
+        "validation"
       ]
     },
     {
-      "name": "requirement-interview",
-      "description": "WHAT: Clarify a vague software feature request by acting as a business interviewer, using multi-round dynamic questioning before any coding or design begins, tracking confirmed facts, open gaps, and explicit assumptions, and producing a structured requirement-clarification result. WHEN: Use when a user states a fuzzy feature need (\"加个审批\", \"做个报表\", \"希望能导出\"), when business goal / roles / main flow / scope / acceptance criteria are missing, or when a request has several plausible interpretations. Terms like 需求讨论 / 需求澄清 / 把需求问清楚 belong here. Do NOT use to review an already-written requirements doc (use requirements-review-loop), to scope a clear task (use scoped-tasking), or to compare design alternatives once the requirement is clear (use design-before-plan).",
-      "directory": "skills/requirement-interview",
+      "name": "code-review-loop",
+      "description": "WHAT: Review a code diff, commit, PR, or specified files, classify issues, fix real defects, run the minimum necessary validation, and repeat the review/fix loop until the implementation is issue-free. WHEN: Use after code has been implemented or staged, when the user asks to review a diff, commit, pull request, or completed implementation; or to validate that finished code matches the requested scope, plan, or contract. Do NOT use to review requirements (use requirements-review-loop), design docs / RFCs / ADRs (use design-review-loop), implementation plans (use plan-review-loop), or test cases themselves (use test-review-loop).",
+      "directory": "skills/code-review-loop",
       "family": "execution",
       "version": "0.1.0",
       "tags": [
-        "coding",
-        "agents",
-        "requirements",
-        "clarification",
-        "interview"
+        "review",
+        "code",
+        "validation"
       ]
     },
     {
@@ -44,30 +55,15 @@
       ]
     },
     {
-      "name": "architecture-design",
-      "description": "Guide architecture design for a system, subsystem, or module by producing a structured design document covering component decomposition, data architecture, interface contracts, non-functional design, deployment topology, and ADRs. Includes approach comparison when design direction is not yet settled. WHEN: Use when the user asks for architecture design / system design / technical proposal / 架构设计 / 系统设计 / 出个架构 / 写个技术方案, when a task involves 3+ components or a new subsystem, when technology selection decisions are needed, or when non-functional requirements (scalability, availability, security) require architectural treatment. Do NOT use for single-module internal design choices where design-before-plan suffices, for requirements clarification (use requirement-interview), or for reviewing an existing design doc (use design-review-loop).",
-      "directory": "skills/architecture-design",
+      "name": "design-review-loop",
+      "description": "WHAT: Review (and optionally revise) a design document — architecture design, RFC, ADR, interface design, data model, or technical proposal — against the requirements and the actual repository context. Classify the artifact type, run type-appropriate checks, classify issues, and either report findings (review-only) or loop review/fix until the document is issue-free (review-and-revise). WHEN: Use when the user asks to review, validate, harden, or finalize a design doc, RFC, ADR, architecture, interface design, data model, or technical proposal. Terms like 方案 / 实现思路 / 实现方案 / 接口 / 思路 belong here. Do NOT use to review requirements (use requirements-review-loop), implementation plans / migration plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop).",
+      "directory": "skills/design-review-loop",
       "family": "execution",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tags": [
-        "coding",
-        "agents",
-        "architecture",
+        "review",
         "design",
-        "system-design"
-      ]
-    },
-    {
-      "name": "implementation-planning",
-      "description": "Guide implementation planning by turning a settled requirement/design into a concrete plan that is sequenced, file-grounded, verifiable, and reviewable. The skill writes or proposes a plan document, not production code. Use when a task is ready to implement but still needs explicit execution ordering, per-step validation, rollback thinking, or multi-file / multi-PR coordination. Accepts either a design brief or a requirement document whose design direction is already clear. Do NOT use for small single-file edits where AGENTS.md §4 short planning is enough, or when major design choices are still open (use design-before-plan first).",
-      "directory": "skills/implementation-planning",
-      "family": "execution",
-      "version": "0.1.0",
-      "tags": [
-        "coding",
-        "agents",
-        "orchestration",
-        "planning"
+        "documentation"
       ]
     },
     {
@@ -84,76 +80,16 @@
       ]
     },
     {
-      "name": "code-review-loop",
-      "description": "WHAT: Review a code diff, commit, PR, or specified files, classify issues, fix real defects, run the minimum necessary validation, and repeat the review/fix loop until the implementation is issue-free. WHEN: Use after code has been implemented or staged, when the user asks to review a diff, commit, pull request, or completed implementation; or to validate that finished code matches the requested scope, plan, or contract. Do NOT use to review requirements (use requirements-review-loop), design docs / RFCs / ADRs (use design-review-loop), implementation plans (use plan-review-loop), or test cases themselves (use test-review-loop).",
-      "directory": "skills/code-review-loop",
+      "name": "implementation-planning",
+      "description": "Guide implementation planning by turning a settled requirement/design into a concrete plan that is sequenced, file-grounded, verifiable, and reviewable. The skill writes or proposes a plan document, not production code. Use when a task is ready to implement but still needs explicit execution ordering, per-step validation, rollback thinking, or multi-file / multi-PR coordination. Accepts either a design brief or a requirement document whose design direction is already clear. Do NOT use for small single-file edits where AGENTS.md §4 short planning is enough, or when major design choices are still open (use design-before-plan first).",
+      "directory": "skills/implementation-planning",
       "family": "execution",
-      "version": "0.1.0",
-      "tags": [
-        "coding",
-        "agents",
-        "review"
-      ]
-    },
-    {
-      "name": "design-review-loop",
-      "description": "WHAT: Review and revise a design document — architecture design, RFC, ADR, interface design, data model, or technical proposal — against the requirements and the actual repository context, classify issues, fix real defects, and repeat the review/fix loop until the document is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize a design doc, RFC, ADR, architecture, interface design, data model, or technical proposal. Terms like 方案 / 实现思路 / 实现方案 / 接口 / 思路 belong here. Do NOT use to review requirements (use requirements-review-loop), implementation plans / migration plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop).",
-      "directory": "skills/design-review-loop",
-      "family": "execution",
-      "version": "0.1.0",
-      "tags": [
-        "coding",
-        "agents",
-        "review"
-      ]
-    },
-    {
-      "name": "requirements-review-loop",
-      "description": "WHAT: Review and revise a requirements document — PRD, user stories, problem statements, or acceptance criteria drafts — against the actual repository context, classify issues, fix real defects, and repeat the review/fix loop until the document is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize a requirements doc, PRD, user story, problem statement, or acceptance criteria. Do NOT use to review design docs / RFCs / ADRs / interface designs (use design-review-loop), implementation plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop). Terms like 方案 / 接口 / 思路 / 实现思路 / 实现方案 belong to design-review-loop; 实施方案 / 迁移方案 belong to plan-review-loop.",
-      "directory": "skills/requirements-review-loop",
-      "family": "execution",
-      "version": "0.1.0",
-      "tags": [
-        "coding",
-        "agents",
-        "review"
-      ]
-    },
-    {
-      "name": "test-review-loop",
-      "description": "WHAT: Review and revise test cases, test strategy, coverage matrix, or new/modified test files — classify issues, fix real defects, run the tests as validation, and repeat the review/fix loop until the test set is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize test cases, test strategy, coverage matrix, 测试 / 用例 / 覆盖. Do NOT use to review production code under test, 被测代码, or 实现代码 — use code-review-loop instead. Do NOT use to review requirements (use requirements-review-loop), design docs (use design-review-loop), or implementation plans (use plan-review-loop).",
-      "directory": "skills/test-review-loop",
-      "family": "execution",
-      "version": "0.1.0",
-      "tags": [
-        "coding",
-        "agents",
-        "review"
-      ]
-    },
-    {
-      "name": "multi-agent-protocol",
-      "description": "Launch and coordinate parallel subagents. Use when (1) user explicitly says \"in parallel\", (2) task describes 3+ independent investigation areas owned by different teams/modules, or (3) AGENTS.md rules indicate Tier 2 parallelism. Implicit parallel opportunity example \"understand X system, Y service, and Z pipeline\" equals 3 independent areas.",
-      "directory": "skills/multi-agent-protocol",
-      "family": "orchestration",
       "version": "0.1.0",
       "tags": [
         "coding",
         "agents",
         "orchestration",
-        "efficiency"
-      ]
-    },
-    {
-      "name": "plan-review-loop",
-      "description": "WHAT: Review and revise project plan files against the actual repository code, docs, configuration, and constraints until the plan is executable and issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize an implementation plan, migration plan, refactor plan, task plan, roadmap, or any plan-like document before coding.",
-      "directory": "skills/plan-review-loop",
-      "family": "execution",
-      "version": "0.1.0",
-      "tags": [
-        "coding",
-        "agents",
-        "review"
+        "planning"
       ]
     },
     {
@@ -170,16 +106,65 @@
       ]
     },
     {
-      "name": "safe-refactor",
-      "description": "Guide small, controlled refactors that improve code structure while keeping behavior and interfaces stable. Use when the task is structural cleanup (extract duplicate code, consolidate similar functions, simplify tangled logic), pre-refactor for a feature, or local improvement is needed without behavior change. Triggers on \"refactor\", \"extract\", \"consolidate\", \"simplify\", or \"cleanup\" keywords.",
-      "directory": "skills/safe-refactor",
+      "name": "multi-agent-protocol",
+      "description": "Launch and coordinate parallel subagents. Use when (1) user explicitly says \"in parallel\", (2) task describes 3+ independent investigation areas owned by different teams/modules, or (3) AGENTS.md rules indicate Tier 2 parallelism. Implicit parallel opportunity example \"understand X system, Y service, and Z pipeline\" equals 3 independent areas.",
+      "directory": "skills/multi-agent-protocol",
+      "family": "orchestration",
+      "version": "0.2.0",
+      "tags": [
+        "coding",
+        "agents",
+        "orchestration"
+      ]
+    },
+    {
+      "name": "plan-review-loop",
+      "description": "WHAT: Review and revise project plan files against the actual repository code, docs, configuration, and constraints until the plan is executable and issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize an implementation plan, migration plan, refactor plan, task plan, roadmap, or any plan-like document before coding.",
+      "directory": "skills/plan-review-loop",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "review",
+        "planning",
+        "documentation"
+      ]
+    },
+    {
+      "name": "requirement-interview",
+      "description": "WHAT: Clarify a vague software feature request by acting as a business interviewer, using multi-round dynamic questioning before any coding or design begins, tracking confirmed facts, open gaps, and explicit assumptions, and producing a structured requirement-clarification result. WHEN: Use when a user states a fuzzy feature need (\"加个审批\", \"做个报表\", \"希望能导出\"), when business goal / roles / main flow / scope / acceptance criteria are missing, or when a request has several plausible interpretations. Terms like 需求讨论 / 需求澄清 / 把需求问清楚 belong here. Do NOT use to review an already-written requirements doc (use requirements-review-loop), to scope a clear task (use scoped-tasking), or to compare design alternatives once the requirement is clear (use design-before-plan).",
+      "directory": "skills/requirement-interview",
       "family": "execution",
       "version": "0.1.0",
       "tags": [
         "coding",
         "agents",
-        "orchestration",
-        "efficiency"
+        "requirements",
+        "clarification",
+        "interview"
+      ]
+    },
+    {
+      "name": "requirements-review-loop",
+      "description": "WHAT: Review and revise a requirements document — PRD, user stories, problem statements, or acceptance criteria drafts — against the actual repository context, classify issues, fix real defects, and repeat the review/fix loop until the document is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize a requirements doc, PRD, user story, problem statement, or acceptance criteria. Do NOT use to review design docs / RFCs / ADRs / interface designs (use design-review-loop), implementation plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop). Terms like 方案 / 接口 / 思路 / 实现思路 / 实现方案 belong to design-review-loop; 实施方案 / 迁移方案 belong to plan-review-loop.",
+      "directory": "skills/requirements-review-loop",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "review",
+        "requirements",
+        "documentation"
+      ]
+    },
+    {
+      "name": "safe-refactor",
+      "description": "Guide small, controlled refactors that improve code structure while keeping behavior and interfaces stable. Use when the task is structural cleanup (extract duplicate code, consolidate similar functions, simplify tangled logic), pre-refactor for a feature, or local improvement is needed without behavior change. Triggers on \"refactor\", \"extract\", \"consolidate\", \"simplify\", or \"cleanup\" keywords.",
+      "directory": "skills/safe-refactor",
+      "family": "execution",
+      "version": "0.2.0",
+      "tags": [
+        "coding",
+        "refactor",
+        "safety"
       ]
     },
     {
@@ -200,12 +185,11 @@
       "description": "Review the agent's own diff for quality issues, debug residuals, and scope violations before running tests. Use when all edits are complete, before targeted-validation, when the diff spans multiple files and manual review would catch issues that tests miss, or when the user explicitly asks for a diff review before testing.",
       "directory": "skills/self-review",
       "family": "execution",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tags": [
         "coding",
-        "agents",
-        "orchestration",
-        "efficiency"
+        "review",
+        "quality"
       ]
     },
     {
@@ -213,12 +197,23 @@
       "description": "Choose the narrowest meaningful test or check that verifies a change without defaulting to a full build or test suite. Use when the agent must decide what to test after a patch — not needed when the user already specifies exactly which tests to run.",
       "directory": "skills/targeted-validation",
       "family": "execution",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tags": [
         "coding",
-        "agents",
-        "orchestration",
-        "efficiency"
+        "testing",
+        "validation"
+      ]
+    },
+    {
+      "name": "test-review-loop",
+      "description": "WHAT: Review and revise test cases, test strategy, coverage matrix, or new/modified test files — classify issues, fix real defects, run the tests as validation, and repeat the review/fix loop until the test set is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize test cases, test strategy, coverage matrix, 测试 / 用例 / 覆盖. Do NOT use to review production code under test, 被测代码, or 实现代码 — use code-review-loop instead. Do NOT use to review requirements (use requirements-review-loop), design docs (use design-review-loop), or implementation plans (use plan-review-loop).",
+      "directory": "skills/test-review-loop",
+      "family": "execution",
+      "version": "0.1.0",
+      "tags": [
+        "review",
+        "testing",
+        "validation"
       ]
     }
   ]
