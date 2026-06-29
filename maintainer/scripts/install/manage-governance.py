@@ -35,6 +35,11 @@ class GovernanceTemplate:
 
 
 INSTALL_DISPLAY_NAME = "Skill Governance Setup"
+SUPPORTED_PLATFORMS = ("codex", "cursor", "cursor-cli", "claude-code", "zcode")
+FORCE_PLATFORM_HELP = (
+    "Force platform: codex, cursor, cursor-cli, claude-code, zcode "
+    "(auto-detected by default)"
+)
 REMOVED_LEGACY_FLAGS = {
     "--global",
     "--project",
@@ -56,6 +61,8 @@ def detect_platforms() -> list[str]:
         platforms.append("codex")
     if shutil.which("claude"):
         platforms.append("claude-code")
+    if (Path.home() / ".zcode").is_dir():
+        platforms.append("zcode")
     return platforms
 
 
@@ -89,6 +96,8 @@ def get_skill_root_dir(platform: str, project_dir: Path | None = None) -> Path |
         return Path.home() / ".cursor" / "skills"
     if platform == "claude-code":
         return Path.home() / ".claude" / "skills"
+    if platform == "zcode":
+        return Path.home() / ".zcode" / "skills"
     return None
 
 
@@ -101,7 +110,7 @@ def get_skill_target_dir(skill_name: str, platform: str, project_dir: Path | Non
 
 def get_governance_target(platform: str, project_dir: Path | None = None) -> tuple[Path, GovernanceTemplate] | None:
     if project_dir is not None:
-        if platform in {"codex", "cursor", "cursor-cli"}:
+        if platform in {"codex", "cursor", "cursor-cli", "zcode"}:
             return project_dir / "AGENTS.md", AGENTS_TEMPLATE
         if platform == "claude-code":
             return project_dir / "CLAUDE.md", CLAUDE_TEMPLATE
@@ -110,6 +119,20 @@ def get_governance_target(platform: str, project_dir: Path | None = None) -> tup
         return Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))) / "AGENTS.md", AGENTS_TEMPLATE
     if platform == "claude-code":
         return Path.home() / ".claude" / "CLAUDE.md", CLAUDE_TEMPLATE
+    if platform == "zcode":
+        return Path.home() / ".zcode" / "AGENTS.md", AGENTS_TEMPLATE
+    return None
+
+
+def get_skill_skip_reason(platform: str, project_dir: Path | None = None) -> str | None:
+    if project_dir is not None and platform == "zcode":
+        return (
+            "ZCode project-level skill installation is not automated because "
+            "official docs only document the user-level path "
+            "`~/.zcode/skills`. Use `install user --platform zcode` for shared "
+            "skills or import them into the current project from ZCode Settings "
+            "-> Skills."
+        )
     return None
 
 
@@ -639,7 +662,8 @@ def build_modern_parser(entrypoint_name: str) -> argparse.ArgumentParser:
     )
     install_user.add_argument(
         "--platform",
-        help="Force platform: codex, cursor, cursor-cli, claude-code (auto-detected by default)",
+        choices=SUPPORTED_PLATFORMS,
+        help=FORCE_PLATFORM_HELP,
     )
     install_user.add_argument(
         "--overwrite-skills",
@@ -659,7 +683,8 @@ def build_modern_parser(entrypoint_name: str) -> argparse.ArgumentParser:
     install_project.add_argument("directory", metavar="DIR", help="Target project directory.")
     install_project.add_argument(
         "--platform",
-        help="Force platform: codex, cursor, cursor-cli, claude-code (auto-detected by default)",
+        choices=SUPPORTED_PLATFORMS,
+        help=FORCE_PLATFORM_HELP,
     )
     install_project.add_argument(
         "--overwrite-skills",
@@ -685,7 +710,8 @@ def build_modern_parser(entrypoint_name: str) -> argparse.ArgumentParser:
     )
     verify_user.add_argument(
         "--platform",
-        help="Force platform: codex, cursor, cursor-cli, claude-code (auto-detected by default)",
+        choices=SUPPORTED_PLATFORMS,
+        help=FORCE_PLATFORM_HELP,
     )
 
     verify_project = verify_targets.add_parser(
@@ -695,7 +721,8 @@ def build_modern_parser(entrypoint_name: str) -> argparse.ArgumentParser:
     verify_project.add_argument("directory", metavar="DIR", help="Target project directory.")
     verify_project.add_argument(
         "--platform",
-        help="Force platform: codex, cursor, cursor-cli, claude-code (auto-detected by default)",
+        choices=SUPPORTED_PLATFORMS,
+        help=FORCE_PLATFORM_HELP,
     )
 
     parser.epilog = "\n".join(
@@ -771,7 +798,7 @@ def main(argv: list[str] | None = None) -> int:
     }:
         platforms = [args.platform] if args.platform else detect_platforms()
         if not platforms:
-            print("No supported platform detected. Install Cursor, Codex, or Claude Code first.")
+            print("No supported platform detected. Install Cursor, Codex, Claude Code, or ZCode first.")
             return 1
 
         is_project_check = mode == "check-project"
@@ -792,6 +819,11 @@ def main(argv: list[str] | None = None) -> int:
             checked_skill_roots: set[Path] = set()
             for platform in platforms:
                 print(f"Platform: {platform}")
+                skip_reason = get_skill_skip_reason(platform, check_dir)
+                if skip_reason is not None:
+                    print(f"  SKIP CHECK: {skip_reason}")
+                    print("")
+                    continue
                 for skill in skill_names:
                     if not check_skill(skill, platform, check_dir):
                         failed += 1
@@ -821,7 +853,7 @@ def main(argv: list[str] | None = None) -> int:
 
     platforms = [args.platform] if args.platform else detect_platforms()
     if not platforms:
-        print("No supported platform detected. Install Cursor, Codex, or Claude Code first.")
+        print("No supported platform detected. Install Cursor, Codex, Claude Code, or ZCode first.")
         return 1
 
     print(f"Detected platforms: {' '.join(platforms)}")
@@ -842,6 +874,11 @@ def main(argv: list[str] | None = None) -> int:
         synced_skill_roots: set[Path] = set()
         for platform in platforms:
             print(f"Platform: {platform}")
+            skip_reason = get_skill_skip_reason(platform, skill_target_dir)
+            if skip_reason is not None:
+                print(f"  SKIP: {skip_reason}")
+                print("")
+                continue
             skill_root = get_skill_root_dir(platform, skill_target_dir)
             if skill_root is not None and skill_root not in synced_skill_roots:
                 synced_skill_roots.add(skill_root)
@@ -865,7 +902,7 @@ def main(argv: list[str] | None = None) -> int:
         location = f"project ({project_dir})" if skill_target_dir else "user-level"
         print(f"Installed {installed_count} skill(s) ({location})")
     if do_inject_rules:
-        location = "project AGENTS.md/CLAUDE.md" if project_dir else "user-level AGENTS.md/CLAUDE.md"
+        location = "project governance file(s)" if project_dir else "user-level governance file(s)"
         print(f"Updated {injected_count} governance file(s) ({location})")
     print("")
 
@@ -873,12 +910,16 @@ def main(argv: list[str] | None = None) -> int:
     print("")
     print("Next steps:")
     if do_install_skills:
-        print("  - Restart your agent (Cursor/Codex/Claude Code) to pick up new skills")
+        print("  - Restart your agent to pick up new skills")
     if do_inject_rules:
         if project_dir:
-            print("  - Review governance sections in project AGENTS.md/CLAUDE.md")
+            print("  - Review governance sections in the generated project governance file")
         else:
-            print("  - Review user-level governance files (Cursor: ~/.cursor/rules/agent-skills.mdc)")
+            print("  - Review the user-level governance file for your platform")
+    if project_dir is not None and "zcode" in platforms:
+        zcode_project_note = get_skill_skip_reason("zcode", project_dir)
+        if zcode_project_note is not None:
+            print(f"  - {zcode_project_note}")
     print("")
     return 0
 

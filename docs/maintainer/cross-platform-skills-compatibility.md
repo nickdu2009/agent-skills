@@ -2,18 +2,18 @@
 
 Status: Draft  
 Date: 2026-04-11  
-Scope: Cursor, Claude Code, Codex
+Scope: Cursor, Claude Code, Codex, ZCode
 
 ## Summary
 
-`Cursor`, `Claude Code`, and `Codex` do not expose identical full `skills`
+`Cursor`, `Claude Code`, `Codex`, and `ZCode` do not expose identical full `skills`
  specifications, but they do share a meaningful common base:
 
-- all three support directory-based skills
-- all three use `SKILL.md` as the entrypoint
-- all three support automatic relevance-based invocation
-- all three support explicit invocation
-- all three support optional supporting files such as scripts or reference docs
+- all four support directory-based skills
+- all four use `SKILL.md` as the entrypoint
+- all four support automatic relevance-based invocation
+- all four support explicit invocation
+- all four support optional supporting files such as scripts or reference docs
 
 The correct compatibility model for this repository is therefore:
 
@@ -31,6 +31,7 @@ This comparison is based on official documentation:
 - Codex: [Agent Skills](https://developers.openai.com/codex/skills)
 - Claude Code: [Extend Claude with skills](https://code.claude.com/docs/en/skills)
 - Cursor: [Agent Skills](https://cursor.com/cn/docs/skills)
+- ZCode: [Skill](https://zcode.z.ai/cn/docs/skill) and [ZCode Agent](https://zcode.z.ai/cn/docs/agents)
 
 For Cursor, the official web page did not expose full HTML content through the
 available fetch path during review, so the comparison used the official Cursor
@@ -38,7 +39,7 @@ docs PDF export of the same page content.
 
 ## Confirmed Common Ground
 
-The following points are explicitly supported across all three platforms:
+The following points are explicitly supported across all four platforms:
 
 ### 1. Skill package shape
 
@@ -61,7 +62,7 @@ The following points are explicitly supported across all three platforms:
 
 ### 4. Progressive loading intent
 
-All three platforms describe or imply a progressive-loading model:
+All four platforms describe or imply a progressive-loading model:
 
 - load lightweight identifying metadata first
 - load detailed instructions only when the skill is actually used
@@ -72,19 +73,19 @@ This is important for token-efficiency planning because it means skill
 
 ## Compatibility Matrix
 
-| Dimension | Cursor | Codex | Claude Code |
-|-----------|--------|-------|-------------|
-| Open standard alignment | Yes | Yes | Yes |
-| `SKILL.md` required | Yes | Yes | Yes |
-| `name` required | Yes | Yes | No, may fall back to directory name |
-| `description` required | Yes | Yes | Recommended, not strictly required |
-| `name` must equal directory name | Yes | Not stated as required | Not required |
-| Automatic invocation | Yes | Yes | Yes |
-| Explicit invocation | Yes | Yes | Yes |
-| Optional supporting files | Yes | Yes | Yes |
-| Scripts supported | Yes | Yes | Yes |
-| References/assets supported | Yes | Yes | Yes |
-| Platform-specific metadata/extensions | Yes | Yes | Yes, most extensive |
+| Dimension | Cursor | Codex | Claude Code | ZCode |
+|-----------|--------|-------|-------------|-------|
+| Open standard alignment | Yes | Yes | Yes | Yes |
+| `SKILL.md` required | Yes | Yes | Yes | Yes |
+| `name` required | Yes | Yes | No, may fall back to directory name | Yes |
+| `description` required | Yes | Yes | Recommended, not strictly required | Yes |
+| `name` must equal directory name | Yes | Not stated as required | Not required | Yes in public examples and UI flow |
+| Automatic invocation | Yes | Yes | Yes | Yes |
+| Explicit invocation | Yes | Yes | Yes | Yes |
+| Optional supporting files | Yes | Yes | Yes | Yes |
+| Scripts supported | Yes | Yes | Yes | Yes |
+| References/assets supported | Yes | Yes | Yes | Yes |
+| Platform-specific metadata/extensions | Yes | Yes | Yes, most extensive | Yes |
 
 ## Platform Notes
 
@@ -163,14 +164,35 @@ Officially confirmed behavior:
 
 Important compatibility implications:
 
-- Claude Code is the most feature-rich skill runtime of the three.
+- Claude Code is the most feature-rich skill runtime among the currently
+  compared platforms.
 - It is the least suitable platform to use as the portable baseline because its
   extra fields encode runtime behavior that other platforms may not honor.
+
+## ZCode
+
+Officially confirmed behavior:
+
+- ZCode skills are directory-based and use `SKILL.md` as the entrypoint.
+- ZCode public examples require `name` and `description` frontmatter.
+- ZCode user-level skills live at `~/.zcode/skills/<skill-name>/SKILL.md`.
+- ZCode supports explicit `$skill-name` invocation and relevance-based use.
+- ZCode can import skills maintained in other agent tools instead of requiring
+  a separate rewrite.
+
+Important compatibility implications:
+
+- ZCode fits the same portable `SKILL.md` core already used by this repository.
+- ZCode publicly documents the user-level skill path, but current public docs do
+  not publish a stable project-level skill filesystem path.
+- Governance should therefore prefer `AGENTS.md` for workspace rules and treat
+  project-local skill installation as a platform-adaptation concern, not a
+  portable-core assumption.
 
 ## Practical Repository Contract
 
 For this repository, the most portable baseline should be the strictest shared
- subset that still works naturally on all three platforms.
+subset that still works naturally on all four platforms.
 
 ### Recommended portable minimum
 
@@ -202,7 +224,7 @@ my-skill/
 └── assets/         # optional
 ```
 
-This structure is safe because it fits the documented expectations of all three
+This structure is safe because it fits the documented expectations of all four
  platforms.
 
 ## What Should Stay Out of the Portable Core
@@ -245,6 +267,7 @@ Keep the shared skill source tree compatible with:
 - Cursor's required `name` + `description`
 - Codex's required `name` + `description`
 - Claude Code's standard-compatible baseline
+- ZCode's documented `SKILL.md` + frontmatter format
 
 ### Layer 2: Platform adaptation
 
@@ -253,7 +276,7 @@ Use installation layout and platform-specific governance files to adapt how the
 
 Examples:
 
-- `AGENTS.md` for Cursor and Codex
+- `AGENTS.md` for Cursor, Codex, and ZCode
 - `CLAUDE.md` for Claude Code
 
 ### Layer 3: Platform enhancement
@@ -291,12 +314,14 @@ Unsafe optimization targets unless platform-specific:
    - one shared skill source tree
    - multiple platform-specific governance wrappers
    - optional platform-specific enhancement opportunities
+6. Treat ZCode project-level skill placement as an explicit platform-adaptation
+   question until official docs publish a stable filesystem path.
 
 ## Final Assessment
 
 The most accurate statement for maintainers is:
 
-> Cursor, Codex, and Claude Code do not expose identical full skill runtimes,
+> Cursor, Codex, Claude Code, and ZCode do not expose identical full skill runtimes,
 > but they do share a real Agent Skills standard core. This repository should
 > target that shared core and treat platform-specific behavior as an optional
 > extension layer.

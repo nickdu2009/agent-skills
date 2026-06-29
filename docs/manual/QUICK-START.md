@@ -48,6 +48,7 @@ python3 maintainer/scripts/install/manage-governance.py install user
 - 用户级平台目录中的技能
 - Codex 用户级 `AGENTS.md` 或 Claude Code 用户级 `CLAUDE.md`
 - Cursor 用户级 skills（治理规则需要手动复制到 Cursor User Rules）
+- ZCode 用户级 `~/.zcode/skills/` 和 `~/.zcode/AGENTS.md`
 - 一个跨项目可复用的默认技能与治理环境
 - 不改项目文件的安装结果
 
@@ -72,6 +73,9 @@ python3 maintainer/scripts/install/manage-governance.py install project /path/to
 - 安装到对应平台目录中的技能
 - 注入到目标项目里的治理规则
 - 一个更完整的“技能 + 治理规则”使用环境
+
+如果你使用的是 `zcode`，要注意一个平台边界：当前公开文档明确了用户级 `~/.zcode/skills/` 和工作区根 `AGENTS.md`，但没有公开稳定的项目级 skill 文件路径。  
+因此，项目安装在 `zcode` 下会负责生成项目根 `AGENTS.md`，项目级 skill 仍建议通过 ZCode 自身的 Skill 导入能力处理。
 
 第一轮验证建议：
 
@@ -124,4 +128,5 @@ python3 maintainer/scripts/install/manage-governance.py verify project /path/to/
 <div class="title-en">Two Common Mistakes</div>
 
 - 不要把用户级安装误当成项目安装。用户级安装会按已检测平台写入 Codex 或 Claude Code 的用户级治理规则；Cursor 仍需手动复制到 User Rules，而且不会往项目里写入 `AGENTS.md` 或 `CLAUDE.md`。
+- 对 ZCode，不要假设存在公开的项目级 skill 文件路径。当前推荐做法是：用户级 skills 走 `install user --platform zcode`，项目根规则走 `AGENTS.md`，项目级 skill 需要时通过 ZCode 导入。
 - 不要把安装对象理解成可拆分部件。这个库的公开安装对象始终是整套技能和治理模板。

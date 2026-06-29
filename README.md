@@ -111,6 +111,8 @@ python3 maintainer/scripts/install/manage-governance.py install user --overwrite
 
 Cursor does not have an official user-level `AGENTS.md` path. User install still installs Cursor skills, but copy the governance content into Cursor User Rules manually when you want the same user-level routing behavior in Cursor. If you already copied older rules, replace the old `Behavioral Guidelines` section so the parallelism decision block is present.
 
+ZCode has official user-level `AGENTS.md` and skills paths. Use `--platform zcode` to install skills into `~/.zcode/skills` and governance into `~/.zcode/AGENTS.md`. Official docs currently document only the user-level skill path, so this installer does not automate project-local ZCode skill installation; use ZCode's Skill import flow for project-local copies when needed.
+
 ## Repository Layout
 
 ```text

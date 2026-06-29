@@ -91,6 +91,11 @@ def assert_not_contains(path: Path, snippet: str) -> None:
         fail(f"expected {path} not to contain {snippet!r}")
 
 
+def assert_stdout_contains(result: subprocess.CompletedProcess[str], snippet: str) -> None:
+    if snippet not in result.stdout:
+        fail(f"expected stdout to contain {snippet!r}, got:\n{result.stdout}")
+
+
 FORBIDDEN_RUNTIME_SNIPPETS = (
     "see CLAUDE.md § Skill Chain Triggers",
     "docs/maintainer/skill-chain-aliases.md",
@@ -281,6 +286,52 @@ def test_cursor_user_install_creates_mdc_rule(module) -> None:
         run_cli(["verify", "user", "--platform", "cursor"], home=home)
 
 
+def test_zcode_user_install_installs_user_level_governance(module) -> None:
+    with tempfile.TemporaryDirectory(prefix="install-zcode-user-") as home_dir:
+        home = Path(home_dir)
+        stale_zcode_skill = home / ".zcode" / "skills" / "removed-skill"
+        stale_zcode_skill.mkdir(parents=True)
+        (stale_zcode_skill / "SKILL.md").write_text("# removed\n", encoding="utf-8")
+        (stale_zcode_skill / module.MANAGED_MARKER).write_text("agent-skills\n", encoding="utf-8")
+
+        run_cli(["install", "user", "--platform", "zcode", "--overwrite-skills"], home=home)
+        assert_missing(stale_zcode_skill)
+
+        zcode_agents = home / ".zcode" / "AGENTS.md"
+        assert_exists(zcode_agents)
+        assert_contains(zcode_agents, "## Multi-Agent Rules")
+        assert_contains(zcode_agents, "## Skill Activation")
+        assert_parallelism_plan_template(zcode_agents)
+        assert_governance_boundaries(zcode_agents)
+        assert_routing_semantics(zcode_agents)
+        assert_protocol_semantics(zcode_agents)
+        for skill_dir in module.discover_installable_skills():
+            assert_exists(home / ".zcode" / "skills" / skill_dir.name / "SKILL.md")
+
+        run_cli(["verify", "user", "--platform", "zcode"], home=home)
+
+
+def test_zcode_project_install_injects_agents_and_skips_project_skills() -> None:
+    with tempfile.TemporaryDirectory(prefix="install-zcode-project-") as project_dir:
+        project = Path(project_dir)
+
+        result = run_cli(["install", "project", str(project), "--platform", "zcode", "--overwrite-skills"])
+        assert_stdout_contains(result, "ZCode project-level skill installation is not automated")
+
+        agents_md = project / "AGENTS.md"
+        assert_exists(agents_md)
+        assert_contains(agents_md, "## Multi-Agent Rules")
+        assert_contains(agents_md, "## Skill Activation")
+        assert_parallelism_plan_template(agents_md)
+        assert_governance_boundaries(agents_md)
+        assert_routing_semantics(agents_md)
+        assert_protocol_semantics(agents_md)
+        assert_missing(project / ".zcode" / "skills")
+
+        verify_result = run_cli(["verify", "project", str(project), "--platform", "zcode"])
+        assert_stdout_contains(verify_result, "ZCode project-level skill installation is not automated")
+
+
 def test_legacy_flag_syntax_is_rejected() -> None:
     result = run_cli_allow_failure(["--global"])
     if result.returncode == 0:
@@ -313,6 +364,8 @@ def main() -> int:
     test_agents_template_selection()
     test_user_install_installs_user_level_governance(module)
     test_cursor_user_install_creates_mdc_rule(module)
+    test_zcode_user_install_installs_user_level_governance(module)
+    test_zcode_project_install_injects_agents_and_skips_project_skills()
     test_legacy_flag_syntax_is_rejected()
     test_partial_install_options_are_rejected()
     test_mirror_command_is_rejected()

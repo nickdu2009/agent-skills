@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed - 2026-06-19: ZCode Platform Support
+
+- Added first-class `zcode` support to `manage-governance.py` for user-level skill installation and user/workspace `AGENTS.md` governance.
+- Added smoke coverage for ZCode user installs and explicit project-skill skip behavior.
+- Updated installation and compatibility docs to document ZCode's official `~/.zcode/skills` and `~/.zcode/AGENTS.md` paths, plus the current limitation that project-local skill filesystem paths are not publicly documented.
+
 ### Added - 2026-06-19: `requirement-interview`, `architecture-design`, and `implementation-planning` Skills
 
 - Added the `requirement-interview` skill to clarify vague feature requests through a multi-round business interview before any scoping, design, or coding begins.
