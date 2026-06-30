@@ -99,7 +99,7 @@ maintainer/
 | `multi_file_plan_then_continue` | behavioral | multi-file plan 完成后是否可自动续跑实现链路 | `pass` |
 | `design_before_plan_escalation` | behavioral | 多方案 / 公共契约 / 验收不清时是否升级到 `design-before-plan` | `pass` |
 | `impact_analysis_escalation` | behavioral | shared model / broad caller impact 时是否升级到 `impact-analysis` | `pass` |
-| `review_clean_next_step_continuation` | behavioral | `review_result: clean` 后的明确非破坏性下一步是否可自动继续 | `pass` |
+| `review_clean_next_step_continuation` | behavioral | `review_result: clean` / `clean_with_assumptions` 后的明确非破坏性下一步是否可自动继续 | `pass` |
 | `review_loop_no_drop_on_issues_found` | behavioral | `review_result: issues_found` 后 review-loop 是否仍保持 active 且不得 `drop` | `pass` |
 | `review_loop_revise_then_rereview` | behavioral | 同一文件 artifact 的 `修订` 是否留在原 review-loop 且必须自动 re-review | `pass` |
 | `review_loop_chat_artifact_continuation` | behavioral | chat-only / in-thread artifact 的 `修订` 是否仍留在原 review-loop 且必须自动 re-review | `pass` |
@@ -140,7 +140,7 @@ maintainer/
 - `task-validation`
 - `precheck`
 - `output / validate / drop`
-- review-loop continuation: no `drop` on `issues_found`, same-artifact `修订` stays in-loop, and revision must re-enter review before completion
+- review-loop continuation: no `drop` on `issues_found`, same-artifact `修订` stays in-loop, `clean_with_assumptions` counts as a valid clean exit, and `needs_clarification` pauses the loop for bounded questions
 - repeated retry without new evidence 的最小 loop guard
 
 这些语义的模板落点是：

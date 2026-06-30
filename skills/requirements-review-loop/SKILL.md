@@ -1,19 +1,31 @@
 ---
 name: requirements-review-loop
-description: "WHAT: Review and revise a requirements document — PRD, user stories, problem statements, or acceptance criteria drafts — against the actual repository context, classify issues, fix real defects, and repeat the review/fix loop until the document is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize a requirements doc, PRD, user story, problem statement, or acceptance criteria. Do NOT use to review design docs / RFCs / ADRs / interface designs (use design-review-loop), implementation plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop). Terms like 方案 / 接口 / 思路 / 实现思路 / 实现方案 belong to design-review-loop; 实施方案 / 迁移方案 belong to plan-review-loop."
+description: "WHAT: Review (and optionally revise) a requirements document — PRD, user stories, problem statements, or acceptance criteria drafts — against the actual repository context. Classify findings with a structured schema, distinguish objective defects from clarification blockers, and either report findings (review-only) or loop review/fix until the document is clean, clean_with_assumptions, or blocked by needs_clarification. WHEN: Use when the user asks to review, validate, harden, or finalize a requirements doc, PRD, user story, problem statement, or acceptance criteria. Do NOT use to review design docs / RFCs / ADRs / interface designs (use design-review-loop), implementation plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop). Terms like 方案 / 接口 / 思路 / 实现思路 / 实现方案 belong to design-review-loop; 实施方案 / 迁移方案 belong to plan-review-loop."
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   tags: "review, requirements, documentation"
 ---
+
 # requirements-review-loop
 
-Use this skill to run a strict review-and-revision loop for requirements documents.
+Use this skill to run a strict review loop for requirements documents.
 
 ## Goal
 
-Review the target requirements document against the real repository context and project terminology, revise the document to resolve every issue, and repeat the review until the result is clean.
+Review the target requirements document against the real repository context and project terminology, then either report findings or revise the document until the result is clean.
 
-This is not a one-pass review. Continue looping until there are no `blocking`, `warning`, or `low-risk` issues.
+This is not a one-pass review when running in `review-and-revise` mode. Continue looping until there are no unresolved `blocking`, `warning`, or `low-risk` issues, or until the review is blocked by bounded clarification questions.
+
+## Review mode
+
+Pick the mode before looping:
+
+- `review-only`: classify and report findings; do NOT edit the document.
+  Default when the user says "review / 看一下 / 评审 / 给意见".
+- `review-and-revise`: classify, revise, and loop until the document is ready.
+  Default when the user says "harden / finalize / 改到能落地 / 定稿".
+
+If the mode is ambiguous, default to `review-and-revise`, and state the chosen mode in the output.
 
 ## Required loop
 
@@ -32,11 +44,18 @@ This is not a one-pass review. Continue looping until there are no `blocking`, `
    - **Scope sanity** — neither over-broad nor over-narrow; implicit assumptions made explicit
    - **Feasibility** — no obvious conflict with current code / product state (when repo is available)
    - **Dependencies & priority** — prerequisites are stated; must-have vs nice-to-have is clear
-4. Classify every finding as `blocking`, `warning`, or `low-risk`.
-5. Revise the document to resolve all issues.
-6. Re-read the revised document.
-7. Re-run the review.
-8. Continue until `review_result` is `clean`.
+4. For every finding, first decide whether it is:
+   - an **objective defect** — directly contradicted by the document, repository reality, or accepted project constraints
+   - an **insufficient-basis finding** — cannot be safely resolved without a missing business decision, role boundary, scope choice, or acceptance expectation
+5. Classify every finding as `blocking`, `warning`, or `low-risk`.
+6. Run the clarification gate for every insufficient-basis finding:
+   - ask at most 1-3 bounded questions that unblock the exact requirement decision
+   - do not ask open-ended "what do you want" questions
+   - if the answer is still unavailable, stop with `review_result: needs_clarification`
+7. In `review-and-revise` mode, revise the document to resolve every objective defect and every clarification-resolved finding. In `review-only` mode, stop here and report the findings and clarification questions.
+8. Re-read the revised document.
+9. Re-run the review.
+10. Continue until `review_result` is `clean`, `clean_with_assumptions`, or `needs_clarification`.
 
 ## Issue rules
 
@@ -53,6 +72,23 @@ Low-risk issues must not be merely reported. Each low-risk issue must be resolve
 - explicit clarification or constraint
 - validation step or acceptance criterion
 - accepted assumption with a concrete verification method documented in `Residual Assumptions`
+
+## Clarification gate
+
+Use bounded Socratic questioning only for true insufficient-basis findings.
+
+Examples that usually require clarification instead of unilateral revision:
+
+- the actor / owner of a requirement is missing and the repository does not imply one
+- the business rule depends on priority, rollout, or policy preference not stated anywhere
+- two plausible acceptance criteria exist and neither is confirmed by current docs or code
+
+Rules:
+
+- Ask 1-3 concrete questions per round.
+- Tie each question to one blocked requirement decision.
+- In `review-and-revise` mode, fix all objective defects you safely can before stopping.
+- Do not invent product decisions just to force `clean`.
 
 ## Scope protection
 
@@ -75,32 +111,59 @@ Refer to `targeted-validation` for choosing the minimum useful check.
 
 ## Clean result rule
 
-Only return `review_result: clean` when:
+Return `review_result: clean` only when:
 - there are no `blocking` issues
 - there are no `warning` issues
 - there are no `low-risk` issues
 - every previous issue has been addressed in the document
-- residual assumptions are explicitly documented and have validation methods
 
-If any issue remains, revise the document and review again.
+Return `review_result: clean_with_assumptions` when:
+- there are no `blocking` issues
+- there are no `warning` issues
+- the only remaining items are `low-risk` ones that have each been converted into
+  an explicit entry in `Residual Assumptions` with a concrete `validation_method`
+
+Return `review_result: needs_clarification` when:
+- one or more insufficient-basis findings remain after bounded clarification questions
+- the unresolved item is a missing requirement decision rather than an objective defect the agent can fix alone
+
+Otherwise return `issues_found`. In `review-and-revise` mode, revise the document
+and review again. In `review-only` mode, report the findings and the recommended
+next owner without editing the document.
 
 ## Output format
 
 Use this exact Markdown structure. Keep the field names unchanged and keep each entry short enough to read without horizontal scrolling.
 
+Always emit every section shown below, in the same order, even when it is empty.
+When a section has no entries, write `- None` instead of omitting the section.
+
 ```markdown
 ## Review Result
-review_result: clean | issues_found
+review_result: clean | clean_with_assumptions | needs_clarification | issues_found
+mode: review-only | review-and-revise
 
 ## Issues
 blocking:
-- None
+- severity: blocking
+  area: ""
+  problem: ""
+  impact: ""
+  required_fix: ""
 
 warning:
-- None
+- severity: warning
+  area: ""
+  problem: ""
+  impact: ""
+  required_fix: ""
 
 low-risk:
-- None
+- severity: low-risk
+  area: ""
+  problem: ""
+  impact: ""
+  required_fix: ""
 
 ## Changes Made
 - file: ""
@@ -112,11 +175,17 @@ low-risk:
 ## Residual Assumptions
 - assumption: ""
   validation_method: ""
+
+## Clarification Questions
+- question: ""
+  why_blocked: ""
 ```
 
 Then finish with the compact protocol line:
 
-`[output: requirements-review-loop | completed <confidence> | review_result:"clean|issues_found" issues:"<count by severity>" changes:"..." validation:"..." | next:<action>]`
+`[output: requirements-review-loop | completed <confidence> | mode:"review-only|review-and-revise" review_result:"clean|clean_with_assumptions|needs_clarification|issues_found" issues:"<count by severity>" changes:"..." validation:"..." | next:<action>]`
+
+The closing compact protocol line is mandatory. Preserve `mode` exactly as shown.
 
 ## Contract
 
@@ -129,13 +198,13 @@ Then finish with the compact protocol line:
 ### Postconditions
 
 - `status: completed` includes `review_result`, `issues`, `changes`, and `validation`.
-- The requirements are either clean or blocked by explicit requirement defects.
+- The requirements are either clean or blocked by explicit requirement defects or clarification questions.
 - Revisions stay limited to the target requirements artifact.
 
 ### Invariants
 
 - The review stays at the requirements level rather than jumping into implementation design.
-- Every issue is resolved before the result is marked clean.
+- Every issue is either resolved, converted into a tracked residual assumption, or surfaced as an explicit clarification blocker before a clean exit.
 - Acceptance criteria remain observable and business-facing.
 
 ### Downstream Signals
@@ -156,22 +225,24 @@ Then finish with the compact protocol line:
 ### Retry Policy
 
 - Re-review after each revision until no issues remain.
-- If requirements ambiguity remains after two revision passes, stop and ask for clarification.
+- If requirement ambiguity remains after one bounded clarification round, stop and ask rather than forcing a rewrite.
 
 ### Fallback
 
 - Hand off to `requirement-interview` if the artifact is still too vague and needs interactive clarification.
 - Hand off to `design-review-loop` if the artifact is actually a technical design doc.
+- Hand off to `plan-review-loop` if the artifact is really an execution plan rather than a requirement.
 
 ### Low Confidence Handling
 
 - Keep unresolved requirement assumptions visible.
 - Do not mark the review clean while business-critical ambiguity remains.
+- Keep `review_result: needs_clarification` when the blocker is a missing business decision rather than a drafting defect.
 
 ## Output Example
 
 ```
-[output: requirements-review-loop | completed high | review_result:"clean" issues:"0 blocking, 0 warning, 0 low-risk" changes:"made acceptance criteria observable and split must-have vs later scope" validation:"checked terminology and referenced modules against repo docs" | next:design-before-plan]
+[output: requirements-review-loop | completed high | mode:"review-and-revise" review_result:"clean_with_assumptions" issues:"0 blocking, 0 warning, 0 low-risk" changes:"made acceptance criteria observable and split must-have vs later scope" validation:"checked terminology and referenced modules against repo docs" | next:design-before-plan]
 ```
 
 ## Deactivation Trigger
@@ -181,9 +252,10 @@ Then finish with the compact protocol line:
 
 ## Constraints
 
-- Do not stop after only reporting issues.
+- Do not stop after only reporting issues, except when running in `review-only` mode or when bounded clarification is required before safe revision.
 - Do not treat low-risk issues as optional notes.
-- Do not mark the result clean while any issue remains.
+- Do not mark the result clean or `clean_with_assumptions` while any blocking or warning issue remains.
+- Do not omit required output sections; write `- None` when a section is empty.
 - Do not change unrelated files.
 - Keep the document concise but verifiable.
 - Prefer concrete acceptance criteria over vague guidance.

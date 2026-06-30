@@ -1,10 +1,11 @@
 ---
 name: code-review-loop
-description: "WHAT: Review a code diff, commit, PR, or specified files, classify issues, fix real defects, run the minimum necessary validation, and repeat the review/fix loop until the implementation is issue-free. WHEN: Use after code has been implemented or staged, when the user asks to review a diff, commit, pull request, or completed implementation; or to validate that finished code matches the requested scope, plan, or contract. Do NOT use to review requirements (use requirements-review-loop), design docs / RFCs / ADRs (use design-review-loop), implementation plans (use plan-review-loop), or test cases themselves (use test-review-loop)."
+description: "WHAT: Review (and optionally revise) a code diff, commit, PR, or specified files. Classify findings with a structured schema, distinguish objective defects from clarification blockers, run the minimum necessary validation, and either report findings (review-only) or loop review/fix until the implementation is clean, clean_with_assumptions, or blocked by needs_clarification. WHEN: Use after code has been implemented or staged, when the user asks to review a diff, commit, pull request, or completed implementation; or to validate that finished code matches the requested scope, plan, or contract. Do NOT use to review requirements (use requirements-review-loop), design docs / RFCs / ADRs (use design-review-loop), implementation plans (use plan-review-loop), or test cases themselves (use test-review-loop)."
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   tags: "review, code, validation"
 ---
+
 # code-review-loop
 
 Use this skill to run a strict review, fix, validation, and re-review loop for implementation changes (diff / commit / PR / specified files).
@@ -12,6 +13,19 @@ Use this skill to run a strict review, fix, validation, and re-review loop for i
 ## Goal
 
 Review the target diff or commit, find real implementation defects first, fix them, validate the fix, and repeat until the review is clean. This is not a style-only review. Focus on requirement alignment, correctness, regressions, security, compatibility, scope control, and test coverage.
+
+This is not a one-pass review when running in `review-and-revise` mode. Continue looping until there are no unresolved `blocking`, `warning`, or `low-risk` issues, or until the review is blocked by bounded clarification questions.
+
+## Review mode
+
+Pick the mode before looping:
+
+- `review-only`: classify and report findings; do NOT edit the implementation.
+  Default when the user says "review / 看一下 / 评审 / 给意见".
+- `review-and-revise`: classify, fix, validate, and loop until the implementation is ready.
+  Default when the user says "harden / fix all review issues / 改到能合 / 定稿".
+
+If the mode is ambiguous, default to `review-only` for already-implemented code and state the chosen mode in the output.
 
 ## Required loop
 
@@ -23,9 +37,9 @@ Review the target diff or commit, find real implementation defects first, fix th
    - user-specified files
    - pull request diff
 2. Inspect repository status before making any changes; distinguish user-existing changes from current task changes.
-3. Review the target using findings-first code review. Each finding must include: severity (`blocking` / `warning` / `low-risk`), affected file or area, problem, impact, required fix.
+3. Review the target using findings-first code review.
 4. Cover at minimum these core dimensions:
-   - requirement alignment: matches the confirmed requirements, acceptance criteria, plan, or contract; no missed behavior, wrong behavior, or over-implementation. If explicit requirement evidence is incomplete, infer the narrowest likely user intent from the task wording and visible context, then ask the user to confirm before treating the inferred intent as a review basis. Until confirmed, keep `review_result` as `issues_found` and pause the review at that point.
+   - requirement alignment: matches the confirmed requirements, acceptance criteria, plan, or contract; no missed behavior, wrong behavior, or over-implementation
    - correctness: behavior correctness, boundary handling, error handling, failure paths
    - regression: no unintended behavior regression; key paths and adjacent behavior remain intact
    - security: injection, authz, sensitive data, secrets
@@ -38,12 +52,19 @@ Review the target diff or commit, find real implementation defects first, fix th
    - operability / observability: logs, metrics, alerts, tracing, diagnosability, recovery
    - rollout / config risk: flags, dependency upgrades, config defaults, rollout/rollback, deployment ordering
    - accessibility / UX states: empty/error/loading states, keyboard access, disabled states, feedback
-6. Classify every finding as `blocking`, `warning`, or `low-risk`.
-7. Fix only issues related to the reviewed implementation.
-8. Run the minimum necessary validation (see Validation).
-9. Re-check the diff after changes.
-10. Re-run the review.
-11. Continue until `review_result` is `clean`.
+6. For every finding, first decide whether it is:
+   - an **objective defect** — directly contradicted by the code, diff, tests, or accepted requirements/plan/contracts
+   - an **insufficient-basis finding** — cannot be safely resolved without a missing requirement decision, scope choice, behavior expectation, or ownership boundary
+7. Classify every finding as `blocking`, `warning`, or `low-risk`. Each finding must include: severity, affected file or area, problem, impact, required fix.
+8. Run the clarification gate for every insufficient-basis finding:
+   - ask at most 1-3 bounded questions that unblock the exact behavior or scope decision
+   - infer the narrowest likely intent only to formulate the question, not to justify a fix
+   - if the answer is still unavailable, stop with `review_result: needs_clarification`
+9. In `review-and-revise` mode, fix only issues related to the reviewed implementation. In `review-only` mode, stop here and report the findings and clarification questions.
+10. Run the minimum necessary validation (see Validation).
+11. Re-check the diff after changes.
+12. Re-run the review.
+13. Continue until `review_result` is `clean`, `clean_with_assumptions`, or `needs_clarification`.
 
 ## Optional checks
 
@@ -71,6 +92,23 @@ Low-risk issues must still be resolved before the loop can finish. Resolve each 
 - code fix
 - test or validation addition
 - explicit accepted assumption with verification method documented in `Residual Assumptions`
+
+## Clarification gate
+
+Use bounded Socratic questioning only for true insufficient-basis findings.
+
+Examples that usually require clarification instead of unilateral revision:
+
+- requirement alignment depends on an unstated product choice or acceptance criterion
+- two plausible behavior interpretations exist and current tests or docs do not disambiguate
+- a scope boundary is unclear enough that a code fix could overwrite user-owned work or over-implement the request
+
+Rules:
+
+- Ask 1-3 concrete questions per round.
+- Tie each question to one blocked behavior or scope decision.
+- In `review-and-revise` mode, fix all objective defects you safely can before stopping.
+- Do not invent product intent just to force `clean`.
 
 ## Scope protection
 
@@ -102,34 +140,62 @@ Record the command(s) actually run and their results in the `Validation` field o
 
 ## Clean result rule
 
-Only return `review_result: clean` when:
+Return `review_result: clean` only when:
 - there are no `blocking` issues
 - there are no `warning` issues
 - there are no `low-risk` issues
 - fixes have been applied for all findings
 - minimum necessary validation has been run or explicitly justified
 - no unrelated files were changed
-- requirement alignment does not depend on unconfirmed inferred user intent
 
-If any issue remains, fix it and review again.
+Return `review_result: clean_with_assumptions` when:
+- there are no `blocking` issues
+- there are no `warning` issues
+- the only remaining items are `low-risk` ones that have each been converted into
+  an explicit entry in `Residual Assumptions` with a concrete `validation_method`
+- requirement alignment and scope do not depend on unconfirmed intent
+
+Return `review_result: needs_clarification` when:
+- one or more insufficient-basis findings remain after bounded clarification questions
+- the unresolved item is a missing behavior or scope decision rather than an objective defect the agent can fix alone
+
+Otherwise return `issues_found`. In `review-and-revise` mode, fix and review
+again. In `review-only` mode, report the findings and the recommended next owner
+without editing the implementation.
 
 ## Output format
 
 Use this exact Markdown structure. Keep the field names unchanged and keep each entry short enough to read without horizontal scrolling.
 
+Always emit every section shown below, in the same order, even when it is empty.
+When a section has no entries, write `- None` instead of omitting the section.
+
 ```markdown
 ## Review Result
-review_result: clean | issues_found
+review_result: clean | clean_with_assumptions | needs_clarification | issues_found
+mode: review-only | review-and-revise
 
 ## Issues
 blocking:
-- None
+- severity: blocking
+  area: ""
+  problem: ""
+  impact: ""
+  required_fix: ""
 
 warning:
-- None
+- severity: warning
+  area: ""
+  problem: ""
+  impact: ""
+  required_fix: ""
 
 low-risk:
-- None
+- severity: low-risk
+  area: ""
+  problem: ""
+  impact: ""
+  required_fix: ""
 
 ## Changes Made
 - file: ""
@@ -141,11 +207,17 @@ low-risk:
 ## Residual Assumptions
 - assumption: ""
   validation_method: ""
+
+## Clarification Questions
+- question: ""
+  why_blocked: ""
 ```
 
 Then finish with the compact protocol line:
 
-`[output: code-review-loop | completed <confidence> | review_result:"clean|issues_found" issues:"<count by severity>" fixes:"..." validation:"..." | next:<action>]`
+`[output: code-review-loop | completed <confidence> | mode:"review-only|review-and-revise" review_result:"clean|clean_with_assumptions|needs_clarification|issues_found" issues:"<count by severity>" fixes:"..." validation:"..." | next:<action>]`
+
+The closing compact protocol line is mandatory. Preserve `mode` exactly as shown.
 
 ## Contract
 
@@ -159,7 +231,7 @@ Then finish with the compact protocol line:
 
 - `status: completed` includes `review_result`, `issues`, `fixes`, and `validation`.
 - All findings are tied to correctness, regression, security, compatibility, scope, or test sufficiency.
-- The reviewed implementation is either clean or explicitly blocked by unresolved findings.
+- The reviewed implementation is either clean or explicitly blocked by unresolved findings or clarification questions.
 
 ### Invariants
 
@@ -194,13 +266,13 @@ Then finish with the compact protocol line:
 
 ### Low Confidence Handling
 
-- Keep `review_result: issues_found` if any finding depends on an unconfirmed assumption.
+- Keep `review_result: needs_clarification` if any finding depends on an unconfirmed assumption.
 - Prefer reporting a residual risk over overstating confidence.
 
 ## Output Example
 
 ```
-[output: code-review-loop | completed high | review_result:"clean" issues:"0 blocking, 0 warning, 0 low-risk" fixes:"tightened retry guard and removed stale debug log" validation:"pytest tests/auth/test_retry.py -k login_retry" | next:done]
+[output: code-review-loop | completed high | mode:"review-and-revise" review_result:"clean_with_assumptions" issues:"0 blocking, 0 warning, 0 low-risk" fixes:"tightened retry guard and removed stale debug log" validation:"pytest tests/auth/test_retry.py -k login_retry" | next:done]
 ```
 
 ## Deactivation Trigger
@@ -210,8 +282,9 @@ Then finish with the compact protocol line:
 
 ## Constraints
 
-- Do not stop after only reporting findings, except when `requirement alignment` depends on unconfirmed inferred user intent and user confirmation is required before continuing.
-- Do not mark the result clean while any issue remains.
+- Do not stop after only reporting findings, except when running in `review-only` mode or when bounded clarification is required before safe revision.
+- Do not mark the result clean or `clean_with_assumptions` while any blocking or warning issue remains.
+- Do not omit required output sections; write `- None` when a section is empty.
 - Do not fix unrelated code.
 - Do not mix user-existing changes into the task result.
 - Do not perform broad refactors unless required to fix a finding.

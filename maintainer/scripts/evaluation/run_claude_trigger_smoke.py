@@ -55,6 +55,15 @@ from skill_protocol_unified import parse_protocol, validate_protocol_lifecycle
 CaseStrategy = Literal["auto", "slash"]
 CaseStatus = Literal["pass", "warn", "fail"]
 KNOWN_SKILLS: tuple[str, ...] = tuple(sorted(SKILL_FAMILY))
+REVIEW_LOOP_SKILLS: frozenset[str] = frozenset(
+    {
+        "code-review-loop",
+        "design-review-loop",
+        "plan-review-loop",
+        "requirements-review-loop",
+        "test-review-loop",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -314,8 +323,41 @@ def validate_protocol_output(text: str) -> tuple[CaseStatus, list[str], list[str
         protocol_blocks.extend(getattr(block, "raw", repr(block)) for block in parsed.get(key, []))
 
     protocol_issues = list(validate_protocol_lifecycle(parsed))
+    protocol_issues.extend(validate_review_loop_output_contract(text, parsed))
     protocol_status: CaseStatus = "pass" if not protocol_issues else "fail"
     return protocol_status, protocol_blocks, protocol_issues
+
+
+def validate_review_loop_output_contract(text: str, parsed: dict) -> list[str]:
+    issues: list[str] = []
+    review_outputs = [
+        block
+        for block in parsed.get("outputs", [])
+        if getattr(block, "skill_name", "") in REVIEW_LOOP_SKILLS
+    ]
+    if not review_outputs:
+        return issues
+
+    if not re.search(r"(?im)^##\s+Clarification Questions\s*$", text):
+        issues.append("Review-loop output is missing `## Clarification Questions` section.")
+
+    for block in review_outputs:
+        skill_name = block.skill_name
+        outputs = getattr(block, "outputs", {})
+        if "mode" not in outputs:
+            issues.append(f"[output: {skill_name}] is missing required `mode` field.")
+        if skill_name == "design-review-loop" and "type" not in outputs:
+            issues.append("[output: design-review-loop] is missing required `type` field.")
+
+    if not re.search(r"(?im)^\s*mode\s*:\s*(review-only|review-and-revise)\s*$", text):
+        issues.append("Review-loop output is missing Markdown `mode:` line.")
+    if any(block.skill_name == "design-review-loop" for block in review_outputs) and not re.search(
+        r"(?im)^\s*type\s*:\s*(architecture|adr-rfc|interface|data-model|technical-proposal)\s*$",
+        text,
+    ):
+        issues.append("Design review-loop output is missing Markdown `type:` line.")
+
+    return issues
 
 
 def classify_result(case: SmokeCase, returncode: int, output_text: str) -> tuple[CaseStatus, list[str], list[str], list[str], CaseStatus, list[str], list[str]]:

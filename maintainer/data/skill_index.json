@@ -1,6 +1,6 @@
 {
   "schema_version": "0.1.0",
-  "generated_at": "2026-06-29T09:45:16.866100+00:00",
+  "generated_at": "2026-06-30T02:59:28.648335+00:00",
   "skills": [
     {
       "name": "architecture-design",
@@ -30,10 +30,10 @@
     },
     {
       "name": "code-review-loop",
-      "description": "WHAT: Review a code diff, commit, PR, or specified files, classify issues, fix real defects, run the minimum necessary validation, and repeat the review/fix loop until the implementation is issue-free. WHEN: Use after code has been implemented or staged, when the user asks to review a diff, commit, pull request, or completed implementation; or to validate that finished code matches the requested scope, plan, or contract. Do NOT use to review requirements (use requirements-review-loop), design docs / RFCs / ADRs (use design-review-loop), implementation plans (use plan-review-loop), or test cases themselves (use test-review-loop).",
+      "description": "WHAT: Review (and optionally revise) a code diff, commit, PR, or specified files. Classify findings with a structured schema, distinguish objective defects from clarification blockers, run the minimum necessary validation, and either report findings (review-only) or loop review/fix until the implementation is clean, clean_with_assumptions, or blocked by needs_clarification. WHEN: Use after code has been implemented or staged, when the user asks to review a diff, commit, pull request, or completed implementation; or to validate that finished code matches the requested scope, plan, or contract. Do NOT use to review requirements (use requirements-review-loop), design docs / RFCs / ADRs (use design-review-loop), implementation plans (use plan-review-loop), or test cases themselves (use test-review-loop).",
       "directory": "skills/code-review-loop",
       "family": "execution",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tags": [
         "review",
         "code",
@@ -56,10 +56,10 @@
     },
     {
       "name": "design-review-loop",
-      "description": "WHAT: Review (and optionally revise) a design document — architecture design, RFC, ADR, interface design, data model, or technical proposal — against the requirements and the actual repository context. Classify the artifact type, run type-appropriate checks, classify issues, and either report findings (review-only) or loop review/fix until the document is issue-free (review-and-revise). WHEN: Use when the user asks to review, validate, harden, or finalize a design doc, RFC, ADR, architecture, interface design, data model, or technical proposal. Terms like 方案 / 实现思路 / 实现方案 / 接口 / 思路 belong here. Do NOT use to review requirements (use requirements-review-loop), implementation plans / migration plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop).",
+      "description": "WHAT: Review (and optionally revise) a design document — architecture design, RFC, ADR, interface design, data model, or technical proposal — against the requirements and the actual repository context. Classify the artifact type, run type-appropriate checks, classify findings with a structured schema, distinguish objective defects from clarification blockers, and either report findings (review-only) or loop review/fix until the document is clean, clean_with_assumptions, or blocked by needs_clarification. WHEN: Use when the user asks to review, validate, harden, or finalize a design doc, RFC, ADR, architecture, interface design, data model, or technical proposal. Terms like 方案 / 实现思路 / 实现方案 / 接口 / 思路 belong here. Do NOT use to review requirements (use requirements-review-loop), implementation plans / migration plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop).",
       "directory": "skills/design-review-loop",
       "family": "execution",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "tags": [
         "review",
         "design",
@@ -119,10 +119,10 @@
     },
     {
       "name": "plan-review-loop",
-      "description": "WHAT: Review and revise project plan files against the actual repository code, docs, configuration, and constraints until the plan is executable and issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize an implementation plan, migration plan, refactor plan, task plan, roadmap, or any plan-like document before coding.",
+      "description": "WHAT: Review (and optionally revise) a project plan file against the actual repository code, docs, configuration, and constraints. Classify findings with a structured schema, distinguish objective plan defects from clarification blockers, and either report findings (review-only) or loop review/fix until the plan is clean, clean_with_assumptions, or blocked by needs_clarification. WHEN: Use when the user asks to review, validate, harden, or finalize an implementation plan, migration plan, refactor plan, task plan, roadmap, or any plan-like document before coding.",
       "directory": "skills/plan-review-loop",
       "family": "execution",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tags": [
         "review",
         "planning",
@@ -145,10 +145,10 @@
     },
     {
       "name": "requirements-review-loop",
-      "description": "WHAT: Review and revise a requirements document — PRD, user stories, problem statements, or acceptance criteria drafts — against the actual repository context, classify issues, fix real defects, and repeat the review/fix loop until the document is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize a requirements doc, PRD, user story, problem statement, or acceptance criteria. Do NOT use to review design docs / RFCs / ADRs / interface designs (use design-review-loop), implementation plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop). Terms like 方案 / 接口 / 思路 / 实现思路 / 实现方案 belong to design-review-loop; 实施方案 / 迁移方案 belong to plan-review-loop.",
+      "description": "WHAT: Review (and optionally revise) a requirements document — PRD, user stories, problem statements, or acceptance criteria drafts — against the actual repository context. Classify findings with a structured schema, distinguish objective defects from clarification blockers, and either report findings (review-only) or loop review/fix until the document is clean, clean_with_assumptions, or blocked by needs_clarification. WHEN: Use when the user asks to review, validate, harden, or finalize a requirements doc, PRD, user story, problem statement, or acceptance criteria. Do NOT use to review design docs / RFCs / ADRs / interface designs (use design-review-loop), implementation plans (use plan-review-loop), code diffs (use code-review-loop), or test cases (use test-review-loop). Terms like 方案 / 接口 / 思路 / 实现思路 / 实现方案 belong to design-review-loop; 实施方案 / 迁移方案 belong to plan-review-loop.",
       "directory": "skills/requirements-review-loop",
       "family": "execution",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tags": [
         "review",
         "requirements",
@@ -206,10 +206,10 @@
     },
     {
       "name": "test-review-loop",
-      "description": "WHAT: Review and revise test cases, test strategy, coverage matrix, or new/modified test files — classify issues, fix real defects, run the tests as validation, and repeat the review/fix loop until the test set is issue-free. WHEN: Use when the user asks to review, validate, harden, or finalize test cases, test strategy, coverage matrix, 测试 / 用例 / 覆盖. Do NOT use to review production code under test, 被测代码, or 实现代码 — use code-review-loop instead. Do NOT use to review requirements (use requirements-review-loop), design docs (use design-review-loop), or implementation plans (use plan-review-loop).",
+      "description": "WHAT: Review (and optionally revise) test cases, test strategy, coverage matrix, or new/modified test files against the code under test and the project's test conventions. Classify findings with a structured schema, distinguish objective defects from clarification blockers, and either report findings (review-only) or loop review/fix until the test set is clean, clean_with_assumptions, or blocked by needs_clarification. WHEN: Use when the user asks to review, validate, harden, or finalize test cases, test strategy, coverage matrix, 测试 / 用例 / 覆盖. Do NOT use to review production code under test, 被测代码, or 实现代码 — use code-review-loop instead. Do NOT use to review requirements (use requirements-review-loop), design docs (use design-review-loop), or implementation plans (use plan-review-loop).",
       "directory": "skills/test-review-loop",
       "family": "execution",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tags": [
         "review",
         "testing",

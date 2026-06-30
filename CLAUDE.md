@@ -192,6 +192,8 @@ Fast paths may omit the full protocol block set. Use these blocks when a non-tri
 - `validate`: record the smallest check that confirms the skill deliverable or handoff is sound.
 - `drop`: explicitly retire the skill when its deliverable is complete, superseded, or handed off downstream.
 - `review_result: issues_found` means the review-loop deliverable is still incomplete; keep the review skill active and do not `drop` it as completed yet.
+- `review_result: clean_with_assumptions` is a valid clean exit when only tracked low-risk assumptions remain with explicit validation methods.
+- `review_result: needs_clarification` means the review-loop is blocked on a missing decision; stop and ask bounded clarification questions instead of revising through the gap.
 - A local `修订` on the same artifact stays inside the active review loop when scope, ownership, and artifact identity do not change, including in-thread drafts that have not been written to files yet.
 
 If the same skill path is retried without new evidence, stop and re-scope, escalate, or ask instead of looping on the same action.
@@ -207,7 +209,7 @@ Design-first: scoped-tasking -> design-before-plan -> impact-analysis -> impleme
 Architecture: requirement-interview (optional) -> architecture-design -> design-review-loop (optional) -> implementation-planning
 Plan:         design-before-plan -> implementation-planning -> plan-review-loop
 Parallel:     multi-agent-protocol -> synthesis
-Review loop:  pick one of requirements-review-loop / design-review-loop / plan-review-loop / code-review-loop / test-review-loop -> revise -> re-review until review_result: clean
+Review loop:  pick one of requirements-review-loop / design-review-loop / plan-review-loop / code-review-loop / test-review-loop -> review-only OR revise -> re-review until review_result: clean | clean_with_assumptions, or stop at needs_clarification
 ```
 
 Normal vs escalation paths:
@@ -222,8 +224,9 @@ Automatic continuation:
 - Continue from implementation to `self-review` and `targeted-validation` without an extra user checkpoint when the next step is local and non-destructive.
 - Continue from a completed `implementation-planning` plan into implementation, `self-review`, and `targeted-validation` when the next step remains local, non-destructive, and within the accepted task boundary.
 - Continue after `review_result: issues_found` into a local revision of the same artifact when scope, ownership, and artifact identity stay the same.
-- Continue from that revision back into the same review-loop and do not `drop` the review skill until `review_result: clean`, explicit handoff, or superseding work changes the artifact/boundary.
-- Continue after a review loop returns `review_result: clean` when the next step is explicit, local, and non-destructive.
+- Continue from that revision back into the same review-loop and do not `drop` the review skill until `review_result: clean` or `clean_with_assumptions`, explicit handoff, or superseding work changes the artifact/boundary.
+- Continue after a review loop returns `review_result: clean` or `clean_with_assumptions` when the next step is explicit, local, and non-destructive.
+- Stop after `review_result: needs_clarification` and ask the bounded clarification questions before continuing any further revision.
 
 Stop conditions:
 

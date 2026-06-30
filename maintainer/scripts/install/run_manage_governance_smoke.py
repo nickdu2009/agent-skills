@@ -115,8 +115,9 @@ ROUTING_SEMANTICS_SNIPPETS = (
     "Stay on the selected implementation workflow when scope is clear and no escalation signal appears;",
     "Continue from a completed `implementation-planning` plan into implementation, `self-review`, and `targeted-validation`",
     "Continue after `review_result: issues_found` into a local revision of the same artifact when scope, ownership, and artifact identity stay the same.",
-    "Continue from that revision back into the same review-loop and do not `drop` the review skill until `review_result: clean`, explicit handoff, or superseding work changes the artifact/boundary.",
-    "Continue after a review loop returns `review_result: clean` when the next step is explicit, local, and non-destructive.",
+    "Continue from that revision back into the same review-loop and do not `drop` the review skill until `review_result: clean` or `clean_with_assumptions`, explicit handoff, or superseding work changes the artifact/boundary.",
+    "Continue after a review loop returns `review_result: clean` or `clean_with_assumptions` when the next step is explicit, local, and non-destructive.",
+    "Stop after `review_result: needs_clarification` and ask the bounded clarification questions before continuing any further revision.",
     "Once an escalation path is triggered, stop the current implementation path and move into `design-before-plan`, `architecture-design`, or `impact-analysis`",
 )
 PROTOCOL_SEMANTICS_SNIPPETS = (
@@ -126,6 +127,8 @@ PROTOCOL_SEMANTICS_SNIPPETS = (
     "`output`: summarize the concrete deliverable from the active skill;",
     "`drop`: explicitly retire the skill when its deliverable is complete, superseded, or handed off downstream.",
     "`review_result: issues_found` means the review-loop deliverable is still incomplete; keep the review skill active and do not `drop` it as completed yet.",
+    "`review_result: clean_with_assumptions` is a valid clean exit when only tracked low-risk assumptions remain with explicit validation methods.",
+    "`review_result: needs_clarification` means the review-loop is blocked on a missing decision; stop and ask bounded clarification questions instead of revising through the gap.",
     "A local `修订` on the same artifact stays inside the active review loop when scope, ownership, and artifact identity do not change, including in-thread drafts that have not been written to files yet.",
     "If the same skill path is retried without new evidence, stop and re-scope, escalate, or ask instead of looping on the same action.",
 )
