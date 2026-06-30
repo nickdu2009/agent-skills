@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass(frozen=True)
@@ -12,6 +13,15 @@ class ExampleCase:
     scenario: str
     skills: tuple[str, ...]
     expectations: tuple[str, ...]
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SKILLS_DIR = REPO_ROOT / "skills"
+
+# Keep evaluation consumers aligned with the canonical skills tree.
+ALL_SKILLS: tuple[str, ...] = tuple(
+    sorted(skill_dir.name for skill_dir in SKILLS_DIR.iterdir() if (skill_dir / "SKILL.md").exists())
+)
 
 
 GLOBAL_RUBRIC_DIMENSIONS: tuple[str, ...] = (
@@ -116,3 +126,12 @@ EXAMPLE_CASES: tuple[ExampleCase, ...] = (
         ),
     ),
 )
+
+
+def resolve_example(example_id: str) -> ExampleCase:
+    for example in EXAMPLE_CASES:
+        if example.file_name == example_id:
+            return example
+
+    available = ", ".join(example.file_name for example in EXAMPLE_CASES)
+    raise KeyError(f"Unknown example '{example_id}'. Available: {available}")

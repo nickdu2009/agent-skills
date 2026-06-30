@@ -155,4 +155,4 @@ client = OpenAI(
 
 - [触发测试数据](../../data/trigger_test_data.py) - 测试用例定义
 - [原始触发测试脚本](run_trigger_tests.py) - OpenAI 版本
-- [技能协议规范](../../data/skill_protocol_v1.py) - 协议验证规则
+- [技能协议规范](../../scripts/evaluation/skill_protocol.py) - 协议验证规则

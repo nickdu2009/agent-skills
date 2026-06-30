@@ -269,5 +269,5 @@ python3 maintainer/scripts/evaluation/run_trigger_tests.py \
 ## 相关文档
 
 - [触发测试数据定义](../../maintainer/data/trigger_test_data.py)
-- [技能协议规范](../../maintainer/data/skill_protocol_v1.py)
+- [技能协议规范](../../maintainer/scripts/evaluation/skill_protocol.py)
 - [触发测试脚本](../../maintainer/scripts/evaluation/run_trigger_tests.py)

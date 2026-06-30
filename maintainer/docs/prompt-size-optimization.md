@@ -49,7 +49,7 @@ python3 maintainer/scripts/analysis/generate_skill_index.py --dry-run
 **When to regenerate**:
 - After adding new skills to `skills/` directory
 - After updating SKILL.md frontmatter (name, description, metadata)
-- After modifying skill family classifications in `skill_protocol_v1.py`
+- After modifying skill family classifications in `skill_protocol.py`
 
 ## Usage
 
@@ -190,7 +190,7 @@ Potential additions for version 0.2.0:
 
 1. Create skill in `skills/new-skill/SKILL.md`
 2. Add frontmatter with name, description, metadata
-3. Add family classification to `skill_protocol_v1.py`
+3. Add family classification to `skill_protocol.py`
 4. Regenerate index: `python3 maintainer/scripts/analysis/generate_skill_index.py`
 5. Verify: `python3 maintainer/scripts/evaluation/compare_prompt_sizes.py`
 
@@ -239,7 +239,7 @@ Simple YAML subset parser:
 
 ### Family Classification
 
-Defined in `skill_protocol_v1.py`:
+Defined in `skill_protocol.py`:
 - `EXECUTION_SKILLS`: scoped-tasking, minimal-change-strategy, etc.
 - `ORCHESTRATION_SKILLS`: multi-agent-protocol, conflict-resolution
 - `PHASE_SKILLS`: phase-plan, phase-execute, phase-plan-review, phase-contract-tools
@@ -264,7 +264,7 @@ Defined in `skill_protocol_v1.py`:
 
 **Solution**: 
 1. Verify SKILL.md has valid frontmatter (name and description)
-2. Check skill is in `skill_protocol_v1.py` family mapping
+2. Check skill is in `skill_protocol.py` family mapping
 3. Regenerate with `--verbose` flag to see which skills were skipped
 
 ### Schema validation errors
@@ -282,4 +282,4 @@ Defined in `skill_protocol_v1.py`:
 - **Generator script**: `maintainer/scripts/analysis/generate_skill_index.py`
 - **Trigger test script**: `maintainer/scripts/evaluation/run_trigger_tests.py`
 - **Comparison script**: `maintainer/scripts/evaluation/compare_prompt_sizes.py`
-- **Skill protocol**: `maintainer/scripts/evaluation/skill_protocol_v1.py`
+- **Skill protocol**: `maintainer/scripts/evaluation/skill_protocol.py`

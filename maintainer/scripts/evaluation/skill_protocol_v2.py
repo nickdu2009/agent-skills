@@ -10,7 +10,7 @@ Parses v2 protocol blocks:
 - [drop: skill-name | reason:"text" | active: skill1 skill2]
 - [loop: skill-name | reason:"text"]
 
-Mirrors skill_protocol_v1.py structure for consistency.
+Mirrors skill_protocol.py structure for consistency.
 """
 
 from __future__ import annotations

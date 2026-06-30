@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Unified parser for Skill Protocol v1 and v2 formats.
+"""Parser for Skill Protocol output.
 
-Auto-detects format and delegates to appropriate parser.
-Returns normalized data structures compatible with both versions.
+Auto-detects v1/v2/mixed formats. v1 protocol parsing is retired, so only
+the v2 portion is parsed; detected v1 blocks are reported but not parsed.
 """
 
 from __future__ import annotations
@@ -11,16 +11,14 @@ import re
 from pathlib import Path
 from typing import Any
 
-# Import both parsers
+# v1 protocol parsing is retired; only the v2 parser is used.
 try:
-    import skill_protocol_v1 as v1_parser
+    import skill_protocol_v2 as v2_parser
 except ImportError:
     # Try relative import
     import sys
     sys.path.insert(0, str(Path(__file__).parent))
-    import skill_protocol_v1 as v1_parser
-
-import skill_protocol_v2 as v2_parser
+    import skill_protocol_v2 as v2_parser
 
 
 def detect_protocol_format(text: str) -> str:
@@ -47,22 +45,6 @@ def detect_protocol_format(text: str) -> str:
         return 'v2'
     else:
         return 'none'
-
-
-def normalize_v1_to_common(v1_data: dict) -> dict[str, list[Any]]:
-    """Normalize v1 parser output to common format."""
-    # v1_parser returns different structure, map to common format
-    # This is a simplified mapping - expand as needed
-    return {
-        'task_validation': v1_data.get('task_validations', []),
-        'triggers': v1_data.get('trigger_evaluations', []),
-        'prechecks': v1_data.get('precondition_checks', []),
-        'outputs': v1_data.get('skill_outputs', []),
-        'validations': v1_data.get('output_validations', []),
-        'deactivations': v1_data.get('skill_deactivations', []),
-        'loops': v1_data.get('loop_detections', []),
-        'format': 'v1'
-    }
 
 
 def normalize_v2_to_common(v2_data: dict) -> dict[str, list[Any]]:
@@ -98,14 +80,9 @@ def parse_protocol(text: str, force_format: str | None = None) -> dict[str, Any]
     }
 
     if format_type == 'v1':
-        # Use v1 parser
-        if hasattr(v1_parser, 'parse_protocol_blocks'):
-            v1_data = v1_parser.parse_protocol_blocks(text)
-            result.update(normalize_v1_to_common(v1_data))
-        else:
-            # Fallback: assume v1_parser has individual parse functions
-            result['format'] = 'v1'
-            result['parse_error'] = 'v1_parser module structure incompatible'
+        # v1 protocol parsing is retired; only v2 output is parsed.
+        result['format'] = 'v1'
+        result['parse_error'] = 'v1 protocol parsing retired; only v2 is parsed'
 
     elif format_type == 'v2':
         # Use v2 parser
@@ -113,27 +90,15 @@ def parse_protocol(text: str, force_format: str | None = None) -> dict[str, Any]
         result.update(normalize_v2_to_common(v2_data))
 
     elif format_type == 'mixed':
-        # Parse both, return separate results
-        v1_data = {}
-        v2_data = {}
-
-        if hasattr(v1_parser, 'parse_protocol_blocks'):
-            v1_data = v1_parser.parse_protocol_blocks(text)
-
+        # Only the v2 portion is parsed; v1 parsing is retired.
         v2_data = v2_parser.parse_protocol_blocks(text)
 
-        # Merge results
         result['format'] = 'mixed'
-        result['v1_blocks'] = normalize_v1_to_common(v1_data) if v1_data else {}
+        result['v1_blocks'] = {}
         result['v2_blocks'] = normalize_v2_to_common(v2_data)
 
-        # Combine into main result (prefer v2 for overlaps)
         for key in ['task_validation', 'triggers', 'prechecks', 'outputs', 'validations', 'deactivations', 'loops']:
-            combined = []
-            if v1_data:
-                combined.extend(result['v1_blocks'].get(key, []))
-            combined.extend(result['v2_blocks'].get(key, []))
-            result[key] = combined
+            result[key] = list(result['v2_blocks'].get(key, []))
 
     return result
 

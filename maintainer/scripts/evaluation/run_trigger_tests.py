@@ -74,7 +74,7 @@ from trigger_test_data import (
     cases_by_category,
     resolve_trigger_case,
 )
-from skill_protocol_v1 import collect_skill_document_checks
+from skill_protocol import collect_skill_document_checks
 
 
 def extract_descriptions() -> dict[str, str]:
@@ -236,11 +236,11 @@ def score_result(
 
 
 def print_protocol_readiness_report() -> int:
-    """Print static Skill Protocol v1 readiness for all skills."""
+    """Print legacy skill document readiness for all skills."""
     checks = collect_skill_document_checks(SKILLS_DIR)
     missing_count = 0
     print(f"\n{'='*60}")
-    print("  Skill Protocol v1 Readiness")
+    print("  Legacy Skill Document Readiness")
     print(f"{'='*60}")
     for check in checks:
         if check.missing_sections:
@@ -581,12 +581,12 @@ def main() -> int:
     parser.add_argument(
         "--skip-protocol-readiness",
         action="store_true",
-        help="Skip the static Skill Protocol v1 readiness report in --mode report.",
+        help="Skip the legacy skill document readiness report in --mode report.",
     )
     parser.add_argument(
         "--fail-on-protocol-issues",
         action="store_true",
-        help="Return a non-zero exit code when a skill document is missing required v1 sections.",
+        help="Return a non-zero exit code when a skill document is missing required legacy sections.",
     )
     parser.add_argument(
         "--enable-cache",

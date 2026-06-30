@@ -198,7 +198,7 @@ maintainer/
     └── evaluation/
         ├── compare_prompt_sizes.py   # Comparison tool (4.2KB)
         ├── run_trigger_tests.py      # Updated evaluator (17.8KB)
-        └── skill_protocol_v1.py      # Existing protocol
+        └── skill_protocol.py         # Existing protocol
 ```
 
 ### Error Handling

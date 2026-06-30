@@ -47,13 +47,14 @@ REPORTS_DIR = REPO_ROOT / "maintainer" / "reports" / "runs"
 
 sys.path.insert(0, str(DATA_DIR))
 
-from skill_test_data import ALL_SKILLS
 from trigger_test_data import TriggerCase, resolve_trigger_case
-from skill_protocol_v1 import validate_protocol_text
+from skill_protocol import SKILL_FAMILY, validate_protocol_text
+from skill_protocol_unified import parse_protocol, validate_protocol_lifecycle
 
 
 CaseStrategy = Literal["auto", "slash"]
 CaseStatus = Literal["pass", "warn", "fail"]
+KNOWN_SKILLS: tuple[str, ...] = tuple(sorted(SKILL_FAMILY))
 
 
 @dataclass(frozen=True)
@@ -290,10 +291,31 @@ def ensure_claude_available() -> str:
 
 def mentioned_skills(text: str) -> list[str]:
     hits: list[str] = []
-    for skill in ALL_SKILLS:
+    for skill in KNOWN_SKILLS:
         if re.search(rf"\b{re.escape(skill)}\b", text, re.IGNORECASE):
             hits.append(skill)
     return hits
+
+
+def validate_protocol_output(text: str) -> tuple[CaseStatus, list[str], list[str]]:
+    legacy_result = validate_protocol_text(text)
+    if legacy_result.blocks:
+        protocol_blocks = [block.raw_tag for block in legacy_result.blocks]
+        protocol_status: CaseStatus = "pass" if legacy_result.status == "pass" else "fail"
+        return protocol_status, protocol_blocks, list(legacy_result.issues)
+
+    parsed = parse_protocol(text)
+    detected_format = parsed.get("detected_format", "none")
+    if detected_format == "none":
+        return "fail", [], ["No Skill Protocol blocks detected in output."]
+
+    protocol_blocks: list[str] = []
+    for key in ("task_validation", "triggers", "prechecks", "outputs", "validations", "deactivations", "loops"):
+        protocol_blocks.extend(getattr(block, "raw", repr(block)) for block in parsed.get(key, []))
+
+    protocol_issues = list(validate_protocol_lifecycle(parsed))
+    protocol_status: CaseStatus = "pass" if not protocol_issues else "fail"
+    return protocol_status, protocol_blocks, protocol_issues
 
 
 def classify_result(case: SmokeCase, returncode: int, output_text: str) -> tuple[CaseStatus, list[str], list[str], list[str], CaseStatus, list[str], list[str]]:
@@ -306,10 +328,7 @@ def classify_result(case: SmokeCase, returncode: int, output_text: str) -> tuple
         if re.search(pattern, output_text, re.IGNORECASE | re.DOTALL)
     ]
     skill_hits = mentioned_skills(output_text)
-    protocol = validate_protocol_text(output_text)
-    protocol_blocks = [block.raw_tag for block in protocol.blocks]
-    protocol_status: CaseStatus = "pass" if protocol.status == "pass" else "fail"
-    protocol_issues = list(protocol.issues)
+    protocol_status, protocol_blocks, protocol_issues = validate_protocol_output(output_text)
 
     if returncode != 0:
         return "fail", matched_patterns, forbidden_hits, skill_hits, protocol_status, protocol_blocks, protocol_issues

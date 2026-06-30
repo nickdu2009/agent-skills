@@ -15,7 +15,7 @@ Purpose:
 
 Input:
   - SKILL.md files in skills/ directory (frontmatter with name, description, metadata)
-  - skill_protocol_v1.py (for family classification)
+  - skill_protocol.py (for family classification)
 
 Output:
   - maintainer/data/skill_index.json (compact metadata index)
@@ -41,7 +41,7 @@ DEFAULT_OUTPUT = DATA_DIR / "skill_index.json"
 
 # Import skill family mapping from evaluation scripts
 sys.path.insert(0, str(REPO_ROOT / "maintainer" / "scripts" / "evaluation"))
-from skill_protocol_v1 import SKILL_FAMILY
+from skill_protocol import SKILL_FAMILY
 
 
 def _unquote_scalar(value: str) -> str:
@@ -58,6 +58,14 @@ def _unquote_scalar(value: str) -> str:
             inner = inner.replace('\\"', '"').replace("\\\\", "\\")
         return inner
     return value
+
+
+def _display_path(path: Path) -> str:
+    """Render repo-relative output paths when possible."""
+    try:
+        return str(path.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
 
 
 def extract_frontmatter(skill_file: Path) -> dict[str, str | dict]:
@@ -153,7 +161,7 @@ def generate_skill_index(skills_dir: Path, *, verbose: bool = False) -> dict:
 
         skill_name = frontmatter["name"]
 
-        # Get family classification from skill_protocol_v1
+        # Get family classification from skill_protocol
         family = SKILL_FAMILY.get(skill_name, "unknown")
 
         # Build skill metadata entry
@@ -237,7 +245,7 @@ def main() -> int:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(output_json + "\n", encoding="utf-8")
         if args.verbose or True:  # Always report output location
-            print(f"Wrote skill index to {args.output.relative_to(REPO_ROOT)}", file=sys.stderr)
+            print(f"Wrote skill index to {_display_path(args.output)}", file=sys.stderr)
 
     return 0
 
