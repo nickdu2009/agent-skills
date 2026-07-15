@@ -348,6 +348,42 @@ PRE_PHASE_CASES: tuple[TriggerCase, ...] = (
         notes='Design already documented and frozen. design-before-plan should NOT trigger.',
     ),
     TriggerCase(
+        id='architecture-design-separate-adr-artifacts',
+        prompt='Design a new notification subsystem with a dispatcher, channel adapters, preference storage, and a queue technology choice. Produce the architecture document and separate ADR artifacts for long-lived decisions.',
+        expected_triggers=(
+            'architecture-design',
+        ),
+        expected_non_triggers=(
+            'implementation-planning',
+        ),
+        category='pre-phase',
+        notes='System/subsystem design with 3+ components and technology selection should trigger architecture-design and its ADR artifact contract.',
+    ),
+    TriggerCase(
+        id='implementation-planning-accepted-adr',
+        prompt='ADR-0042 is Accepted and active, and the design is settled. Create a multi-file implementation plan that cites ADR-0042 in Sources and Alignment and in every constrained step.',
+        expected_triggers=(
+            'implementation-planning',
+        ),
+        expected_non_triggers=(
+            'design-before-plan',
+        ),
+        category='pre-phase',
+        notes='An active Accepted ADR is a frozen planning input and should be traced into implementation steps.',
+    ),
+    TriggerCase(
+        id='implementation-planning-proposed-adr-blocked',
+        prompt='ADR-0043 is still Proposed, but implementation depends on its queue choice. Review and settle the ADR before making an implementation plan.',
+        expected_triggers=(
+            'design-review-loop',
+        ),
+        expected_non_triggers=(
+            'implementation-planning',
+        ),
+        category='pre-phase',
+        notes='A Proposed ADR cannot constrain implementation planning and must return to design review.',
+    ),
+    TriggerCase(
         id='implementation-planning-from-requirement-doc',
         prompt='The requirement doc at docs/requirements/notification-preferences.md already fixes the endpoint shape, additive schema change, validation rules, and acceptance criteria. Please turn it into a 2-PR implementation plan before coding starts.',
         expected_triggers=(
@@ -1601,6 +1637,14 @@ REVIEW_LOOP_MAINCHAIN_CASES: tuple[TriggerCase, ...] = (
         notes='RFC review.',
     ),
     TriggerCase(
+        id='design-review-adr-contract',
+        prompt='Review ADR-0042 for required sections, decision drivers, realistic alternatives, positive and negative consequences, status, supersedes links, and revisit conditions.',
+        expected_triggers=('design-review-loop',),
+        expected_non_triggers=('plan-review-loop', 'code-review-loop'),
+        category='review-loop-mainchain',
+        notes='ADR content review should use the adr-rfc design review path.',
+    ),
+    TriggerCase(
         id='design-review-interface',
         prompt='帮我评审这个接口设计，看看契约定义是否清晰',
         expected_triggers=('design-review-loop',),
@@ -1639,6 +1683,14 @@ REVIEW_LOOP_MAINCHAIN_CASES: tuple[TriggerCase, ...] = (
         expected_non_triggers=('requirements-review-loop', 'code-review-loop'),
         category='review-loop-mainchain',
         notes='Task plan review on file-level landing.',
+    ),
+    TriggerCase(
+        id='plan-review-adr-alignment',
+        prompt='Review this implementation plan against Accepted ADR-0042 and verify that every constrained step cites it while Proposed and superseded ADRs are excluded.',
+        expected_triggers=('plan-review-loop',),
+        expected_non_triggers=('design-review-loop', 'code-review-loop'),
+        category='review-loop-mainchain',
+        notes='Plan review should include active Accepted ADR alignment and traceability.',
     ),
     TriggerCase(
         id='code-review-diff',
@@ -1764,3 +1816,9 @@ def resolve_trigger_case(case_id: str) -> TriggerCase:
         if c.id == case_id:
             return c
     raise KeyError(f'no TriggerCase with id={case_id!r}')
+
+    raise KeyError(f'no TriggerCase with id={case_id!r}')
+
+
+
+

@@ -83,6 +83,12 @@ Design decision with multiple approaches and cross-module impact.
   - GraphQL layer (future: when 3+ batch operations exist, revisit)
   - WebSocket streaming for large batches (optimization for future)
 
+**ADR threshold and artifact:**
+- This API contract crosses routing, controller, validation, rate-limiting, and client adoption boundaries and is costly to reverse.
+- Emit `ADR-0042: Use a dedicated REST batch endpoint` as a vendor-neutral Proposed ADR artifact.
+- Record the three alternatives, positive/negative consequences, and revisit conditions in the artifact.
+- Add `adr_candidates: [ADR-0042]`; keep `linked_adrs` empty.
+
 **Interface contracts:**
 - Request:
   ```json
@@ -179,6 +185,7 @@ Correct approach: During design phase, explicitly check implicit requirements tr
 - ✅ Agent derives acceptance criteria from requirements (not from implementation details)
 - ✅ Agent flags architectural constraints (rate limiter, database locking)
 - ✅ Agent outputs a structured design brief consumed by `implementation-planning`
+- ✅ Agent emits a portable ADR candidate for the long-lived cross-module API decision without assuming a persistence system
 
 ## Skill Protocol v2 Trace
 
@@ -186,7 +193,7 @@ Correct approach: During design phase, explicitly check implicit requirements tr
 [task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
 [triggers: scoped-tasking:trigger design-before-plan:trigger]
 [precheck: design-before-plan | result:PASS | checks:alternatives_exist acceptance_criteria_unfrozen]
-[output: design-before-plan | status:completed | confidence:high | requirements:"Support batch create and update up to 100 items" | alternatives:"Single batch endpoint, Extend existing endpoint, GraphQL mutation" | chosen_design:"POST /items/batch" | rationale:"Clear contract separation with smallest acceptable blast radius" | acceptance_criteria:"Per-item partial failure details are returned; Batches of 10 finish within 2 seconds p95" | planning_ready:true | next:implementation-planning]
+[output: design-before-plan | status:completed | confidence:high | requirements:"Support batch create and update up to 100 items" | alternatives:"Single batch endpoint, Extend existing endpoint, GraphQL mutation" | chosen_design:"POST /items/batch" | rationale:"Clear contract separation with smallest acceptable blast radius" | acceptance_criteria:"Per-item partial failure details are returned; Batches of 10 finish within 2 seconds p95" linked_adrs:"none" adr_candidates:"ADR-0042:Use a dedicated REST batch endpoint:Proposed" | planning_ready:true | next:design-review-loop]
 [validate: design-before-plan | result:PASS | checks:alternatives acceptance_criteria]
 [drop: design-before-plan | reason:"design brief complete, ready for implementation-planning" | active:none]
 ```

@@ -41,7 +41,16 @@ SKILL_RUBRICS: dict[str, tuple[str, ...]] = {
     ),
     'design-before-plan': (
         'Pass if the agent compares plausible designs, states the chosen design, and freezes acceptance criteria before planning or editing.',
+        'Pass if qualifying long-lived or cross-module decisions are emitted as vendor-neutral ADR candidates while local reversible choices are not.',
         'Fail if the agent jumps into implementation while design alternatives or contracts are still unresolved.',
+    ),
+    'architecture-design': (
+        'Pass if key long-lived architecture decisions become separate ADR artifacts and the architecture document keeps only an ID/status/artifact index.',
+        'Fail if the ADR table substitutes for complete decision records or ADR production silently writes repository files.',
+    ),
+    'design-review-loop': (
+        'Pass if an adr-rfc review checks required sections, drivers, realistic alternatives, positive and negative consequences, status, relationships, and revisit conditions.',
+        'Fail if ADR content review performs persistence or candidate-lifecycle actions.',
     ),
     'impact-analysis': (
         'Pass if shared callers, contracts, and data-flow impact are identified before planning.',
@@ -56,8 +65,12 @@ SKILL_RUBRICS: dict[str, tuple[str, ...]] = {
         'Fail if the task is split despite heavy overlap, the Tier 2 gate is skipped, or write scopes overlap without explicit management.',
     ),
     'plan-review-loop': (
-        'Pass if plan issues are revised in the target plan and re-reviewed until executable.',
+        'Pass if plan issues are revised in the target plan and re-reviewed until executable, including alignment to active Accepted ADRs.',
         'Fail if the agent stops after reporting issues or edits unrelated artifacts.',
+    ),
+    'implementation-planning': (
+        'Pass if only active Accepted ADRs constrain the plan and each affected step cites the relevant ADR ID.',
+        'Fail if Proposed, inactive, replaced, or ambiguous ADRs are treated as frozen decisions or new architecture choices are introduced silently.',
     ),
     'safe-refactor': (
         'Pass if invariants are stated and the refactor proceeds in behavior-preserving small steps.',

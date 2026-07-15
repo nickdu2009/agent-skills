@@ -51,6 +51,8 @@ Boundary rule: this skill plans *how to execute an already-understood change*. I
 - Every implementation step must name its landing surface and its verification.
 - Every acceptance criterion must be covered by at least one planned step.
 - Every non-trivial risk must have a mitigation or rollback note.
+- Treat only active ADRs with `Status: Accepted` as frozen decisions; Proposed, Deprecated, Superseded, historical, retired, or replaced ADRs are not implementation constraints.
+- Never introduce a new architecture decision silently inside an implementation step.
 
 # Execution Pattern
 
@@ -59,8 +61,10 @@ Boundary rule: this skill plans *how to execute an already-understood change*. I
    - If the task needs a real plan artifact, continue.
 
 1. **Validate planning inputs**:
-   - Collect available design brief, requirement doc, scoped boundary, and impact summary.
+   - Collect available design brief, requirement doc, scoped boundary, impact summary, and ADR artifacts/paths.
    - Decide whether the design direction is already settled enough to plan.
+   - Resolve the active Accepted ADR set using [upstream-artifacts.md](upstream-artifacts.md).
+   - Send Proposed, conflicting, or activity-ambiguous decisions back to design/review.
    - If not settled, hand off to `design-before-plan` or `requirement-interview`.
 
 2. **Run the planning-clarification gate when needed**:
@@ -78,6 +82,7 @@ Boundary rule: this skill plans *how to execute an already-understood change*. I
 
 5. **Draft the executable steps**:
    - For each step, record: landing files/modules, dependency, action summary, verification check, and covered acceptance criteria.
+   - Cite every constraining ADR ID in `Sources and Alignment` and in each affected step.
    - Keep steps implementation-facing, not design-theory-facing.
 
 6. **Add risk and rollback coverage**:
@@ -100,6 +105,7 @@ Provide one or more of:
 - a requirement document / PRD / requirement-clarification result whose design direction is already clear
 - a scoped boundary from `scoped-tasking`
 - an impact summary from `impact-analysis`
+- active Accepted ADR artifacts or paths
 
 Optional but helpful:
 
@@ -109,6 +115,7 @@ Optional but helpful:
 - multi-PR or increment expectations
 
 If the user provides only a file path to a requirement or design document, read that file before planning.
+For upstream artifact and ADR activity rules, read [upstream-artifacts.md](upstream-artifacts.md).
 
 # Output Contract
 
@@ -120,60 +127,17 @@ Return:
 - `risks`: rollback, mitigation, and residual implementation risks
 - `traceability`: mapping from acceptance criteria to implementation steps
 
-When writing a plan file, prefer this structure (Chinese template kept inline because the artifact is user-facing):
+The plan file includes:
 
-```markdown
-# 实施计划：<主题>
+- sources and alignment, including constraining ADR IDs
+- acceptance criteria and traceability
+- the `[parallelism: ...]` block
+- ordered steps with landing, dependency, action, verify, ACs, and ADR IDs
+- risks, mitigation, and rollback
+- coverage check and residual assumptions
+- next handoff
 
-## 来源与对齐
-- 需求来源：<需求文档 / 澄清结果 / 路径>
-- 设计来源：<设计简报 / 明确设计方向>
-- 范围边界：本次做 … / 本次不做 …
-- 设计取向假设（如适用）：
-  - 【设计取向·假设】…（依据：…；若被推翻则回退 design-before-plan）
-
-## 验收标准追溯
-- AC1：… ← 来源：…
-- AC2：…
-
-## 并行规划
-[parallelism:
-- independent lanes: <parallel work, or none>
-- sequential blockers: <must happen first>
-- shared write surfaces: <single-owner files/modules>
-- delegation: <delegate count, or 0 with reason>
-]
-
-## 实施步骤
-### 步骤 1：<动作描述>
-- 落地文件/模块：`path/to/file`
-- 依赖：无 / 步骤 N
-- 操作要点：…
-- 验收检查（verify）：…
-- 覆盖验收标准：AC1、AC2
-
-### 步骤 2：<动作描述>
-- 落地文件/模块：`path/to/file`
-- 依赖：步骤 1
-- 操作要点：…
-- 验收检查（verify）：…
-- 覆盖验收标准：AC3
-
-## 风险与回滚
-| 风险 | 关联步骤 | 影响 | 缓解 / 回滚策略 |
-|---|---|---|---|
-| … | 步骤 N | … | … |
-
-## 验收标准覆盖检查
-- AC1 → 步骤 1
-- AC2 → 步骤 1
-
-## 待确认 / 残留假设
-- 【假设】…（验证方法：…）
-
-## 下一步
-- 建议运行 plan-review-loop 审查本计划，再进入实现。
-```
+Use [plan-template.md](plan-template.md) for the complete user-facing shape.
 
 # Guardrails
 
@@ -214,19 +178,7 @@ Deactivate this skill once the implementation plan is written and handed off to 
 
 # Example
 
-Task: "Implement the notification preferences API according to the existing design doc. It will touch the model, service, HTTP handler, and tests, and we want to split it into two PRs."
-
-Apply implementation-planning:
-
-- Validate inputs: design doc already exists; no major design choice remains.
-- Ask 2 planning questions: whether rollout should be 1 PR or 2, and whether backward compatibility is required for old clients.
-- Build acceptance map from the design doc.
-- Draft plan file:
-  - PR 1: persistence model + service layer + unit tests
-  - PR 2: HTTP handler + integration tests + docs
-  - shared write surface: `notification/preferences/*`
-  - rollback: PR 1 additive schema only; PR 2 can be reverted without data loss
-- Recommend `plan-review-loop` before implementation starts.
+For a two-increment notification API, cite the Accepted ADR governing storage in Sources and Alignment and in the persistence step; keep a Proposed delivery ADR out of the frozen constraint set. Sequence model/service before handler/docs and record the additive-schema rollback boundary.
 
 ## Contract
 
@@ -241,6 +193,7 @@ Apply implementation-planning:
 - `status: completed` includes `sequence`, `file_landing`, `verify`, `risks`, and `traceability`.
 - A durable plan artifact exists or is proposed with concrete implementation ordering.
 - The plan is specific enough for `plan-review-loop` or implementation to consume without reopening basic sequencing questions.
+- Every constraining ADR is active and Accepted, and its ID is traceable to affected steps.
 
 ### Invariants
 
@@ -284,7 +237,7 @@ Apply implementation-planning:
 ## Output Example
 
 ```
-[output: implementation-planning | completed medium | sequence:"2 PRs, schema/service before handler/docs" file_landing:"models/preferences.py, services/preferences.py, api/preferences.ts, tests/preferences_*" verify:"unit tests for service, integration test for handler, acceptance map coverage check" risks:"shared client compatibility, additive schema rollback, staged rollout order" traceability:"AC1->PR1, AC2->PR2, AC3->PR2" | next:plan-review-loop]
+[output: implementation-planning | completed medium | sequence:"2 PRs, schema/service before handler/docs" file_landing:"models/preferences.py, services/preferences.py, api/preferences.ts, tests/preferences_*" verify:"unit tests for service, integration test for handler, acceptance map coverage check" risks:"shared client compatibility, additive schema rollback, staged rollout order" traceability:"AC1->PR1, AC2->PR2, AC3->PR2" adr_alignment:"ADR-0001->PR1; Proposed ADR-0002 excluded" | next:plan-review-loop]
 ```
 
 ## Deactivation Trigger

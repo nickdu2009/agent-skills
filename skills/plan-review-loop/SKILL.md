@@ -45,6 +45,7 @@ If the mode is ambiguous, default to `review-and-revise`, and state the chosen m
    - **per-step validation** — each step has a verifiable acceptance check
    - **risk mitigation** — critical risks have mitigation
    - **repository reality** — referenced files / interfaces / conventions actually exist
+   - **ADR alignment** — every cited decision is active and Accepted, affected steps cite it, and the plan does not silently contradict or invent architecture decisions; use [upstream-adr-alignment.md](upstream-adr-alignment.md)
 4. For every finding, first decide whether it is:
    - an **objective defect** — directly contradicted by the plan, repository reality, or accepted upstream constraints
    - an **insufficient-basis finding** — cannot be safely resolved without a missing sequencing decision, rollout preference, ownership choice, or acceptance expectation
@@ -108,6 +109,7 @@ The plan is not executed, so validation is documentation-level rather than code-
 - For each step, ask "what would actually block execution here"
 - Confirm every referenced file path, interface, and convention exists
 - For each acceptance criterion, confirm it is observable and falsifiable
+- Resolve the active Accepted ADR set and verify plan sources, steps, and rollback notes against it
 
 Refer to `targeted-validation` for choosing the minimum useful check.
 
@@ -135,53 +137,14 @@ owner without editing the plan.
 
 ## Output format
 
-Use this exact Markdown structure. Keep the field names unchanged and keep each entry short enough to read without horizontal scrolling.
-
-Always emit every section shown below, in the same order, even when it is empty.
-When a section has no entries, write `- None` instead of omitting the section.
+Always emit these sections in order: `Review Result`, `Issues`, `Changes Made`, `Validation`, `Residual Assumptions`, and `Clarification Questions`. Use `- None` for an empty section. Keep these fields unchanged:
 
 ```markdown
-## Review Result
 review_result: clean | clean_with_assumptions | needs_clarification | issues_found
 mode: review-only | review-and-revise
-
-## Issues
-blocking:
-- severity: blocking
-  area: ""
-  problem: ""
-  impact: ""
-  required_fix: ""
-
-warning:
-- severity: warning
-  area: ""
-  problem: ""
-  impact: ""
-  required_fix: ""
-
-low-risk:
-- severity: low-risk
-  area: ""
-  problem: ""
-  impact: ""
-  required_fix: ""
-
-## Changes Made
-- file: ""
-  summary: ""
-
-## Validation
-- ""
-
-## Residual Assumptions
-- assumption: ""
-  validation_method: ""
-
-## Clarification Questions
-- question: ""
-  why_blocked: ""
 ```
+
+Each issue records `severity`, `area`, `problem`, `impact`, and `required_fix`. Each residual assumption records `assumption` and `validation_method`; each question records `question` and `why_blocked`.
 
 Then finish with the compact protocol line:
 
@@ -208,6 +171,7 @@ The closing compact protocol line is mandatory. Preserve `mode` exactly as shown
 - The review stays plan-focused, not code-focused.
 - Every issue is either resolved, converted into a tracked residual assumption, or surfaced as an explicit clarification blocker before a clean exit.
 - File-level landing, validation, and risk coverage remain explicit.
+- Plan sources and affected steps remain aligned with active Accepted ADRs.
 
 ### Downstream Signals
 

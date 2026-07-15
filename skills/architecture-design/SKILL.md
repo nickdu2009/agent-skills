@@ -66,23 +66,7 @@ When in doubt, start with the lighter version and expand if the design reveals m
 
 # Architecture Information Dimensions
 
-Check each dimension as known / unknown / assumed before designing. These are the standard dimensions for judging architecture readiness and the source pool for clarification questions.
-
-1. **Component boundary preferences（组件边界偏好）**: monolith vs. modular monolith vs. microservices? existing decomposition to extend? preferred granularity?
-2. **Technology constraints（技术约束）**: mandated languages, frameworks, platforms, or cloud providers? existing tech stack to align with? vendor lock-in tolerance?
-3. **Deployment environment（部署环境）**: on-premise, cloud, hybrid? container/Kubernetes, serverless, VM? CI/CD pipeline constraints?
-4. **Non-functional priorities（非功能优先级）**: which matters most — latency, throughput, availability, consistency, security, cost? acceptable trade-offs?
-5. **Data characteristics（数据特征）**: read-heavy or write-heavy? data volume and growth rate? real-time or batch? structured or unstructured?
-6. **Integration landscape（集成环境）**: which external systems must this integrate with? sync or async? existing API contracts or protocols?
-7. **Team structure（团队结构）**: how many teams will own this? team boundaries? Conway's Law alignment considerations?
-8. **Scale expectations（规模预期）**: expected user/request/data volume at launch and in 1-2 years? traffic patterns (steady, spiky, seasonal)?
-9. **Security & compliance（安全合规）**: authentication/authorization model? data sensitivity (PII, financial, health)? regulatory constraints?
-10. **Migration & coexistence（迁移共存）**: greenfield or brownfield? must coexist with legacy systems? migration strategy constraints?
-
-Judgment rules:
-
-- Not all ten must be fully known, but if **component boundary preferences, technology constraints, non-functional priorities, and data characteristics** are all unknown, the architecture generally cannot proceed — ask first.
-- Dimensions that are unknown but reasonably assumable should be tagged as assumptions and recorded in the final document's "待确认假设" section.
+Use the readiness checklist in [architecture-template.md](architecture-template.md). At minimum, assess component boundaries, technology constraints, non-functional priorities, and data characteristics. If all four are unknown, ask before designing. Mark every reasonable assumption explicitly.
 
 # Execution Pattern
 
@@ -132,7 +116,10 @@ Judgment rules:
    - Deployment topology, environment requirements, infrastructure dependencies.
 
 8. **Record ADRs**:
-   - Capture key architecture decisions with: context, alternatives, rationale, principle basis, status.
+   - Produce a separate, portable ADR artifact for each key long-lived or costly-to-reverse decision.
+   - Use [adr-format.md](adr-format.md); creating an ADR artifact does not imply writing a file.
+   - Keep the architecture document's ADR table as an index only: `id`, title, document status, and artifact/path reference.
+   - Preserve the compact protocol field name `adrs`; its value is `id + artifact/path + status`.
 
 9. **Write or output the architecture design document** (see Output Format).
 
@@ -158,89 +145,18 @@ Optional but helpful:
 
 # Output Format
 
-The output format is the skill's deliverable. Templates stay in Chinese following project convention.
+Return a reviewable architecture document with:
 
-## Architecture design document (架构设计文档)
+- background, goals, constraints, and scale
+- approach comparison when direction was open
+- component decomposition and dependency direction
+- data architecture and ownership
+- interface contracts
+- relevant non-functional and deployment design
+- ADR index (`id`, title, status, artifact/path)
+- risks, assumptions, and architecture-level acceptance criteria
 
-```markdown
-# 架构设计：<主题>
-
-## 背景与目标
-- 业务背景：…
-- 设计目标：…
-- 架构约束：…
-- 设计规模：系统级 / 子系统级 / 模块级
-
-## 方案比较（如适用）
-| 方案 | 优势 | 劣势 | 复杂度 | 原则对齐 |
-|---|---|---|---|---|
-| 方案 A | … | … | … | … |
-| 方案 B | … | … | … | … |
-
-选定方案：… 理由：…
-
-## 架构总览
-（Mermaid 组件图 + 文字说明）
-
-## 组件分解
-### 组件 A：<名称>
-- 职责：…
-- 对外接口：…
-- 依赖：…
-- 技术选型：…（理由：…）
-- 设计原则依据：…
-
-### 组件 B：<名称>
-- …
-
-## 数据架构
-- 核心数据模型：…
-- 数据归属：…（哪个组件拥有哪些数据）
-- 数据流向：（Mermaid 数据流图）
-- 存储选型：…（理由：…）
-- 一致性策略：…
-
-## 接口契约
-### <接口名称>
-- 调用方 → 提供方：…
-- 输入/输出：…
-- 错误处理：…
-- 版本策略：…
-
-## 非功能架构
-### 可扩展性
-- …
-### 可用性与容错
-- …
-### 安全架构
-- …
-### 可观测性
-- …
-
-## 部署架构（系统级时提供）
-- 部署拓扑：（Mermaid 部署图）
-- 环境要求：…
-
-## 架构决策记录（ADR）
-| 编号 | 决策 | 备选方案 | 原则依据 | 理由 | 状态 |
-|---|---|---|---|---|---|
-| ADR-1 | … | … | … | … | 已接受 |
-
-## 风险与约束
-- 已知风险：…
-- 技术债务：…
-
-## 待确认假设
-- 【假设】…（依据：…；影响范围：…；若被推翻则：…）
-
-## 验收标准（架构层面）
-- …
-
-## 下一步
-- 建议：design-review-loop / implementation-planning
-```
-
-For module-level scale, omit "部署架构" and simplify "非功能架构" to only relevant dimensions.
+Use [architecture-template.md](architecture-template.md) for the full document shape. For module-level work, omit deployment and irrelevant non-functional sections. ADR artifacts follow [adr-format.md](adr-format.md).
 
 # Guardrails
 
@@ -253,94 +169,15 @@ For module-level scale, omit "部署架构" and simplify "非功能架构" to on
 - If requirement gaps block architecture decisions, stop and hand off to `requirement-interview` rather than guessing.
 - Ask at most 5 questions per clarification round; do not dump all architecture concerns at once.
 - Do not treat an assumption as a confirmed fact — tag it and record it in the "待确认假设" section.
-
-# Common Anti-Patterns
-
-- **Technology-first design.** The agent picks a tech stack first and fits components around it, instead of decomposing responsibilities and then selecting appropriate technology per component.
-- **Ignoring Conway's Law.** The architecture splits services across boundaries that don't align with team ownership, creating coordination overhead that outweighs the architectural benefit.
-- **Non-functional afterthought.** Scalability, security, and observability are added as a last section with vague hand-waving, instead of being architectural first-class concerns that influence component design.
-- **Diagram-only architecture.** A pretty Mermaid diagram is produced but component responsibilities, data ownership, and interface contracts are left vague.
-- **Principle theater.** Every ADR cites five principles but the actual design doesn't reflect them; principles are used as decoration rather than decision criteria.
-- **Premature distribution.** A monolithic design would suffice, but the agent splits into microservices because "that's modern architecture".
-
-Keep anti-pattern guidance self-contained; installed skills must not depend on maintainer-only documents.
+- Do not write ADR files unless the user explicitly requests document persistence and the target repository's existing convention is known.
 
 # Composition
 
-Position: can be entered directly (for explicit architecture tasks) or after `design-before-plan` (when design brief reveals system-level complexity).
-
-Relationship with `design-before-plan`:
-- Parallel, not strictly sequential. Either can be used independently.
-- `design-before-plan` focuses on approach selection and interface contracts for bounded changes.
-- `architecture-design` produces a full architecture document for system/subsystem/module-level work.
-- When both are used: `design-before-plan` provides direction, `architecture-design` expands it into full architecture.
-- `architecture-design` includes its own approach comparison capability for cases where it is used independently.
-
-Standard forward handoffs:
-
-- → `design-review-loop`: when the architecture document should be reviewed
-- → `implementation-planning`: when the architecture is accepted and execution planning is needed
-
-Standard upstream options:
-
-- `requirement-interview`: clarifies what to build
-- `scoped-tasking`: narrows the boundary
-- `design-before-plan`: settles design direction (optional, not required)
-- `impact-analysis`: clarifies blast radius when shared callers/contracts are involved
-
-Deactivate this skill once the architecture document is produced and handed off downstream.
+Enter directly for explicit architecture work or after `design-before-plan` reveals system-level complexity. Upstream options are `requirement-interview`, `scoped-tasking`, `design-before-plan`, and `impact-analysis`. Hand off to `design-review-loop` when review is needed or to `implementation-planning` when accepted, then deactivate.
 
 # Example
 
-Task: "为内部工单系统设计一个通知子系统，需要支持站内信、邮件、企微，后续可能加短信。"
-
-Apply architecture-design (subsystem-level):
-
-**Step 0 — Scale judgment:** subsystem-level — 3-4 components, technology selection needed, clear non-functional needs.
-
-**Step 1 — Architecture dimension scan & clarification round:**
-
-Dimension scan results:
-- Component boundary preferences: unknown (monolith extension or independent service?)
-- Technology constraints: assumed (工单系统已有 Java + PostgreSQL tech stack)
-- Deployment environment: unknown
-- Non-functional priorities: partially known (need reliability for notifications, but latency/throughput unclear)
-- Data characteristics: unknown (notification volume? retention?)
-- Integration landscape: known (站内信/邮件/企微 three channels)
-- Team structure: unknown
-- Scale expectations: unknown
-- Security & compliance: assumed (internal system, no PII in notifications)
-- Migration & coexistence: known (greenfield subsystem, must integrate with existing工单service)
-
-This round's questions (3, ordered by impact):
-1. 通知子系统是作为工单服务的内部模块，还是独立部署的服务？
-2. 预估日均通知量大概多少？（百级/千级/万级）
-3. 通知失败时的期望行为？（静默丢弃 / 重试 / 人工处理）
-
-User answers: 独立服务；日均约千级；失败重试，重试多次仍失败则记录日志人工跟进。
-
-Updated dimensions: component boundary → known (独立服务), data characteristics → known (千级/日), non-functional → known (reliability with retry). Remaining unknowns (deployment, team, scale expectations) can be reasonably assumed for this scale. Proceed.
-
-**Step 2 — Approach comparison:**
-1. 直接集成：每个通知渠道在工单服务中内联实现。简单，但工单服务膨胀。
-2. 独立通知服务 + 消息队列：工单服务发事件，通知服务消费并分发。解耦，但增加基础设施。
-
-选定方案 2，理由：用户要求独立服务；渠道会增加（短信），内联方式每加一个渠道都改工单服务，违反单一职责。
-
-**Step 3 — Component decomposition:**
-- 通知服务（核心调度）：接收通知请求，按用户偏好路由到对应渠道适配器
-- 渠道适配器（站内信/邮件/企微）：各自封装渠道 SDK 调用
-- 通知偏好存储：记录用户的渠道偏好和免打扰规则
-
-**Key ADR:**
-- ADR-1: 用消息队列解耦工单服务与通知服务（原则：低耦合、Design for Failure）
-- ADR-2: 渠道适配器用策略模式，新渠道只需加适配器（原则：开闭原则、Design for Evolvability）
-
-**待确认假设:**
-- 【假设】工单系统已有 Java + PostgreSQL 技术栈（依据：内部系统常见选型；若被推翻则重新评估存储选型）
-- 【假设】通知内容不含 PII（依据：工单系统为内部系统；若被推翻则需加加密和审计日志）
-
-Recommend `design-review-loop` before proceeding to `implementation-planning`.
+See [examples.md](examples.md) for a subsystem example with separate ADR artifacts and an ADR index.
 
 ## Contract
 
@@ -355,6 +192,7 @@ Recommend `design-review-loop` before proceeding to `implementation-planning`.
 - `status: completed` includes `components`, `data_architecture`, `interface_contracts`, `adrs`, and `acceptance_criteria`.
 - The document is specific enough for `implementation-planning` to produce an execution plan without reopening component boundaries or technology choices.
 - Key architecture decisions are recorded with alternatives and rationale.
+- `adrs` keeps its existing field name and points to independent ADR artifacts using `id + artifact/path + status`.
 
 ### Invariants
 
@@ -398,7 +236,7 @@ Recommend `design-review-loop` before proceeding to `implementation-planning`.
 ## Output Example
 
 ```
-[output: architecture-design | completed medium | scale:"subsystem" components:"notification-service, channel-adapters(3), preference-store" tech_choices:"RabbitMQ(async decoupling), PostgreSQL(preference storage)" adrs:"ADR-1:message-queue-decoupling, ADR-2:strategy-pattern-for-channels" | next:design-review-loop]
+[output: architecture-design | completed medium | scale:"subsystem" components:"notification-service, channel-adapters(3), preference-store" tech_choices:"RabbitMQ(async decoupling), PostgreSQL(preference storage)" adrs:"ADR-0001:inline-artifact:Proposed, ADR-0002:inline-artifact:Proposed" | next:design-review-loop]
 ```
 
 ## Deactivation Trigger

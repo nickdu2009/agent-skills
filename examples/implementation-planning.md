@@ -2,7 +2,7 @@
 
 ## Scenario
 
-The design for a notification preferences feature is already approved. The remaining work touches the data model, service layer, API handler, and tests, and the team wants a durable implementation plan before coding starts.
+The design for a notification preferences feature is already approved. `ADR-0042` is Accepted and active and selects an additive preferences model. The remaining work touches the data model, service layer, API handler, and tests, and the team wants a durable implementation plan before coding starts.
 
 ## Recommended Skill Composition
 
@@ -35,12 +35,13 @@ Small local tasks would stay on `AGENTS.md` Behavioral Guidelines §4 short plan
    - one PR or two?
    - additive schema only, or migration with backfill?
    - unit-first or integration-first validation?
-4. `implementation-planning` writes `.plans/notification-preferences-plan.md` with:
+4. It resolves the ADR set: consume active Accepted `ADR-0042`; exclude Proposed, inactive, or superseded decisions.
+5. `implementation-planning` writes `.plans/notification-preferences-plan.md` with:
    - acceptance map (`AC1`, `AC2`, `AC3`)
    - `[parallelism: ...]`
    - ordered steps with file landing and `verify`
    - risk/rollback table
-5. `plan-review-loop` reviews the plan artifact before coding starts.
+6. `plan-review-loop` reviews the plan artifact and ADR alignment before coding starts.
 
 ## What Good Looks Like
 
@@ -48,6 +49,7 @@ Small local tasks would stay on `AGENTS.md` Behavioral Guidelines §4 short plan
 - Each step has a concrete `verify` check.
 - Every acceptance criterion maps to one or more steps.
 - Rollback is explicit for schema and API changes.
+- `ADR-0042` appears in Sources and Alignment and every step it constrains.
 - The plan is durable enough that another agent could implement it without reopening sequencing questions.
 
 ## What Bad Looks Like
@@ -56,6 +58,7 @@ Small local tasks would stay on `AGENTS.md` Behavioral Guidelines §4 short plan
 - Steps say "update backend" without naming files.
 - Validation says only "run tests" with no narrower check.
 - Requirements or design questions are still open, but the plan pretends implementation can start anyway.
+- A Proposed or superseded ADR is treated as a frozen implementation constraint.
 
 ## Example Plan Skeleton
 
@@ -65,6 +68,7 @@ Small local tasks would stay on `AGENTS.md` Behavioral Guidelines §4 short plan
 ## 来源与对齐
 - 需求来源：docs/requirements/notification-preferences.md
 - 设计来源：docs/design/notification-preferences.md
+- ADR 约束：ADR-0042 — Additive notification preferences model — Accepted
 
 ## 验收标准追溯
 - AC1：用户可读取当前通知偏好
@@ -84,6 +88,7 @@ Small local tasks would stay on `AGENTS.md` Behavioral Guidelines §4 short plan
 - 落地文件/模块：`models/notification_preferences.*`
 - 依赖：无
 - 操作要点：新增渠道字段，保持默认值兼容
+- 受约束 ADR：ADR-0042
 - 验收检查（verify）：模型单测通过
 - 覆盖验收标准：AC1、AC2
 
@@ -91,6 +96,7 @@ Small local tasks would stay on `AGENTS.md` Behavioral Guidelines §4 short plan
 - 落地文件/模块：`services/notification_preferences.*`
 - 依赖：步骤 1
 - 操作要点：封装读取/更新与校验
+- 受约束 ADR：ADR-0042
 - 验收检查（verify）：服务层单测通过
 - 覆盖验收标准：AC1、AC2、AC3
 

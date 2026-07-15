@@ -10,10 +10,6 @@ metadata:
 
 Use this skill to run a strict review loop for design documents.
 
-## Goal
-
-Review the target design document against the upstream requirements and the actual repository context, then either report findings or revise the document until the result is clean.
-
 This is not a one-pass review when running in `review-and-revise` mode. Continue looping until there are no unresolved `blocking`, `warning`, or `low-risk` issues, or until the review is blocked by bounded clarification questions.
 
 ## Review mode
@@ -56,9 +52,9 @@ A document may carry a secondary type; apply both check sets if so.
    - **Complexity proportionality** — no over-engineering; YAGNI check
    - **Repository reality** — referenced paths, modules, and contracts actually exist
 
-   **Conditional checks by artifact type:**
+   **Conditional checks by artifact type** (full checklist: [artifact-checks.md](artifact-checks.md)):
    - `architecture` / `technical-proposal`: NFR coverage (performance / security / compatibility / deployment), operability
-   - `adr-rfc`: at least 2 alternatives considered, tradeoffs explained, primary choice justified
+   - `adr-rfc`: apply [adr-review.md](adr-review.md), including required sections, decision drivers, realistic alternatives, positive/negative consequences, status, replacement links, and revisit conditions
    - `interface`: backward compatibility, versioning, error semantics
    - `data-model`: forward + backward migration, data-loss risk, ownership
 
@@ -116,6 +112,7 @@ Rules:
 
 - Only edit the design document itself.
 - Do not write implementation code or implementation plans.
+- Review ADR content for completeness, consistency, and executability; do not perform persistence or candidate-lifecycle operations.
 - Do not bundle unrelated edits into the same revision pass.
 
 Refer to AGENTS.md Behavioral Guidelines §3 (Surgical Changes) for keeping the edit minimal.
@@ -155,54 +152,15 @@ next owner without editing the document.
 
 ## Output format
 
-Use this exact Markdown structure. Keep the field names unchanged and keep each entry short enough to read without horizontal scrolling.
-
-Always emit every section shown below, in the same order, even when it is empty.
-When a section has no entries, write `- None` instead of omitting the section.
+Always emit these sections in order: `Review Result`, `Issues`, `Changes Made`, `Validation`, `Residual Assumptions`, and `Clarification Questions`. Use `- None` for an empty section. Keep these fields unchanged:
 
 ```markdown
-## Review Result
 review_result: clean | clean_with_assumptions | needs_clarification | issues_found
 mode: review-only | review-and-revise
-type: <artifact type>
-
-## Issues
-blocking:
-- severity: blocking
-  area: ""
-  problem: ""
-  impact: ""
-  required_fix: ""
-
-warning:
-- severity: warning
-  area: ""
-  problem: ""
-  impact: ""
-  required_fix: ""
-
-low-risk:
-- severity: low-risk
-  area: ""
-  problem: ""
-  impact: ""
-  required_fix: ""
-
-## Changes Made
-- file: ""
-  summary: ""
-
-## Validation
-- ""
-
-## Residual Assumptions
-- assumption: ""
-  validation_method: ""
-
-## Clarification Questions
-- question: ""
-  why_blocked: ""
+type: architecture | adr-rfc | interface | data-model | technical-proposal
 ```
+
+Each issue records `severity`, `area`, `problem`, `impact`, and `required_fix`. Each residual assumption records `assumption` and `validation_method`; each question records `question` and `why_blocked`. See [artifact-checks.md](artifact-checks.md) for the full rendering shape.
 
 Then finish with the compact protocol line:
 
@@ -267,9 +225,7 @@ The closing compact protocol line is mandatory. Preserve `mode` and `type` exact
 
 ## Output Example
 
-```
-[output: design-review-loop | completed high | mode:"review-and-revise" type:"interface" review_result:"clean_with_assumptions" issues:"0 blocking, 0 warning, 0 low-risk" changes:"clarified queue ownership and tightened API versioning note" validation:"cross-checked module paths and interface names against repo" | next:implementation-planning]
-```
+`[output: design-review-loop | completed high | mode:"review-and-revise" type:"adr-rfc" review_result:"clean" issues:"0 blocking, 0 warning, 0 low-risk" changes:"clarified consequences" validation:"checked requirements and repository contracts" | next:implementation-planning]`
 
 ## Deactivation Trigger
 

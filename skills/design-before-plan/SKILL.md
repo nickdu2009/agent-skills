@@ -34,6 +34,8 @@ Force the agent to complete requirements clarification and design decision-makin
 - Derive acceptance criteria from requirements, not from implementation details.
 - Identify architectural constraints that limit design choices.
 - Make design trade-offs explicit: what is gained and what is sacrificed.
+- Produce an ADR candidate when multiple reasonable approaches exist and the chosen decision crosses modules or PRs, is long-lived, or is costly to reverse.
+- Keep ADR artifacts vendor-neutral; this skill never depends on a persistence tool or repository-specific knowledge path.
 
 # Execution Pattern
 
@@ -80,6 +82,9 @@ Force the agent to complete requirements clarification and design decision-makin
    - Document compatibility requirements (API versions, dependency constraints).
 
 7. **Output the design brief** (structured contract for the subsequent `implementation-planning` step).
+   - Include `linked_adrs` for existing decisions that constrained the design.
+   - Include `adr_candidates` only for decisions that meet the ADR threshold above.
+   - Each ADR candidate follows [adr-format.md](adr-format.md) and remains a portable artifact unless the user explicitly asks to write it using the target repository's conventions.
 
 # Input Contract
 
@@ -100,70 +105,17 @@ Optional but helpful:
 
 Return a **design brief** containing:
 
-```
-requirements:
-  functional:
-    - "Support async processing of uploads > 100MB"
-  non_functional:
-    - "Maintain < 500ms p95 latency for small uploads"
-  implicit:
-    security: ["MIME type validation", "per-user quota"]
-    performance: ["stream processing (avoid OOM)", "concurrent limit (max 3/user)"]
-    observability: ["log upload events (size, duration)", "metrics (bytes_total, duration_seconds)"]
-    resilience: ["timeout after 5min", "retry S3 chunks (3x)"]
-  edge_cases:
-    - "Handle network interruption mid-upload (resume support)"
+- `requirements`
+- `design_alternatives`
+- `chosen_design`
+- `interface_contracts`
+- `acceptance_criteria`
+- `architectural_constraints`
+- optional `data_migration`
+- optional `linked_adrs`: existing ADR IDs/artifacts that constrain this design
+- optional `adr_candidates`: portable ADR artifacts for newly settled high-impact decisions
 
-design_alternatives:
-  - approach: "Streaming upload with chunking"
-    pros: ["constant memory usage", "resume support"]
-    cons: ["increased complexity", "S3 multipart upload required"]
-    blast_radius: 3 files
-  - approach: "In-memory buffering with retry"
-    pros: ["simple implementation", "reuses existing code"]
-    cons: ["memory pressure for large files", "no progress tracking"]
-    blast_radius: 1 file
-
-chosen_design:
-  approach: "Streaming upload with chunking"
-  rationale: "Requirement explicitly mentions >100MB files, in-memory buffering risks OOM"
-  deferred: ["compression during upload (performance optimization for future)"]
-
-interface_contracts:
-  - module: "upload_service"
-    contract: "uploadFile(stream: ReadableStream, metadata: FileMetadata): Promise<UploadResult>"
-    error_handling: "throws UploadError with retryable flag"
-    backward_compatibility: "existing buffer-based uploadFile() remains supported, marked deprecated"
-
-acceptance_criteria:
-  must_have:
-    - "100MB file uploads complete without OOM"
-    - "Upload resume works after network interruption"
-  nice_to_have:
-    - "Progress callback support"
-  validation_boundary:
-    - "Integration test with 200MB fixture"
-    - "Memory profiling during upload"
-
-architectural_constraints:
-  - "S3 SDK version must be >= 3.0 for multipart upload support"
-  - "Node.js streams API (no browser support in this phase)"
-
-data_migration:
-  # Only present if data model changes
-  schema_changes:
-    - "Add uploads.chunk_size INT DEFAULT 5242880"
-    - "Add uploads.resumable_token VARCHAR(64) NULLABLE"
-  forward_migration: "ALTER TABLE uploads ADD COLUMN chunk_size INT DEFAULT 5242880, ADD COLUMN resumable_token VARCHAR(64)"
-  backward_migration: "ALTER TABLE uploads DROP COLUMN chunk_size, DROP COLUMN resumable_token"
-  complexity:
-    data_volume: "~500K rows (inline migration acceptable)"
-    downtime_tolerance: "zero-downtime required (columns are nullable/have defaults)"
-  validation:
-    - "Check row count before/after (expect no change)"
-    - "Verify new columns exist: SELECT chunk_size, resumable_token FROM uploads LIMIT 1"
-  risks: "Low — additive change, no data transformation needed"
-```
+Use [design-brief-format.md](design-brief-format.md) for the complete design brief shape and [examples.md](examples.md) for a short worked example.
 
 # Guardrails
 
@@ -215,37 +167,7 @@ Drop after `implementation-planning` consumes the design brief.
 
 # Example
 
-Task: "Add retry logic for flaky payment API calls."
-
-After scoped-tasking establishes the boundary (payment client wrapper + tests), apply design-before-plan:
-
-**Requirements clarification:**
-- Functional: retry failed payment-status calls up to 3 times with exponential backoff.
-- Non-functional: total retry duration must not exceed 10 seconds.
-- Edge case: idempotency — do not double-charge on retry.
-
-**Design alternatives:**
-1. Generic retry decorator (wrap any async function).
-   - Pros: reusable across all API clients.
-   - Cons: 3-file change (decorator, payment client, user client).
-2. Inline retry in payment client only.
-   - Pros: 1-file change, no abstraction overhead.
-   - Cons: not reusable, duplicated if other clients need retry.
-
-**Chosen design:** Inline retry (rationale: only payment API is flaky, generic decorator is premature abstraction).
-
-**Interface contract:**
-- Payment client: no signature change, retry is internal.
-- Error handling: preserve original error after exhausting retries.
-
-**Acceptance criteria:**
-- Must-have: payment-status call retries 3 times on network error, completes within 10s.
-- Validation: unit test with mocked flaky API.
-
-**Constraints:**
-- Must preserve idempotency token in retry headers.
-
-Hand off the design brief to `implementation-planning`. Do not start editing.
+See [examples.md](examples.md) for a compact design brief and ADR-threshold example.
 
 ## Contract
 
@@ -259,6 +181,7 @@ Hand off the design brief to `implementation-planning`. Do not start editing.
 
 - `status: completed` includes `requirements`, `alternatives`, `chosen_design`, and `acceptance_criteria`.
 - Cross-module or public-contract work also records interface expectations and compatibility constraints.
+- Qualifying architecture decisions are returned as vendor-neutral `adr_candidates`; existing constraints are listed in `linked_adrs`.
 - The result is specific enough for `implementation-planning` to produce an implementation sequence without reopening design.
 
 ### Invariants
@@ -301,7 +224,7 @@ Hand off the design brief to `implementation-planning`. Do not start editing.
 ## Output Example
 
 ```
-[output: design-before-plan | completed medium | requirements:"Retry flaky payment-status calls up to 3 times." alternatives:"Inline retry in payment client, Reusable retry wrapper" chosen_design:"Inline retry in payment client" acceptance_criteria:"Retries complete within 10 seconds total, Idempotency headers are preserved on every retry" | next:implementation-planning]
+[output: design-before-plan | completed medium | requirements:"Retry flaky payment-status calls up to 3 times." alternatives:"Inline retry in payment client, Reusable retry wrapper" chosen_design:"Inline retry in payment client" acceptance_criteria:"Retries complete within 10 seconds total, Idempotency headers are preserved on every retry" linked_adrs:"none" adr_candidates:"none; local reversible choice" | next:implementation-planning]
 ```
 
 ## Deactivation Trigger
