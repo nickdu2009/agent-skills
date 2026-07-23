@@ -2,7 +2,7 @@
 name: implementation-planning
 description: "Guide implementation planning by turning a settled requirement/design into a concrete plan that is sequenced, file-grounded, verifiable, and reviewable. The skill writes or proposes a plan document, not production code. Use when a task is ready to implement but still needs explicit execution ordering, per-step validation, rollback thinking, or multi-file / multi-PR coordination. Accepts either a design brief or a requirement document whose design direction is already clear. Do NOT use for small single-file edits where AGENTS.md §4 short planning is enough, or when major design choices are still open (use design-before-plan first)."
 metadata:
-  version: "0.1.0"
+  version: "0.2.0"
   tags: "coding, agents, orchestration, planning"
 ---
 
@@ -19,6 +19,7 @@ Translate a settled requirement and/or design direction into an executable imple
 - Convert vague "we should do this next" thinking into ordered, verifiable steps.
 - Ground each step in concrete files, modules, or interfaces rather than abstract intent.
 - Preserve traceability from requirements / acceptance criteria to implementation steps.
+- Preserve explicit authorization, ownership, and source-of-truth boundaries before execution starts.
 - Make risks, rollback points, and sequencing explicit before code changes begin.
 - Produce a plan artifact that can be handed to `plan-review-loop` or implementation directly.
 
@@ -53,6 +54,10 @@ Boundary rule: this skill plans *how to execute an already-understood change*. I
 - Every non-trivial risk must have a mitigation or rollback note.
 - Treat only active ADRs with `Status: Accepted` as frozen decisions; Proposed, Deprecated, Superseded, historical, retired, or replaced ADRs are not implementation constraints.
 - Never introduce a new architecture decision silently inside an implementation step.
+- A plan being accepted means "this is a valid execution source"; it does not by itself authorize code edits, schema changes, dependency/tooling changes, external service access, deployment, commits, pushes, destructive cleanup, or production data access.
+- Name the business/source-of-truth owner. UI state, streams, generated artifacts, logs, caches, and mock data are not truth unless an accepted design explicitly says so.
+- Shared write surfaces such as public contracts, migrations, package/lock files, root config, app composition, and test configuration need a single named owner.
+- If a plan delegates work to coding agents, each task card must include these fields: goal, prerequisites, must-read, owns, must-not-touch, actions, expected outputs, verify, done conditions, stop/escalate conditions, and handoff.
 
 # Execution Pattern
 
@@ -67,33 +72,41 @@ Boundary rule: this skill plans *how to execute an already-understood change*. I
    - Send Proposed, conflicting, or activity-ambiguous decisions back to design/review.
    - If not settled, hand off to `design-before-plan` or `requirement-interview`.
 
-2. **Run the planning-clarification gate when needed**:
+2. **Lock execution authority and source boundaries**:
+   - Record the formal input documents and accepted decisions that govern the plan.
+   - State the selected compatibility strategy: clean-state, additive compatibility, dual-read/write, or migration bridge. If the strategy is not explicit, ask instead of assuming.
+   - Identify truth owners and non-truth surfaces, especially across UI / API / worker / database / generated artifact boundaries.
+   - List actions that require separate authorization before execution, such as dependency installs, schema migrations, external services, deploys, commits, pushes, deletes, or production-like validation.
+
+3. **Run the planning-clarification gate when needed**:
    - Ask only planning-layer questions first: increment boundaries, sequencing, validation preference, risk tolerance, rollback expectations, and plan file location.
    - Ask at most 3-5 questions per round.
    - If a major design or requirement gap is discovered, stop and hand back upstream instead of silently planning through it.
 
-3. **Build the acceptance map**:
+4. **Build the acceptance map**:
    - List the requirement / design acceptance criteria that must be covered.
    - Assign short identifiers (for example `AC1`, `AC2`) so steps can trace back to them.
 
-4. **Decide the implementation structure**:
+5. **Decide the implementation structure**:
    - Determine whether the work is one pass, phased, or split into 2-4 mergeable increments.
    - Fill the §4-style `[parallelism: ...]` block for independent lanes, blockers, shared write surfaces, and delegation stance.
+   - Add a `GATE-00` or equivalent pre-coding gate when contracts, schema, security, dependencies, external services, or runtime environment conditions must be closed before production code changes.
 
-5. **Draft the executable steps**:
+6. **Draft the executable steps**:
    - For each step, record: landing files/modules, dependency, action summary, verification check, and covered acceptance criteria.
    - Cite every constraining ADR ID in `Sources and Alignment` and in each affected step.
    - Keep steps implementation-facing, not design-theory-facing.
+   - For multi-agent execution, write task cards with explicit ownership and stop conditions rather than generic task bullets.
 
-6. **Add risk and rollback coverage**:
+7. **Add risk and rollback coverage**:
    - Identify critical failure points, sequencing hazards, compatibility risks, and rollback boundaries.
    - Add concrete mitigation and rollback notes to the plan artifact.
 
-7. **Write or update the plan artifact**:
+8. **Write or update the plan artifact**:
    - Prefer a dedicated Markdown plan file.
    - Default location: `.plans/<topic>-plan.md` unless the user specifies another path.
 
-8. **Recommend the next step**:
+9. **Recommend the next step**:
    - Suggest `plan-review-loop` when the plan is non-trivial or high impact.
    - If the user wants to proceed directly, hand off to implementation with risks made explicit.
 
@@ -126,13 +139,19 @@ Return:
 - `verify`: per-step and overall validation checks
 - `risks`: rollback, mitigation, and residual implementation risks
 - `traceability`: mapping from acceptance criteria to implementation steps
+- `authorization`: explicit non-authorized actions and required approval gates
+- `truth_ownership`: source-of-truth owner and non-truth surfaces
+- `task_cards`: optional task-card matrix for delegated or multi-agent execution
 
 The plan file includes:
 
 - sources and alignment, including constraining ADR IDs
+- authorization boundaries and source-of-truth ownership
 - acceptance criteria and traceability
 - the `[parallelism: ...]` block
+- pre-coding gate(s) for unresolved contracts, security, schema, dependencies, or external services
 - ordered steps with landing, dependency, action, verify, ACs, and ADR IDs
+- task cards when execution will be delegated
 - risks, mitigation, and rollback
 - coverage check and residual assumptions
 - next handoff
@@ -147,6 +166,8 @@ Use [plan-template.md](plan-template.md) for the complete user-facing shape.
 - Do not leave verification as "run tests" without saying which test/check matters.
 - Do not mark a plan complete while acceptance coverage or rollback notes are missing.
 - Do not turn the plan into a changelog or implementation transcript; keep it forward-looking.
+- Do not let an agent choose between conflicting formal sources; pause and send the conflict back to design/review.
+- Do not use parallelism to justify duplicate fixtures, temporary truth, compatibility aliases, or a second state machine.
 
 # Common Anti-Patterns
 
@@ -155,6 +176,9 @@ Use [plan-template.md](plan-template.md) for the complete user-facing shape.
 - **Abstract steps without landing.** The plan says "update the service" or "handle validation" without naming files, modules, or interfaces.
 - **No acceptance traceability.** The plan lists steps, but no one can tell which acceptance criterion each step satisfies or whether anything was missed.
 - **Risk-free fiction.** The change clearly touches shared surfaces or staged rollout concerns, but the plan contains no rollback or mitigation strategy.
+- **Authorization laundering.** The plan is accepted and the agent treats that as approval to install packages, migrate data, call external services, deploy, commit, push, or delete files.
+- **Truth drift.** The plan lets UI state, generated artifacts, streams, or mocks become business truth because the real owner was not named.
+- **Parallelism over ownership.** The plan splits work across agents while two cards still touch the same contract, migration, root config, package/lock file, or app composition surface.
 
 Keep anti-pattern guidance self-contained; installed skills must not depend on maintainer-only documents.
 
@@ -194,12 +218,14 @@ For a two-increment notification API, cite the Accepted ADR governing storage in
 - A durable plan artifact exists or is proposed with concrete implementation ordering.
 - The plan is specific enough for `plan-review-loop` or implementation to consume without reopening basic sequencing questions.
 - Every constraining ADR is active and Accepted, and its ID is traceable to affected steps.
+- Authorization boundaries, truth owners, shared write owners, and stop conditions are explicit when relevant.
 
 ### Invariants
 
 - Planning precedes coding.
 - Design decisions remain distinct from execution sequencing.
 - Every planned step stays tied to concrete landing surfaces and verification.
+- Plan acceptance is not execution authorization for risky, remote, destructive, or persistence-changing actions.
 
 ### Downstream Signals
 
@@ -216,6 +242,7 @@ For a two-increment notification API, cite the Accepted ADR governing storage in
 - The requirement doc exists, but the design direction is still ambiguous.
 - The blast radius is unclear because shared callers or interfaces were not analyzed yet.
 - The user asks for a plan but has not decided increment boundaries, rollout preference, or acceptance expectations.
+- The plan needs security, schema, dependency, external-service, deployment, or repository-write authorization that was not granted.
 
 ### Retry Policy
 
@@ -228,6 +255,7 @@ For a two-increment notification API, cite the Accepted ADR governing storage in
 - Hand off to `design-before-plan` if major design decisions are still open.
 - Hand off to `impact-analysis` if the blast radius is still speculative.
 - If the task is tiny and obvious, deactivate and use `AGENTS.md` §4 short planning instead.
+- If authorization or truth ownership is missing, record it as a pre-coding gate rather than drafting executable steps that assume it.
 
 ### Low Confidence Handling
 

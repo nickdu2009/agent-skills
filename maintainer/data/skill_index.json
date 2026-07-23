@@ -1,6 +1,6 @@
 {
   "schema_version": "0.1.0",
-  "generated_at": "2026-06-30T02:59:28.648335+00:00",
+  "generated_at": "2026-07-23T06:19:57.480266+00:00",
   "skills": [
     {
       "name": "architecture-design",
@@ -84,7 +84,7 @@
       "description": "Guide implementation planning by turning a settled requirement/design into a concrete plan that is sequenced, file-grounded, verifiable, and reviewable. The skill writes or proposes a plan document, not production code. Use when a task is ready to implement but still needs explicit execution ordering, per-step validation, rollback thinking, or multi-file / multi-PR coordination. Accepts either a design brief or a requirement document whose design direction is already clear. Do NOT use for small single-file edits where AGENTS.md §4 short planning is enough, or when major design choices are still open (use design-before-plan first).",
       "directory": "skills/implementation-planning",
       "family": "execution",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "tags": [
         "coding",
         "agents",
