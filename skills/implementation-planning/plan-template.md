@@ -30,7 +30,7 @@
 
 ## 开工 Gate
 ### GATE-00：<pre-coding gate name>
-- goal：<关闭合同 / schema / 安全 / 依赖 / 外部服务 / 环境等前置>
+- goal：<关闭合同 / schema / 安全 / 依赖 / 外部服务 / 环境 / 未确认行为假设等前置>
 - prerequisites：<必须先满足的授权/决策/输入>
 - owns：<gate ledger / go-no-go / owner decision>
 - must-not-touch：<生产代码 / migration / package / other>
@@ -40,6 +40,8 @@
 - done conditions：<哪些卡可开始，哪些 blocked>
 - stop/escalate conditions：<冲突/owner 未定/授权缺失>
 - handoff：<交给 writer/reviewer 的内容>
+- behavioral assumptions to close（如有）：
+  - 【行为假设】…（source：…；owner decision：…；done condition：…；未关闭不得改生产代码）
 
 ## 并行规划
 [parallelism:
@@ -91,10 +93,12 @@
 - AC2 → 步骤 1
 
 ## 待确认 / 残留假设
-- 【假设】…（验证方法：…）
+- 【机械假设】…（验证方法：…）— 可继续；不影响外部可观察行为
+- 【行为假设】…（source：…；owner decision：…；done condition：…）— 必须进入 GATE-00；未关闭不得改生产代码
 
 ## 下一步
 - 建议运行 plan-review-loop，再进入实现。
 ```
 
-Omit assumptions only when none remain. Do not omit source, verification, risk, or coverage sections.
+Omit assumptions only when none remain. Do not omit source, verification, risk, or coverage sections. Behavioral assumptions without `source` / `owner decision` / `done condition` are incomplete and block coding.
+

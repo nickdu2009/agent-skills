@@ -2,18 +2,18 @@
 
 Status: Draft  
 Date: 2026-04-11  
-Scope: Cursor, Claude Code, Codex, ZCode
+Scope: Cursor, Claude Code, Codex, ZCode, Kimi Code
 
 ## Summary
 
-`Cursor`, `Claude Code`, `Codex`, and `ZCode` do not expose identical full `skills`
+`Cursor`, `Claude Code`, `Codex`, `ZCode`, and `Kimi Code` do not expose identical full `skills`
  specifications, but they do share a meaningful common base:
 
-- all four support directory-based skills
-- all four use `SKILL.md` as the entrypoint
-- all four support automatic relevance-based invocation
-- all four support explicit invocation
-- all four support optional supporting files such as scripts or reference docs
+- all five support directory-based skills
+- all five use `SKILL.md` as the entrypoint
+- all five support automatic relevance-based invocation
+- all five support explicit invocation
+- all five support optional supporting files such as scripts or reference docs
 
 The correct compatibility model for this repository is therefore:
 
@@ -32,6 +32,7 @@ This comparison is based on official documentation:
 - Claude Code: [Extend Claude with skills](https://code.claude.com/docs/en/skills)
 - Cursor: [Agent Skills](https://cursor.com/cn/docs/skills)
 - ZCode: [Skill](https://zcode.z.ai/cn/docs/skill) and [ZCode Agent](https://zcode.z.ai/cn/docs/agents)
+- Kimi Code: [Agent Skills](https://www.kimi.com/code/docs/en/kimi-code-cli/customization/skills.html)
 
 For Cursor, the official web page did not expose full HTML content through the
 available fetch path during review, so the comparison used the official Cursor
@@ -39,7 +40,7 @@ docs PDF export of the same page content.
 
 ## Confirmed Common Ground
 
-The following points are explicitly supported across all four platforms:
+The following points are explicitly supported across all five platforms:
 
 ### 1. Skill package shape
 
@@ -73,19 +74,19 @@ This is important for token-efficiency planning because it means skill
 
 ## Compatibility Matrix
 
-| Dimension | Cursor | Codex | Claude Code | ZCode |
-|-----------|--------|-------|-------------|-------|
-| Open standard alignment | Yes | Yes | Yes | Yes |
-| `SKILL.md` required | Yes | Yes | Yes | Yes |
-| `name` required | Yes | Yes | No, may fall back to directory name | Yes |
-| `description` required | Yes | Yes | Recommended, not strictly required | Yes |
-| `name` must equal directory name | Yes | Not stated as required | Not required | Yes in public examples and UI flow |
-| Automatic invocation | Yes | Yes | Yes | Yes |
-| Explicit invocation | Yes | Yes | Yes | Yes |
-| Optional supporting files | Yes | Yes | Yes | Yes |
-| Scripts supported | Yes | Yes | Yes | Yes |
-| References/assets supported | Yes | Yes | Yes | Yes |
-| Platform-specific metadata/extensions | Yes | Yes | Yes, most extensive | Yes |
+| Dimension | Cursor | Codex | Claude Code | ZCode | Kimi Code |
+|-----------|--------|-------|-------------|-------|-----------|
+| Open standard alignment | Yes | Yes | Yes | Yes | Yes |
+| `SKILL.md` required | Yes | Yes | Yes | Yes | Yes |
+| `name` required | Yes | Yes | No, may fall back to directory name | Yes | Yes for directory form; flat `.md` falls back to filename |
+| `description` required | Yes | Yes | Recommended, not strictly required | Yes | Yes for directory form; flat `.md` falls back to first body line |
+| `name` must equal directory name | Yes | Not stated as required | Not required | Yes in public examples and UI flow | Not stated as required |
+| Automatic invocation | Yes | Yes | Yes | Yes | Yes |
+| Explicit invocation | Yes | Yes | Yes | Yes | Yes (`/skill:<name>`) |
+| Optional supporting files | Yes | Yes | Yes | Yes | Yes |
+| Scripts supported | Yes | Yes | Yes | Yes | Yes |
+| References/assets supported | Yes | Yes | Yes | Yes | Yes |
+| Platform-specific metadata/extensions | Yes | Yes | Yes, most extensive | Yes | Yes (`whenToUse`, `type`, `arguments`, `disableModelInvocation`) |
 
 ## Platform Notes
 
@@ -189,10 +190,42 @@ Important compatibility implications:
   project-local skill installation as a platform-adaptation concern, not a
   portable-core assumption.
 
+## Kimi Code
+
+Officially confirmed behavior:
+
+- Kimi Code skills are directory-based and use `SKILL.md` with YAML frontmatter
+  as the entrypoint; a flat single `.md` file is also supported.
+- In directory form, both `name` and `description` must be explicitly provided;
+  omitting either causes parsing to fail.
+- Skill loading locations:
+  - project level: `.kimi-code/skills/`, `.agents/skills/`
+  - user level: `$KIMI_CODE_HOME/skills/` (default `~/.kimi-code/skills/`),
+    `~/.agents/skills/`
+  - extra directories via `extra_skill_dirs` in `config.toml`
+- Frontmatter fields include `name`, `description`, `type`, `whenToUse`,
+  `disableModelInvocation`, and `arguments`; unknown fields are ignored.
+- Skills are triggered automatically based on `description` / `whenToUse`, or
+  explicitly via `/skill:<name>`.
+- Kimi Code natively reads project-root `AGENTS.md` as workspace instructions;
+  user-level global instructions live at `$KIMI_CODE_HOME/AGENTS.md`.
+
+Important compatibility implications:
+
+- Kimi Code fits the same portable `SKILL.md` core already used by this
+  repository with zero skill-source changes.
+- Unlike ZCode, Kimi Code publicly documents a stable project-level skill
+  filesystem path (`.kimi-code/skills/`), so project installation can be fully
+  automated.
+- Governance reuse is direct: the existing `AGENTS.md` template works as-is,
+  with no third governance template needed.
+- Skill bodies should avoid unescaped `$ARGUMENTS` / `$0`-style placeholders,
+  which Kimi Code expands at invocation time.
+
 ## Practical Repository Contract
 
 For this repository, the most portable baseline should be the strictest shared
-subset that still works naturally on all four platforms.
+subset that still works naturally on all five platforms.
 
 ### Recommended portable minimum
 
@@ -224,7 +257,7 @@ my-skill/
 └── assets/         # optional
 ```
 
-This structure is safe because it fits the documented expectations of all four
+This structure is safe because it fits the documented expectations of all five
  platforms.
 
 ## What Should Stay Out of the Portable Core
@@ -268,6 +301,7 @@ Keep the shared skill source tree compatible with:
 - Codex's required `name` + `description`
 - Claude Code's standard-compatible baseline
 - ZCode's documented `SKILL.md` + frontmatter format
+- Kimi Code's required `name` + `description` for directory-form skills
 
 ### Layer 2: Platform adaptation
 
@@ -276,7 +310,7 @@ Use installation layout and platform-specific governance files to adapt how the
 
 Examples:
 
-- `AGENTS.md` for Cursor, Codex, and ZCode
+- `AGENTS.md` for Cursor, Codex, ZCode, and Kimi Code
 - `CLAUDE.md` for Claude Code
 
 ### Layer 3: Platform enhancement
@@ -321,7 +355,7 @@ Unsafe optimization targets unless platform-specific:
 
 The most accurate statement for maintainers is:
 
-> Cursor, Codex, Claude Code, and ZCode do not expose identical full skill runtimes,
+> Cursor, Codex, Claude Code, ZCode, and Kimi Code do not expose identical full skill runtimes,
 > but they do share a real Agent Skills standard core. This repository should
 > target that shared core and treat platform-specific behavior as an optional
 > extension layer.

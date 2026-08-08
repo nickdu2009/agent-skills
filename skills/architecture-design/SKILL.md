@@ -66,7 +66,7 @@ When in doubt, start with the lighter version and expand if the design reveals m
 
 # Architecture Information Dimensions
 
-Use the readiness checklist in [architecture-template.md](architecture-template.md). At minimum, assess component boundaries, technology constraints, non-functional priorities, and data characteristics. If all four are unknown, ask before designing. Mark every reasonable assumption explicitly.
+Use the readiness checklist in [architecture-template.md](architecture-template.md). At minimum, assess component boundaries, technology constraints, non-functional priorities, and data characteristics. If all four are unknown, ask before designing. Mark every reasonable assumption explicitly. "Reasonably assumed" covers mechanical architecture context only — not behavioral strategies such as retry counts, fallbacks, degradation paths, matching rules, or failure semantics.
 
 # Execution Pattern
 
@@ -82,6 +82,7 @@ Use the readiness checklist in [architecture-template.md](architecture-template.
    - After receiving answers, update dimension status. If key dimensions remain unknown and cannot be reasonably assumed, run another round.
    - No hard cap on rounds; stop when enough dimensions are known or reasonably assumed to support architecture decisions. In practice, 1-2 rounds usually suffice.
    - Tag assumptions explicitly with their basis; assumptions enter the final document's "待确认假设" section, not treated as confirmed facts.
+   - Behavioral assumptions (timeouts, retries, circuit breakers, fallbacks, graceful degradation, matching thresholds) stay in "待确认假设" with `blocking: true` until confirmed; they must not become executable planning inputs.
 
 2. **Approach comparison** (if design direction is not settled):
    - List 2-4 candidate architecture approaches.
@@ -107,7 +108,7 @@ Use the readiness checklist in [architecture-template.md](architecture-template.
 
 6. **Non-functional architecture** (depth per scale judgment):
    - Scalability: horizontal/vertical scaling strategy, bottleneck analysis.
-   - Availability & resilience: failure modes, redundancy, timeout/retry/circuit-breaker.
+   - Availability & resilience: enumerate failure modes and required evaluation of timeout/retry/circuit-breaker/degradation options; adopt specific strategies only from confirmed requirements, architecture baseline, or an active Accepted ADR.
    - Security: authentication, authorization, data protection, defense in depth.
    - Observability: logging, metrics, tracing injection points.
    - Validate against runtime quality principles.
@@ -169,6 +170,7 @@ Use [architecture-template.md](architecture-template.md) for the full document s
 - If requirement gaps block architecture decisions, stop and hand off to `requirement-interview` rather than guessing.
 - Ask at most 5 questions per clarification round; do not dump all architecture concerns at once.
 - Do not treat an assumption as a confirmed fact — tag it and record it in the "待确认假设" section.
+- Do not invent behavioral failure strategies under Design for Failure; evaluate failure modes, then require authorization before specifying retries, fallbacks, or degradation.
 - Do not write ADR files unless the user explicitly requests document persistence and the target repository's existing convention is known.
 
 # Composition

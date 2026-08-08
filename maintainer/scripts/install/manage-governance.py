@@ -35,9 +35,9 @@ class GovernanceTemplate:
 
 
 INSTALL_DISPLAY_NAME = "Skill Governance Setup"
-SUPPORTED_PLATFORMS = ("codex", "cursor", "cursor-cli", "claude-code", "zcode")
+SUPPORTED_PLATFORMS = ("codex", "cursor", "cursor-cli", "claude-code", "zcode", "kimi-code")
 FORCE_PLATFORM_HELP = (
-    "Force platform: codex, cursor, cursor-cli, claude-code, zcode "
+    "Force platform: codex, cursor, cursor-cli, claude-code, zcode, kimi-code "
     "(auto-detected by default)"
 )
 REMOVED_LEGACY_FLAGS = {
@@ -63,6 +63,11 @@ def detect_platforms() -> list[str]:
         platforms.append("claude-code")
     if (Path.home() / ".zcode").is_dir():
         platforms.append("zcode")
+    if (
+        Path(os.environ.get("KIMI_CODE_HOME", Path.home() / ".kimi-code")).is_dir()
+        or shutil.which("kimi")
+    ):
+        platforms.append("kimi-code")
     return platforms
 
 
@@ -89,6 +94,8 @@ def get_skill_root_dir(platform: str, project_dir: Path | None = None) -> Path |
             return project_dir / ".cursor" / "skills"
         if platform == "claude-code":
             return project_dir / ".claude" / "skills"
+        if platform == "kimi-code":
+            return project_dir / ".kimi-code" / "skills"
         return None
     if platform == "codex":
         return Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))) / "skills"
@@ -98,6 +105,8 @@ def get_skill_root_dir(platform: str, project_dir: Path | None = None) -> Path |
         return Path.home() / ".claude" / "skills"
     if platform == "zcode":
         return Path.home() / ".zcode" / "skills"
+    if platform == "kimi-code":
+        return Path(os.environ.get("KIMI_CODE_HOME", str(Path.home() / ".kimi-code"))) / "skills"
     return None
 
 
@@ -110,7 +119,7 @@ def get_skill_target_dir(skill_name: str, platform: str, project_dir: Path | Non
 
 def get_governance_target(platform: str, project_dir: Path | None = None) -> tuple[Path, GovernanceTemplate] | None:
     if project_dir is not None:
-        if platform in {"codex", "cursor", "cursor-cli", "zcode"}:
+        if platform in {"codex", "cursor", "cursor-cli", "zcode", "kimi-code"}:
             return project_dir / "AGENTS.md", AGENTS_TEMPLATE
         if platform == "claude-code":
             return project_dir / "CLAUDE.md", CLAUDE_TEMPLATE
@@ -121,6 +130,8 @@ def get_governance_target(platform: str, project_dir: Path | None = None) -> tup
         return Path.home() / ".claude" / "CLAUDE.md", CLAUDE_TEMPLATE
     if platform == "zcode":
         return Path.home() / ".zcode" / "AGENTS.md", AGENTS_TEMPLATE
+    if platform == "kimi-code":
+        return Path(os.environ.get("KIMI_CODE_HOME", str(Path.home() / ".kimi-code"))) / "AGENTS.md", AGENTS_TEMPLATE
     return None
 
 
@@ -798,7 +809,7 @@ def main(argv: list[str] | None = None) -> int:
     }:
         platforms = [args.platform] if args.platform else detect_platforms()
         if not platforms:
-            print("No supported platform detected. Install Cursor, Codex, Claude Code, or ZCode first.")
+            print("No supported platform detected. Install Cursor, Codex, Claude Code, ZCode, or Kimi Code first.")
             return 1
 
         is_project_check = mode == "check-project"
@@ -853,7 +864,7 @@ def main(argv: list[str] | None = None) -> int:
 
     platforms = [args.platform] if args.platform else detect_platforms()
     if not platforms:
-        print("No supported platform detected. Install Cursor, Codex, Claude Code, or ZCode first.")
+        print("No supported platform detected. Install Cursor, Codex, Claude Code, ZCode, or Kimi Code first.")
         return 1
 
     print(f"Detected platforms: {' '.join(platforms)}")

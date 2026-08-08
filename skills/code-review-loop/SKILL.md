@@ -40,12 +40,14 @@ If the mode is ambiguous, default to `review-only` for already-implemented code 
 3. Review the target using findings-first code review.
 4. Cover at minimum these core dimensions:
    - requirement alignment: matches the confirmed requirements, acceptance criteria, plan, or contract; no missed behavior, wrong behavior, or over-implementation
+   - behavior authority: every new or changed default, match rule, threshold, retry, fallback, auto-repair, or failure strategy has an authorization source (confirmed requirements, confirmed design / active Accepted ADR, preserved compatibility behavior, or explicit user authorization)
+   - unauthorized heuristics: inventing product semantics, silent retries/fallbacks, fuzzy matching, or failure strategies without a source is a defect
    - correctness: behavior correctness, boundary handling, error handling, failure paths
    - regression: no unintended behavior regression; key paths and adjacent behavior remain intact
    - security: injection, authz, sensitive data, secrets
    - compatibility: data, API, serialization, migration, and upstream/downstream compatibility
    - scope control: no unrelated changes smuggled in; changes stay within the accepted task boundary
-   - test: new logic has sufficient verification; existing tests are not bypassed or weakened
+   - test: new logic has sufficient verification; existing tests are not bypassed or weakened; tests do not authorize product behavior
 5. Add applicable additional dimensions based on the change type:
    - performance: hot paths, queries, caching, rendering, batch/IO-heavy changes
    - concurrency / idempotency: races, retries, duplicate execution, transaction/locking boundaries
@@ -80,18 +82,20 @@ Skip this section when the target is a local diff or commit only.
 ## Issue rules
 
 ### blocking
-Use for correctness bugs, broken builds, failed tests, behavior regressions, security issues, data loss risks, or scope violations that must be fixed before completion.
+Use for correctness bugs, broken builds, failed tests, behavior regressions, security issues, data loss risks, scope violations, or unauthorized behavioral policies that affect permissions, data semantics, public interfaces, or failure semantics.
 
 ### warning
-Use for incomplete behavior, weak error handling, insufficient tests, ambiguous edge cases, or likely maintainability problems that may cause rework.
+Use for incomplete behavior, weak error handling, insufficient tests, ambiguous edge cases, likely maintainability problems, or unauthorized behavioral policies that do not yet meet the blocking threshold above.
 
 ### low-risk
-Use for minor but real risks, weak validation coverage, unclear assumptions, or small edge cases.
+Use for minor but real risks, weak validation coverage, unclear assumptions, or small edge cases — only when they do not select or change externally observable behavior, data semantics, permissions, security, compatibility, or failure strategy.
 
 Low-risk issues must still be resolved before the loop can finish. Resolve each by one or more of:
 - code fix
 - test or validation addition
 - explicit accepted assumption with verification method documented in `Residual Assumptions`
+
+Behavioral assumptions (defaults, matching, thresholds, retries, fallbacks, failure semantics) must not be resolved via `Residual Assumptions` / `clean_with_assumptions`. They require a code fix, clarification, or confirmed authorization source.
 
 ## Clarification gate
 
@@ -154,6 +158,7 @@ Return `review_result: clean_with_assumptions` when:
 - the only remaining items are `low-risk` ones that have each been converted into
   an explicit entry in `Residual Assumptions` with a concrete `validation_method`
 - requirement alignment and scope do not depend on unconfirmed intent
+- residual assumptions do not select or change externally observable behavior, data semantics, permissions, security, compatibility, or failure strategy
 
 Return `review_result: needs_clarification` when:
 - one or more insufficient-basis findings remain after bounded clarification questions

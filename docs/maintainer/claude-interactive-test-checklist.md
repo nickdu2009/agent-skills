@@ -28,6 +28,9 @@ For the maintained fixture-backed workflow, use:
 ```bash
 python3 maintainer/scripts/evaluation/run_claude_interactive_mainline.py --list-scenarios
 python3 maintainer/scripts/evaluation/run_claude_interactive_mainline.py
+# Cursor Agent path (installs project governance into the temp workspace):
+python3 maintainer/scripts/evaluation/run_claude_interactive_mainline.py \
+  --cli cursor --scenario behavior-authority --scenario behavior-authority-review
 ```
 
 For a manual session against the same fixture, start from a clean temporary workspace:

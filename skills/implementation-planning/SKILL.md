@@ -47,6 +47,8 @@ Boundary rule: this skill plans *how to execute an already-understood change*. I
 # Core Rules
 
 - Do not write production code while planning.
+- Completing a plan does not authorize coding in the same turn when the user asked for design/plan only, contract formation, or work "before coding". Stop after the plan artifact and wait for an explicit implement / proceed-with-coding request (or hand off to `plan-review-loop`).
+- Confirmed behavior authorization settles product semantics for the plan; it is not by itself a coding start signal while the ask remains plan-scoped.
 - Do not reopen settled design questions unless a blocking inconsistency is discovered.
 - Do not treat lightweight §4 short planning as a reason to activate this skill; this skill is for durable, reviewable planning.
 - Every implementation step must name its landing surface and its verification.
@@ -90,7 +92,8 @@ Boundary rule: this skill plans *how to execute an already-understood change*. I
 5. **Decide the implementation structure**:
    - Determine whether the work is one pass, phased, or split into 2-4 mergeable increments.
    - Fill the §4-style `[parallelism: ...]` block for independent lanes, blockers, shared write surfaces, and delegation stance.
-   - Add a `GATE-00` or equivalent pre-coding gate when contracts, schema, security, dependencies, external services, or runtime environment conditions must be closed before production code changes.
+   - Add a `GATE-00` or equivalent pre-coding gate when contracts, schema, security, dependencies, external services, runtime environment conditions, or unconfirmed behavioral assumptions (defaults, matching, thresholds, retries, fallbacks, failure semantics) must be closed before production code changes.
+   - Classify residual assumptions: mechanical (paths, commands, internal landing) may continue with a validation method; behavioral assumptions must enter `GATE-00` with `source` / `owner decision` / `done condition` and block coding until closed.
 
 6. **Draft the executable steps**:
    - For each step, record: landing files/modules, dependency, action summary, verification check, and covered acceptance criteria.
@@ -108,7 +111,8 @@ Boundary rule: this skill plans *how to execute an already-understood change*. I
 
 9. **Recommend the next step**:
    - Suggest `plan-review-loop` when the plan is non-trivial or high impact.
-   - If the user wants to proceed directly, hand off to implementation with risks made explicit.
+   - If the current ask is plan-only / "before coding", stop after the plan; do not start production edits.
+   - Only hand off to implementation in the same turn when the user explicitly asked to implement or proceed with coding; keep risks explicit.
 
 # Input Contract
 
@@ -162,6 +166,7 @@ Use [plan-template.md](plan-template.md) for the complete user-facing shape.
 
 - Do not activate this skill just to produce a 2-3 bullet short plan; that belongs to `AGENTS.md` §4.
 - Do not silently make business or design decisions under the label of planning.
+- Do not treat unconfirmed behavioral assumptions as residual notes that still allow coding; put them in `GATE-00`.
 - Do not leave step landing vague ("update backend") when a narrower file/module target is known.
 - Do not leave verification as "run tests" without saying which test/check matters.
 - Do not mark a plan complete while acceptance coverage or rollback notes are missing.
@@ -177,6 +182,7 @@ Use [plan-template.md](plan-template.md) for the complete user-facing shape.
 - **No acceptance traceability.** The plan lists steps, but no one can tell which acceptance criterion each step satisfies or whether anything was missed.
 - **Risk-free fiction.** The change clearly touches shared surfaces or staged rollout concerns, but the plan contains no rollback or mitigation strategy.
 - **Authorization laundering.** The plan is accepted and the agent treats that as approval to install packages, migrate data, call external services, deploy, commit, push, or delete files.
+- **Plan-then-code in one turn.** The user asked for a plan or work "before coding", and the agent finishes the plan then immediately edits production files. Plan completion is not an implement request.
 - **Truth drift.** The plan lets UI state, generated artifacts, streams, or mocks become business truth because the real owner was not named.
 - **Parallelism over ownership.** The plan splits work across agents while two cards still touch the same contract, migration, root config, package/lock file, or app composition surface.
 

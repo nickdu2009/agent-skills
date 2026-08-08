@@ -23,6 +23,7 @@ This directory contains repository-internal tooling and evaluation assets and sh
 - `python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode api --compact-mode`
 - `python3 maintainer/scripts/evaluation/run_claude_trigger_smoke.py`
 - `python3 maintainer/scripts/evaluation/run_claude_interactive_mainline.py`
+- `python3 maintainer/scripts/evaluation/run_claude_interactive_mainline.py --cli cursor --scenario behavior-authority`
 
 ## Skill Metadata and Prompt Optimization
 

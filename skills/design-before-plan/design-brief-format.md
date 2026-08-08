@@ -7,6 +7,8 @@ requirements:
   functional: []
   non_functional: []
   implicit:
+    # Candidates to check — not auto-adopted defaults.
+    # Each item: { item, source, status: confirmed|open|assumed, blocking: true|false }
     security: []
     performance: []
     observability: []
@@ -24,6 +26,8 @@ chosen_design:
   approach: ""
   rationale: ""
   deferred: []
+  # Only confirmed / explicitly authorized behaviors may appear here.
+  # Unconfirmed implicit NFR candidates must stay in requirements.implicit with status open|assumed.
 
 interface_contracts:
   - module: ""
@@ -35,6 +39,7 @@ acceptance_criteria:
   must_have: []
   nice_to_have: []
   validation_boundary: []
+  # Do not promote unconfirmed timeouts, retries, fallbacks, or degradation paths into AC.
 
 architectural_constraints: []
 
@@ -59,4 +64,4 @@ adr_candidates:
     status: Proposed
 ```
 
-Omit optional blocks that do not apply. Keep acceptance criteria requirement-driven and ensure every chosen trade-off is visible.
+Omit optional blocks that do not apply. Keep acceptance criteria requirement-driven and ensure every chosen trade-off is visible. Checking an implicit NFR candidate does not authorize it; only `status: confirmed` (or an active Accepted ADR / preserved compatibility contract) may enter `chosen_design` or acceptance criteria.

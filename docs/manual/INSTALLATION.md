@@ -69,6 +69,7 @@ python3 maintainer/scripts/install/manage-governance.py install user --overwrite
 - Claude Code 会获得用户级 `CLAUDE.md`
 - Cursor 会获得用户级 skills；治理规则需要手动复制到 Cursor User Rules
 - ZCode 会获得用户级 `~/.zcode/skills/` 和 `~/.zcode/AGENTS.md`
+- Kimi Code 会获得用户级 `$KIMI_CODE_HOME/skills/`（默认 `~/.kimi-code/skills/`）和 `$KIMI_CODE_HOME/AGENTS.md`
 
 ### 首次验证
 <div class="title-en">First Validation</div>
@@ -93,6 +94,12 @@ python3 maintainer/scripts/install/manage-governance.py install user --replace-r
 
 ```bash
 python3 maintainer/scripts/install/manage-governance.py install user --platform zcode
+```
+
+如果你要显式安装到 Kimi Code，可直接指定平台（探测条件是 `kimi` 可执行文件或 `$KIMI_CODE_HOME`/`~/.kimi-code` 目录存在）：
+
+```bash
+python3 maintainer/scripts/install/manage-governance.py install user --platform kimi-code
 ```
 
 ## 项目安装
@@ -145,6 +152,8 @@ python3 maintainer/scripts/install/manage-governance.py install project /path/to
 
 对 `zcode` 平台有一个当前边界：官方文档明确公开了用户级 `~/.zcode/skills/` 和工作区根 `AGENTS.md`，但没有公开稳定的项目级 skill 文件路径。  
 因此，`install project --platform zcode` 会注入项目根 `AGENTS.md`，但不会自动写入项目级 skills；需要项目级 skill 时，建议先做 `install user --platform zcode`，再通过 ZCode 的 Skill 导入能力导入到当前项目。
+
+对 `kimi-code` 平台，项目安装会写入项目级 `.kimi-code/skills/` 并注入项目根 `AGENTS.md`（Kimi Code 原生读取这两个位置），无额外手动步骤。
 
 ### 首次验证
 <div class="title-en">First Validation</div>

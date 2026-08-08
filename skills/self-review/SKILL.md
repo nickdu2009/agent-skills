@@ -21,6 +21,8 @@ Use this skill after edits are complete and before validation or final reporting
 Check only the current task diff:
 
 - correctness: behavior matches the request and no obvious regression is introduced
+- behavior authority: every new or changed default, match rule, threshold, retry, fallback, auto-repair, or failure strategy traces to confirmed requirements, a confirmed design / active Accepted ADR, preserved compatibility behavior, or explicit user authorization for that behavior
+- unauthorized heuristics: flag invented defaults, fuzzy matching, silent retries/fallbacks, auto-repairs, or failure-path choices that lack an authorization source
 - scope: no unrelated cleanup, formatting churn, or opportunistic refactor slipped in
 - residuals: no debug prints, commented-out code, temporary files, or stale notes remain
 - consistency: names, docs, examples, and generated data agree with each other
@@ -33,6 +35,8 @@ Check only the current task diff:
 - Fix real issues before running validation when the fix is obvious and in scope.
 - Do not rewrite unrelated code while reviewing.
 - If a risk remains untested, state it explicitly.
+- Unauthorized behavioral policies are blocking for the self-review exit: remove them, or stop and ask before proceeding to validation.
+- Do not treat a passing test as authorization for a behavioral choice.
 
 ## Output
 

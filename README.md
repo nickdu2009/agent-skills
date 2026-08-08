@@ -113,6 +113,8 @@ Cursor does not have an official user-level `AGENTS.md` path. User install still
 
 ZCode has official user-level `AGENTS.md` and skills paths. Use `--platform zcode` to install skills into `~/.zcode/skills` and governance into `~/.zcode/AGENTS.md`. Official docs currently document only the user-level skill path, so this installer does not automate project-local ZCode skill installation; use ZCode's Skill import flow for project-local copies when needed.
 
+Kimi Code has official user-level and project-level skill paths plus native `AGENTS.md` support. User install places skills into `$KIMI_CODE_HOME/skills` (default `~/.kimi-code/skills`) and governance into `$KIMI_CODE_HOME/AGENTS.md`; project install places skills into `.kimi-code/skills` and governance into the project-root `AGENTS.md`. Use `--platform kimi-code` to force the platform when auto-detection is not desired.
+
 ## Repository Layout
 
 ```text

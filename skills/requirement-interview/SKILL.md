@@ -110,7 +110,7 @@ The core of this skill — do not mechanically apply a template.
 2. Key gaps over minor gaps.
 3. Ambiguity over detail: disambiguate first when multiple readings exist.
 4. Conflict over expansion: confirm contradictions before asking new things.
-5. Defer the assumable: if something can be reasonably assumed and a wrong guess is cheap, record it as an assumption instead of spending a question slot.
+5. Defer only low-cost interview assumptions: if a detail can be reasonably assumed and a wrong guess is cheap *for continuing the interview*, record it as `【假设】` instead of spending a question slot. Do not defer assumptions that affect outputs, permissions, data correctness, matching rules, or failure semantics — those must be confirmed before coding.
 
 **Questions per round: 3–5, hard cap 5.**
 
@@ -128,7 +128,8 @@ The core of this skill — do not mechanically apply a template.
 
 - When info is missing but reasonably inferable, propose an assumption, but it MUST be tagged `【假设】` with its basis stated.
 - Assumptions need user confirmation at an appropriate time; until confirmed, an assumption must not enter "confirmed".
-- High-risk assumptions (affecting main flow, permissions, data correctness) must be actively put to the user for a decision.
+- High-risk / behavioral assumptions (affecting main flow, permissions, data correctness, matching, retries, fallbacks, or failure semantics) must be actively put to the user for a decision in this interview.
+- Tentative assumptions may reduce interview cost only; they do not authorize production behavior. Downstream design/planning must treat unconfirmed behavioral assumptions as open gates, not as accepted defaults.
 
 **Clarify scope boundary:** explicitly separate four buckets and harden them round by round — must-do now / not now / later / explicitly excluded.
 
@@ -148,8 +149,8 @@ Report the current maturity at the end of every round; four levels:
 |---|---|---|
 | **Insufficient（信息不足）** | Any of business goal / main flow / roles missing or badly vague; or an unresolved key conflict exists | Keep interviewing only; no design or coding |
 | **Mostly clear（基本清楚）** | Business goal, roles, main flow confirmed; scope boundary taking initial shape; minor gaps or many unconfirmed assumptions remain | Keep wrapping up via questions; may pre-announce upcoming design, still no coding |
-| **Ready for design（可进入方案设计）** | Business goal, roles, main flow, scope boundary, acceptance criteria all confirmed; key assumptions confirmed or risk acceptable; no unresolved conflict | May hand off to `design-before-plan`; still no direct coding |
-| **Ready for planning（可进入开发计划）** | On top of the previous level, business rules, exceptions, data objects, permissions are clarified enough to convert directly into acceptance conditions; only implementation details remain | May hand off to planning/implementation steps; still needs explicit "开始实现" before touching code |
+| **Ready for design（可进入方案设计）** | Business goal, roles, main flow, scope boundary, acceptance criteria all confirmed; key behavioral assumptions confirmed or explicitly deferred as open questions (not silent defaults); no unresolved conflict | May hand off to `design-before-plan`; still no direct coding |
+| **Ready for planning（可进入开发计划）** | On top of the previous level, business rules, exceptions, data objects, permissions are clarified enough to convert directly into acceptance conditions; no unconfirmed behavioral assumptions remain (outputs, permissions, data, matching, failure semantics); only implementation details remain | May hand off to planning/implementation steps; still needs explicit "开始实现" before touching code |
 
 Judgment rules: maturity should not be inflated — prefer judging lower and asking one more round; upgrading a level must state which newly confirmed info justified it; even at the top level, modifying code still requires the user to explicitly say "开始实现".
 
@@ -319,14 +320,14 @@ Round 3 (maturity: Ready for design) — emit the full requirement-clarification
 
 ### Fallback
 
-- User insists on implementing directly: give a one-line risk note, then deactivate and hand off per the user's wish.
+- User insists on implementing directly: give a one-line risk note that "直接做 / 先试试" skips interview form only and does not authorize filling unspecified product semantics; then deactivate and hand off per the user's wish with remaining open behavioral questions listed.
 - The requirement is actually already clear: deactivate and hand off to `scoped-tasking` or `design-before-plan`.
 - The user provided a written requirements doc: hand off to `requirements-review-loop`.
 
 ### Low Confidence Handling
 
 - Prefer judging maturity lower, keeping more items "open"; do not inflate the level.
-- High-risk assumptions must not pass silently; they enter "confirmed" only after user confirmation.
+- High-risk / behavioral assumptions must not pass silently; they enter "confirmed" only after user confirmation, and must not ride into "Ready for planning" as residual risk.
 
 ## Output Example
 
@@ -337,5 +338,5 @@ Round 3 (maturity: Ready for design) — emit the full requirement-clarification
 ## Deactivation Trigger
 
 - The requirement reaches "Ready for design / planning" and the clarification result is produced and handed off.
-- The user explicitly asks to implement directly; deactivate after a risk note.
+- The user explicitly asks to implement directly; deactivate after a risk note that lists remaining unconfirmed behavioral questions and states that direct implementation does not authorize inventing those behaviors.
 - The requirement is redefined or the scope changes substantially; reset the interview rather than continuing on the old understanding.

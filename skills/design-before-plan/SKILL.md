@@ -42,7 +42,7 @@ Force the agent to complete requirements clarification and design decision-makin
 1. **Requirements clarification** (if needed beyond scoped-tasking):
    - Extract functional requirements (what the system must do).
    - Extract non-functional requirements (performance, compatibility, security).
-   - **Identify implicit requirements** (hidden but critical): Security (authentication, authorization, input validation, data sanitization, encryption at rest/in transit); Performance (acceptable latency p50/p95/p99, throughput limits, resource constraints memory/CPU, query optimization); Observability (structured logging, metrics/counters, distributed tracing, error tracking, alerting thresholds); Resilience (error handling strategy, retry logic with backoff, circuit breakers, timeout configuration, graceful degradation); Operability (deployment strategy blue-green/canary/rolling, configuration management, feature flags, rollback plan)
+   - **Identify implicit NFR candidates** (must check, must not auto-adopt): Security (authentication, authorization, input validation, data sanitization, encryption at rest/in transit); Performance (acceptable latency p50/p95/p99, throughput limits, resource constraints memory/CPU, query optimization); Observability (structured logging, metrics/counters, distributed tracing, error tracking, alerting thresholds); Resilience (error handling strategy, retry logic with backoff, circuit breakers, timeout configuration, graceful degradation); Operability (deployment strategy blue-green/canary/rolling, configuration management, feature flags, rollback plan). Record each candidate with `source` / `status` (`confirmed` | `open` | `assumed`) / `blocking`. Unconfirmed candidates must not enter `chosen_design` or acceptance criteria.
    - Identify stakeholder concerns (user experience, maintainability, extensibility).
    - Confirm edge cases and error scenarios.
 
@@ -120,17 +120,21 @@ Use [design-brief-format.md](design-brief-format.md) for the complete design bri
 # Guardrails
 
 - Do not enumerate more than 4 design alternatives — too many paralyzes decision-making.
-- Do not implement or prototype during this phase — design-before-plan is read-only exploration.
+- Do not implement or prototype during this phase — design-before-plan is read-only exploration; do not edit production files.
+- Confirmed behavior values authorize those product semantics in the design brief; they do not authorize coding in the same turn. After the brief, hand off to `implementation-planning` or stop — do not chain into production edits unless the user explicitly asked to implement.
+- Do not invent unconfirmed behavioral details (for example retry-count semantics such as "3 retries = 4 total attempts", idempotency-key formats, backoff curves, or fallback shapes). Leave them `open` / ask, or put them outside `chosen_design`.
 - Do not skip alternative enumeration even when one approach seems obvious — document why other approaches were rejected.
 - Do not derive acceptance criteria from implementation details (e.g., "code has 80% coverage" is not a requirement-based criterion).
 - If requirements are so unclear that design is impossible, escalate to the user — do not guess.
 - If the chosen design requires new dependencies, flag them in the design brief.
+- Unconfirmed behavioral NFR candidates (timeouts, retries, circuit breakers, fallbacks, graceful degradation) stay out of `chosen_design` and acceptance criteria.
 
-**Implicit requirements checks** (triggered by change type):
-- If the change involves **user input, external API calls, or file uploads**, explicitly check security requirements: authentication, authorization, input validation, sanitization, rate limiting.
-- If the change affects **request handling, data processing, or database queries**, explicitly check performance requirements: acceptable latency (p95/p99), query optimization (avoid N+1), resource limits (connection pooling, memory usage).
-- If the change is **user-facing or affects critical paths**, explicitly check observability requirements: structured logging with context (user ID, request ID), error tracking with stack traces, metrics for success/failure rates.
-- If the change involves **external dependencies (APIs, databases, queues)**, explicitly check resilience requirements: timeout configuration, retry with exponential backoff, circuit breaker for cascading failures, graceful degradation.
+**Implicit NFR candidate checks** (triggered by change type; check ≠ adopt):
+- If the change involves **user input, external API calls, or file uploads**, explicitly check security candidates: authentication, authorization, input validation, sanitization, rate limiting. Adopt only what is confirmed or already required by an accepted contract.
+- If the change affects **request handling, data processing, or database queries**, explicitly check performance candidates: acceptable latency (p95/p99), query optimization (avoid N+1), resource limits (connection pooling, memory usage).
+- If the change is **user-facing or affects critical paths**, explicitly check observability candidates: structured logging with context (user ID, request ID), error tracking with stack traces, metrics for success/failure rates.
+- If the change involves **external dependencies (APIs, databases, queues)**, explicitly check resilience candidates: timeout configuration, retry with exponential backoff, circuit breaker for cascading failures, graceful degradation. Ask or leave open unless the user/design already authorized specific values and failure semantics.
+- Do not treat "good engineering practice" as authorization for timeouts, retries, fallbacks, or degradation paths.
 
 **Data migration checks** (triggered by schema changes):
 - Schema/model changes → define migration strategy (forward + backward) before implementation
@@ -147,6 +151,7 @@ Use [design-brief-format.md](design-brief-format.md) for the complete design bri
 - **Deriving acceptance criteria from implementation.** The agent states "tests pass" or "no linter errors" as acceptance criteria instead of deriving observable success conditions from requirements. The acceptance criteria cannot be verified without looking at the implementation.
 - **Skipping interface contract definition for cross-module changes.** The agent plans to modify a shared utility function used by 5 modules without defining the new function signature first. Callers are patched reactively during implementation instead of proactively during design.
 - **Ignoring implicit security/performance/observability requirements.** The agent designs a file upload endpoint without considering: input validation (allowing executable uploads), performance limits (no protection against OOM for large files), or observability (no logging/metrics for debugging failures). These omissions surface as production incidents rather than being caught during design.
+- **Authorized-then-code.** The user confirmed retry/fallback values or asked to form a design/plan "before coding", and the agent still writes production files in the same turn. Authorization settles semantics; design-before-plan stays read-only until an explicit implement request.
 
 Keep anti-pattern guidance self-contained; installed skills must not depend on maintainer-only documents.
 

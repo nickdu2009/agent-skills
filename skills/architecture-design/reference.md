@@ -57,7 +57,7 @@ Use when designing non-functional architecture.
 
 | Principle | Check | Violation signal |
 |---|---|---|
-| Design for Failure | Assume any component can fail; every external dependency has timeout, retry, and degradation strategy | No timeout on a downstream HTTP call; no fallback when the cache is unavailable |
+| Design for Failure | Assume any component can fail; every external dependency's failure modes must be evaluated (timeout / retry / degrade / fail-closed). Specific strategies require confirmed requirements, architecture baseline, or an active Accepted ADR — do not invent them | No failure-mode evaluation for a downstream HTTP call; inventing retry/fallback without authorization |
 | Defense in Depth | Security does not rely on a single barrier; authentication, authorization, input validation, and encryption are applied at multiple layers | "The API gateway handles auth, so internal services skip it entirely" |
 | Design for Observability | Architecture includes injection points for logging, metrics, and tracing as first-class concerns; not bolted on after implementation | No structured logging strategy; no correlation ID propagation across components |
 | Design for Evolvability | Core abstractions are stable but extensible; new capabilities can be added by adding components rather than modifying existing core | Adding a new notification channel requires modifying the core notification engine |

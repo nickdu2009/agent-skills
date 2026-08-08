@@ -55,7 +55,7 @@ Use this document shape:
 
 ## 非功能架构
 - 可扩展性：
-- 可用性与容错：
+- 可用性与容错：（先列失败模式评估；具体 timeout/retry/fallback/降级仅在已确认或 Accepted ADR / 架构基线授权后写入）
 - 安全：
 - 可观测性：
 
@@ -73,7 +73,8 @@ Use this document shape:
 - 技术债务：
 
 ## 待确认假设
-- 【假设】…（依据：…；影响：…；若推翻则：…）
+- 【假设】…（依据：…；影响：…；blocking：true|false；若推翻则：…）
+- 行为策略类假设（重试次数、降级路径、匹配阈值、失败语义）默认 `blocking: true`，未确认不得进入下游 planning。
 
 ## 验收标准（架构层面）
 - …

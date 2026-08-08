@@ -49,6 +49,7 @@ python3 maintainer/scripts/install/manage-governance.py install user
 - Codex 用户级 `AGENTS.md` 或 Claude Code 用户级 `CLAUDE.md`
 - Cursor 用户级 skills（治理规则需要手动复制到 Cursor User Rules）
 - ZCode 用户级 `~/.zcode/skills/` 和 `~/.zcode/AGENTS.md`
+- Kimi Code 用户级 `$KIMI_CODE_HOME/skills/`（默认 `~/.kimi-code/skills/`）和 `$KIMI_CODE_HOME/AGENTS.md`
 - 一个跨项目可复用的默认技能与治理环境
 - 不改项目文件的安装结果
 
@@ -76,6 +77,8 @@ python3 maintainer/scripts/install/manage-governance.py install project /path/to
 
 如果你使用的是 `zcode`，要注意一个平台边界：当前公开文档明确了用户级 `~/.zcode/skills/` 和工作区根 `AGENTS.md`，但没有公开稳定的项目级 skill 文件路径。  
 因此，项目安装在 `zcode` 下会负责生成项目根 `AGENTS.md`，项目级 skill 仍建议通过 ZCode 自身的 Skill 导入能力处理。
+
+如果你使用的是 `kimi-code`，项目安装会写入 `.kimi-code/skills/` 并生成项目根 `AGENTS.md`，两者都是 Kimi Code 原生读取的位置，无额外手动步骤。
 
 第一轮验证建议：
 

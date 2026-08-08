@@ -43,6 +43,7 @@ If the mode is ambiguous, default to `review-and-revise`, and state the chosen m
    - **Readability** — test names express intent; arrange / act / assert structure is clear
    - **Maintenance cost** — no over-mocking; no duplicated scaffolding that belongs in a fixture or helper
    - **Alignment with code under test** — assertions reflect the current interface contract and do not lock in stale behavior
+   - **Behavior authority** — tests must not invent or authorize product behavior; a passing test is not a source of authorization for defaults, matching, thresholds, retries, fallbacks, or failure semantics
 4. For every finding, first decide whether it is:
    - an **objective defect** — directly contradicted by the tests, code under test, or accepted behavior expectations
    - an **insufficient-basis finding** — cannot be safely resolved without a missing behavior expectation, acceptance criterion, or test scope decision
@@ -59,7 +60,7 @@ If the mode is ambiguous, default to `review-and-revise`, and state the chosen m
 ## Issue rules
 
 ### blocking
-Use for tests that pass for the wrong reason, fail to assert behavior, depend on global state, are flaky, or lock in stale behavior that contradicts the current interface.
+Use for tests that pass for the wrong reason, fail to assert behavior, depend on global state, are flaky, lock in stale behavior that contradicts the current interface, or lock in unauthorized product behavior (defaults, matching, retries, fallbacks, failure semantics) that has no confirmed requirement/design/contract source.
 
 ### warning
 Use for weak assertions, missing boundary or failure cases, brittle mocking, unclear test intent, or coverage gaps in critical paths.
@@ -88,6 +89,7 @@ Rules:
 - Tie each question to one blocked behavior or coverage decision.
 - In `review-and-revise` mode, fix all objective defects you safely can before stopping.
 - Do not invent product behavior just to force `clean`.
+- Do not treat a green test suite as authorization for an unconfirmed behavioral policy.
 
 ## Scope protection
 
@@ -124,6 +126,7 @@ Return `review_result: clean_with_assumptions` when:
 - the only remaining items are `low-risk` ones that have each been converted into
   an explicit entry in `Residual Assumptions` with a concrete `validation_method`
 - the remaining assumptions do not change the expected behavior under test
+- residual assumptions do not select or invent product behavior (defaults, matching, thresholds, retries, fallbacks, failure semantics)
 
 Return `review_result: needs_clarification` when:
 - one or more insufficient-basis findings remain after bounded clarification questions

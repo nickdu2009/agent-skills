@@ -24,6 +24,7 @@ def run_cli(args: list[str], *, home: Path | None = None) -> subprocess.Complete
     if home is not None:
         env["HOME"] = str(home)
         env["CODEX_HOME"] = str(home / ".codex")
+        env["KIMI_CODE_HOME"] = str(home / ".kimi-code")
 
     result = subprocess.run(
         [sys.executable, str(INSTALLER_PATH), *args],
@@ -48,6 +49,7 @@ def run_cli_allow_failure(args: list[str], *, home: Path | None = None) -> subpr
     if home is not None:
         env["HOME"] = str(home)
         env["CODEX_HOME"] = str(home / ".codex")
+        env["KIMI_CODE_HOME"] = str(home / ".kimi-code")
 
     return subprocess.run(
         [sys.executable, str(INSTALLER_PATH), *args],
@@ -111,9 +113,18 @@ GOVERNANCE_BOUNDARY_SNIPPETS = (
     "Stop and ask when the next step would change requirements, public interfaces, cross-module contracts, persistence schema",
     "Parallelism is opt-in, not automatic.",
 )
+BEHAVIOR_AUTHORITY_SNIPPETS = (
+    "**Behavior must have an authorization source.**",
+    "Assumptions may guide investigation and design options; they do not authorize production behavior.",
+    "Without a source, keep the existing contract and ask — do not invent an error path or fallback.",
+    "unauthorized behavioral guessing (forbidden)",
+    "behavior-preserving internal mechanical choice (allowed)",
+    'Stop after a design brief or implementation plan when the current ask is design-only, plan-only, contract formation, or work "before coding"',
+)
 ROUTING_SEMANTICS_SNIPPETS = (
     "Stay on the selected implementation workflow when scope is clear and no escalation signal appears;",
-    "Continue from a completed `implementation-planning` plan into implementation, `self-review`, and `targeted-validation`",
+    "Continue from a completed `implementation-planning` plan into implementation, `self-review`, and `targeted-validation` when the next step remains local, non-destructive, within the accepted task boundary, and the user's current request is to implement or explicitly proceed with coding",
+    "Confirmed behavior authorization (retries, fallbacks, thresholds, failure strategies) authorizes those product semantics; it does not by itself authorize starting production code edits while the current ask is still design/plan-scoped.",
     "Continue after `review_result: issues_found` into a local revision of the same artifact when scope, ownership, and artifact identity stay the same.",
     "Continue from that revision back into the same review-loop and do not `drop` the review skill until `review_result: clean` or `clean_with_assumptions`, explicit handoff, or superseding work changes the artifact/boundary.",
     "Continue after a review loop returns `review_result: clean` or `clean_with_assumptions` when the next step is explicit, local, and non-destructive.",
@@ -127,7 +138,7 @@ PROTOCOL_SEMANTICS_SNIPPETS = (
     "`output`: summarize the concrete deliverable from the active skill;",
     "`drop`: explicitly retire the skill when its deliverable is complete, superseded, or handed off downstream.",
     "`review_result: issues_found` means the review-loop deliverable is still incomplete; keep the review skill active and do not `drop` it as completed yet.",
-    "`review_result: clean_with_assumptions` is a valid clean exit when only tracked low-risk assumptions remain with explicit validation methods.",
+    "`review_result: clean_with_assumptions` is a valid clean exit only when remaining tracked low-risk assumptions have explicit validation methods and do not select or change externally observable behavior, data semantics, permissions, security, compatibility, or failure strategy.",
     "`review_result: needs_clarification` means the review-loop is blocked on a missing decision; stop and ask bounded clarification questions instead of revising through the gap.",
     "A local `修订` on the same artifact stays inside the active review loop when scope, ownership, and artifact identity do not change, including in-thread drafts that have not been written to files yet.",
     "If the same skill path is retried without new evidence, stop and re-scope, escalate, or ask instead of looping on the same action.",
@@ -153,6 +164,12 @@ def assert_parallelism_plan_template(governance_file: Path) -> None:
 def assert_governance_boundaries(governance_file: Path) -> None:
     assert_exists(governance_file)
     for snippet in GOVERNANCE_BOUNDARY_SNIPPETS:
+        assert_contains(governance_file, snippet)
+
+
+def assert_behavior_authority(governance_file: Path) -> None:
+    assert_exists(governance_file)
+    for snippet in BEHAVIOR_AUTHORITY_SNIPPETS:
         assert_contains(governance_file, snippet)
 
 
@@ -199,6 +216,7 @@ def test_project_install_installs_installable_skills(module) -> None:
         assert_contains(claude_md, "## Common Flow Patterns")
         assert_parallelism_plan_template(claude_md)
         assert_governance_boundaries(claude_md)
+        assert_behavior_authority(claude_md)
         assert_routing_semantics(claude_md)
         assert_protocol_semantics(claude_md)
         assert_no_forbidden_runtime_references(project, claude_md)
@@ -216,6 +234,7 @@ def test_agents_template_selection() -> None:
         assert_contains(agents_md, "## Skill Activation")
         assert_parallelism_plan_template(agents_md)
         assert_governance_boundaries(agents_md)
+        assert_behavior_authority(agents_md)
         assert_routing_semantics(agents_md)
         assert_protocol_semantics(agents_md)
         assert_no_forbidden_runtime_references(project, agents_md)
@@ -237,6 +256,7 @@ def test_user_install_installs_user_level_governance(module) -> None:
         assert_contains(codex_agents, "## Skill Activation")
         assert_parallelism_plan_template(codex_agents)
         assert_governance_boundaries(codex_agents)
+        assert_behavior_authority(codex_agents)
         assert_routing_semantics(codex_agents)
         assert_protocol_semantics(codex_agents)
         for skill_dir in module.discover_installable_skills():
@@ -257,6 +277,7 @@ def test_user_install_installs_user_level_governance(module) -> None:
         assert_contains(claude_md, "## Skill Activation")
         assert_parallelism_plan_template(claude_md)
         assert_governance_boundaries(claude_md)
+        assert_behavior_authority(claude_md)
         assert_routing_semantics(claude_md)
         assert_protocol_semantics(claude_md)
         for skill_dir in module.discover_installable_skills():
@@ -280,6 +301,7 @@ def test_cursor_user_install_creates_mdc_rule(module) -> None:
         assert_contains(mdc_file, "## Multi-Agent Rules")
         assert_parallelism_plan_template(mdc_file)
         assert_governance_boundaries(mdc_file)
+        assert_behavior_authority(mdc_file)
         assert_routing_semantics(mdc_file)
         assert_protocol_semantics(mdc_file)
 
@@ -306,6 +328,7 @@ def test_zcode_user_install_installs_user_level_governance(module) -> None:
         assert_contains(zcode_agents, "## Skill Activation")
         assert_parallelism_plan_template(zcode_agents)
         assert_governance_boundaries(zcode_agents)
+        assert_behavior_authority(zcode_agents)
         assert_routing_semantics(zcode_agents)
         assert_protocol_semantics(zcode_agents)
         for skill_dir in module.discover_installable_skills():
@@ -327,12 +350,62 @@ def test_zcode_project_install_injects_agents_and_skips_project_skills() -> None
         assert_contains(agents_md, "## Skill Activation")
         assert_parallelism_plan_template(agents_md)
         assert_governance_boundaries(agents_md)
+        assert_behavior_authority(agents_md)
         assert_routing_semantics(agents_md)
         assert_protocol_semantics(agents_md)
         assert_missing(project / ".zcode" / "skills")
 
         verify_result = run_cli(["verify", "project", str(project), "--platform", "zcode"])
         assert_stdout_contains(verify_result, "ZCode project-level skill installation is not automated")
+
+
+def test_kimi_code_user_install_installs_user_level_governance(module) -> None:
+    with tempfile.TemporaryDirectory(prefix="install-kimi-code-user-") as home_dir:
+        home = Path(home_dir)
+        stale_kimi_skill = home / ".kimi-code" / "skills" / "removed-skill"
+        stale_kimi_skill.mkdir(parents=True)
+        (stale_kimi_skill / "SKILL.md").write_text("# removed\n", encoding="utf-8")
+        (stale_kimi_skill / module.MANAGED_MARKER).write_text("agent-skills\n", encoding="utf-8")
+
+        run_cli(["install", "user", "--platform", "kimi-code", "--overwrite-skills"], home=home)
+        assert_missing(stale_kimi_skill)
+
+        kimi_agents = home / ".kimi-code" / "AGENTS.md"
+        assert_exists(kimi_agents)
+        assert_contains(kimi_agents, "## Multi-Agent Rules")
+        assert_contains(kimi_agents, "## Skill Activation")
+        assert_parallelism_plan_template(kimi_agents)
+        assert_governance_boundaries(kimi_agents)
+        assert_behavior_authority(kimi_agents)
+        assert_routing_semantics(kimi_agents)
+        assert_protocol_semantics(kimi_agents)
+        for skill_dir in module.discover_installable_skills():
+            assert_exists(home / ".kimi-code" / "skills" / skill_dir.name / "SKILL.md")
+
+        run_cli(["verify", "user", "--platform", "kimi-code"], home=home)
+
+
+def test_kimi_code_project_install_installs_skills_and_agents(module) -> None:
+    with tempfile.TemporaryDirectory(prefix="install-kimi-code-project-") as project_dir:
+        project = Path(project_dir)
+
+        run_cli(["install", "project", str(project), "--platform", "kimi-code", "--overwrite-skills"])
+
+        for skill_dir in module.discover_installable_skills():
+            assert_exists(project / ".kimi-code" / "skills" / skill_dir.name / "SKILL.md")
+
+        agents_md = project / "AGENTS.md"
+        assert_exists(agents_md)
+        assert_contains(agents_md, "## Multi-Agent Rules")
+        assert_contains(agents_md, "## Skill Activation")
+        assert_parallelism_plan_template(agents_md)
+        assert_governance_boundaries(agents_md)
+        assert_behavior_authority(agents_md)
+        assert_routing_semantics(agents_md)
+        assert_protocol_semantics(agents_md)
+        assert_no_forbidden_runtime_references(project, agents_md)
+
+        run_cli(["verify", "project", str(project), "--platform", "kimi-code"])
 
 
 def test_legacy_flag_syntax_is_rejected() -> None:
@@ -369,6 +442,8 @@ def main() -> int:
     test_cursor_user_install_creates_mdc_rule(module)
     test_zcode_user_install_installs_user_level_governance(module)
     test_zcode_project_install_injects_agents_and_skips_project_skills()
+    test_kimi_code_user_install_installs_user_level_governance(module)
+    test_kimi_code_project_install_installs_skills_and_agents(module)
     test_legacy_flag_syntax_is_rejected()
     test_partial_install_options_are_rejected()
     test_mirror_command_is_rejected()

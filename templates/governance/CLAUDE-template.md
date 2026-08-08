@@ -29,6 +29,10 @@ Before implementing:
 - No error handling for impossible scenarios.
 - If you write 200 lines and it could be 50, rewrite it.
 
+**Behavior must have an authorization source.** Defaults, matching rules, thresholds, retries, fallbacks, auto-repairs, or failure strategies that affect externally observable results, data semantics, permissions, security, compatibility, or failure handling require one of: confirmed requirements, a confirmed design / active Accepted ADR, existing compatibility behavior the task must preserve, or explicit user authorization for that specific behavior. Assumptions may guide investigation and design options; they do not authorize production behavior. Internal mechanical choices that preserve existing behavior need no extra authorization. "Just do it" / "try first" authorizes only a bounded exploration process, not unspecified product semantics. Without a source, keep the existing contract and ask — do not invent an error path or fallback.
+
+Distinguish: unauthorized behavioral guessing (forbidden); behavior-preserving internal mechanical choice (allowed); explicitly required heuristic algorithms (allowed when acceptance criteria define thresholds and failure modes); existing compatibility probing the task must preserve (allowed).
+
 Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
 ### 3. Surgical Changes
@@ -76,7 +80,9 @@ Before substantial or multi-step implementation, first decide whether the task n
 3. [Step] → verify: [check]
 ```
 
-Continue without an extra user confirmation when the next step is local, non-destructive, and already implied by the current task or accepted plan (for example: read-only exploration, scoped edits, implementation from an accepted `implementation-planning` artifact, self-review, or local validation).
+Continue without an extra user confirmation when the next step is local, non-destructive, and already implied by the current task or accepted plan (for example: read-only exploration, scoped edits, implementation from an accepted `implementation-planning` artifact when the user asked to implement or explicitly proceed with coding, self-review, or local validation).
+
+Stop after a design brief or implementation plan when the current ask is design-only, plan-only, contract formation, or work "before coding" — confirmed behavior authorization settles product semantics, not a license to start production code edits in that same turn.
 
 Stop and ask when the next step would change requirements, public interfaces, cross-module contracts, persistence schema, dependencies or tooling, bulk file layout, or any remote or destructive operation.
 
@@ -184,7 +190,7 @@ Fast paths may omit the full protocol block set. Use these blocks when a non-tri
 - `validate`: record the smallest check that confirms the skill deliverable or handoff is sound.
 - `drop`: explicitly retire the skill when its deliverable is complete, superseded, or handed off downstream.
 - `review_result: issues_found` means the review-loop deliverable is still incomplete; keep the review skill active and do not `drop` it as completed yet.
-- `review_result: clean_with_assumptions` is a valid clean exit when only tracked low-risk assumptions remain with explicit validation methods.
+- `review_result: clean_with_assumptions` is a valid clean exit only when remaining tracked low-risk assumptions have explicit validation methods and do not select or change externally observable behavior, data semantics, permissions, security, compatibility, or failure strategy.
 - `review_result: needs_clarification` means the review-loop is blocked on a missing decision; stop and ask bounded clarification questions instead of revising through the gap.
 - A local `修订` on the same artifact stays inside the active review loop when scope, ownership, and artifact identity do not change, including in-thread drafts that have not been written to files yet.
 
@@ -214,7 +220,8 @@ Normal vs escalation paths:
 Automatic continuation:
 
 - Continue from implementation to `self-review` and `targeted-validation` without an extra user checkpoint when the next step is local and non-destructive.
-- Continue from a completed `implementation-planning` plan into implementation, `self-review`, and `targeted-validation` when the next step remains local, non-destructive, and within the accepted task boundary.
+- Continue from a completed `implementation-planning` plan into implementation, `self-review`, and `targeted-validation` when the next step remains local, non-destructive, within the accepted task boundary, and the user's current request is to implement or explicitly proceed with coding — not when they asked only for design, plan, contract formation, or work "before coding".
+- Confirmed behavior authorization (retries, fallbacks, thresholds, failure strategies) authorizes those product semantics; it does not by itself authorize starting production code edits while the current ask is still design/plan-scoped.
 - Continue after `review_result: issues_found` into a local revision of the same artifact when scope, ownership, and artifact identity stay the same.
 - Continue from that revision back into the same review-loop and do not `drop` the review skill until `review_result: clean` or `clean_with_assumptions`, explicit handoff, or superseding work changes the artifact/boundary.
 - Continue after a review loop returns `review_result: clean` or `clean_with_assumptions` when the next step is explicit, local, and non-destructive.
