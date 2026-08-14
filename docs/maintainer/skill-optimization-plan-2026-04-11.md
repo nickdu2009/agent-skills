@@ -1,9 +1,13 @@
 # Skill Optimization Execution Plan
 
+**Status**: Historical pre-cutover plan. For the current 12-package repository
+contracts, use `current-test-evaluation.md` and
+`../../maintainer/data/token_efficiency_baseline.md`.
+
 **Date**: 2026-04-11  
 **Analysis**: skill-optimization-analysis-2026-04-11.md  
 **Execution Mode**: Multi-agent parallel (Tier 2)  
-**Status**: Ready for execution
+**Original status**: Ready for execution
 
 ## Execution Strategy
 

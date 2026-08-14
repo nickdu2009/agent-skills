@@ -91,7 +91,7 @@ Weak evidence includes naming similarity, nearby code smell, or intuition withou
 ## Output Example
 
 ```
-[output: bugfix-workflow | completed high | symptom:"optional profile path returns 500" cause:"nullable profile lookup is dereferenced in account service" fix:"add guard at first optional-profile access and return 404" validation:"rerun profile-missing endpoint test and confirm non-profile account updates still pass" | next:self-review]
+[output: bugfix-workflow | completed high | symptom:"optional profile path returns 500" cause:"nullable profile lookup is dereferenced in account service" fix:"add guard at first optional-profile access and return 404" validation:"rerun profile-missing endpoint test and confirm non-profile account updates still pass" | next:artifact-review-loop:self-delivery]
 ```
 
 ## Deactivation Trigger

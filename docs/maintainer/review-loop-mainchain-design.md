@@ -1,8 +1,12 @@
-# Review-Loop 主链 5 件套设计文档
+# Review-Loop 主链 5 件套设计文档（历史快照）
+
+Status: Historical
+
+> 本文保留 2026-04-11 的设计背景，不再作为当前契约入口。当前行为以 `skills/artifact-review-loop/` 标准包为准。
 
 ## 1. 目标
 
-为开发工程师在一次完整交付中需要的「评审-修复-再评审」场景，提供一组**结构对齐、边界清晰、独立可触发**的 Cursor Agent Skill。本文档把这组 skill 统称为「主链 5 件套」，主链即 SDLC 主要产物链条上、由 review-loop 类型 skill 串起来的标准评审通路。
+为开发工程师在一次完整交付中需要的「评审-修复-再评审」场景，提供一组**结构对齐、边界清晰、独立可触发**的 Agent Skills。本文档把这组 Skill 统称为「主链 5 件套」，主链即 SDLC 主要产物链条上、由 review-loop 类型 Skill 串起来的标准评审通路。
 
 主链覆盖 SDLC 五个关键产物：
 
@@ -25,7 +29,7 @@ requirements  design       plan         code         test
 ### 1.2 成功指标（量化）
 
 - 5 件套统一骨架达成度：100%（章节顺序、issue 分级、Output Format 字段完全一致）
-- 触发命中率：对一组典型 prompt（每件套 ≥ 10 条），命中正确 skill 的准确率 ≥ 90%（与当前触发优化基线 89% 持平或更高；基线出处见 `docs/maintainer/README-trigger-optimization.md`）
+- 触发命中率：对一组典型 prompt（每件套 ≥ 10 条），命中正确 Skill 的准确率 ≥ 90%；基线通过当前 `run_trigger_tests.py` 数据重新生成。
 - 跨 skill 误触发率 ≤ 5%（用户说"评审 X"时，触发到非 X 的 review skill 的概率）
 - 每个 skill 对一组样本产物（每件套 ≥ 3 份）能稳定识别 ≥ 3 类典型问题
 
@@ -33,7 +37,7 @@ requirements  design       plan         code         test
 
 1. **形状对齐，内容差异化**：5 个 skill 共享统一骨架（章节顺序、issue 分级、输出模板、loop 协议），差异只体现在"审核维度"和"validation 手段"。
 2. **单一职责**：每个 skill 只审一种产物，相邻 skill 通过反向边界声明避免触发冲突。
-3. **触发优先于复用**：Cursor skill 不能互相引用，宁可少量文本重复也要让每个 SKILL.md 自包含、可独立命中。
+3. **触发优先于复用**：每个 Skill 必须能依据自己的 metadata 独立命中；跨 Skill 引用只表达组合，不替代本 Skill 的核心边界。
 4. **不引入第六个抽象层**：不抽 `review-loop-core` 共享文件，不做"参数化大 skill"。
 5. **可执行性优先**：每个 skill 的判定维度都要落到可观测、可验证、可闭环。
 6. **最小变更**：现有 `plan-review-loop` 与 `implementation-review-loop` 只做必要调整，不重写主体逻辑。
@@ -490,7 +494,7 @@ test-review-loop
 
 1. **评审通过的判定**：本设计文档跑 review-loop（按 requirements-review-loop 方法论自审）输出 `review_result: clean` 且用户在对话中确认 → 视为通过；进入落地阶段
 2. 按 §10.2 的 PR 拆分依次落地
-3. 每个 PR 落地后，运行触发测试集（如有），并在 `docs/maintainer/trigger-test-optimization-tracker.md` 记录主链相关测试结果
+3. 每个 PR 落地后运行触发测试集，并把普通结果写入 `maintainer/reports/runs/`，只把稳定结果晋升为 baseline
 4. 主链稳定后，在 `AGENTS.md` 的 Skill Chain Triggers 表中增补主链 5 件套的标准链路示例
 5. **修订执行规范（强制，缓解 §11 风险表"波及面"风险）**：本文档任意修订后必须按以下三步自查：
    - ① 对被改动的关键术语在全文做 grep

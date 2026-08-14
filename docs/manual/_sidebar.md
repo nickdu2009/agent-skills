@@ -2,7 +2,7 @@
 
 - **上手**
   - [快速开始](QUICK-START.md)
-  - [安装说明](INSTALLATION.md)
+  - [接入 Agent Skills](INSTALLATION.md)
 
 - **理解这套方法**
   - [设计理念](DESIGN-PHILOSOPHY.md)

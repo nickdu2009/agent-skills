@@ -2,7 +2,7 @@
 
 **Version**: 1.0  
 **Date**: 2026-04-11  
-**Status**: Historical snapshot
+Status: Historical
 **Scope**: Skill SKILL.md template standardization
 
 > Historical note: this tracker describes the pre-2026-05 skill set and may reference retired skills such as `plan-before-action`, phase skills, or `minimal-change-strategy`. Use current `skills/`, `maintainer/data/skill_index.json`, and `docs/maintainer/README.md` for live status.
@@ -193,8 +193,8 @@ When updating templates:
 
 - **Contract template**: docs/maintainer/skill-contract-template.md
 - **Anti-pattern template**: docs/maintainer/skill-anti-pattern-template.md
-- **Deduplication analysis**: docs/maintainer/deduplication-analysis.md
-- **Skill authoring guide**: docs/maintainer/claude-skill-authoring-best-practices.md (to be updated)
+- **Optimization analysis**: docs/maintainer/skill-optimization-analysis-2026-04-11.md
+- **Package specification**: <https://agentskills.io/specification>
 - **Quality validation**: maintainer/scripts/analysis/check_skill_quality.py
 
 ## Notes and Learnings

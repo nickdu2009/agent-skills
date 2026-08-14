@@ -160,7 +160,7 @@ def parse_task_validation(block: str) -> TaskValidation | None:
 
 
 def parse_triggers(block: str) -> TriggerEvaluation | None:
-    """Parse [triggers: skill1 skill2 | defer: skill3 | skip: skill4]."""
+    """Parse canonical skill:decision pairs and legacy grouped trigger lists."""
     pattern = r'\[triggers:\s*(.*?)\]'
     match = re.search(pattern, block)
 
@@ -186,7 +186,13 @@ def parse_triggers(block: str) -> TriggerEvaluation | None:
 
             skills = parse_space_delimited_list(value)
 
-            if key == 'defer':
+            if value == 'trigger':
+                triggered.append(key)
+            elif value == 'defer':
+                deferred.append(key)
+            elif value == 'skip':
+                skipped.append(key)
+            elif key == 'defer':
                 deferred.extend(skills)
             elif key == 'skip':
                 skipped.extend(skills)
@@ -211,7 +217,10 @@ def parse_precheck(block: str) -> PreconditionCheck | None:
         return None
 
     skill_name = match.group(1).strip()
-    result = normalize_status_symbol(match.group(2).strip())
+    result_segment = match.group(2).strip()
+    if result_segment.startswith('result:'):
+        result_segment = result_segment.split(':', 1)[1]
+    result = normalize_status_symbol(result_segment)
     rest = match.group(3).strip()
 
     fields = parse_field_value_pairs(rest) if rest else {}
@@ -240,11 +249,16 @@ def parse_output(block: str) -> SkillOutput | None:
         return None
 
     skill_name = match.group(1).strip()
-    status_confidence = match.group(2).strip().split()
+    status_segment = match.group(2).strip()
     rest = match.group(3).strip()
 
-    status = status_confidence[0] if len(status_confidence) > 0 else ''
-    confidence = status_confidence[1] if len(status_confidence) > 1 else ''
+    if status_segment.startswith('status:'):
+        status = status_segment.split(':', 1)[1]
+        confidence = ''
+    else:
+        status_confidence = status_segment.split()
+        status = status_confidence[0] if len(status_confidence) > 0 else ''
+        confidence = status_confidence[1] if len(status_confidence) > 1 else ''
 
     # Parse remaining fields
     fields = {}
@@ -255,17 +269,15 @@ def parse_output(block: str) -> SkillOutput | None:
         parts = [p.strip() for p in rest.split('|') if p.strip()]
 
         for part in parts:
-            if ':' in part:
-                key, value = part.split(':', 1)
-                key = key.strip()
-                value = value.strip()
-
-                # Remove quotes
-                if value.startswith('"') and value.endswith('"'):
-                    value = value[1:-1]
-
+            # A compact segment may contain one or more field:value pairs.
+            # Reuse the quote-aware parser so a segment such as
+            # `mode:"review-only" review_result:"clean"` is not collapsed
+            # into one malformed value.
+            for key, value in parse_field_value_pairs(part).items():
                 if key == 'next':
                     next_skill = value
+                elif key == 'confidence':
+                    confidence = value
                 else:
                     fields[key] = value
 
@@ -288,7 +300,10 @@ def parse_validate(block: str) -> OutputValidation | None:
         return None
 
     skill_name = match.group(1).strip()
-    result = normalize_status_symbol(match.group(2).strip())
+    result_segment = match.group(2).strip()
+    if result_segment.startswith('result:'):
+        result_segment = result_segment.split(':', 1)[1]
+    result = normalize_status_symbol(result_segment)
     rest = match.group(3).strip()
 
     fields = parse_field_value_pairs(rest) if rest else {}

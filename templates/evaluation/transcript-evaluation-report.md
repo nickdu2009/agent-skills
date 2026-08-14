@@ -2,7 +2,7 @@
 
 > Date:
 > Evaluator:
-> Platform: [Cursor | Codex | Claude Code]
+> Runtime and version: [name | version]
 > Skill revision: (git SHA or version)
 
 ## Task Description

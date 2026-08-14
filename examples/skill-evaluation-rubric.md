@@ -9,7 +9,7 @@ You want a repeatable scoring standard for reviewing whether an agent actually d
 - `scoped-tasking`
 - `targeted-validation`
 
-Planning behavior is scored against `AGENTS.md` Behavioral Guidelines §4 for lightweight planning and against `implementation-planning` for durable implementation plans.
+Planning behavior is scored against the lightweight inline-plan contract for small tasks and against `implementation-planning` for durable implementation plans.
 
 ## Review Model
 
@@ -49,7 +49,7 @@ Score these dimensions for every scenario:
 - Pass: proposes a bounded initial working set and explains each scope expansion.
 - Fail: scans widely by reflex or expands scope without stating why.
 
-### AGENTS.md §4 Short Plan
+### Lightweight Inline Plan
 
 - Pass: states goal, assumptions, intended files, and per-step verify checks before non-trivial edits.
 - Fail: starts editing while the plan or verify steps are still fuzzy.
@@ -85,8 +85,8 @@ Score these dimensions for every scenario:
 
 ### `multi-agent-protocol`
 
-- Pass: uses tiered parallelism appropriately — Tier 1 for read-only exploration, Tier 2 with an explicit gate declaration for write-capable delegation — with clear assignments and merge expectations.
-- Fail: splits tightly coupled work, launches overlapping write scopes, skips the Tier 2 gate declaration, or conflates explore and delegate tiers.
+- Pass: selects read-only or write-capable delegation appropriately, uses an explicit gate for write-capable delegation, and defines clear assignments and merge expectations.
+- Fail: splits tightly coupled work, launches overlapping write scopes, skips the write-capable gate, or conflates exploration with delegated modification.
 
 - Pass: compares overlapping findings by evidence quality and preserves uncertainty where needed.
 - Fail: collapses conflicting findings into one answer without adjudication or confidence notes.
@@ -98,7 +98,7 @@ Score these dimensions for every scenario:
 
 - Pass: `implementation-planning` splits the work into 2–4 mergeable increments with explicit dependencies and acceptance criteria; each increment keeps the system runnable; escalates to `design-before-plan` or asks the user when the work outgrows simple incremental delivery.
 
-### `self-review`
+### `artifact-review-loop` self-delivery routing
 
 - Pass: reviews diff before testing, catches debug residuals and out-of-scope changes, uses severity grading (blocking vs warning), fixes blocking issues before proceeding to validation.
 - Fail: skips diff review and goes directly to testing, or treats all issues as equal severity, or leaves debug code in the diff.
@@ -124,15 +124,15 @@ Trigger accuracy measures whether the agent loaded the correct skills before exe
 
 A false negative is worse than a false positive. If the agent never loads the skill, the skill's guidance is entirely absent. If the agent loads an extra skill, the cost is context waste but the intended guidance is still present.
 
-### AGENTS.md Boundary Cases
+### Lightweight Planning Boundary Cases
 
-Also verify that governance text stays at the routing layer and points detailed skill behavior back to `SKILL.md`, instead of duplicating step-by-step skill procedures.
+Verify that simple, bounded tasks stay on a direct-execution path while non-trivial tasks load the appropriate Skill instead of relying on an external governance file.
 
 | Score | Meaning |
 | --- | --- |
-| `2` | Simple tasks used only AGENTS.md rules, complex tasks escalated to the full skill, and governance text stayed at routing level |
-| `1` | The agent always loaded the full skill even for simple tasks, or governance text started to blur into skill-manual detail |
-| `0` | The agent never loaded the full skill even for complex tasks, or governance text effectively replaced the skill manual |
+| `2` | Simple tasks stayed direct; complex tasks loaded the appropriate Skill |
+| `1` | The agent loaded a full Skill for a trivial task, but still loaded the required Skill for complex work |
+| `0` | A complex task did not load the required Skill, or depended on external governance instead of the Skill package |
 
 ### Chain Trigger Cases
 
@@ -164,73 +164,15 @@ Also verify that governance text stays at the routing layer and points detailed 
 - If evidence is missing, record uncertainty instead of guessing the score.
 - Do not conflate trigger accuracy with execution quality. A skill that triggered correctly but was followed poorly is a behavior issue, not a trigger issue.
 
-## Skill Protocol v1 Evidence Capture
+## Skill Protocol v2 Evidence Capture
 
 Use protocol blocks as first-class scoring evidence instead of relying on prose impressions alone.
 
-```yaml
-[task-input-validation]
-task: "Score whether the scenario run actually followed the intended skill behavior."
-checks:
-  clarity:
-    status: PASS
-    reason: "The scoring goal and evidence source are explicit."
-  scope:
-    status: PASS
-    reason: "The review is bounded to the scenario transcript."
-  safety:
-    status: PASS
-    reason: "Transcript scoring is read-only."
-  skill_match:
-    status: PASS
-    reason: "Rubric review can inspect protocol evidence directly."
-result: PASS
-action: proceed
-[/task-input-validation]
-
-[trigger-evaluation]
-task: "Evaluate one scenario transcript."
-evaluated:
-  - scoped-tasking: ✓ TRIGGER
-  - targeted-validation: ✓ TRIGGER
-activated_now: [scoped-tasking, targeted-validation]
-deferred: []
-[/trigger-evaluation]
-
-[precondition-check: targeted-validation]
-checks:
-  - transcript_contains_protocol_blocks: ✓ PASS
-  - expected_skills_known: ✓ PASS
-result: PASS
-[/precondition-check]
-
-[skill-output: targeted-validation]
-status: completed
-confidence: high
-outputs:
-  checks_to_run:
-    - "verify [task-input-validation] appears before [trigger-evaluation]"
-    - "verify each [skill-output] has matching [output-validation]"
-  risks_not_covered:
-    - "transcript may still hide missing internal reasoning"
-  pass_criteria:
-    - "protocol sequence matches the intended scenario"
-signals:
-  scoring_ready: true
-recommendations:
-  next_step: "grade scope, planning, and validation behavior against visible blocks"
-[/skill-output]
-
-[output-validation: targeted-validation]
-checks:
-  - outputs.checks_to_run: ✓ PASS
-  - outputs.pass_criteria: ✓ PASS
-result: PASS
-[/output-validation]
-
-[skill-deactivation: targeted-validation]
-reason: "The transcript scoring checklist has been applied."
-outputs_consumed_by: [scoped-tasking]
-remaining_active: []
-[/skill-deactivation]
+```text
+[task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
+[triggers: scoped-tasking:trigger | targeted-validation:trigger]
+[precheck: targeted-validation | result:PASS | checks:protocol-blocks-present expected-skills-known]
+[output: targeted-validation | status:completed | confidence:high | command:"score the transcript against protocol lifecycle and skill rubric" reason:"visible compact blocks provide repeatable evidence" residual_risk:"the transcript cannot prove hidden internal reasoning" | next:scoped-tasking]
+[validate: targeted-validation | result:PASS | checks:command reason residual_risk]
+[drop: targeted-validation | reason:"transcript scoring checklist applied" | active:scoped-tasking]
 ```

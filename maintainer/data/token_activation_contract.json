@@ -1,0 +1,411 @@
+{
+  "measurement_contract_version": "1.0",
+  "token_counter": "tiktoken",
+  "counter_version": "0.13.0",
+  "tokenizer": "o200k_base",
+  "reference_manifest": {
+    "path": "references/manifest.yaml",
+    "schema_version": "1.0",
+    "load_modes": [
+      "always",
+      "conditional",
+      "optional-runtime",
+      "authoring-only"
+    ]
+  },
+  "budgets": {
+    "release": {
+      "full_discovery_metadata": 1300,
+      "core_discovery_metadata": 1150,
+      "artifact_review_metadata": 160,
+      "all_skill_main": 29000,
+      "typical_activation": 3000,
+      "heavy_activation": 5000,
+      "worst_runtime_activation": 5000,
+      "all_package_text": 35000,
+      "repository_governance": 3608
+    },
+    "engineering": {
+      "full_discovery_metadata": 1275,
+      "core_discovery_metadata": 1125,
+      "artifact_review_metadata": 160,
+      "repository_governance": 3500
+    }
+  },
+  "skill_file_budgets": {
+    "requirement-interview": {
+      "main_min": 2350,
+      "main_max": 2500,
+      "references/requirement-types.md": 450,
+      "references/examples.md": 450,
+      "typical_activation_max": 2950,
+      "worst_runtime_max": 3400
+    },
+    "design-before-plan": {
+      "main_min": 1900,
+      "main_max": 2100,
+      "references/design-brief-format.md": 400,
+      "references/adr-format.md": 250,
+      "references/nfr-checks.md": 400,
+      "references/data-migration-checks.md": 350,
+      "references/examples.md": 300,
+      "worst_runtime_max": 3800
+    },
+    "architecture-design": {
+      "main_min": 2050,
+      "main_max": 2200,
+      "references/architecture-template.md": 550,
+      "references/adr-format.md": 250,
+      "references/principles.md": 400,
+      "references/examples.md": 200,
+      "worst_runtime_max": 3600
+    },
+    "implementation-planning": {
+      "main_min": 2000,
+      "main_max": 2150,
+      "references/plan-template.md": 800,
+      "references/upstream-artifacts.md": 350,
+      "references/gate-00.md": 250,
+      "references/delegation-task-card.md": 200,
+      "references/examples.md": 300,
+      "worst_runtime_max": 4050
+    },
+    "artifact-review-loop": {
+      "main_min": 1400,
+      "main_max": 1800,
+      "runtime_references_total_max": 2750,
+      "single_object_activation_max": 2350,
+      "mixed_activation_max": 4550,
+      "worst_runtime_max": 4550
+    }
+  },
+  "reference_contracts": {
+    "requirement-interview": [
+      {
+        "path": "references/requirement-types.md",
+        "load_mode": "conditional",
+        "condition_id": "requirement-type-calibration"
+      },
+      {
+        "path": "references/examples.md",
+        "load_mode": "optional-runtime",
+        "condition_id": "example-calibration"
+      }
+    ],
+    "design-before-plan": [
+      {
+        "path": "references/design-brief-format.md",
+        "load_mode": "always",
+        "condition_id": "activation"
+      },
+      {
+        "path": "references/adr-format.md",
+        "load_mode": "conditional",
+        "condition_id": "adr-candidate"
+      },
+      {
+        "path": "references/nfr-checks.md",
+        "load_mode": "conditional",
+        "condition_id": "nfr-design"
+      },
+      {
+        "path": "references/data-migration-checks.md",
+        "load_mode": "conditional",
+        "condition_id": "data-migration"
+      },
+      {
+        "path": "references/examples.md",
+        "load_mode": "optional-runtime",
+        "condition_id": "example-calibration"
+      }
+    ],
+    "architecture-design": [
+      {
+        "path": "references/architecture-template.md",
+        "load_mode": "always",
+        "condition_id": "activation"
+      },
+      {
+        "path": "references/adr-format.md",
+        "load_mode": "conditional",
+        "condition_id": "adr-candidate"
+      },
+      {
+        "path": "references/principles.md",
+        "load_mode": "conditional",
+        "condition_id": "architecture-principles"
+      },
+      {
+        "path": "references/examples.md",
+        "load_mode": "optional-runtime",
+        "condition_id": "example-calibration"
+      }
+    ],
+    "implementation-planning": [
+      {
+        "path": "references/plan-template.md",
+        "load_mode": "always",
+        "condition_id": "activation"
+      },
+      {
+        "path": "references/upstream-artifacts.md",
+        "load_mode": "conditional",
+        "condition_id": "adr-alignment"
+      },
+      {
+        "path": "references/gate-00.md",
+        "load_mode": "conditional",
+        "condition_id": "pre-coding-gate"
+      },
+      {
+        "path": "references/delegation-task-card.md",
+        "load_mode": "conditional",
+        "condition_id": "delegated-planning"
+      },
+      {
+        "path": "references/examples.md",
+        "load_mode": "optional-runtime",
+        "condition_id": "example-calibration"
+      }
+    ],
+    "artifact-review-loop": [
+      {
+        "path": "references/requirements.md",
+        "load_mode": "conditional",
+        "condition_id": "review-requirements"
+      },
+      {
+        "path": "references/design.md",
+        "load_mode": "conditional",
+        "condition_id": "review-design"
+      },
+      {
+        "path": "references/plan.md",
+        "load_mode": "conditional",
+        "condition_id": "review-plan"
+      },
+      {
+        "path": "references/code.md",
+        "load_mode": "conditional",
+        "condition_id": "review-code"
+      },
+      {
+        "path": "references/tests.md",
+        "load_mode": "conditional",
+        "condition_id": "review-tests"
+      }
+    ],
+    "manage-agents-md": [
+      {
+        "path": "INITIALIZATION.md",
+        "load_mode": "conditional",
+        "condition_id": "initialization"
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "token-requirement-interview-type-questions-typical",
+      "skill": "requirement-interview",
+      "class": "typical",
+      "references": ["references/requirement-types.md"]
+    },
+    {
+      "id": "token-requirement-interview-max-heavy",
+      "skill": "requirement-interview",
+      "class": "heavy",
+      "references": ["references/requirement-types.md", "references/examples.md"],
+      "max_runtime": true
+    },
+    {
+      "id": "token-design-before-plan-base-typical",
+      "skill": "design-before-plan",
+      "class": "typical",
+      "references": []
+    },
+    {
+      "id": "token-design-before-plan-adr-typical",
+      "skill": "design-before-plan",
+      "class": "typical",
+      "references": ["references/adr-format.md"]
+    },
+    {
+      "id": "token-design-before-plan-nfr-typical",
+      "skill": "design-before-plan",
+      "class": "typical",
+      "references": ["references/nfr-checks.md"]
+    },
+    {
+      "id": "token-design-before-plan-data-migration-typical",
+      "skill": "design-before-plan",
+      "class": "typical",
+      "references": ["references/data-migration-checks.md"]
+    },
+    {
+      "id": "token-design-before-plan-example-typical",
+      "skill": "design-before-plan",
+      "class": "typical",
+      "references": ["references/examples.md"]
+    },
+    {
+      "id": "token-design-before-plan-max-heavy",
+      "skill": "design-before-plan",
+      "class": "heavy",
+      "references": ["references/adr-format.md", "references/nfr-checks.md", "references/data-migration-checks.md", "references/examples.md"],
+      "max_runtime": true
+    },
+    {
+      "id": "token-architecture-design-base-typical",
+      "skill": "architecture-design",
+      "class": "typical",
+      "references": []
+    },
+    {
+      "id": "token-architecture-design-adr-typical",
+      "skill": "architecture-design",
+      "class": "typical",
+      "references": ["references/adr-format.md"]
+    },
+    {
+      "id": "token-architecture-design-example-typical",
+      "skill": "architecture-design",
+      "class": "typical",
+      "references": ["references/examples.md"]
+    },
+    {
+      "id": "token-architecture-design-principles-heavy",
+      "skill": "architecture-design",
+      "class": "heavy",
+      "references": ["references/principles.md"]
+    },
+    {
+      "id": "token-architecture-design-max-heavy",
+      "skill": "architecture-design",
+      "class": "heavy",
+      "references": ["references/adr-format.md", "references/principles.md", "references/examples.md"],
+      "max_runtime": true
+    },
+    {
+      "id": "token-implementation-planning-base-typical",
+      "skill": "implementation-planning",
+      "class": "typical",
+      "references": []
+    },
+    {
+      "id": "token-implementation-planning-accepted-adr-heavy",
+      "skill": "implementation-planning",
+      "class": "heavy",
+      "references": ["references/upstream-artifacts.md"]
+    },
+    {
+      "id": "token-implementation-planning-gate-heavy",
+      "skill": "implementation-planning",
+      "class": "heavy",
+      "references": ["references/gate-00.md"]
+    },
+    {
+      "id": "token-implementation-planning-delegation-heavy",
+      "skill": "implementation-planning",
+      "class": "heavy",
+      "references": ["references/delegation-task-card.md"]
+    },
+    {
+      "id": "token-implementation-planning-example-heavy",
+      "skill": "implementation-planning",
+      "class": "heavy",
+      "references": ["references/examples.md"]
+    },
+    {
+      "id": "token-implementation-planning-max-heavy",
+      "skill": "implementation-planning",
+      "class": "heavy",
+      "references": ["references/upstream-artifacts.md", "references/gate-00.md", "references/delegation-task-card.md", "references/examples.md"],
+      "max_runtime": true
+    },
+    {
+      "id": "token-artifact-review-requirements-primary-typical",
+      "skill": "artifact-review-loop",
+      "class": "typical",
+      "references": ["references/requirements.md"]
+    },
+    {
+      "id": "token-artifact-review-design-primary-typical",
+      "skill": "artifact-review-loop",
+      "class": "typical",
+      "references": ["references/design.md"]
+    },
+    {
+      "id": "token-artifact-review-plan-primary-typical",
+      "skill": "artifact-review-loop",
+      "class": "typical",
+      "references": ["references/plan.md"]
+    },
+    {
+      "id": "token-artifact-review-code-primary-typical",
+      "skill": "artifact-review-loop",
+      "class": "typical",
+      "references": ["references/code.md"]
+    },
+    {
+      "id": "token-artifact-review-tests-primary-typical",
+      "skill": "artifact-review-loop",
+      "class": "typical",
+      "references": ["references/tests.md"]
+    },
+    {
+      "id": "token-artifact-review-self-delivery-typical",
+      "skill": "artifact-review-loop",
+      "class": "typical",
+      "references": ["references/code.md"]
+    },
+    {
+      "id": "token-artifact-review-mixed-heavy",
+      "skill": "artifact-review-loop",
+      "class": "heavy",
+      "references": ["references/requirements.md", "references/design.md", "references/plan.md", "references/code.md", "references/tests.md"],
+      "max_runtime": true
+    },
+    {
+      "id": "token-scoped-tasking-base-typical",
+      "skill": "scoped-tasking",
+      "class": "typical",
+      "references": []
+    },
+    {
+      "id": "token-bugfix-workflow-base-typical",
+      "skill": "bugfix-workflow",
+      "class": "typical",
+      "references": []
+    },
+    {
+      "id": "token-safe-refactor-base-typical",
+      "skill": "safe-refactor",
+      "class": "typical",
+      "references": []
+    },
+    {
+      "id": "token-impact-analysis-base-typical",
+      "skill": "impact-analysis",
+      "class": "typical",
+      "references": []
+    },
+    {
+      "id": "token-targeted-validation-base-typical",
+      "skill": "targeted-validation",
+      "class": "typical",
+      "references": []
+    },
+    {
+      "id": "token-multi-agent-protocol-base-typical",
+      "skill": "multi-agent-protocol",
+      "class": "typical",
+      "references": []
+    },
+    {
+      "id": "token-manage-agents-init-typical",
+      "skill": "manage-agents-md",
+      "class": "typical",
+      "references": ["INITIALIZATION.md"]
+    }
+  ]
+}

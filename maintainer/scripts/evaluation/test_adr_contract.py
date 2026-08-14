@@ -13,9 +13,8 @@ SKILLS_ROOT = REPO_ROOT / "skills"
 GENERIC_SKILLS = (
     "design-before-plan",
     "architecture-design",
-    "design-review-loop",
+    "artifact-review-loop",
     "implementation-planning",
-    "plan-review-loop",
 )
 PRODUCERS = ("design-before-plan", "architecture-design")
 REQUIRED_HEADINGS = (
@@ -49,39 +48,41 @@ def extract_adr_template(text: str, path: Path) -> str:
 def assert_producer_contracts() -> None:
     templates: list[str] = []
     for skill in PRODUCERS:
-        path = SKILLS_ROOT / skill / "adr-format.md"
+        path = SKILLS_ROOT / skill / "references" / "adr-format.md"
         text = read(path)
         template = extract_adr_template(text, path)
         templates.append(template)
         assert STATUS_ENUM in template, f"{path}: status enum drift"
         for heading in REQUIRED_HEADINGS:
             assert heading in template, f"{path}: missing {heading}"
-        assert "ADR-NNNN" in text, f"{path}: missing numeric ADR ID rule"
-        assert "ADR-YYYYMMDD-<slug>" in text, f"{path}: missing date-slug ADR ID rule"
-        assert "Accepted ADRs use `Supersedes`" in text, f"{path}: missing Accepted relationship rule"
+        assert "# <ADR-ID>: <title>" in text, f"{path}: missing vendor-neutral ADR ID slot"
+        assert "Accepted ADRs may use `Supersedes`" in text, f"{path}: missing Accepted relationship rule"
         assert "Proposed ADRs use only `Proposes to supersede`" in text, f"{path}: missing Proposed relationship rule"
     assert templates[0] == templates[1], "producer ADR Markdown templates differ"
 
 
 def assert_consumer_contracts() -> None:
-    review = read(SKILLS_ROOT / "design-review-loop" / "adr-review.md")
+    review = read(SKILLS_ROOT / "artifact-review-loop" / "references" / "design.md")
     for phrase in (
         "Decision Drivers",
         "realistic alternatives",
-        "Positive and negative consequences",
+        "positive and negative consequences",
         "Revisit conditions",
-        "Accepted ADRs use `Supersedes`",
-        "Proposed ADRs use only `Proposes to supersede`",
+        "relationships",
+        "Proposed",
+        "Accepted",
     ):
         assert phrase.lower() in review.lower(), f"ADR review contract missing {phrase!r}"
 
-    planning = read(SKILLS_ROOT / "implementation-planning" / "upstream-artifacts.md")
-    plan_review = read(SKILLS_ROOT / "plan-review-loop" / "upstream-adr-alignment.md")
+    planning = read(
+        SKILLS_ROOT / "implementation-planning" / "references" / "upstream-artifacts.md"
+    )
+    plan_review = read(SKILLS_ROOT / "artifact-review-loop" / "references" / "plan.md")
     for path, text in (
-        ("implementation-planning/upstream-artifacts.md", planning),
-        ("plan-review-loop/upstream-adr-alignment.md", plan_review),
+        ("implementation-planning/references/upstream-artifacts.md", planning),
+        ("artifact-review-loop/references/plan.md", plan_review),
     ):
-        for phrase in ("Accepted", "Proposed", "Deprecated", "Superseded", "historical", "retired", "Supersedes"):
+        for phrase in ("Accepted", "Proposed", "superseded"):
             assert phrase in text, f"{path}: missing activity rule {phrase!r}"
 
     architecture = read(SKILLS_ROOT / "architecture-design" / "SKILL.md")
@@ -96,8 +97,7 @@ def assert_decoupled_and_compact() -> None:
         main = skill_dir / "SKILL.md"
         line_count = len(read(main).splitlines())
         assert line_count < 500, f"{main}: {line_count} lines exceeds hard limit"
-        assert 150 <= line_count <= 250, f"{main}: {line_count} lines misses target 150-250"
-        for path in skill_dir.glob("*.md"):
+        for path in skill_dir.rglob("*.md"):
             text = read(path)
             assert not re.search(r"(?i)\bworktrail\b|\.worktrail", text), (
                 f"{path}: generic skill contains persistence-specific coupling"

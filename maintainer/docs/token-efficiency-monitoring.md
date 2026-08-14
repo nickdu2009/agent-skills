@@ -42,11 +42,11 @@ python3 maintainer/scripts/audit/run_quarterly_audit.py --json
 ### Detect Regressions
 
 ```bash
-# Compare to latest audit
+# Compare to the machine-readable operational baseline
 python3 maintainer/scripts/audit/detect_regressions.py
 
-# Compare to specific baseline
-python3 maintainer/scripts/audit/detect_regressions.py --baseline 2026-Q1-audit-report.md
+# Intentional historical comparison with a current-format full-surface report
+python3 maintainer/scripts/audit/detect_regressions.py --baseline 2026-Q3-audit-report.md
 
 # JSON output
 python3 maintainer/scripts/audit/detect_regressions.py --json
@@ -114,7 +114,7 @@ Priority order:
 
 ### 4. Archive Report
 
-Reports are stored in `maintainer/data/audits/YYYY-QN-audit-report.md` and serve as baseline for next quarter.
+Reports are stored in `maintainer/data/audits/YYYY-QN-audit-report.md` as historical snapshots. The single operational baseline remains `maintainer/data/token_efficiency_baseline.json`; a quarterly report becomes the baseline only after that JSON is intentionally updated and reviewed.
 
 ## Thresholds and Alert Rules
 
@@ -122,15 +122,18 @@ Reports are stored in `maintainer/data/audits/YYYY-QN-audit-report.md` and serve
 
 | Metric | Target | Warning | Critical |
 |--------|--------|---------|----------|
-| Pass rate | 100% | <100% | <95% |
+| Pass rate | 100% | Derived from failing-skill count | Derived from failing-skill count |
 | Failing skills | 0 | 1-2 | 3+ |
 
 ### Token Thresholds
 
 | Metric | Target | Warning | Critical |
 |--------|--------|---------|----------|
-| Total tokens | ≤41,783 | +5% | +10% |
-| Avg tokens/skill | ≤2,321 | +5% | +10% |
+| All `SKILL.md` tokens | ≤18,084 | >+5% | ≥+10% |
+| Avg tokens/skill | ≤1,507 | >+5% | ≥+10% |
+| Largest Skill body | ≤2,261 | >+5% | ≥+10% |
+| All package text | ≤24,123 | >+5% | ≥+10% |
+| Repository governance | ≤3,480 | >+5% | ≥+10% |
 | Skills >500 lines | 0 | 1 | 2+ |
 
 ### Cross-Reference Thresholds
@@ -239,7 +242,7 @@ python3 maintainer/scripts/analysis/check_cross_references.py --json
 1. Re-apply templates:
    - `docs/maintainer/skill-chain-aliases.md`
    - `docs/maintainer/skill-contract-template.md`
-   - `docs/maintainer/protocol-v2-compact.md`
+   - `docs/user/SKILL-PROTOCOL-V2.md`
 2. Verify token count improvement
 3. Update skill maintainer guide if needed
 
@@ -312,14 +315,20 @@ Trigger manually via GitHub Actions:
 
 ### Current Baseline
 
-Established: 2026-04-11  
-File: `maintainer/data/token_efficiency_baseline.md`
+Refreshed: 2026-08-13
+
+Machine-readable source: `maintainer/data/token_efficiency_baseline.json`
+
+Interpretation: `maintainer/data/token_efficiency_baseline.md`
 
 Key metrics:
 
-- Quality: 18/18 skills (100%)
-- Total tokens: 41,783
-- Avg tokens/skill: 2,321
+- Measurement: contract `1.0`, `tiktoken==0.13.0`, `o200k_base`
+- Quality: 12/12 skills (100%)
+- Total tokens: 18,084
+- Avg tokens/skill: 1,507
+- All package text: 24,123
+- Repository governance: 3,480
 - Cross-refs broken: 0
 - Skills >500 lines: 0
 
@@ -338,12 +347,10 @@ Baseline should be updated when:
    - Intentional (not accidental)
    - Sustainable (not temporary)
    - Documented (rationale clear)
-3. Update `token_efficiency_baseline.md`
-4. Update hardcoded targets in scripts:
-   - `run_quarterly_audit.py`
-   - `token_efficiency_dashboard.py`
-   - `detect_regressions.py`
-5. Commit with clear message explaining baseline change
+3. Update `token_efficiency_baseline.json` as the single machine-readable source
+4. Update `token_efficiency_baseline.md` with the matching interpretation and scenario notes
+5. Regenerate the quarterly audit and verify the dashboard/regression detector consume the JSON values
+6. Commit with clear rationale when lifecycle authorization includes a commit
 
 ## Troubleshooting
 
@@ -399,11 +406,11 @@ python3 maintainer/scripts/analysis/token_savings_calculator.py \
 
 ## Related Documentation
 
-- `token_efficiency_baseline.md` - Baseline metrics and targets
-- `token-efficiency-optimization-plan.md` - Overall optimization strategy
+- `maintainer/data/token_efficiency_baseline.json` - Machine-readable baseline source
+- `maintainer/data/token_efficiency_baseline.md` - Baseline interpretation and reproduction guide
 - `skill-chain-aliases.md` - Chain alias templates
 - `skill-contract-template.md` - Contract format guide
-- `protocol-v2-compact.md` - Compact protocol notation
+- `docs/user/SKILL-PROTOCOL-V2.md` - Canonical compact protocol notation
 
 ## Script Reference
 
@@ -436,11 +443,11 @@ python3 maintainer/scripts/audit/token_efficiency_dashboard.py [--markdown] [--n
 
 **Output**: Terminal dashboard (default), markdown, or JSON
 
-**Exit codes**: Always 0 (informational only)
+**Exit codes**: 0 on a successful dashboard; non-zero when metric collection or token-method validation fails
 
 ### `detect_regressions.py`
 
-**Purpose**: Compare current state to baseline/last audit
+**Purpose**: Compare current state to the operational JSON baseline or an explicitly selected current-format historical audit
 
 **Usage**:
 
@@ -454,6 +461,7 @@ python3 maintainer/scripts/audit/detect_regressions.py [--baseline FILE] [--json
 
 - 0: No critical regressions
 - 1: Critical regressions detected
+- 2: Baseline or metric collection is incomplete/incompatible
 
 ## Best Practices
 

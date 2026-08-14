@@ -35,24 +35,24 @@ Design decision with multiple approaches and cross-module impact.
 - Non-functional:
   - Maintain p95 latency < 2s for batches of 10 items
   - Preserve existing rate limit semantics
-- Implicit:
+- Implicit NFR candidates (check ≠ adopt; each has source/status/blocking):
   - Security:
-    - Validate batch size limit (max 100) to prevent DoS
-    - Reuse existing authentication (single token validates entire batch)
-    - Validate each item against same authorization rules as single-item endpoint
+    - Validate batch size limit (max 100) to prevent DoS — source: scoped functional limit; status: confirmed
+    - Reuse existing authentication (single token validates entire batch) — source: existing contract; status: confirmed
+    - Validate each item against same authorization rules as single-item endpoint — source: existing contract; status: confirmed
   - Performance:
-    - Process items in transaction batches (e.g., 10 at a time) to avoid long-running transactions
-    - Database connection pooling must handle batch workload without exhaustion
+    - Process items in transaction batches (candidate size TBD) to avoid long-running transactions — status: open; blocking: false for design choice of endpoint shape
+    - Database connection pooling must handle batch workload without exhaustion — status: open; blocking: false
   - Observability:
-    - Log batch start/complete with item count and duration
-    - Emit metrics: batch_size, batch_duration_seconds, items_succeeded, items_failed
-    - Include batch_id in logs for request correlation
-  - Resilience:
-    - Timeout batch processing after 30 seconds
-    - Partial failure should not abort entire batch (best-effort mode default)
+    - Log batch start/complete with item count and duration — status: open; blocking: false
+    - Emit metrics: batch_size, batch_duration_seconds, items_succeeded, items_failed — status: open; blocking: false
+    - Include batch_id in logs for request correlation — status: open; blocking: false
+  - Resilience (must ask before adopting):
+    - Batch processing timeout value — status: open; blocking: true (do not invent "30 seconds")
+    - Partial-failure mode (all-or-nothing vs best-effort) — status: open; blocking: true (do not invent a default)
 - Edge cases:
-  - Partial failures (item 3 fails validation, others succeed)
-  - Transaction semantics (all-or-nothing vs. best-effort)
+  - Partial failures (item 3 fails validation, others succeed) — ask whether this is required
+  - Transaction semantics (all-or-nothing vs. best-effort) — confirm with user before chosen_design
 
 **Design alternatives:**
 1. **Single endpoint with batch payload:**
@@ -73,12 +73,19 @@ Design decision with multiple approaches and cross-module impact.
    - Cons: requires GraphQL dependency, large migration scope
    - Blast radius: 8+ files (new GraphQL layer)
 
+**Clarification before chosen_design (behavioral NFRs):**
+- User confirms: default mode is best-effort (`options.atomic=false`); atomic mode available on request.
+- User confirms: batch processing timeout is 30 seconds; exceeded batches fail closed with a structured timeout error (no silent partial success beyond completed items already returned).
+
 **Chosen design:**
 - Approach: Single batch endpoint (`POST /items/batch`)
 - Rationale:
   - Clear contract separation (no payload polymorphism)
   - Smallest blast radius among non-trivial options
   - Existing REST clients can adopt incrementally
+- Authorized behavioral decisions (only after confirmation above):
+  - Default best-effort mode with optional atomic flag
+  - 30s batch timeout with fail-closed structured error
 - Deferred:
   - GraphQL layer (future: when 3+ batch operations exist, revisit)
   - WebSocket streaming for large batches (optimization for future)
@@ -98,7 +105,7 @@ Design decision with multiple approaches and cross-module impact.
       { "name": "item2", "value": 20 }
     ],
     "options": {
-      "atomic": false  // default: best-effort mode
+      "atomic": false  // default best-effort — confirmed by user before chosen_design
     }
   }
   ```
@@ -144,9 +151,10 @@ Design decision with multiple approaches and cross-module impact.
 
 ### Phase 3: Planning (`implementation-planning`)
 Consumes the design brief and produces a durable per-step plan with verify checks:
-- Goal: implement `POST /items/batch` endpoint with best-effort semantics
+- Goal: implement `POST /items/batch` endpoint with confirmed best-effort default and 30s timeout
 - Scope: 2 files (batch controller, routes)
-- Assumptions: existing item validation logic is reusable
+- Mechanical assumption: existing item validation logic is reusable (behavior-preserving)
+- Behavioral assumptions: none remaining — timeout and failure mode were confirmed in design
 - Intended files: `routes/items.js`, `controllers/batch_items_controller.js`, `tests/batch_items.test.js`
 - Plan:
   1. Add route + controller skeleton → verify: route table updated, 200 OK on empty array
@@ -193,7 +201,7 @@ Correct approach: During design phase, explicitly check implicit requirements tr
 [task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
 [triggers: scoped-tasking:trigger design-before-plan:trigger]
 [precheck: design-before-plan | result:PASS | checks:alternatives_exist acceptance_criteria_unfrozen]
-[output: design-before-plan | status:completed | confidence:high | requirements:"Support batch create and update up to 100 items" | alternatives:"Single batch endpoint, Extend existing endpoint, GraphQL mutation" | chosen_design:"POST /items/batch" | rationale:"Clear contract separation with smallest acceptable blast radius" | acceptance_criteria:"Per-item partial failure details are returned; Batches of 10 finish within 2 seconds p95" linked_adrs:"none" adr_candidates:"ADR-0042:Use a dedicated REST batch endpoint:Proposed" | planning_ready:true | next:design-review-loop]
+[output: design-before-plan | status:completed | confidence:high | requirements:"Support batch create and update up to 100 items" | alternatives:"Single batch endpoint, Extend existing endpoint, GraphQL mutation" | chosen_design:"POST /items/batch" | rationale:"Clear contract separation with smallest acceptable blast radius" | acceptance_criteria:"Per-item partial failure details are returned; Batches of 10 finish within 2 seconds p95" linked_adrs:"none" adr_candidates:"ADR-0042:Use a dedicated REST batch endpoint:Proposed" | planning_ready:true | next:artifact-review-loop:design]
 [validate: design-before-plan | result:PASS | checks:alternatives acceptance_criteria]
 [drop: design-before-plan | reason:"design brief complete, ready for implementation-planning" | active:none]
 ```

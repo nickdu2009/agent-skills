@@ -87,7 +87,7 @@ Before editing, state:
 ## Output Example
 
 ```
-[output: safe-refactor | completed medium | invariants:"handler signatures unchanged; normalized payload shape unchanged" changes:"extract shared normalization helper and switch handlers one by one" validation:"run handler-focused tests after each extraction step" | next:self-review]
+[output: safe-refactor | completed medium | invariants:"handler signatures unchanged; normalized payload shape unchanged" changes:"extract shared normalization helper and switch handlers one by one" validation:"run handler-focused tests after each extraction step" | next:artifact-review-loop:self-delivery]
 ```
 
 ## Deactivation Trigger

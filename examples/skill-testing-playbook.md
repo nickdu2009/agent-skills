@@ -9,7 +9,7 @@ You changed one or more `SKILL.md` files and want a repeatable way to verify tha
 - `scoped-tasking`
 - `targeted-validation`
 
-Implementation follows `AGENTS.md` Behavioral Guidelines §4 for short planning, and `implementation-planning` when a durable plan artifact is part of the test surface.
+Implementation uses a lightweight inline plan for short work, and `implementation-planning` when a durable plan artifact is part of the test surface.
 
 ## Test Flow
 
@@ -34,13 +34,9 @@ flowchart TD
 Run:
 
 ```bash
+python3 maintainer/scripts/analysis/validate_agent_skills.py
 python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
-```
-
-If needed:
-
-```bash
-python3 maintainer/scripts/install/run_manage_governance_smoke.py
+python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode report
 ```
 
 ## Scenario Matrix
@@ -50,10 +46,9 @@ python3 maintainer/scripts/install/run_manage_governance_smoke.py
 | `single-agent-bugfix.md` | diagnosis before edit | symptom clarity, fault-domain narrowing, smallest viable fix, narrow validation |
 | `safe-refactor.md` | behavior-preserving structure change | invariants stated, extraction in small steps, validation after meaningful steps |
 | `implementation-planning.md` | durable implementation planning | acceptance map, file landing, verify checks, rollback notes, handoff to plan review |
-| `context-budgeted-debugging.md` | context compression and restart | stale hypotheses dropped, compressed summary, focused next step |
 | `multi-agent-root-cause-analysis.md` | justified parallelism | low-coupling split, clear subagent assignments, merge and adjudication discipline |
 | `impact-analysis.md` | blast radius assessment before planning | outward tracing from edit point, structured impact summary, stop at framework boundaries, result feeds into plan |
-| `self-review.md` | diff quality check before testing | reviews diff before running tests, catches debug residuals, severity grading, fixes blocking issues first |
+| `self-delivery-review.md` | authorized diff quality check before testing | verifies current-task provenance, reviews the bounded diff, catches debug residuals, and fixes blocking issues first |
 
 ## Core Acceptance Checklist
 
@@ -144,12 +139,12 @@ The matrix lives in `maintainer/data/trigger_test_data.py`. Each case specifies:
 | Category | What It Tests |
 | --- | --- |
 | `task-type` | Does the right skill activate for bugs, refactors, and features? |
-| `agents-md-boundary` | Do simple tasks stay at AGENTS.md level while complex tasks escalate to the full skill? |
+| `lightweight-planning-boundary` | Do simple tasks stay on the direct-execution path while complex tasks load the appropriate skill? |
 
 ### How to Run a Trigger Test
 
 1. Pick a case from `maintainer/data/trigger_test_data.py`.
-2. Start a fresh agent session (Cursor, Codex, or Claude Code).
+2. Start a fresh session in the target Agent Skills runtime.
 3. Send the case prompt as the first user message.
 4. Observe which skills the agent reads or references in its first response.
 5. Score against expected triggers and expected non-triggers.
@@ -159,7 +154,7 @@ The matrix lives in `maintainer/data/trigger_test_data.py`. Each case specifies:
 ```text
 Case ID:
 Date:
-Platform: [Cursor | Codex | Claude Code]
+Runtime and version: [name | version]
 
 Prompt:
 <paste the case prompt>
@@ -207,75 +202,13 @@ A false negative (skill should have loaded but didn't) is more serious than a fa
 - Do not widen the scenario during review unless the original prompt is insufficient.
 - If behavior differs from the skill intent, capture the mismatch explicitly instead of averaging it away.
 
-## Skill Protocol v1 Test Harness Trace
+## Skill Protocol v2 Test Harness Trace
 
-```yaml
-[task-input-validation]
-task: "Verify changed skills with repeatable static, trigger, and scenario checks."
-checks:
-  clarity:
-    status: PASS
-    reason: "The testing goal and repository surface are explicit."
-  scope:
-    status: PASS
-    reason: "The playbook is bounded to verification workflows."
-  safety:
-    status: PASS
-    reason: "Checks are validation-only."
-  skill_match:
-    status: PASS
-    reason: "targeted-validation directly supports this flow; planning uses AGENTS.md §4 short planning unless a durable plan artifact is under test."
-result: PASS
-action: proceed
-[/task-input-validation]
-
-[trigger-evaluation]
-task: "Run a repeatable skill verification pass."
-evaluated:
-  - targeted-validation: ✓ TRIGGER
-activated_now: [targeted-validation]
-deferred: []
-[/trigger-evaluation]
-
-# Implementation sequence follows AGENTS.md Behavioral Guidelines §4 short planning (or `implementation-planning` when the changed surface includes durable planning behavior):
-#   1. run static checks           → verify: references and installer smoke are healthy
-#   2. run trigger checks          → verify: expected triggers fire on sampled prompts
-#   3. run scenario-based acceptance → verify: rubric pass on selected examples
-
-[precondition-check: targeted-validation]
-checks:
-  - changed_surface_known: ✓ PASS
-  - validation_scope_chosen: ✓ PASS
-result: PASS
-[/precondition-check]
-
-[skill-output: targeted-validation]
-status: completed
-confidence: high
-outputs:
-  checks_to_run:
-    - "cross-reference integrity check"
-    - "installer smoke on temporary project"
-    - "trigger smoke on sampled prompts"
-    - "scenario acceptance against rubric"
-  risks_not_covered:
-    - "long-tail prompts outside the sampled trigger set"
-  pass_criteria:
-    - "no broken references"
-    - "expected triggers fire; no unexpected triggers"
-    - "rubric score >= threshold for the touched skills"
-[/skill-output]
-
-[output-validation: targeted-validation]
-checks:
-  - outputs.checks_to_run: ✓ PASS
-  - outputs.pass_criteria: ✓ PASS
-result: PASS
-[/output-validation]
-
-[skill-deactivation: targeted-validation]
-reason: "Verification sequence executed; rubric results captured."
-outputs_consumed_by: [maintainer review]
-remaining_active: []
-[/skill-deactivation]
+```text
+[task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
+[triggers: targeted-validation:trigger]
+[precheck: targeted-validation | result:PASS | checks:changed-surface-known validation-scope-chosen]
+[output: targeted-validation | status:completed | confidence:high | command:"run static, trigger, and scenario checks" reason:"covers package integrity, triggerability, and behavioral acceptance" residual_risk:"long-tail prompts outside the sampled trigger set" | next:maintainer-review]
+[validate: targeted-validation | result:PASS | checks:command reason residual_risk]
+[drop: targeted-validation | reason:"verification sequence executed and results captured" | active:none]
 ```

@@ -1,5 +1,9 @@
 # LLM缓存验证报告
 
+**Status**: Historical snapshot. For current repository validation and token
+facts, use `current-test-evaluation.md` and
+`../../maintainer/data/token_efficiency_baseline.md`.
+
 **日期**: 2026-04-11  
 **验证人员**: 自动化验证  
 **测试环境**: Aliyun Dashscope (qwen3.6-plus)

@@ -7,16 +7,16 @@ Create a validation tool to ensure all skills in the repository have complete an
 ## Recommended Skill Composition
 
 - `scoped-tasking`
-- `self-review`
+- `artifact-review-loop` (`self-delivery`, code)
 - `targeted-validation`
 
-Editing follows `AGENTS.md` Behavioral Guidelines §4 (plan + verify).
+Editing follows a lightweight inline plan with explicit verification.
 
 ## Why This Composition
 
 - `scoped-tasking` keeps the scope limited to a single validation script, not a full linting framework.
-- AGENTS.md §4 forces the agent to declare the script structure, validation logic, and output format with per-step verify checks before writing code.
-- `self-review` catches edge cases like missing error handling for non-existent directories.
+- The inline plan declares the script structure, validation logic, and output format with per-step verify checks before writing code.
+- `artifact-review-loop` catches edge cases like missing error handling for non-existent directories.
 - `targeted-validation` runs the script on the actual `skills/` directory to verify it works.
 
 ## Example Execution

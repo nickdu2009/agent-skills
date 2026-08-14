@@ -1,5 +1,8 @@
 # Token Efficiency Audit Report
 
+Status: Historical pre-cutover snapshot. The operational 12-Skill baseline is
+`maintainer/data/token_efficiency_baseline.json`.
+
 **Quarter:** 2026-Q2  
 **Date:** 2026-04-11  
 **Status:** PASS

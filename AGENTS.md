@@ -1,6 +1,6 @@
 # AGENTS.md
 
-<!-- Repo overlay contract: only blocks wrapped in repo-overlay markers may differ from templates/governance/*.md -->
+<!-- Repository-internal governance; this file is not distributed with Agent Skills packages. -->
 
 ## Behavioral Guidelines
 
@@ -29,6 +29,10 @@ Before implementing:
 - No error handling for impossible scenarios.
 - If you write 200 lines and it could be 50, rewrite it.
 
+**Behavior must have an authorization source.** Defaults, matching rules, thresholds, retries, fallbacks, auto-repairs, or failure strategies that affect externally observable results, data semantics, permissions, security, compatibility, or failure handling require one of: confirmed requirements, a confirmed design / active Accepted ADR, existing compatibility behavior the task must preserve, or explicit user authorization for that specific behavior. Assumptions may guide investigation and design options; they do not authorize production behavior. Internal mechanical choices that preserve existing behavior need no extra authorization. "Just do it" / "try first" authorizes only a bounded exploration process, not unspecified product semantics. Without a source, keep the existing contract and ask — do not invent an error path or fallback.
+
+Distinguish: unauthorized behavioral guessing (forbidden); behavior-preserving internal mechanical choice (allowed); explicitly required heuristic algorithms (allowed when acceptance criteria define thresholds and failure modes); existing compatibility probing the task must preserve (allowed).
+
 Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
 ### 3. Surgical Changes
@@ -51,9 +55,9 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
-<!-- repo-overlay:start no-local-skill-mirrors -->
-**Project-specific rule:** The repository no longer maintains repo-local `.cursor/skills/` or `.claude/skills/` mirrors. When renaming or deleting a skill directory, update references from the canonical `skills/` tree and verify with `python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken`.
-<!-- repo-overlay:end no-local-skill-mirrors -->
+<!-- repo-overlay:start canonical-agent-skills -->
+**Project-specific rule:** `skills/` is the only distributable Agent Skills tree. Do not add runtime-specific mirrors, discovery-path adapters, governance renderers, or sidecars. When changing a skill, run `python3 maintainer/scripts/analysis/validate_agent_skills.py` and `python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken`.
+<!-- repo-overlay:end canonical-agent-skills -->
 
 ### 4. Goal-Driven Execution
 
@@ -80,7 +84,9 @@ Before substantial or multi-step implementation, first decide whether the task n
 3. [Step] → verify: [check]
 ```
 
-Continue without an extra user confirmation when the next step is local, non-destructive, and already implied by the current task or accepted plan (for example: read-only exploration, scoped edits, implementation from an accepted `implementation-planning` artifact, self-review, or local validation).
+Continue without an extra user confirmation when the next step is local, non-destructive, and already implied by the current task or accepted plan (for example: read-only exploration, scoped edits, implementation from an accepted `implementation-planning` artifact when the user asked to implement or explicitly proceed with coding, self-delivery review, or local validation).
+
+Stop after a design brief or implementation plan when the current ask is design-only, plan-only, contract formation, or work "before coding" — confirmed behavior authorization settles product semantics, not a license to start production code edits in that same turn.
 
 Stop and ask when the next step would change requirements, public interfaces, cross-module contracts, persistence schema, dependencies or tooling, bulk file layout, or any remote or destructive operation.
 
@@ -101,9 +107,9 @@ Start with the smallest sufficient validation. State residual risk for anything 
 - Default to local, workspace-only checks when they are sufficient to verify the change.
 - Stop and ask before validations that touch external services, production-like systems, real user data, or unusually expensive/manual environments.
 
-<!-- repo-overlay:start skill-test-temp-project -->
-When testing skills, use a temporary project and `python3 maintainer/scripts/install/manage-governance.py install project <temp-dir>`.
-<!-- repo-overlay:end skill-test-temp-project -->
+<!-- repo-overlay:start skill-standard-validation -->
+Test the canonical packages directly. Keep runtime discovery and installation behavior outside this repository; use the standard package validator, cross-reference check, and client-independent trigger tests here.
+<!-- repo-overlay:end skill-standard-validation -->
 
 ## Communication Rules
 
@@ -111,7 +117,7 @@ Report what changed, what was validated, and any residual risk. Keep status upda
 
 ## Skill Activation
 
-Task-type activation: `requirement-interview`, `bugfix-workflow`, `safe-refactor`, `scoped-tasking`, `design-before-plan`, `architecture-design`, `implementation-planning`, `impact-analysis`, `self-review`, `targeted-validation`, and `manage-agents-md` activate when task shape requires their guidance.
+Task-type activation: `requirement-interview`, `bugfix-workflow`, `safe-refactor`, `scoped-tasking`, `design-before-plan`, `architecture-design`, `implementation-planning`, `impact-analysis`, `artifact-review-loop`, `targeted-validation`, and `manage-agents-md` activate when task shape requires their guidance.
 
 Fast path:
 
@@ -130,17 +136,11 @@ Mid-task escalation:
 - `architecture-design`: the task requires system/subsystem/module-level architecture work — component decomposition, technology selection, non-functional design, or deployment topology.
 - `implementation-planning`: scope and design are clear, but sequencing, file landing, rollback, or multi-step validation still need a durable plan artifact.
 - `impact-analysis`: shared interfaces, public APIs, shared data models, or broad caller impact.
-- `self-review`: multi-file edits complete or user requests diff review.
+- `artifact-review-loop`: review requirements, design, plans, code, or tests; `self-delivery` requires current-agent origin and task authorization.
 - `targeted-validation`: validation choice is non-obvious or expensive.
 - `manage-agents-md`: user asks to initialize, create, refresh, or update a project's `AGENTS.md`.
 
-Review-loop activation (pick by artifact type, mutually exclusive):
-
-- `requirements-review-loop`: user asks to review/validate/finalize requirements, PRD, user stories, or acceptance criteria.
-- `design-review-loop`: user asks to review design docs / RFC / ADR / interface design / data model / 方案 / 实现思路 / 实现方案 / 接口 / 思路.
-- `plan-review-loop`: user asks to review implementation plans / migration plans / 实施方案 / 迁移方案 / refactor plans / roadmaps.
-- `code-review-loop`: user asks to review a diff / commit / PR / specified files of already-implemented code.
-- `test-review-loop`: user asks to review test cases / test strategy / coverage / 测试用例本身 (not the production code under test).
+Use `artifact-review-loop`: PRD/story/AC → `requirements`; architecture/RFC/ADR/interface/model → `design`; implementation/migration plan → `plan`; diff/commit/PR → `code`; test case/strategy/coverage → `tests`. Default: `review-only`. First-person wording grants no writes; inheritance requires task provenance.
 
 Workflow routing:
 
@@ -191,8 +191,8 @@ Fast paths may omit the full protocol block set. Use these blocks when a non-tri
 - `output`: summarize the concrete deliverable from the active skill; every triggered skill should produce or be summarized by one before handoff or completion.
 - `validate`: record the smallest check that confirms the skill deliverable or handoff is sound.
 - `drop`: explicitly retire the skill when its deliverable is complete, superseded, or handed off downstream.
-- `review_result: issues_found` means the review-loop deliverable is still incomplete; keep the review skill active and do not `drop` it as completed yet.
-- `review_result: clean_with_assumptions` is a valid clean exit when only tracked low-risk assumptions remain with explicit validation methods.
+- `review_result: issues_found` is unresolved. `review-only` reports and stops/drops until a new explicit revision request. `review-and-revise` continues only within its existing authorization source and write scope.
+- `review_result: clean_with_assumptions` is a valid clean exit only when remaining tracked low-risk assumptions have explicit validation methods and do not select or change externally observable behavior, data semantics, permissions, security, compatibility, or failure strategy.
 - `review_result: needs_clarification` means the review-loop is blocked on a missing decision; stop and ask bounded clarification questions instead of revising through the gap.
 - A local `修订` on the same artifact stays inside the active review loop when scope, ownership, and artifact identity do not change, including in-thread drafts that have not been written to files yet.
 
@@ -202,14 +202,14 @@ If the same skill path is retried without new evidence, stop and re-scope, escal
 
 ```text
 Clarify:      requirement-interview -> scoped-tasking -> design-before-plan -> implementation-planning
-Bug fix:      scoped-tasking -> bugfix-workflow -> self-review -> targeted-validation
-Refactor:     scoped-tasking -> safe-refactor -> self-review -> targeted-validation
-Multi-file:   scoped-tasking -> implementation-planning -> self-review -> targeted-validation
+Bug fix:      scoped-tasking -> bugfix-workflow -> artifact-review-loop (self-delivery) -> targeted-validation
+Refactor:     scoped-tasking -> safe-refactor -> artifact-review-loop (self-delivery) -> targeted-validation
+Multi-file:   scoped-tasking -> implementation-planning -> artifact-review-loop (self-delivery) -> targeted-validation
 Design-first: scoped-tasking -> design-before-plan -> impact-analysis -> implementation-planning
-Architecture: requirement-interview (optional) -> architecture-design -> design-review-loop (optional) -> implementation-planning
-Plan:         design-before-plan -> implementation-planning -> plan-review-loop
+Architecture: requirement-interview (optional) -> architecture-design -> artifact-review-loop (design, optional) -> implementation-planning
+Plan:         design-before-plan -> implementation-planning -> artifact-review-loop (plan, optional)
 Parallel:     multi-agent-protocol -> synthesis
-Review loop:  pick one of requirements-review-loop / design-review-loop / plan-review-loop / code-review-loop / test-review-loop -> review-only OR revise -> re-review until review_result: clean | clean_with_assumptions, or stop at needs_clarification
+Review loop:  artifact-review-loop -> route object -> review-only OR authorized revise -> repeat until clean | clean_with_assumptions, or stop at needs_clarification
 ```
 
 Normal vs escalation paths:
@@ -221,10 +221,11 @@ Normal vs escalation paths:
 
 Automatic continuation:
 
-- Continue from implementation to `self-review` and `targeted-validation` without an extra user checkpoint when the next step is local and non-destructive.
-- Continue from a completed `implementation-planning` plan into implementation, `self-review`, and `targeted-validation` when the next step remains local, non-destructive, and within the accepted task boundary.
-- Continue after `review_result: issues_found` into a local revision of the same artifact when scope, ownership, and artifact identity stay the same.
-- Continue from that revision back into the same review-loop and do not `drop` the review skill until `review_result: clean` or `clean_with_assumptions`, explicit handoff, or superseding work changes the artifact/boundary.
+- Continue from implementation to verified `self-delivery` review and `targeted-validation` without an extra checkpoint when the work stays local, non-destructive, and authorized.
+- Continue from an accepted implementation plan through implementation and those checks only when the user asked to implement; stop when the ask was design/plan/contract-only.
+- Confirmed behavior authorization (retries, fallbacks, thresholds, failure strategies) authorizes those product semantics; it does not by itself authorize starting production code edits while the current ask is still design/plan-scoped.
+- After `issues_found`, revise only when `review-and-revise` authority covers the same artifact; otherwise report and stop/drop.
+- Re-review an authorized revision until `clean`, `clean_with_assumptions`, handoff, or a changed artifact/boundary.
 - Continue after a review loop returns `review_result: clean` or `clean_with_assumptions` when the next step is explicit, local, and non-destructive.
 - Stop after `review_result: needs_clarification` and ask the bounded clarification questions before continuing any further revision.
 

@@ -2,7 +2,7 @@
 
 ## Scope
 
-This repository contains agent behavior skills (SKILL.md files) and supporting Python scripts. Skills are plain Markdown with YAML frontmatter and contain no executable code. The `maintainer/scripts/install/` directory contains install and mirror entrypoints, while `maintainer/` contains internal evaluation utilities, data, and retained reports.
+This repository contains portable Agent Skills packages under `skills/` plus repository-internal validation and evaluation tooling under `maintainer/`. Skill instructions and references are reviewable text; Python files under `maintainer/` are executable repository tooling. The repository intentionally contains no client installer, runtime mirror, discovery-path adapter, governance renderer, or Skill sidecar.
 
 ## Reporting a Vulnerability
 
@@ -10,15 +10,17 @@ If you discover a security issue in this repository, please report it by opening
 
 ## Installation Safety
 
-When installing skills from any source:
+When importing Skills from any source:
 
-- Review both the `maintainer/scripts/install/` entrypoints and any `maintainer/` utilities before running repository tooling
-- Prefer the supported installer entrypoints in `maintainer/scripts/install/` over ad hoc copying
-- Prefer the canonical `skills/` directory as the source of truth when auditing published skill content
-- Verify generated installs or mirrors against the canonical source before use
+- Review the complete package, including `SKILL.md` and every supporting file.
+- Treat canonical `skills/<name>/` as this repository's only distributable source.
+- Follow the target runtime's current Agent Skills import and discovery documentation; those behaviors are outside this repository.
+- Do not execute repository-internal `maintainer/` tooling merely to use a Skill package.
+- Preserve locally modified installed copies unless their replacement or removal is separately authorized.
 
 ## Supported Versions
 
 | Version | Supported |
 |---------|-----------|
-| 0.1.x   | Yes       |
+| Current default branch / latest release | Yes |
+| Historical snapshots | No |

@@ -9,8 +9,8 @@ This script extracts minimal metadata from SKILL.md frontmatter and generates
 a compact JSON index for use in evaluation and testing workflows.
 
 Purpose:
-  - Reduce token usage in trigger evaluation prompts (60-80% reduction)
-  - Provide fast skill metadata lookup without parsing full SKILL.md files
+  - Provide fast, deterministic metadata lookup without parsing all SKILL.md files
+  - Preserve byte-equivalent discovery content across both loading modes
   - Enable efficient skill categorization and family classification
 
 Input:
@@ -29,35 +29,23 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
+
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SKILLS_DIR = REPO_ROOT / "skills"
 DATA_DIR = REPO_ROOT / "maintainer" / "data"
 DEFAULT_OUTPUT = DATA_DIR / "skill_index.json"
+SCHEMA_VERSION = "0.2.0"
+CATALOG_PATH = DATA_DIR / "skill_catalog.json"
 
 # Import skill family mapping from evaluation scripts
 sys.path.insert(0, str(REPO_ROOT / "maintainer" / "scripts" / "evaluation"))
 from skill_protocol import SKILL_FAMILY
-
-
-def _unquote_scalar(value: str) -> str:
-    """Strip surrounding YAML quotes from a scalar value, if present.
-
-    Mirrors the quote handling already applied to metadata fields so that
-    quoted top-level scalars (e.g. `description: "..."`) are not stored with
-    their surrounding quotes.
-    """
-    value = value.strip()
-    if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
-        inner = value[1:-1]
-        if value[0] == '"':
-            inner = inner.replace('\\"', '"').replace("\\\\", "\\")
-        return inner
-    return value
 
 
 def _display_path(path: Path) -> str:
@@ -69,78 +57,36 @@ def _display_path(path: Path) -> str:
 
 
 def extract_frontmatter(skill_file: Path) -> dict[str, str | dict]:
-    """Extract YAML frontmatter from SKILL.md file.
-
-    Returns dict with fields: name, description, metadata (if present)
-    """
+    """Extract standards-compliant YAML frontmatter from a Skill package."""
     text = skill_file.read_text(encoding="utf-8")
     lines = text.splitlines()
-
     if not lines or lines[0].strip() != "---":
         return {}
-
-    frontmatter_lines: list[str] = []
-    in_frontmatter = False
-
-    for i, line in enumerate(lines):
-        if i == 0:
-            in_frontmatter = True
-            continue
-        if line.strip() == "---":
-            break
-        if in_frontmatter:
-            frontmatter_lines.append(line)
-
-    # Parse frontmatter manually (simple YAML subset)
-    result: dict[str, str | dict] = {}
-    current_key = None
-    current_value_lines: list[str] = []
-    in_metadata = False
-    metadata: dict[str, str] = {}
-
-    for line in frontmatter_lines:
-        if line.startswith("metadata:"):
-            in_metadata = True
-            if current_key:
-                result[current_key] = _unquote_scalar(" ".join(current_value_lines))
-            current_key = None
-            current_value_lines = []
-            continue
-
-        if in_metadata:
-            # Parse metadata fields (simple key: "value" format)
-            if line.strip().startswith("version:") or line.strip().startswith("tags:"):
-                key_part, _, value_part = line.partition(":")
-                key = key_part.strip()
-                value = value_part.strip().strip('"')
-                metadata[key] = value
-            continue
-
-        if line.startswith(" ") or line.startswith("\t"):
-            # Continuation of previous value
-            current_value_lines.append(line.strip())
-        else:
-            # New key
-            if current_key:
-                result[current_key] = _unquote_scalar(" ".join(current_value_lines))
-
-            key_part, _, value_part = line.partition(":")
-            current_key = key_part.strip()
-            current_value_lines = [value_part.strip()]
-
-    # Handle last key
-    if current_key:
-        result[current_key] = _unquote_scalar(" ".join(current_value_lines))
-
-    if metadata:
-        result["metadata"] = metadata
-
-    return result
+    try:
+        end = next(index for index, line in enumerate(lines[1:], start=1) if line.strip() == "---")
+    except StopIteration:
+        return {}
+    data = yaml.safe_load("\n".join(lines[1:end])) or {}
+    return data if isinstance(data, dict) else {}
 
 
-def generate_skill_index(skills_dir: Path, *, verbose: bool = False) -> dict:
+def generate_skill_index(
+    skills_dir: Path,
+    *,
+    verbose: bool = False,
+    catalog_path: Path = CATALOG_PATH,
+) -> dict:
     """Generate compact skill metadata index from SKILL.md files."""
     skills: list[dict] = []
+    try:
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"cannot load Skill catalog: {exc}") from exc
+    core = catalog.get("core_skill_names")
+    optional = catalog.get("optional_skill_names")
+    if not isinstance(core, list) or not isinstance(optional, list):
+        raise ValueError("Skill catalog must define core_skill_names and optional_skill_names")
+    active_names = set(core) | set(optional)
 
     for skill_dir in sorted(skills_dir.iterdir()):
         if not skill_dir.is_dir():
@@ -160,9 +106,15 @@ def generate_skill_index(skills_dir: Path, *, verbose: bool = False) -> dict:
             continue
 
         skill_name = frontmatter["name"]
+        if skill_name not in active_names:
+            continue
 
         # Get family classification from skill_protocol
-        family = SKILL_FAMILY.get(skill_name, "unknown")
+        family = SKILL_FAMILY.get(skill_name)
+        if family is None and skill_name == "artifact-review-loop":
+            family = "execution"
+        if family is None:
+            raise ValueError(f"unknown Skill family for {skill_name!r}")
 
         # Build skill metadata entry
         skill_metadata = {
@@ -185,10 +137,18 @@ def generate_skill_index(skills_dir: Path, *, verbose: bool = False) -> dict:
         if verbose:
             print(f"  Extracted: {skill_name} ({family} family)", file=sys.stderr)
 
-    # Build index
+    canonical_source = json.dumps(
+        skills,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+
+    # source_digest covers the normalized metadata used to build the index.
+    # It is deliberately independent of output whitespace and wall-clock time.
     index = {
-        "schema_version": "0.1.0",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "schema_version": SCHEMA_VERSION,
+        "source_digest": hashlib.sha256(canonical_source).hexdigest(),
         "skills": skills,
     }
 
@@ -227,19 +187,43 @@ def main() -> int:
         action="store_true",
         help="Print to stdout instead of writing file",
     )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Fail when the checked-in index differs from canonical Skill metadata",
+    )
     args = parser.parse_args()
 
     if args.verbose:
         print(f"Extracting metadata from {SKILLS_DIR}", file=sys.stderr)
 
-    index = generate_skill_index(SKILLS_DIR, verbose=args.verbose)
+    try:
+        index = generate_skill_index(SKILLS_DIR, verbose=args.verbose)
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
 
     if args.verbose:
         print(f"\nGenerated index with {len(index['skills'])} skills", file=sys.stderr)
 
     output_json = format_json(index, compact=args.compact)
 
-    if args.dry_run:
+    if args.check:
+        if args.dry_run:
+            parser.error("--check and --dry-run are mutually exclusive")
+        if not args.output.is_file():
+            print(f"ERROR: skill index not found: {_display_path(args.output)}", file=sys.stderr)
+            return 1
+        expected = output_json + "\n"
+        if args.output.read_text(encoding="utf-8") != expected:
+            print(
+                "ERROR: compact skill index is stale; run "
+                "python3 maintainer/scripts/analysis/generate_skill_index.py",
+                file=sys.stderr,
+            )
+            return 1
+        print(f"OK: {_display_path(args.output)} matches canonical Skill metadata")
+    elif args.dry_run:
         print(output_json)
     else:
         args.output.parent.mkdir(parents=True, exist_ok=True)

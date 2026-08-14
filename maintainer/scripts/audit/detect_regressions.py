@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Detect token efficiency regressions by comparing to last audit.
+"""Detect token efficiency regressions against the operational baseline.
 
 This script compares the current state to the last audit report to detect:
 - Quality regressions (skills that stopped passing)
@@ -11,7 +11,7 @@ Exit code 1 if critical regressions found (for CI).
 
 Usage:
     python3 maintainer/scripts/audit/detect_regressions.py
-    python3 maintainer/scripts/audit/detect_regressions.py --baseline 2026-Q1-audit-report.md
+    python3 maintainer/scripts/audit/detect_regressions.py --baseline 2026-Q3-audit-report.md
     python3 maintainer/scripts/audit/detect_regressions.py --json
 """
 
@@ -30,23 +30,76 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS_DIR = REPO_ROOT / "maintainer" / "scripts"
 ANALYSIS_DIR = SCRIPTS_DIR / "analysis"
 AUDITS_DIR = REPO_ROOT / "maintainer" / "data" / "audits"
+BASELINE_FILE = REPO_ROOT / "maintainer" / "data" / "token_efficiency_baseline.json"
+EXPECTED_MEASUREMENT_IDENTITY: dict[str, str] = {
+    "measurement_contract_version": "1.0",
+    "token_counter": "tiktoken",
+    "counter_version": "0.13.0",
+    "tokenizer": "o200k_base",
+}
 
 
-def _hardcoded_baseline() -> dict[str, Any]:
-    """Fallback baseline when no audit report is available.
+class MeasurementIdentityError(RuntimeError):
+    """A token surface is legacy, incompatible, or unverifiable."""
 
-    Reflects the post-cleanup skill set (14 skills) measured 2026-Q3 after the
-    2026-05 governance refactor and the quality checker calibration. Update
-    alongside ``run_quarterly_audit.BASELINE_TARGETS`` so the two stay aligned.
-    """
+
+def validate_measurement_identity(
+    data: dict[str, Any],
+    *,
+    source: str,
+) -> dict[str, str]:
+    """Require the complete locked measurement identity."""
+
+    if not isinstance(data, dict):
+        raise MeasurementIdentityError(f"{source} must be an object")
+    missing = [
+        field for field in EXPECTED_MEASUREMENT_IDENTITY if field not in data
+    ]
+    if missing:
+        raise MeasurementIdentityError(
+            f"{source} is legacy or unsupported: missing measurement identity "
+            + ", ".join(missing)
+        )
+    mismatches = [
+        f"{field}: expected {expected!r}, got {data.get(field)!r}"
+        for field, expected in EXPECTED_MEASUREMENT_IDENTITY.items()
+        if data.get(field) != expected
+    ]
+    if mismatches:
+        raise MeasurementIdentityError(
+            f"{source} measurement identity mismatch: " + "; ".join(mismatches)
+        )
+    return dict(EXPECTED_MEASUREMENT_IDENTITY)
+
+
+def validate_measurement_pair(
+    baseline: dict[str, Any],
+    current: dict[str, Any],
+) -> None:
+    validate_measurement_identity(baseline, source="baseline")
+    validate_measurement_identity(current, source="current metrics")
+
+
+def _file_baseline(path: Path | None = None) -> dict[str, Any]:
+    """Load the fallback baseline from the shared machine-readable source."""
+    path = BASELINE_FILE if path is None else path
+    data = json.loads(path.read_text(encoding="utf-8"))
+    identity = validate_measurement_identity(data, source=f"baseline {path}")
     return {
-        "quality_pass_rate": 100,
-        "quality_passing": 14,
-        "quality_total": 14,
-        "total_tokens": 16143,
-        "avg_tokens": 1153,
-        "broken_refs": 0,
-        "over_500": 0,
+        **identity,
+        "quality_pass_rate": data["quality_pass_rate"],
+        "quality_passing": data["quality_passing"],
+        "quality_total": data["quality_total"],
+        "total_tokens": data["total_skill_tokens"],
+        "avg_tokens": data["avg_tokens_per_skill"],
+        "max_skill_body_tokens": data["max_skill_body_tokens"],
+        "discovery_metadata_tokens": data["discovery_metadata_tokens"],
+        "supporting_tokens": data["supporting_file_tokens"],
+        "all_packages_tokens_upper_bound": data["all_packages_tokens_upper_bound"],
+        "repository_governance_tokens": data["repository_governance_tokens"],
+        "everything_tokens_upper_bound": data["everything_tokens_upper_bound"],
+        "broken_refs": data["cross_references_broken"],
+        "over_500": data["skills_over_500_lines"],
     }
 
 
@@ -57,8 +110,23 @@ THRESHOLDS = {
     "token_increase_warning": 5,  # % increase
     "token_increase_critical": 10,  # % increase
     "cross_ref_warning": 1,  # Any new broken ref is a warning
-    "cross_ref_critical": 5,  # 5+ broken refs is critical
+    "cross_ref_critical": 4,  # 4+ broken refs is critical
+    "skill_length_critical": 2,  # 2+ skills over 500 lines is critical
 }
+
+REQUIRED_HISTORICAL_BASELINE_FIELDS = frozenset({
+    "tokenizer",
+    "quality_pass_rate",
+    "quality_passing",
+    "quality_total",
+    "total_tokens",
+    "avg_tokens",
+    "max_skill_body_tokens",
+    "all_packages_tokens_upper_bound",
+    "repository_governance_tokens",
+    "broken_refs",
+    "over_500",
+})
 
 
 def run_command(cmd: list[str]) -> dict[str, Any]:
@@ -73,35 +141,41 @@ def run_command(cmd: list[str]) -> dict[str, Any]:
         )
         return json.loads(result.stdout)
     except subprocess.CalledProcessError as e:
-        print(f"Error running command: {' '.join(cmd)}", file=sys.stderr)
-        print(f"Error: {e.stderr}", file=sys.stderr)
-        return {}
-    except json.JSONDecodeError:
-        return {}
-
-
-def find_latest_audit() -> Path | None:
-    """Find the most recent audit report."""
-    if not AUDITS_DIR.exists():
-        return None
-
-    audit_files = list(AUDITS_DIR.glob("*-audit-report.md"))
-    if not audit_files:
-        return None
-
-    # Sort by filename (YYYY-QN format naturally sorts correctly)
-    return sorted(audit_files)[-1]
+        raise RuntimeError(
+            f"command failed: {' '.join(cmd)}: {e.stderr.strip()}"
+        ) from e
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"command returned invalid JSON: {' '.join(cmd)}") from exc
 
 
 def parse_audit_report(audit_file: Path) -> dict[str, Any]:
     """Parse key metrics from an audit report."""
     if not audit_file.exists():
-        return {}
+        raise FileNotFoundError(f"audit baseline not found: {audit_file}")
 
     content = audit_file.read_text(encoding="utf-8")
 
     # Extract metrics from markdown tables
     metrics = {}
+
+    identity_labels = {
+        "measurement_contract_version": "Measurement contract version",
+        "token_counter": "Token counter",
+        "counter_version": "Counter version",
+        "tokenizer": "Tokenizer",
+    }
+    for field, label in identity_labels.items():
+        match = re.search(
+            rf"\*\*{re.escape(label)}:\*\* `([^`]+)`",
+            content,
+            re.IGNORECASE,
+        )
+        if match:
+            metrics[field] = match.group(1)
+    validate_measurement_identity(
+        metrics,
+        source=f"historical Markdown baseline {audit_file}",
+    )
 
     # Quality metrics
     quality_match = re.search(r'\| Pass rate \| ([\d.]+)%', content)
@@ -121,6 +195,24 @@ def parse_audit_report(audit_file: Path) -> dict[str, Any]:
     avg_tokens_match = re.search(r'\| Avg tokens/skill \| ([\d,]+)', content)
     if avg_tokens_match:
         metrics["avg_tokens"] = int(avg_tokens_match.group(1).replace(",", ""))
+
+    max_tokens_match = re.search(r'\| Max skill tokens \| ([\d,]+)', content)
+    if max_tokens_match:
+        metrics["max_skill_body_tokens"] = int(
+            max_tokens_match.group(1).replace(",", "")
+        )
+
+    package_tokens_match = re.search(r'\| All-package upper bound \| ([\d,]+)', content)
+    if package_tokens_match:
+        metrics["all_packages_tokens_upper_bound"] = int(
+            package_tokens_match.group(1).replace(",", "")
+        )
+
+    governance_tokens_match = re.search(r'\| Repository governance \| ([\d,]+)', content)
+    if governance_tokens_match:
+        metrics["repository_governance_tokens"] = int(
+            governance_tokens_match.group(1).replace(",", "")
+        )
 
     over_500_match = re.search(r'\| Skills >500 lines \| (\d+)', content)
     if over_500_match:
@@ -161,38 +253,84 @@ def collect_current_metrics() -> dict[str, Any]:
         "--actual-tokens",
         "--json",
     ])
-
-    skills = token_data.get("skill_files", {})
-    total_tokens = skills.get("total_tokens", 0)
-    avg_tokens = skills.get("avg_tokens_per_skill", 0)
-    over_500 = skills.get("over_500_count", 0)
-
-    # Cross-references
-    try:
-        result = subprocess.run(
-            [sys.executable, str(ANALYSIS_DIR / "check_cross_references.py"), "--json"],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=False,
+    identity = validate_measurement_identity(
+        token_data,
+        source="current token measurement",
+    )
+    if token_data.get("token_counting_method") != identity["tokenizer"]:
+        raise RuntimeError(
+            "token measurement method mismatch: "
+            f"expected {identity['tokenizer']}, "
+            f"got {token_data.get('token_counting_method')!r}"
         )
 
-        if result.returncode == 0:
-            cross_ref_data = json.loads(result.stdout)
-            broken_refs = len(cross_ref_data.get("broken_references", []))
-        else:
-            match = re.search(r'(\d+)\s+broken', result.stdout)
-            broken_refs = int(match.group(1)) if match else 0
-    except Exception:
-        broken_refs = 0
+    skills = token_data.get("skill_files")
+    if not isinstance(skills, dict):
+        raise RuntimeError("token measurement is missing skill_files")
+    required_skill_metrics = {
+        "total_tokens",
+        "avg_tokens_per_skill",
+        "over_500_count",
+        "discovery_metadata",
+        "supporting_files",
+        "all_packages_tokens_upper_bound",
+    }
+    missing_skill_metrics = sorted(required_skill_metrics - set(skills))
+    if missing_skill_metrics:
+        raise RuntimeError(
+            "token measurement is missing metrics: " + ", ".join(missing_skill_metrics)
+        )
+    discovery = skills["discovery_metadata"]
+    supporting = skills["supporting_files"]
+    governance = token_data.get("repository_governance")
+    if not isinstance(discovery, dict) or "tokens" not in discovery:
+        raise RuntimeError("token measurement is missing discovery metadata tokens")
+    if not isinstance(supporting, dict) or "tokens" not in supporting:
+        raise RuntimeError("token measurement is missing supporting-file tokens")
+    if not isinstance(governance, dict) or "tokens" not in governance:
+        raise RuntimeError("token measurement is missing repository governance tokens")
+
+    total_tokens = skills["total_tokens"]
+    avg_tokens = skills["avg_tokens_per_skill"]
+    over_500 = skills["over_500_count"]
+    discovery_tokens = discovery["tokens"]
+    supporting_tokens = supporting["tokens"]
+    all_packages_tokens = skills["all_packages_tokens_upper_bound"]
+    governance_tokens = governance["tokens"]
+
+    # Cross-references fail closed: a broken checker is not a passing result.
+    result = subprocess.run(
+        [sys.executable, str(ANALYSIS_DIR / "check_cross_references.py"), "--json"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or "cross-reference checker failed")
+    cross_ref_data = json.loads(result.stdout)
+    summary = cross_ref_data.get("summary")
+    if not isinstance(summary, dict) or "total_broken_references" not in summary:
+        raise RuntimeError("cross-reference checker returned incomplete JSON")
+    broken_refs = summary["total_broken_references"]
 
     return {
+        **identity,
         "quality_pass_rate": pass_rate,
         "quality_passing": passing_skills,
         "quality_total": total_skills,
         "quality_failing_skills": failing_skills,
         "total_tokens": total_tokens,
         "avg_tokens": avg_tokens,
+        "max_skill_body_tokens": max(
+            (skill.get("body_tokens", 0) for skill in skills.get("skills", [])),
+            default=0,
+        ),
+        "discovery_metadata_tokens": discovery_tokens,
+        "supporting_tokens": supporting_tokens,
+        "all_packages_tokens_upper_bound": all_packages_tokens,
+        "repository_governance_tokens": governance_tokens,
+        "everything_tokens_upper_bound": all_packages_tokens + governance_tokens,
         "over_500": over_500,
         "broken_refs": broken_refs,
     }
@@ -203,16 +341,23 @@ def detect_regressions(
     current: dict[str, Any],
 ) -> dict[str, Any]:
     """Detect regressions between baseline and current."""
+    validate_measurement_pair(baseline, current)
     regressions = []
     warnings = []
 
-    # Quality regressions
-    if "quality_passing" in baseline and "quality_passing" in current:
+    # Quality regressions. Compare failing count as well as pass rate so adding
+    # one failing Skill (17/17 -> 17/18) cannot look healthy.
+    quality_keys = {"quality_pass_rate", "quality_passing", "quality_total"}
+    if quality_keys <= baseline.keys() and quality_keys <= current.keys():
         baseline_passing = baseline["quality_passing"]
         current_passing = current["quality_passing"]
-        skills_regressed = baseline_passing - current_passing
+        baseline_failing = baseline["quality_total"] - baseline_passing
+        current_failing = current["quality_total"] - current_passing
+        new_failing = current_failing - baseline_failing
+        pass_rate_drop = baseline["quality_pass_rate"] - current["quality_pass_rate"]
 
-        if skills_regressed > 0:
+        if new_failing > 0 or pass_rate_drop > 0:
+            skills_regressed = max(new_failing, baseline_passing - current_passing, 1)
             severity = (
                 "critical"
                 if skills_regressed >= THRESHOLDS["quality_drop_critical"]
@@ -222,9 +367,15 @@ def detect_regressions(
             regression = {
                 "type": "quality_regression",
                 "severity": severity,
-                "message": f"{skills_regressed} skills stopped passing quality checks",
+                "message": (
+                    f"quality dropped to {current['quality_passing']}/"
+                    f"{current['quality_total']} passing "
+                    f"({current['quality_pass_rate']:.1f}%)"
+                ),
                 "baseline_passing": baseline_passing,
                 "current_passing": current_passing,
+                "baseline_total": baseline["quality_total"],
+                "current_total": current["quality_total"],
                 "skills_affected": skills_regressed,
             }
 
@@ -233,10 +384,34 @@ def detect_regressions(
             else:
                 warnings.append(regression)
 
-    # Token inflation
-    if "total_tokens" in baseline and "total_tokens" in current:
-        baseline_tokens = baseline["total_tokens"]
-        current_tokens = current["total_tokens"]
+    # Token inflation across both distributable packages and repository-only
+    # governance. Discovery/supporting metrics are retained for diagnosis; the
+    # all-package ceiling prevents moving required content into references from
+    # being reported as a saving.
+    token_surfaces = (
+        ("total_tokens", "token_inflation", "All SKILL.md files"),
+        ("avg_tokens", "average_skill_token_inflation", "Average SKILL.md"),
+        (
+            "max_skill_body_tokens",
+            "max_skill_body_token_inflation",
+            "Largest Skill body",
+        ),
+        (
+            "all_packages_tokens_upper_bound",
+            "package_token_inflation",
+            "All Agent Skills package text",
+        ),
+        (
+            "repository_governance_tokens",
+            "governance_token_inflation",
+            "Repository AGENTS.md",
+        ),
+    )
+    for metric, regression_type, label in token_surfaces:
+        if metric not in baseline or metric not in current:
+            continue
+        baseline_tokens = baseline[metric]
+        current_tokens = current[metric]
         token_increase = current_tokens - baseline_tokens
         token_increase_pct = (token_increase / baseline_tokens * 100) if baseline_tokens > 0 else 0
 
@@ -248,10 +423,12 @@ def detect_regressions(
             )
 
             regression = {
-                "type": "token_inflation",
+                "type": regression_type,
                 "severity": severity,
-                "message": f"Token count increased by {token_increase_pct:.1f}% "
+                "message": f"{label} increased by {token_increase_pct:.1f}% "
                           f"({token_increase:+,} tokens)",
+                "metric": metric,
+                "label": label,
                 "baseline_tokens": baseline_tokens,
                 "current_tokens": current_tokens,
                 "increase": token_increase,
@@ -297,14 +474,23 @@ def detect_regressions(
         new_over = current_over - baseline_over
 
         if new_over > 0:
-            warnings.append({
+            severity = (
+                "critical"
+                if current_over >= THRESHOLDS["skill_length_critical"]
+                else "warning"
+            )
+            finding = {
                 "type": "skill_length_regression",
-                "severity": "warning",
+                "severity": severity,
                 "message": f"{new_over} new skills exceeded 500 lines",
                 "baseline_over": baseline_over,
                 "current_over": current_over,
                 "new_over": new_over,
-            })
+            }
+            if severity == "critical":
+                regressions.append(finding)
+            else:
+                warnings.append(finding)
 
     return {
         "has_regressions": len(regressions) > 0,
@@ -343,7 +529,7 @@ def print_regression_report(
     if baseline_file:
         print(f"Baseline: {baseline_file.name}")
     else:
-        print("Baseline: (using hardcoded targets)")
+        print(f"Baseline: {BASELINE_FILE.relative_to(REPO_ROOT)}")
     print()
 
     # Overall status
@@ -366,7 +552,7 @@ def print_regression_report(
             if reg['type'] == 'quality_regression':
                 print(f"     Baseline: {reg['baseline_passing']} passing")
                 print(f"     Current: {reg['current_passing']} passing")
-            elif reg['type'] == 'token_inflation':
+            elif reg['type'].endswith('token_inflation'):
                 print(f"     Baseline: {reg['baseline_tokens']:,} tokens")
                 print(f"     Current: {reg['current_tokens']:,} tokens")
                 print(f"     Increase: +{reg['increase']:,} ({reg['increase_pct']:.1f}%)")
@@ -398,6 +584,19 @@ def print_regression_report(
         delta = current['total_tokens'] - baseline['total_tokens']
         print(f"                vs {baseline['total_tokens']:,} baseline ({delta:+,})")
 
+    for metric, label in (
+        ("all_packages_tokens_upper_bound", "Packages"),
+        ("repository_governance_tokens", "Governance"),
+        ("everything_tokens_upper_bound", "Everything"),
+    ):
+        print(f"  {label + ':':14} {current[metric]:,} tokens")
+        if metric in baseline:
+            delta = current[metric] - baseline[metric]
+            print(f"                vs {baseline[metric]:,} baseline ({delta:+,})")
+
+    print(f"  Discovery:     {current['discovery_metadata_tokens']:,} tokens")
+    print(f"  Supporting:    {current['supporting_tokens']:,} tokens")
+
     print(f"  Cross-refs:   {current['broken_refs']} broken")
     if "broken_refs" in baseline:
         delta = current['broken_refs'] - baseline['broken_refs']
@@ -420,7 +619,7 @@ def main() -> None:
     parser.add_argument(
         "--baseline",
         type=str,
-        help="Baseline audit report file (default: latest audit in audits/)",
+        help="Current-format historical audit filename (default: operational baseline JSON)",
     )
     parser.add_argument(
         "--json",
@@ -429,29 +628,27 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # Determine baseline
-    if args.baseline:
-        baseline_file = AUDITS_DIR / args.baseline
-        if not baseline_file.exists():
-            print(f"Error: Baseline file not found: {baseline_file}", file=sys.stderr)
-            sys.exit(1)
-    else:
-        baseline_file = find_latest_audit()
+    # The shared JSON is the default source of truth. An explicit audit file is
+    # supported only for intentional historical comparison.
+    try:
+        if args.baseline:
+            baseline_file = AUDITS_DIR / args.baseline
+            if not baseline_file.exists():
+                raise RuntimeError(f"baseline file not found: {baseline_file}")
+            baseline = parse_audit_report(baseline_file)
+            missing = sorted(REQUIRED_HISTORICAL_BASELINE_FIELDS - baseline.keys())
+            if missing:
+                raise RuntimeError(
+                    f"baseline {baseline_file} is missing metrics: {', '.join(missing)}"
+                )
+        else:
+            baseline = _file_baseline()
+            baseline_file = None
 
-    # Parse baseline
-    if baseline_file:
-        baseline = parse_audit_report(baseline_file)
-        if not baseline:
-            print(f"Warning: Could not parse baseline from {baseline_file}", file=sys.stderr)
-            print("Using hardcoded baseline targets instead", file=sys.stderr)
-            baseline = _hardcoded_baseline()
-    else:
-        print("Warning: No audit reports found in audits/", file=sys.stderr)
-        print("Using hardcoded baseline targets", file=sys.stderr)
-        baseline = _hardcoded_baseline()
-
-    # Collect current metrics
-    current = collect_current_metrics()
+        current = collect_current_metrics()
+    except (OSError, KeyError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(2)
 
     # Detect regressions
     regressions = detect_regressions(baseline, current)

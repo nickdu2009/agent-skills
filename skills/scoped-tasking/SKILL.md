@@ -93,7 +93,7 @@ Keep anti-pattern guidance self-contained; installed skills must not depend on m
 
 # Composition
 
-Entry point for most execution chains: `bugfix-standard`, `refactor-safe`, `multi-file-planned`, `design-first`, and `large-task` (see the project governance file § Skill Chain Triggers).
+Entry point for most execution chains: narrow the boundary first, then hand off to the matching bug-fix, refactor, design, planning, or impact-analysis skill only when its trigger conditions are met.
 
 Standard forward handoffs:
 

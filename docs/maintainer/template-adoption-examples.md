@@ -278,5 +278,5 @@ As more skills adopt templates, consider:
 - **Contract template**: docs/maintainer/skill-contract-template.md
 - **Anti-pattern template**: docs/maintainer/skill-anti-pattern-template.md
 - **Adoption tracker**: docs/maintainer/template-adoption-tracker.md
-- **Deduplication analysis**: docs/maintainer/deduplication-analysis.md
+- **Optimization analysis**: docs/maintainer/skill-optimization-analysis-2026-04-11.md
 - **Modified skills**: skills/{minimal-change-strategy,bugfix-workflow,plan-before-action,safe-refactor,scoped-tasking}/SKILL.md

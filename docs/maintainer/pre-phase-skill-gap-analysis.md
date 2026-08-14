@@ -1,5 +1,7 @@
 # Pre-Phase 技能缺口分析
 
+Status: Historical
+
 > 分析日期：2026-04-09
 > 上游评估：`docs/maintainer/skill-system-evaluation.md`
 > 状态：提案

@@ -1,0 +1,17 @@
+schema_version: "1.0"
+references:
+  - path: references/plan-template.md
+    load_mode: always
+    condition_id: activation
+  - path: references/upstream-artifacts.md
+    load_mode: conditional
+    condition_id: adr-alignment
+  - path: references/gate-00.md
+    load_mode: conditional
+    condition_id: pre-coding-gate
+  - path: references/delegation-task-card.md
+    load_mode: conditional
+    condition_id: delegated-planning
+  - path: references/examples.md
+    load_mode: optional-runtime
+    condition_id: example-calibration

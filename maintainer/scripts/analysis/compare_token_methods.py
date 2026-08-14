@@ -22,36 +22,6 @@ def compare_metrics(estimate: dict, actual: dict) -> None:
     print("=" * 80)
     print()
 
-    # Governance templates
-    print("Governance Templates:")
-    est_gov = estimate["governance_templates"]
-    act_gov = actual["governance_templates"]
-
-    est_total = est_gov["total_chars"] // 4  # Character-based estimate
-    act_total = act_gov["total_tokens"]
-    accuracy = (est_total / act_total * 100) if act_total > 0 else 0
-    error = abs(est_total - act_total)
-
-    print(f"  Character estimate: {est_total:,} tokens ({est_gov['total_chars']:,} chars ÷ 4)")
-    print(f"  Actual (tiktoken):  {act_total:,} tokens")
-    print(f"  Accuracy: {accuracy:.1f}%  |  Error: {error:,} tokens ({error/act_total*100:.1f}%)")
-    print()
-
-    # Generated governance
-    print("Generated Governance:")
-    est_gen = estimate["generated_governance"]
-    act_gen = actual["generated_governance"]
-
-    est_total = est_gen["total_chars"] // 4
-    act_total = act_gen["total_tokens"]
-    accuracy = (est_total / act_total * 100) if act_total > 0 else 0
-    error = abs(est_total - act_total)
-
-    print(f"  Character estimate: {est_total:,} tokens ({est_gen['total_chars']:,} chars ÷ 4)")
-    print(f"  Actual (tiktoken):  {act_total:,} tokens")
-    print(f"  Accuracy: {accuracy:.1f}%  |  Error: {error:,} tokens ({error/act_total*100:.1f}%)")
-    print()
-
     # Skill files
     print("Skill Files:")
     est_skills = estimate["skill_files"]
@@ -109,8 +79,10 @@ def compare_metrics(estimate: dict, actual: dict) -> None:
     print()
 
     # Overall accuracy
-    total_est = (est_gov["total_chars"] + est_gen["total_chars"] + est_skills["total_chars"]) // 4
-    total_act = act_gov["total_tokens"] + act_gen["total_tokens"] + act_skills["total_tokens"]
+    est_supporting = est_skills["supporting_files"]["chars"] // 4
+    act_supporting = act_skills["supporting_files"]["tokens"]
+    total_est = est_skills["total_chars"] // 4 + est_supporting
+    total_act = act_skills["total_tokens"] + act_supporting
     overall_accuracy = (total_est / total_act * 100) if total_act > 0 else 0
     overall_error = abs(total_est - total_act)
 
@@ -119,7 +91,7 @@ def compare_metrics(estimate: dict, actual: dict) -> None:
     print()
 
     # Character-to-token ratio (actual observed)
-    total_chars = est_gov["total_chars"] + est_gen["total_chars"] + est_skills["total_chars"]
+    total_chars = est_skills["total_chars"] + est_skills["supporting_files"]["chars"]
     actual_ratio = total_chars / total_act if total_act > 0 else 0
     print(f"  Observed character-to-token ratio: {actual_ratio:.2f} chars/token")
     print(f"  (vs assumed 4.0 chars/token in character-based estimate)")

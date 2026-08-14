@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed - 2026-08-13: Portable Agent Skills Core
+
+- Adopted the Agent Skills open specification as the only distributable package contract.
+- Kept `skills/<name>/` as the sole canonical source and removed runtime-specific installers, discovery-path mappings, governance renderers, sidecars, fixtures, and acceptance runners.
+- Replaced platform-oriented installation documentation with runtime-neutral package guidance and standard validation.
+- Retained root `AGENTS.md` only as repository-internal governance.
+- Consolidated six review packages into `artifact-review-loop`, leaving 10 core and 2 optional standard packages.
+- Added type-routed review, provenance-based self-delivery authorization, absolute activation-token budgets, and a pinned official `skills-ref` gate.
+- Kept installed user copies outside this repository migration; any later installed-copy migration requires a separate backup and explicit authorization.
+
+Entries below this point describe historical repository states and may name removed integration surfaces.
+
 ### Changed - 2026-06-19: ZCode Platform Support
 
 - Added first-class `zcode` support to `manage-governance.py` for user-level skill installation and user/workspace `AGENTS.md` governance.

@@ -1,44 +1,40 @@
 # Maintainer Surface
 
-This directory contains repository-internal tooling and evaluation assets and should stay clearly separated from the published `skills/` source tree.
+This directory contains repository-internal validation and evaluation assets. It is not part of the published Agent Skills packages.
 
 ## Placement Rules
 
-- Keep the public install/verify entrypoint in `scripts/install/`.
-- Run `python3 maintainer/scripts/install/validate_repo_layout.py` after `git add` so the index matches your intended tree; CI enforces the same rules on the pushed commit.
-- Put shared rubric data, scenario matrices, and trigger fixtures in `data/`.
-- Put maintainer-only evaluation scripts in `scripts/evaluation/`.
-- Put durable, reference-worthy outputs in `reports/baselines/`.
-- Put scratch runs and local report output in `reports/runs/`, then promote only the small subset that becomes a stable baseline.
-- Governance health snapshots follow the same rule: default JSON runs belong in `reports/runs/`; promote only explicit, reference-worthy summaries to `reports/baselines/`.
+- Keep distributable content only under `skills/<name>/`.
+- Put shared fixtures and metadata in `data/`.
+- Put reusable checks in `scripts/analysis/` and content evaluation in `scripts/evaluation/`.
+- Keep durable baselines in `reports/baselines/`; local run output belongs in `reports/runs/`.
+- Do not add runtime discovery paths, installers, governance renderers, sidecars, or runtime-specific acceptance runners.
 
-## Useful Evaluation Entrypoints
+## Core Checks
 
-- `python3 maintainer/scripts/install/run_manage_governance_smoke.py`
-- `python3 maintainer/scripts/analysis/check_governance_health.py --json`
-- `python3 maintainer/scripts/analysis/compare_governance_health_baseline.py --baseline <baseline.json> --current <snapshot.json>`
-- `python3 maintainer/scripts/analysis/check_governance_followon_contracts.py`
-- `uv run maintainer/governance_observability/run_observability_eval.py --json`
-- `python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode report`
-- `python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode api --compact-mode`
-- `python3 maintainer/scripts/evaluation/run_claude_trigger_smoke.py`
-- `python3 maintainer/scripts/evaluation/run_claude_interactive_mainline.py`
+```bash
+python3 maintainer/scripts/analysis/validate_skill_catalog.py
+python3 maintainer/scripts/analysis/validate_agent_skills.py
+python3 maintainer/scripts/analysis/check_cross_references.py --fail-on-broken
+python3 maintainer/scripts/analysis/validate_repo_layout.py
+python3 maintainer/scripts/evaluation/test_review_loop_output_contract.py
+python3 maintainer/scripts/evaluation/run_artifact_routing_tests.py --mode report --fail-on-contract-issues
+python3 maintainer/scripts/evaluation/test_artifact_routing_contract.py
+python3 maintainer/scripts/evaluation/test_adr_contract.py
+python3 maintainer/scripts/evaluation/test_skill_catalog_contract.py
+python3 maintainer/scripts/evaluation/test_token_activation_contract.py
+python3 maintainer/scripts/analysis/measure_prompt_surface.py --actual-tokens --validate-activation-contract --fail-on-budget
+python3 maintainer/scripts/analysis/generate_skill_index.py --check
+python3 maintainer/scripts/evaluation/compare_prompt_sizes.py
+python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode report --fail-on-protocol-issues
+```
 
-## Skill Metadata and Prompt Optimization
+The package and token validators use the exact versions in `token_tooling_constraints.txt`. CI additionally runs the official `skills-ref==0.1.0` pinned by immutable source commit. Trigger and routing API modes may have additional model-provider requirements; they exercise dedicated evaluation prompts, are not runtime adapter tests, and do not prove raw-model behavior from the actual Skill packages.
 
-- `python3 maintainer/scripts/analysis/generate_skill_index.py` - Generate compact skill metadata index
-- `python3 maintainer/scripts/evaluation/compare_prompt_sizes.py` - Compare verbose vs compact mode
-- See [`docs/prompt-size-optimization.md`](docs/prompt-size-optimization.md) for usage guide
-- See [`docs/prompt-size-measurements.md`](docs/prompt-size-measurements.md) for performance metrics
+## Prompt Optimization
 
-The Claude smoke runner uses clean temporary workspaces with `.claude/skills/`
-mirrored from the canonical `skills/` tree, so trigger validation is less
-likely to be distorted by repository-local examples and maintainer fixtures.
+- `python3 maintainer/scripts/analysis/generate_skill_index.py`
+- `python3 maintainer/scripts/evaluation/compare_prompt_sizes.py`
+- `python3 maintainer/scripts/analysis/measure_prompt_surface.py --actual-tokens --validate-activation-contract --fail-on-budget`
 
-For multi-turn Claude acceptance work, use the fixture-backed interactive plan in
-[`docs/maintainer/claude-interactive-test-implementation-plan.md`](../docs/maintainer/claude-interactive-test-implementation-plan.md)
-together with the checklist in
-[`docs/maintainer/claude-interactive-test-checklist.md`](../docs/maintainer/claude-interactive-test-checklist.md).
-
-For retained upstream authoring guidance, see
-[`docs/maintainer/claude-skill-authoring-best-practices.md`](../docs/maintainer/claude-skill-authoring-best-practices.md).
+Prompt measurements must distinguish discovery metadata, an activated `SKILL.md`, and optional supporting files. Do not report an all-files sum as the normal per-turn cost.

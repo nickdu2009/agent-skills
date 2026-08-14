@@ -1,0 +1,17 @@
+schema_version: "1.0"
+references:
+  - path: references/design-brief-format.md
+    load_mode: always
+    condition_id: activation
+  - path: references/adr-format.md
+    load_mode: conditional
+    condition_id: adr-candidate
+  - path: references/nfr-checks.md
+    load_mode: conditional
+    condition_id: nfr-design
+  - path: references/data-migration-checks.md
+    load_mode: conditional
+    condition_id: data-migration
+  - path: references/examples.md
+    load_mode: optional-runtime
+    condition_id: example-calibration
