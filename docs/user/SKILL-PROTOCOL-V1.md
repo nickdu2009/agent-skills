@@ -1,6 +1,8 @@
-# Skill Protocol v1
+# Skill Protocol v1 (Historical)
 
-Skill Protocol v1 is the repository-wide protocol for how skills are described, activated, validated, and retired.
+> Historical snapshot only. Skill Protocol v2 supersedes this document and is the sole current protocol contract. Do not use the verbose v1 blocks in new guidance, examples, or evaluations.
+
+Skill Protocol v1 was the repository-wide protocol for how skills were described, activated, validated, and retired.
 
 It applies to all three skill families:
 
@@ -98,12 +100,12 @@ Use the existing evaluation entrypoints:
 
 ```bash
 python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode report --fail-on-protocol-issues
-python3 maintainer/scripts/evaluation/run_claude_trigger_smoke.py --list-cases
+python3 maintainer/scripts/evaluation/run_trigger_tests.py --mode report
 ```
 
 `run_trigger_tests.py` reports static protocol readiness for skill documents.
 
-`run_claude_trigger_smoke.py` checks runtime outputs for:
+The client-independent trigger test checks outputs for:
 
 - required protocol blocks
 - block order

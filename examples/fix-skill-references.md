@@ -8,14 +8,14 @@ Example documents in the `examples/` directory may reference skill names that do
 
 - `scoped-tasking`
 - `bugfix-workflow`
-- `self-review`
+- `artifact-review-loop` (`self-delivery`, code)
 - `targeted-validation`
 
 ## Why This Composition
 
-- `scoped-tasking` narrows the problem to skill name references in example documents only—not README.md, not SKILL.md files, not governance templates.
+- `scoped-tasking` narrows the problem to skill name references in example documents only—not README.md, not SKILL.md files, and not unrelated maintainer docs.
 - `bugfix-workflow` treats this as a diagnosis problem: gather evidence (actual skills vs. referenced names), identify mismatches, fix only confirmed errors.
-- `self-review` verifies that all fixed references now point to real skills and no new errors were introduced.
+- `artifact-review-loop` verifies that all fixed references now point to real skills and no new errors were introduced.
 - `targeted-validation` confirms all referenced skills actually exist in `skills/`.
 
 ## Example Execution
@@ -23,7 +23,7 @@ Example documents in the `examples/` directory may reference skill names that do
 1. **Scope the investigation.**
    - "Find and fix skill name errors in `examples/` directory."
    - In scope: skill names in example files (`*.md` in `examples/`).
-   - Out of scope: README.md, SKILL.md files, code comments, governance templates.
+   - Out of scope: README.md, SKILL.md files, code comments, unrelated maintainer docs.
 
 2. **Gather the baseline truth.**
    ```bash

@@ -1,5 +1,9 @@
 # 多模型对比测试方案
 
+**Status**: Historical model-evaluation snapshot. Provider availability and
+model names below are not current repository facts; use
+`current-test-evaluation.md` for the maintained validation surface.
+
 ## 📋 测试配置
 
 根据阿里云 DashScope 可用性检测，**每个供应商选一个代表模型**进行对比测试。
@@ -145,4 +149,4 @@ python run_trigger_tests.py --mode api --compact-mode --enable-cache --model dee
 ---
 
 **创建时间**: 2026-04-11  
-**维护者**: Claude Code
+**维护者**: repository maintainers

@@ -4,9 +4,10 @@ on:
   pull_request:
     paths:
       - 'skills/**'
-      - 'templates/governance/**'
       - 'AGENTS.md'
-      - 'CLAUDE.md'
+      - 'maintainer/scripts/**'
+      - 'maintainer/data/**'
+      - '.github/workflows/token-efficiency-check.yml'
   schedule:
     # Run weekly audit on Monday at 9 AM UTC
     - cron: '0 9 * * 1'
@@ -37,9 +38,15 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install tiktoken
+        run: >-
+          python3 -m pip install
+          -c maintainer/data/token_tooling_constraints.txt
+          tiktoken PyYAML
+
+      - name: Validate reproducible token contract
+        run: >-
+          python3 maintainer/scripts/analysis/measure_prompt_surface.py
+          --actual-tokens --validate-activation-contract --fail-on-budget
 
       - name: Run quality check
         id: quality
@@ -68,15 +75,17 @@ jobs:
 
       - name: Detect regressions
         id: regressions
-        continue-on-error: true
         run: |
-          python3 maintainer/scripts/audit/detect_regressions.py --json > regression_results.json
-          REGRESSION_EXIT=$?
+          REGRESSION_EXIT=0
+          python3 maintainer/scripts/audit/detect_regressions.py --json > regression_results.json || REGRESSION_EXIT=$?
+          if [ "$REGRESSION_EXIT" -gt 1 ]; then
+            echo "Regression detector failed with exit code $REGRESSION_EXIT"
+            exit "$REGRESSION_EXIT"
+          fi
           echo "exit_code=$REGRESSION_EXIT" >> $GITHUB_OUTPUT
           echo "results<<EOF" >> $GITHUB_OUTPUT
           cat regression_results.json >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-          exit 0  # Don't fail the step, we'll handle it later
 
       - name: Generate dashboard
         id: dashboard
@@ -100,6 +109,8 @@ jobs:
               tokens = json.load(f)
           with open('regression_results.json') as f:
               regressions = json.load(f)
+          with open('maintainer/data/token_efficiency_baseline.json') as f:
+              baseline = json.load(f)
 
           # Calculate summary
           total_skills = len(quality)
@@ -107,7 +118,7 @@ jobs:
           pass_rate = (passing_skills / total_skills * 100) if total_skills > 0 else 0
 
           total_tokens = tokens["skill_files"]["total_tokens"]
-          baseline_tokens = 41783
+          baseline_tokens = baseline["total_skill_tokens"]
 
           has_critical = regressions.get("regressions", {}).get("has_regressions", False)
           has_warnings = regressions.get("regressions", {}).get("has_warnings", False)

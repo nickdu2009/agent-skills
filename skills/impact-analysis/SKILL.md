@@ -94,7 +94,7 @@ Keep anti-pattern guidance self-contained; installed skills must not depend on m
 
 # Composition
 
-Core component of `large-task` chain (see the project governance file § Skill Chain Triggers).
+Use before design or implementation planning when the changed surface reaches shared interfaces, public APIs, shared models, or multiple caller groups.
 
 Standard forward flow:
 

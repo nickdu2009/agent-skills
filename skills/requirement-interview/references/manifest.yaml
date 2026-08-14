@@ -1,0 +1,8 @@
+schema_version: "1.0"
+references:
+  - path: references/requirement-types.md
+    load_mode: conditional
+    condition_id: requirement-type-calibration
+  - path: references/examples.md
+    load_mode: optional-runtime
+    condition_id: example-calibration

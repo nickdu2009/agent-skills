@@ -2,8 +2,8 @@
 
 **Date**: 2026-04-11  
 **Scope**: All 18 skills in repository  
-**Reference**: docs/maintainer/claude-skill-authoring-best-practices.md  
-**Status**: Analysis Complete
+**Reference**: <https://agentskills.io/specification>
+Status: Historical
 
 > Historical snapshot: skill names and paths reflect the repository state at the time of this report. Some referenced skills may have been retired or moved since then.
 
@@ -213,11 +213,11 @@ Additional benefits:
 
 ## Reference Documents
 
-- **Best Practices**: docs/maintainer/claude-skill-authoring-best-practices.md
+- **Package specification**: <https://agentskills.io/specification>
 - **Chain Aliases**: docs/maintainer/skill-chain-aliases.md
 - **Contract Template**: docs/maintainer/skill-contract-template.md
 - **Anti-Pattern Template**: docs/maintainer/skill-anti-pattern-template.md
-- **Protocol v2**: docs/maintainer/protocol-v2-compact.md
+- **Protocol v2**: docs/user/SKILL-PROTOCOL-V2.md
 
 ## Next Steps
 

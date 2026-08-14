@@ -1,0 +1,14 @@
+schema_version: "1.0"
+references:
+  - path: references/architecture-template.md
+    load_mode: always
+    condition_id: activation
+  - path: references/adr-format.md
+    load_mode: conditional
+    condition_id: adr-candidate
+  - path: references/principles.md
+    load_mode: conditional
+    condition_id: architecture-principles
+  - path: references/examples.md
+    load_mode: optional-runtime
+    condition_id: example-calibration

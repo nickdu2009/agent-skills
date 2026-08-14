@@ -3,7 +3,7 @@
 **Version**: 1.0  
 **Date**: 2026-04-11  
 **Status**: Current authority
-**Current implementation note**: Updated for the 17-skill post-2026-06 governance model. The old plan-before-action, phase, and minimal-change-strategy skills are retired; lightweight planning still lives in `AGENTS.md` / `CLAUDE.md` Behavioral Guidelines §4, while durable implementation planning now routes through `implementation-planning`.
+**Current implementation note**: Updated for the 12-skill model. Review routing is consolidated in `artifact-review-loop`; lightweight repository planning lives in `AGENTS.md`, while durable implementation planning routes through `implementation-planning`.
 
 ## Purpose
 
@@ -20,7 +20,7 @@ Chain aliases are documentation shortcuts, not runtime primitives. They:
 
 They do not:
 
-- Replace the common flow patterns in `AGENTS.md` / `CLAUDE.md`
+- Replace the repository maintenance flow patterns in `AGENTS.md`
 - Introduce new runtime batch activation behavior
 - Change how skills are activated or deactivated
 - Modify skill preconditions or contracts
@@ -30,7 +30,7 @@ They do not:
 ### bugfix-standard
 
 **Full chain:**  
-`scoped-tasking` → `bugfix-workflow` → `self-review` → `targeted-validation`
+`scoped-tasking` → `bugfix-workflow` → `artifact-review-loop` (`self-delivery`) → `targeted-validation`
 
 **Use when:**
 
@@ -43,7 +43,7 @@ They do not:
 
 **Variations:**
 
-- Skip `self-review` for trivial one-line patches
+- Skip self-delivery review for trivial one-line patches
 
 **Example trigger:** "Background retries sometimes send duplicate emails"
 
@@ -52,7 +52,7 @@ They do not:
 ### refactor-safe
 
 **Full chain:**  
-`scoped-tasking` → `safe-refactor` → `self-review` → `targeted-validation`
+`scoped-tasking` → `safe-refactor` → `artifact-review-loop` (`self-delivery`) → `targeted-validation`
 
 **Use when:**
 
@@ -74,7 +74,7 @@ They do not:
 ### multi-file-planned
 
 **Full chain:**  
-`scoped-tasking` → `implementation-planning` → `self-review` → `targeted-validation`
+`scoped-tasking` → `implementation-planning` → `artifact-review-loop` (`self-delivery`) → `targeted-validation`
 
 **Use when:**
 
@@ -115,7 +115,7 @@ They do not:
 
 ### large-task
 
-**Status:** Historical alias retained for older maintainer reports. Current governance handles this with `scoped-tasking`, `design-before-plan`, `impact-analysis`, `implementation-planning`, and optional `multi-agent-protocol`; there is no dedicated phase or incremental-delivery skill in the live 17-skill set.
+**Status:** Historical alias retained for older maintainer reports. Current governance handles this with `scoped-tasking`, `design-before-plan`, `impact-analysis`, `implementation-planning`, and optional `multi-agent-protocol`; there is no dedicated phase or incremental-delivery skill in the live 12-skill set.
 
 **Full chain:**  
 No active canonical chain. Use the current common flow patterns instead.
@@ -181,9 +181,9 @@ Spell out the full chain when:
 
 ### Cross-references
 
-- Common flow patterns: `/CLAUDE.md` § Common Flow Patterns and `/AGENTS.md` § Common Flow Patterns
-- Skill activation and escalation: `/CLAUDE.md` § Skill Activation and § Escalation Rules
-- Skill lifecycle rules: `/CLAUDE.md` § Skill Lifecycle
+- Common flow patterns: `/AGENTS.md` § Common Flow Patterns
+- Skill activation and escalation: `/AGENTS.md` § Skill Activation and § Escalation Rules
+- Skill lifecycle rules: `/AGENTS.md` § Skill Lifecycle
 
 ## Alias Naming Convention
 
@@ -195,7 +195,7 @@ Chain aliases follow this pattern:
 Avoid:
 
 - Generic names (`workflow-1`, `chain-a`)
-- Tool-specific jargon (`cursor-chain`, `claude-flow`)
+- Runtime-specific jargon (`editor-chain`, `vendor-flow`)
 - Overly cute or whimsical names (`mega-chain`, `turbo-mode`)
 
 ## Maintenance Protocol
@@ -205,7 +205,7 @@ When a canonical chain changes:
 1. Update this document first
 2. Review references in maintainer docs
 3. Update examples in affected SKILL.md files (if they use the alias directly)
-4. Regenerate governance templates if chain triggers are affected
+4. Update affected Skill descriptions or examples when chain triggers change
 5. Update trigger test data if new entry/exit conditions apply
 
 When proposing a new alias:
@@ -255,7 +255,7 @@ Common flows:
 
 ## Adoption Status
 
-**Last updated**: 2026-05-26
+**Last updated**: 2026-08-13
 
 This section records current live-chain status. Older optimization reports may mention the pre-2026-05 18-skill set; treat those as historical snapshots.
 
@@ -263,9 +263,9 @@ This section records current live-chain status. Older optimization reports may m
 
 | Alias | Current status | Live chain |
 |---|---|---|
-| `bugfix-standard` | Current | `scoped-tasking` → `bugfix-workflow` → `self-review` → `targeted-validation` |
-| `refactor-safe` | Current | `scoped-tasking` → `safe-refactor` → `self-review` → `targeted-validation` |
-| `multi-file-planned` | Current | `scoped-tasking` → `implementation-planning` → `self-review` → `targeted-validation` |
+| `bugfix-standard` | Current | `scoped-tasking` → `bugfix-workflow` → `artifact-review-loop` (`self-delivery`) → `targeted-validation` |
+| `refactor-safe` | Current | `scoped-tasking` → `safe-refactor` → `artifact-review-loop` (`self-delivery`) → `targeted-validation` |
+| `multi-file-planned` | Current | `scoped-tasking` → `implementation-planning` → `artifact-review-loop` (`self-delivery`) → `targeted-validation` |
 | `design-first` | Current | `scoped-tasking` → `design-before-plan` → `impact-analysis` → `implementation-planning` |
 | `parallel` | Current | `multi-agent-protocol` → synthesis |
 | `large-task` | Historical | Retained for older reports; use current common flow patterns instead |
@@ -302,7 +302,7 @@ These skills use domain-specific composition patterns that don't map to standard
 
 - **Tokens saved**: ~710 tokens (65.4% reduction)
 - **Historical scope**: old 12 execution skill subset
-- **Current status**: historical measurement only; do not use as the current 14-skill adoption count
+- **Current status**: historical measurement only; do not use as the current 12-skill inventory
 
 ### Breakdown by Optimization Phase
 

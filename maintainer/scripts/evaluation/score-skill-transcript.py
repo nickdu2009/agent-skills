@@ -17,13 +17,6 @@ sys.path.insert(0, str(DATA_DIR))
 from skill_test_data import ALL_SKILLS, EXAMPLE_CASES, GLOBAL_RUBRIC_DIMENSIONS, resolve_example
 
 
-DEFAULT_TRANSCRIPTS_DIR = (
-    Path.home()
-    / ".cursor"
-    / "projects"
-    / "Users-duxiaobo-workspaces-nickdu-agent-skills"
-    / "agent-transcripts"
-)
 CRITICAL_GLOBAL_DIMENSIONS: tuple[str, ...] = (
     GLOBAL_RUBRIC_DIMENSIONS[0],
     GLOBAL_RUBRIC_DIMENSIONS[1],
@@ -281,13 +274,13 @@ class ScoreResult:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Heuristically score a Cursor transcript against the skill testing rubric."
+        description="Heuristically score an agent transcript against the skill testing rubric."
     )
     parser.add_argument(
         "transcript",
         type=Path,
         nargs="?",
-        help="Path to a transcript JSONL file. If omitted, --example-path under the default transcripts directory is used.",
+        help="Path to a transcript JSONL file.",
     )
     parser.add_argument(
         "--example",
@@ -336,7 +329,7 @@ def extract_text_parts(message: dict[str, Any]) -> str:
 
 
 def extract_visible_text(text: str) -> str:
-    # Cursor transcripts may contain extra planning/debug prose after the
+    # Some transcripts contain extra planning/debug prose after the
     # user-visible reply. Prefer the leading user-facing section as evidence.
     marker_match = re.search(r"\n\s*\*\*[^\n]+\*\*", text)
     candidate = text[: marker_match.start()] if marker_match else text

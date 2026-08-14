@@ -201,7 +201,7 @@ Correct approach: During design phase, explicitly check implicit requirements tr
 [task-validation: PASS | clarity:✓ | scope:✓ | safety:✓ | skill_match:✓ | action:proceed]
 [triggers: scoped-tasking:trigger design-before-plan:trigger]
 [precheck: design-before-plan | result:PASS | checks:alternatives_exist acceptance_criteria_unfrozen]
-[output: design-before-plan | status:completed | confidence:high | requirements:"Support batch create and update up to 100 items" | alternatives:"Single batch endpoint, Extend existing endpoint, GraphQL mutation" | chosen_design:"POST /items/batch" | rationale:"Clear contract separation with smallest acceptable blast radius" | acceptance_criteria:"Per-item partial failure details are returned; Batches of 10 finish within 2 seconds p95" linked_adrs:"none" adr_candidates:"ADR-0042:Use a dedicated REST batch endpoint:Proposed" | planning_ready:true | next:design-review-loop]
+[output: design-before-plan | status:completed | confidence:high | requirements:"Support batch create and update up to 100 items" | alternatives:"Single batch endpoint, Extend existing endpoint, GraphQL mutation" | chosen_design:"POST /items/batch" | rationale:"Clear contract separation with smallest acceptable blast radius" | acceptance_criteria:"Per-item partial failure details are returned; Batches of 10 finish within 2 seconds p95" linked_adrs:"none" adr_candidates:"ADR-0042:Use a dedicated REST batch endpoint:Proposed" | planning_ready:true | next:artifact-review-loop:design]
 [validate: design-before-plan | result:PASS | checks:alternatives acceptance_criteria]
 [drop: design-before-plan | reason:"design brief complete, ready for implementation-planning" | active:none]
 ```

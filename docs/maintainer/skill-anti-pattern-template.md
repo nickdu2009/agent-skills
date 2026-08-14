@@ -315,5 +315,5 @@ When updating this template:
 ## Cross-References
 
 - **Guardrails formatting**: `docs/maintainer/skill-contract-template.md`
-- **Full skill structure**: `docs/maintainer/claude-skill-authoring-best-practices.md`
+- **Package specification**: <https://agentskills.io/specification>
 - **Example anti-patterns**: See `skills/bugfix-workflow/SKILL.md`, `skills/safe-refactor/SKILL.md`, `skills/scoped-tasking/SKILL.md`

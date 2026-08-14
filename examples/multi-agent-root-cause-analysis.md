@@ -10,7 +10,7 @@ Checkout latency spikes intermittently. Evidence may live in the API path, datab
 - `multi-agent-protocol`
 - `targeted-validation`
 
-Planning for the analysis itself follows `AGENTS.md` Behavioral Guidelines §4; if the result becomes a multi-file implementation task, hand off to `implementation-planning`.
+Planning for the analysis itself uses a lightweight inline plan; if the result becomes a multi-file implementation task, hand off to `implementation-planning`.
 
 ## Orchestration Flow
 

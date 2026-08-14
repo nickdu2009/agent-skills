@@ -24,7 +24,7 @@ The result should be useful on the next task, not just accurate for the current 
 
 ## When Not to Use
 
-- The user asks to change Cursor settings or user-level rules; use the relevant editor/settings workflow instead.
+- The user asks to change a runtime's settings, discovery paths, or user-level rules; use that runtime's documented workflow instead.
 - The user asks to create a new reusable skill; use the skill authoring workflow instead.
 - The user asks to implement product code and `AGENTS.md` is only background context.
 - The target is a requirements, design, implementation plan, code, or test review artifact; use the matching review-loop skill.
@@ -37,19 +37,17 @@ The result should be useful on the next task, not just accurate for the current 
 - Base commands, paths, and conventions on repository evidence, not guesses.
 - Prefer the nearest applicable `AGENTS.md` when nested instruction files exist.
 - Do not include secrets, private tokens, machine-local paths, or credentials.
-- If the user asks for both `AGENTS.md` and another agent file such as `CLAUDE.md`, keep shared content aligned while preserving platform-specific differences.
+- Keep this skill scoped to the requested project-level `AGENTS.md`; do not create runtime-specific companion files.
 
 ## Workflow
 
 1. Confirm the target.
    - Identify the repository root and whether the user wants root-level `AGENTS.md` only.
-   - If the target path or platform scope is ambiguous, ask before editing.
+   - If the target path or nested scope is ambiguous, ask before editing.
 
 2. Read current instruction sources.
    - Existing `AGENTS.md` files from the target directory upward.
-   - Related files such as `CLAUDE.md`, `.cursor/rules/`, README, contributor docs, package manifests, build files, and test configuration.
-   - Governance templates such as `templates/governance/AGENTS-template.md` when present.
-   - Supported platform user-level sources when visible: Codex `AGENTS.md`, Claude Code `CLAUDE.md`, and Cursor skills/User Rules status as described in [INITIALIZATION.md](INITIALIZATION.md).
+   - Related repository files such as README, contributor docs, package manifests, build files, CI, and test configuration.
    - Any user-provided exact wording; preserve exact wording when requested.
 
 3. Classify the operation.
@@ -66,7 +64,7 @@ The result should be useful on the next task, not just accurate for the current 
 
 5. Merge carefully.
    - Keep stable local rules.
-   - Do not duplicate sections already confirmed in supported user-level governance or a project governance template; add only project-specific extensions.
+   - Do not duplicate an applicable parent or existing project section; add only the missing project-specific guidance.
    - Remove duplicate or obsolete rules only when the replacement is clearly better supported.
    - Resolve contradictions by favoring current repository files over stale prose, and call out any unresolved conflict.
    - Keep sections short enough that future agents will read them.
@@ -131,7 +129,7 @@ Finish with:
 
 ### Retry Policy
 
-- Ask one focused clarification question when target path, platform scope, or conflict resolution is unclear.
+- Ask one focused clarification question when target path, nested scope, or conflict resolution is unclear.
 - If repository evidence is missing after a focused search, leave the item out or mark it as an assumption.
 
 ### Fallback

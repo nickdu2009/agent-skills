@@ -1,0 +1,9 @@
+hatchling==1.27.0
+packaging==25.0
+pathspec==0.12.1
+pluggy==1.6.0
+trove-classifiers==2025.5.9.12
+click==8.3.1
+strictyaml==1.7.3
+python-dateutil==2.9.0.post0
+six==1.17.0

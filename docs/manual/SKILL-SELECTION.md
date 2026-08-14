@@ -25,7 +25,7 @@
 - 改动有没有被压到最小
 - 验证有没有先从最小充分开始
 
-编辑前的"先想清楚 / 列计划"仍然先看 `AGENTS.md` 行为指南 §4（Goal-Driven Execution）：如果只是小任务、局部改动、顺序显然，用轻量计划块即可；如果需要多文件排序、可落盘计划或后续计划评审，再升级到 `implementation-planning`。
+编辑前先判断是否真的需要持久计划：如果只是小任务、局部改动、顺序显然，用包含修改步骤和验证点的轻量内联计划即可；如果需要多文件排序、可落盘计划或后续计划评审，再升级到 `implementation-planning`。
 
 如果你还不确定从哪里开始，先从这组默认组合起步，通常比一开始就上更重的技能更稳。
 
@@ -34,10 +34,10 @@
 
 把技能先看成 5 个簇，按下面顺序升级，通常最稳：
 
-1. 执行与质量：`scoped-tasking` + `targeted-validation`（必要时加 `self-review`）
+1. 执行与质量：`scoped-tasking` + `targeted-validation`（必要时用 `artifact-review-loop` 做已验证的 self-delivery 评审）
 2. 缺陷与重构：`bugfix-workflow` / `safe-refactor`
 3. 需求、影响与设计：`requirement-interview`（需求模糊时最先用）/ `impact-analysis` / `design-before-plan` / `architecture-design` / `implementation-planning`
-4. 评审回环：按产物类型选择一个 `*-review-loop`
+4. 评审回环：`artifact-review-loop` 先识别产物类型，再加载专项规则
 5. 治理与协作：`manage-agents-md` / `multi-agent-protocol`
 
 这个顺序的核心是：先保证边界和验证，再升级复杂机制。
@@ -165,7 +165,7 @@
 结束信号：
 
 - 架构设计文档已产出，包含组件分解、数据架构、接口契约、ADR
-- 可以进入 `design-review-loop` 评审，或进入 `implementation-planning` 排实施计划
+- 可以进入 `artifact-review-loop`（design）评审，或进入 `implementation-planning` 排实施计划
 
 ### 共享接口或多调用方改动
 <div class="title-en">Shared API or multi-caller change</div>
@@ -253,12 +253,12 @@
 如果你只想要几组最常用组合，可以先从这里开始：
 
 - 需求模糊先澄清：`requirement-interview` → `scoped-tasking` → `design-before-plan`
-- 系统级架构设计：`requirement-interview`（如需）→ `architecture-design` → `design-review-loop`（如需）→ `implementation-planning`
-- 设计已定后进入实施：`design-before-plan` → `implementation-planning` → `plan-review-loop`（如需审计划）→ 实现
+- 系统级架构设计：`requirement-interview`（如需）→ `architecture-design` → `artifact-review-loop`（design，可选）→ `implementation-planning`
+- 设计已定后进入实施：`design-before-plan` → `implementation-planning` → `artifact-review-loop`（plan，可选）→ 实现
 - 小范围普通改动：`scoped-tasking` + `targeted-validation`
 - 缺陷修复：`scoped-tasking` + `bugfix-workflow` + `targeted-validation`
-- 安全重构：`scoped-tasking` + `safe-refactor` + `self-review` + `targeted-validation`
-- 文档/代码评审：按产物类型选择一个 `*-review-loop`，循环到 `review_result: clean`
+- 安全重构：`scoped-tasking` + `safe-refactor` + `artifact-review-loop`（self-delivery）+ `targeted-validation`
+- 文档/代码/测试评审：使用 `artifact-review-loop`，循环到 `clean` / `clean_with_assumptions`，或在 `needs_clarification` 时停止提问
 
 ## 这一章补充了什么
 <div class="title-en">What This Chapter Adds</div>

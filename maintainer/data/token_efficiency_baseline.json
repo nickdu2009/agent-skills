@@ -1,0 +1,20 @@
+{
+  "date": "2026-08-13",
+  "measurement_contract_version": "1.0",
+  "token_counter": "tiktoken",
+  "counter_version": "0.13.0",
+  "tokenizer": "o200k_base",
+  "quality_pass_rate": 100,
+  "quality_passing": 12,
+  "quality_total": 12,
+  "total_skill_tokens": 18084,
+  "avg_tokens_per_skill": 1507,
+  "max_skill_body_tokens": 2261,
+  "discovery_metadata_tokens": 990,
+  "supporting_file_tokens": 6039,
+  "all_packages_tokens_upper_bound": 24123,
+  "repository_governance_tokens": 3480,
+  "everything_tokens_upper_bound": 27603,
+  "cross_references_broken": 0,
+  "skills_over_500_lines": 0
+}

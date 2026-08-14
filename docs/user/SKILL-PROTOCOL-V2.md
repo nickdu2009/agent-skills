@@ -2,11 +2,10 @@
 
 Skill Protocol v2 defines the canonical compact protocol for how skills are activated, validated, and retired.
 
-It applies to all three skill families:
+It applies to both live skill families:
 
 - execution skills
 - orchestration skills
-- phase skills
 
 ## Protocol Position
 
@@ -33,7 +32,7 @@ The goal is controlled skill execution, not protocol-shaped conversation.
 
 v2 applies anywhere the repository needs skill-driven work to be observable and checkable:
 
-- governance files such as `AGENTS.md` or `CLAUDE.md`
+- applicable project governance such as `AGENTS.md`
 - skill execution traces where activation, handoff, validation, and retirement must be explicit
 - evaluation and release checks that inspect whether skill usage followed the required lifecycle
 
@@ -45,7 +44,7 @@ across governance, runtime behavior, and evaluation.
 Protocol v2 keeps the skill library easier to execute, validate, and evolve:
 
 - one shared compact activation and output model across all skills
-- lower token overhead in governance templates and execution traces
+- lower token overhead in project guidance and execution traces
 - explicit lifecycle and deactivation instead of silent carry-over
 - language-agnostic task validation rules
 - one consistent machine-readable surface for evaluation
@@ -116,6 +115,7 @@ Required semantics:
 ### Trigger Evaluation
 
 ```text
+[triggers: scoped-tasking:trigger | design-before-plan:defer]
 ```
 
 Required semantics:
@@ -144,6 +144,7 @@ Optional:
 ### Skill Output
 
 ```text
+[output: targeted-validation | completed high | command:"pytest tests/auth/test_optional_profile.py -k missing_profile" reason:"directly exercises the changed path" residual_risk:"full account suite not run" | next:run-command]
 ```
 
 Required semantics:
@@ -184,6 +185,7 @@ Optional:
 ### Skill Deactivation
 
 ```text
+[drop: targeted-validation | reason:"validation decision handed to execution" | active:none]
 ```
 
 Required semantics:
@@ -195,6 +197,7 @@ Required semantics:
 ### Loop Detection
 
 ```text
+[loop: targeted-validation | reason:"retry requested without new evidence"]
 ```
 
 Use only when the same skill is retried without materially new evidence.
@@ -296,17 +299,6 @@ Execution skills must include:
 - `## Failure Handling`
 - `## Deactivation Trigger`
 
-- `## Contract`
-- `## Failure Handling`
-- `## Deactivation Trigger`
-
-Phase skills must include:
-
-- `## Artifact Contract`
-- `## Gate Contract`
-- `## Failure Handling`
-- `## Lifecycle`
-
 ## Canonical Example
 
 ```text
@@ -314,7 +306,7 @@ Phase skills must include:
 [precheck: scoped-tasking | result:PASS | checks:objective-clear boundary-unknown]
 [output: scoped-tasking | status:completed | confidence:high | objective:"fix timeout regression" | analysis_boundary:"export controller export service failing test" | excluded_areas:"payment flow ui" | next:implementation]
 [validate: scoped-tasking | result:PASS | checks:objective analysis_boundary excluded_areas]
-[drop: scoped-tasking | reason:"boundary consumed by implementation (AGENTS.md §4 plan)" | active:targeted-validation]
+[drop: scoped-tasking | reason:"boundary consumed by lightweight implementation plan" | active:targeted-validation]
 [precheck: targeted-validation | result:PASS | checks:changed-surface-known risk-tolerance-stated]
 [validate: targeted-validation | result:PASS | checks:checks_to_run risks_not_covered pass_criteria]
 ```
@@ -333,7 +325,7 @@ v2 differs from v1 in these ways:
    Under v2, block semantics remain, but the canonical representation is always compact.
 
 4. v2 reduces runtime token cost.
-   Governance templates, examples, and execution traces can express the same protocol semantics with fewer tokens.
+   Project guidance, examples, and execution traces can express the same protocol semantics with fewer tokens.
 
 5. v2 keeps the core lifecycle semantics.
    Task validation, trigger evaluation, precondition checks, output/validation pairing, explicit deactivation, and family budgets all remain part of the protocol.

@@ -24,17 +24,17 @@
 - `scoped-tasking`
 - `targeted-validation`
 
-这组组合的作用是先把边界缩小、控制改动规模，再做最小充分验证。对小任务，计划环节仍可用 `AGENTS.md` 行为指南 §4（Goal-Driven Execution）的轻量计划块；只有在多文件、多步骤、需要落盘或需要被审查时，才升级到 `implementation-planning`。
+这组组合的作用是先把边界缩小、控制改动规模，再做最小充分验证。对小任务，计划环节可用包含修改步骤和验证点的轻量内联计划；只有在多文件、多步骤、需要落盘或需要被审查时，才升级到 `implementation-planning`。
 
 ## 整合后的技能簇
 <div class="title-en">Consolidated Skill Clusters</div>
 
-为了降低选择成本，可以先把 17 个技能按职责整合为 5 个技能簇来理解：
+为了降低选择成本，可以先把 12 个技能按职责整合为 5 个技能簇来理解：
 
-- 执行与质量：`scoped-tasking`、`targeted-validation`、`self-review`
+- 执行与质量：`scoped-tasking`、`targeted-validation`
 - 缺陷与重构：`bugfix-workflow`、`safe-refactor`
 - 需求、影响与设计：`requirement-interview`、`impact-analysis`、`design-before-plan`、`architecture-design`、`implementation-planning`
-- 评审回环：`requirements-review-loop`、`design-review-loop`、`plan-review-loop`、`code-review-loop`、`test-review-loop`
+- 评审回环：`artifact-review-loop`
 - 治理与协作：`manage-agents-md`、`multi-agent-protocol`
 
 日常任务建议先在“执行与质量”簇起步，只有在证据显示需要时再升级到其他簇。
@@ -42,7 +42,7 @@
 ## 基础执行技能
 <div class="title-en">Core Execution Skills</div>
 
-这些技能都由 `manage-governance.py` 安装。
+这些技能都是 `skills/` 下可独立使用的 Agent Skills 标准包。
 
 ### `scoped-tasking`
 
@@ -51,10 +51,6 @@
 ### `targeted-validation`
 
 优先选择最小但有意义的验证方式，而不是默认跑最重的构建或测试。
-
-### `self-review`
-
-在测试前先回看自己的 diff，检查范围是否跑偏、有没有残留调试代码、有没有低成本质量问题。
 
 ## 定位、诊断与结构技能
 <div class="title-en">Discovery, Diagnosis, and Structure Skills</div>
@@ -90,29 +86,13 @@
 当需求和设计方向已经定下来，但真正难点变成“按什么顺序做、落到哪些文件、每步怎么验证、风险怎么回滚”时，用这个技能把实施计划写成可落盘、可审查的计划文档。
 
 ## 评审回环技能
-<div class="title-en">Review-Loop Skills</div>
+<div class="title-en">Review-Loop Skill</div>
 
-这一组技能用于“拿到一个产物 → 评审 → 修订 → 再评审”的闭环式审核。按被评审产物的类型选择对应技能，技能之间互斥；任何一个都要求"反复直到 review_result: clean"，不是一次性 review。
+### `artifact-review-loop`
 
-### `requirements-review-loop`
+使用一个标准包评审五类产物：需求、设计、计划、代码和测试。Skill 会先分类，再按需读取对应 `references/` 规则；可在 `review-only` 与明确授权的 `review-and-revise` 之间选择，并持续到 `clean` / `clean_with_assumptions`，或在 `needs_clarification` 时停止。
 
-审核需求文档 / PRD / 用户故事 / 验收标准。关键词：需求、PRD、user story、acceptance criteria。
-
-### `design-review-loop`
-
-审核设计文档 / RFC / ADR / 接口设计 / 架构设计 / 数据模型 / 技术方案。中文“方案 / 实现思路 / 实现方案 / 接口 / 思路”默认归这里。
-
-### `plan-review-loop`
-
-审核实施计划 / 迁移方案 / 重构计划 / 任务计划 / 路线图。中文“实施方案 / 迁移方案”归这里，常见上游产物就是 `implementation-planning` 生成的计划文档。
-
-### `code-review-loop`
-
-审核已实现的代码 diff / commit / PR / 指定文件，修复实现层缺陷并跑最小验证。
-
-### `test-review-loop`
-
-审核测试用例 / 测试策略 / 覆盖矩阵 / 新增或修改的测试文件本身，跑测试作为验证。注意：审"测试用例本身"而不是"被测的产品代码"。
+完成当前任务后的自检也使用该 Skill，但只有当前 Agent 的已授权任务产物才属于 `self-delivery`。用户说“我刚改完”不能让 Agent 继承写权限。
 
 ## 项目治理技能
 <div class="title-en">Project Governance Skills</div>
@@ -128,7 +108,7 @@
 
 把确实适合并行的任务拆成低耦合子问题，并协调多个代理如何分工、汇总和验证。
 
-并行子线出现冲突时，按证据显式裁决；中等规模任务的 2 到 4 个增量拆分通常先由 `implementation-planning` 写成实施计划，再由 `AGENTS.md` 行为指南 §4 提供并行与 verify 纪律。
+并行子线出现冲突时，按证据显式裁决；中等规模任务的 2 到 4 个增量拆分通常先由 `implementation-planning` 写成实施计划，并在计划中明确并行边界与 verify 纪律。
 
 ## 一页判断法
 <div class="title-en">One-Page Decision Guide</div>
@@ -144,7 +124,7 @@
 - 可能影响很多调用方：`impact-analysis`
 - 想并行但不确定值不值得：`multi-agent-protocol`
 - 只想把验证缩到最小：`targeted-validation`
-- 用户说“评审/审核/review …”：按被审产物选 `requirements-review-loop` / `design-review-loop` / `plan-review-loop` / `code-review-loop` / `test-review-loop`
+- 用户说“评审/审核/review …”：使用 `artifact-review-loop`，再按需求 / 设计 / 计划 / 代码 / 测试分类
 - 用户要初始化或更新项目 `AGENTS.md`：`manage-agents-md`
 
 ## 接下来读什么

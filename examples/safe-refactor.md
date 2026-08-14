@@ -10,7 +10,7 @@ Three webhook handlers each normalize the same incoming payload shape with sligh
 - `safe-refactor`
 - `targeted-validation`
 
-Editing follows `AGENTS.md` Behavioral Guidelines §4 (plan + verify).
+Editing follows a lightweight inline plan with explicit verification.
 
 ## Refactor Invariants
 
@@ -22,7 +22,7 @@ Editing follows `AGENTS.md` Behavioral Guidelines §4 (plan + verify).
 ## Example Flow
 
 2. Use `scoped-tasking` to keep the task limited to the three handlers and the new helper location.
-3. Per AGENTS.md §4, declare before editing:
+3. Before editing, declare:
    - intended files
    - extraction target
    - invariants

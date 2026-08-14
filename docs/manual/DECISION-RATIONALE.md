@@ -23,7 +23,7 @@
 - `scoped-tasking`
 - `targeted-validation`
 
-并由 `AGENTS.md` 行为指南 §4 在编辑前提供轻量计划块（含 `[parallelism: ...]` 和验证点）。
+并在编辑前使用包含 `[parallelism: ...]` 和验证点的轻量内联计划。
 
 只有当任务真的跨越多个 PR、多个依赖关系，或需要显式的大任务拆分与并行裁决时，才值得升级到更重的编排方式；这时应使用 `implementation-planning` 把实施顺序、文件落地、验证与回滚写成持久计划。
 

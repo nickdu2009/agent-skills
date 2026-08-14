@@ -1,0 +1,17 @@
+schema_version: "1.0"
+references:
+  - path: references/requirements.md
+    load_mode: conditional
+    condition_id: review-requirements
+  - path: references/design.md
+    load_mode: conditional
+    condition_id: review-design
+  - path: references/plan.md
+    load_mode: conditional
+    condition_id: review-plan
+  - path: references/code.md
+    load_mode: conditional
+    condition_id: review-code
+  - path: references/tests.md
+    load_mode: conditional
+    condition_id: review-tests

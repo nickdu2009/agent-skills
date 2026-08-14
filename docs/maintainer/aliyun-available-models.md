@@ -1,5 +1,9 @@
 # 阿里云 DashScope 可用模型列表
 
+**Status**: Historical provider snapshot. The model inventory below is not a
+current availability claim; use the provider console for live availability and
+`current-test-evaluation.md` for the maintained repository validation surface.
+
 ## 🔍 如何查看所有可用模型
 
 访问阿里云 DashScope 控制台查看最新模型列表：
@@ -131,4 +135,4 @@ chmod +x compare_models.sh
 ---
 
 **更新时间**: 2026-04-11  
-**维护者**: Claude Code
+**维护者**: repository maintainers

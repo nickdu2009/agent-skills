@@ -2,7 +2,7 @@
 
 **Date**: 2026-04-11  
 **Execution Mode**: Multi-agent parallel (Tier 2, 4 agents)  
-**Status**: ✅ Complete - All validations passed
+Status: Historical
 
 ## Executive Summary
 
@@ -345,11 +345,11 @@ grep -l "^## Contract" skills/*/SKILL.md | wc -l
 
 - **Analysis**: docs/maintainer/skill-optimization-analysis-2026-04-11.md
 - **Plan**: docs/maintainer/skill-optimization-plan-2026-04-11.md
-- **Best Practices**: docs/maintainer/claude-skill-authoring-best-practices.md
+- **Package specification**: <https://agentskills.io/specification>
 - **Templates**:
   - docs/maintainer/skill-contract-template.md
   - docs/maintainer/skill-anti-pattern-template.md
-  - docs/maintainer/protocol-v2-compact.md
+  - docs/user/SKILL-PROTOCOL-V2.md
 - **Chain Aliases**: docs/maintainer/skill-chain-aliases.md
 
 ---

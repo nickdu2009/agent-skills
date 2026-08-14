@@ -2,7 +2,7 @@
 
 **Version**: 1.0  
 **Date**: 2026-04-11  
-**Status**: Historical snapshot / superseded by the post-2026-05 skill inventory
+Status: Historical
 **Scope**: Remaining 13 skills template application strategy
 
 > Historical note: this rollout plan was written for the old 18-skill inventory and references skills that were later retired. Use it as rationale for template rollout strategy, not as the current remaining-work list.
@@ -302,7 +302,7 @@ When skipping template application:
 - **Before/after examples**: docs/maintainer/template-adoption-examples.md
 - **Contract template**: docs/maintainer/skill-contract-template.md
 - **Anti-pattern template**: docs/maintainer/skill-anti-pattern-template.md
-- **Deduplication analysis**: docs/maintainer/deduplication-analysis.md
+- **Optimization analysis**: docs/maintainer/skill-optimization-analysis-2026-04-11.md
 - **Quality script**: maintainer/scripts/analysis/check_skill_quality.py
 
 ---

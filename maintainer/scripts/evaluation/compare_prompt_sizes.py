@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Compare prompt sizes between verbose and compact modes.
+"""Compare prompt parity between frontmatter and index loading modes.
 
-This script measures the token reduction achieved by using the compact
-skill_index.json instead of parsing full SKILL.md frontmatter.
+Both modes intentionally expose the same Skill names and descriptions. This
+script detects stale or semantically different index content and reports the
+resulting prompt-size difference using the repository's lightweight estimate.
 
 Usage:
   python3 maintainer/scripts/evaluation/compare_prompt_sizes.py
@@ -13,6 +14,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -24,7 +26,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from trigger_test_data import ALL_TRIGGER_CASES, resolve_trigger_case
 from run_trigger_tests import (
-    extract_descriptions,
     load_skill_index,
     build_available_skills_block,
     build_eval_prompt,
@@ -32,7 +33,7 @@ from run_trigger_tests import (
 )
 
 
-def compare_modes(case_id: str | None = None, *, detailed: bool = False) -> None:
+def compare_modes(case_id: str | None = None, *, detailed: bool = False) -> bool:
     """Compare verbose and compact mode prompt sizes."""
 
     # Select test case
@@ -46,16 +47,24 @@ def compare_modes(case_id: str | None = None, *, detailed: bool = False) -> None
         ]]
 
     # Load descriptions using both methods
-    verbose_descriptions = extract_descriptions()
-    compact_descriptions = load_skill_index()
+    sys.path.insert(0, str(REPO_ROOT / "maintainer" / "scripts" / "analysis"))
+    import generate_skill_index
+    generated_index = generate_skill_index.generate_skill_index(generate_skill_index.SKILLS_DIR)
+    verbose_descriptions = {
+        item["name"]: item["description"] for item in generated_index["skills"]
+    }
+    compact_descriptions = load_skill_index(strict=True)
+    index_data = json.loads((DATA_DIR / "skill_index.json").read_text(encoding="utf-8"))
+    if index_data.get("schema_version") != "0.2.0" or "generated_at" in index_data:
+        print("ERROR: compact index must use schema 0.2.0 without generated_at", file=sys.stderr)
+        return False
+    if index_data != generated_index:
+        print("ERROR: compact index digest/content is stale", file=sys.stderr)
+        return False
 
     # Build skills blocks
     verbose_block = build_available_skills_block(verbose_descriptions)
     compact_block = build_available_skills_block(compact_descriptions)
-
-    # Note: In current implementation, both load from the same source
-    # The real difference would be if verbose mode loaded full SKILL.md content
-    # versus compact mode using only the index
 
     print("=" * 70)
     print("  Prompt Size Comparison: Verbose vs Compact Mode")
@@ -70,12 +79,15 @@ def compare_modes(case_id: str | None = None, *, detailed: bool = False) -> None
     print(f"  Verbose: {verbose_block_size['characters']:6,} chars, ~{verbose_block_size['tokens_estimate']:5,} tokens")
     print(f"  Compact: {compact_block_size['characters']:6,} chars, ~{compact_block_size['tokens_estimate']:5,} tokens")
 
-    if verbose_block_size['characters'] == compact_block_size['characters']:
-        print("  Note: Both modes currently use skill_index.json (same size)")
+    exact_parity = verbose_block == compact_block
+    if exact_parity:
+        print("  Parity: exact match")
+    elif verbose_block_size['characters'] == compact_block_size['characters']:
+        print("  ERROR: equal size but different content")
     else:
         reduction_pct = ((verbose_block_size['tokens_estimate'] - compact_block_size['tokens_estimate']) /
                          verbose_block_size['tokens_estimate'] * 100)
-        print(f"  Reduction: {reduction_pct:.1f}%")
+        print(f"  ERROR: content mismatch ({reduction_pct:+.1f}% estimated size delta)")
 
     print()
 
@@ -104,7 +116,10 @@ def compare_modes(case_id: str | None = None, *, detailed: bool = False) -> None
                 if verbose_size['tokens_estimate'] != compact_size['tokens_estimate']:
                     reduction = verbose_size['tokens_estimate'] - compact_size['tokens_estimate']
                     reduction_pct = (reduction / verbose_size['tokens_estimate'] * 100)
-                    print(f"    Saved: {reduction:,} tokens ({reduction_pct:.1f}%)")
+                    print(
+                        f"    ERROR: estimated size delta {reduction:+,} tokens "
+                        f"({reduction_pct:+.1f}%)"
+                    )
                 print()
 
         avg_verbose = total_verbose_tokens // len(cases) if cases else 0
@@ -117,7 +132,10 @@ def compare_modes(case_id: str | None = None, *, detailed: bool = False) -> None
         if avg_verbose != avg_compact:
             avg_reduction = avg_verbose - avg_compact
             avg_reduction_pct = (avg_reduction / avg_verbose * 100)
-            print(f"    Saved: ~{avg_reduction:,} tokens ({avg_reduction_pct:.1f}%)")
+            print(
+                f"    ERROR: estimated size delta ~{avg_reduction:+,} tokens "
+                f"({avg_reduction_pct:+.1f}%)"
+            )
 
     print()
     print("=" * 70)
@@ -125,10 +143,12 @@ def compare_modes(case_id: str | None = None, *, detailed: bool = False) -> None
     print("Implementation notes:")
     print("  - Compact mode uses pre-generated skill_index.json")
     print("  - Verbose mode parses SKILL.md frontmatter on-demand")
-    print("  - Current implementation: both modes use index (for consistency)")
-    print("  - Size reduction comes from avoiding full SKILL.md parsing overhead")
+    print("  - Both modes should build byte-identical discovery metadata")
+    print("  - Token output is an approximate characters/4 comparison")
+    print("  - Canonical repository token accounting uses o200k_base")
     print("  - Index generation: maintainer/scripts/analysis/generate_skill_index.py")
     print()
+    return exact_parity
 
 
 def main() -> int:
@@ -146,8 +166,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    compare_modes(args.case, detailed=args.detailed)
-    return 0
+    return 0 if compare_modes(args.case, detailed=args.detailed) else 1
 
 
 if __name__ == "__main__":

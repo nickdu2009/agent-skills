@@ -230,7 +230,7 @@ When authoring contracts:
 This contract template works alongside:
 
 - **skill-anti-pattern-template.md**: For common failure modes
-- **protocol-v2-compact.md**: For execution protocol blocks
+- **docs/user/SKILL-PROTOCOL-V2.md**: For execution protocol blocks
 - **skill-chain-aliases.md**: For composition patterns
 
 ## Validation Checklist
@@ -257,6 +257,6 @@ When updating this template:
 
 ## Cross-References
 
-- **Full skill structure**: `docs/maintainer/claude-skill-authoring-best-practices.md`
+- **Package specification**: <https://agentskills.io/specification>
 - **Contract examples**: See `skills/bugfix-workflow/SKILL.md`, `skills/scoped-tasking/SKILL.md`
 - **Composition patterns**: `docs/maintainer/skill-chain-aliases.md`

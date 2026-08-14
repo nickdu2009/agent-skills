@@ -1,6 +1,8 @@
 # Review-Loop 主链 5 件套 实施计划
 
-> 配套设计文档：`docs/maintainer/review-loop-mainchain-design.md`（已通过 review-loop clean）
+Status: Historical
+
+> 配套历史设计文档：`docs/maintainer/review-loop-mainchain-design.md`
 > 本计划只做"怎么实施"，不重复"为什么这样设计"。任何与设计文档冲突时以设计文档为准。
 
 ## 1. 范围与依据
@@ -221,7 +223,7 @@ disambiguation:
 | 3.1 | 新建 `skills/test-review-loop/SKILL.md` | ~110 行，符合 §4.1 / §10.1 |
 | 3.2 | 完整化 `tests/triggers/review-loop-mainchain.yaml`（补 test 部分） | 5 件套全覆盖 |
 | 3.3 | 更新 `docs/maintainer/_sidebar.md` / `index.html`，加入主链 5 件套设计与计划链接 | 索引可见 |
-| 3.4 | 在 `docs/maintainer/trigger-test-optimization-tracker.md` 追加主链触发测试结果一节 | 数据归档 |
+| 3.4 | 将主链触发测试结果保存到 `maintainer/reports/runs/`，只晋升稳定 baseline | 数据归档 |
 | 3.5 | 跑全套触发测试 | 5 件套全部达 §1.2 指标 |
 
 ### 5.2 SKILL.md 大纲（test-review-loop）
@@ -279,7 +281,7 @@ test-review-loop:
 ## 7. 触发测试集设计
 
 ### 7.1 文件位置
-`tests/triggers/review-loop-mainchain.yaml`（若已有触发测试目录约定，沿用；否则按设计文档 §13 第 3 条归档进 `trigger-test-optimization-tracker.md`）
+优先扩展 `maintainer/data/trigger_test_data.py` 的既有数据模型，并按设计文档 §13 第 3 条归档结果。
 
 ### 7.2 样本规模
 - 每件套 positive prompt ≥ 10 条
@@ -294,7 +296,7 @@ test-review-loop:
 - 易混淆词归属 100% 正确
 
 ### 7.4 测试输出
-- 每个 PR 跑一次，结果追加进 `trigger-test-optimization-tracker.md`
+- 每个 PR 跑一次，普通结果写入 `maintainer/reports/runs/`
 - PR 3 跑完作为 v1.x 主链发布基线
 
 ---

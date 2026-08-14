@@ -29,13 +29,13 @@ except ImportError:
     sys.exit(1)
 
 
-def count_tokens(text: str, encoding_name: str = "cl100k_base") -> int:
+def count_tokens(text: str, encoding_name: str = "o200k_base") -> int:
     """Count tokens in text using tiktoken."""
     encoder = tiktoken.get_encoding(encoding_name)
     return len(encoder.encode(text))
 
 
-def calculate_savings(before: str, after: str, encoding_name: str = "cl100k_base") -> dict[str, Any]:
+def calculate_savings(before: str, after: str, encoding_name: str = "o200k_base") -> dict[str, Any]:
     """Calculate token savings between before and after text."""
     before_tokens = count_tokens(before, encoding_name)
     after_tokens = count_tokens(after, encoding_name)
@@ -54,7 +54,7 @@ def calculate_savings(before: str, after: str, encoding_name: str = "cl100k_base
     }
 
 
-def compare_files(before_file: Path, after_file: Path, encoding_name: str = "cl100k_base") -> dict[str, Any]:
+def compare_files(before_file: Path, after_file: Path, encoding_name: str = "o200k_base") -> dict[str, Any]:
     """Compare two files and return token savings."""
     if not before_file.exists():
         print(f"Error: Before file not found: {before_file}", file=sys.stderr)
@@ -74,7 +74,7 @@ def compare_files(before_file: Path, after_file: Path, encoding_name: str = "cl1
     return results
 
 
-def compare_directories(before_dir: Path, after_dir: Path, pattern: str = "**/*.md", encoding_name: str = "cl100k_base") -> dict[str, Any]:
+def compare_directories(before_dir: Path, after_dir: Path, pattern: str = "**/*.md", encoding_name: str = "o200k_base") -> dict[str, Any]:
     """Compare all matching files in two directories."""
     if not before_dir.exists():
         print(f"Error: Before directory not found: {before_dir}", file=sys.stderr)
@@ -235,8 +235,8 @@ def main() -> None:
     parser.add_argument(
         "--encoding",
         type=str,
-        default="cl100k_base",
-        help="Tiktoken encoding to use (default: cl100k_base)",
+        default="o200k_base",
+        help="Tiktoken encoding to use (default: o200k_base)",
     )
 
     args = parser.parse_args()

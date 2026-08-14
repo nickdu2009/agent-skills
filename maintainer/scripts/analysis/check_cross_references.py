@@ -17,26 +17,43 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+from urllib.parse import unquote
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SKILLS_DIR = REPO_ROOT / "skills"
 DOCS_MAINTAINER_DIR = REPO_ROOT / "docs" / "maintainer"
 SKILL_CHAIN_ALIASES = DOCS_MAINTAINER_DIR / "skill-chain-aliases.md"
-CLAUDE_MD = REPO_ROOT / "CLAUDE.md"
+
+MARKDOWN_LINK_PATTERN = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
+REPO_PATH_PATTERN = re.compile(
+    r"(?<![A-Za-z0-9_.-])"
+    r"((?:docs|examples|maintainer|skills|templates)/"
+    r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*\."
+    r"(?:md|py|json|ya?ml|txt|sh|go|tsx?))"
+)
+REFERENCE_HEADING_PATTERN = re.compile(
+    r"^#{1,6}\s+(?:cross[- ]references|references|related (?:documents|files|resources)|see also)\s*$",
+    re.IGNORECASE,
+)
 
 # Non-skill terms that look like skill names but aren't (field names, placeholders, etc.)
 NON_SKILL_TERMS = {
     "re-reads",            # Field name in context discipline
     "best-of-n-runner",    # Subagent type in multi-agent-protocol
     "low-risk",            # Review severity label, not a skill
-    "review-only",         # design-review-loop review mode, not a skill
-    "review-and-revise",   # design-review-loop review mode, not a skill
-    "adr-rfc",             # design-review-loop artifact type, not a skill
-    "data-model",          # design-review-loop artifact type, not a skill
-    "technical-proposal",  # design-review-loop artifact type, not a skill
+    "review-only",         # artifact review mode, not a skill
+    "review-and-revise",   # artifact review mode, not a skill
+    "adr-rfc",             # artifact subtype, not a skill
+    "data-model",          # artifact subtype, not a skill
+    "technical-proposal",  # artifact subtype, not a skill
+    "self-delivery",       # artifact-review-loop context, not a skill
+    "current-agent-task",  # trusted provenance value, not a skill
+    "user-or-external",    # provenance value, not a skill
+    "current-task-diff",   # bounded write scope, not a skill
 }
 
 
@@ -167,6 +184,8 @@ def check_skill_chain_aliases() -> dict[str, Any]:
 
     broken_refs = []
     for skill_ref in sorted(referenced_skills):
+        if skill_ref in NON_SKILL_TERMS:
+            continue
         # Skip if it's a known chain alias (not a skill)
         if skill_ref in valid_aliases:
             continue
@@ -240,65 +259,104 @@ def check_skill_md_references() -> dict[str, Any]:
     }
 
 
-def check_claude_md_references() -> dict[str, Any]:
-    """Check that skill references in CLAUDE.md are valid."""
-    if not CLAUDE_MD.exists():
-        return {
-            "file": str(CLAUDE_MD.relative_to(REPO_ROOT)),
-            "exists": False,
-            "broken_references": [],
-            "note": "File not found",
-        }
+def tracked_markdown_files() -> list[Path]:
+    """Return existing tracked Markdown files, with an archive fallback."""
+    result = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "ls-files", "-z"],
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode == 0:
+        paths = []
+        for raw_path in result.stdout.decode("utf-8").split("\0"):
+            path = REPO_ROOT / raw_path
+            if raw_path.endswith(".md") and path.is_file():
+                paths.append(path)
+        return sorted(paths)
 
-    valid_skills = get_valid_skills()
-    content = CLAUDE_MD.read_text(encoding="utf-8")
-    referenced_skills = extract_skill_references(content)
+    roots = [REPO_ROOT / name for name in ("docs", "examples", "maintainer", "skills", "templates")]
+    paths = [path for root in roots if root.exists() for path in root.rglob("*.md")]
+    paths.extend(path for path in REPO_ROOT.glob("*.md") if path.is_file())
+    return sorted(set(paths))
 
-    broken_refs = []
-    for skill_ref in sorted(referenced_skills):
-        if skill_ref not in valid_skills:
-            broken_refs.append({
-                "reference": skill_ref,
-                "context": "CLAUDE.md",
-            })
 
-    return {
-        "file": str(CLAUDE_MD.relative_to(REPO_ROOT)),
-        "exists": True,
-        "total_references": len(referenced_skills),
-        "broken_references": broken_refs,
-        "broken_count": len(broken_refs),
-    }
+def markdown_link_target(payload: str) -> str:
+    """Remove an optional Markdown title from a link payload."""
+    payload = payload.strip()
+    if payload.startswith("<") and ">" in payload:
+        return payload[1:payload.index(">")]
+    return payload.split(maxsplit=1)[0] if payload else ""
+
+
+def is_external_or_placeholder(target: str) -> bool:
+    """Return whether a target is intentionally outside repository validation."""
+    lowered = target.lower()
+    return (
+        not target
+        or target.startswith("#")
+        or lowered.startswith(("http://", "https://", "mailto:", "data:"))
+        or any(marker in target for marker in ("{", "}", "*", "$"))
+    )
+
+
+def resolve_doc_target(source: Path, target: str, *, repo_relative: bool) -> Path | None:
+    """Resolve a documentation target, returning None for external placeholders."""
+    target = unquote(target.split("#", 1)[0].split("?", 1)[0])
+    if is_external_or_placeholder(target):
+        return None
+    if target.startswith("/") or repo_relative:
+        return REPO_ROOT / target.lstrip("/")
+    return source.parent / target
 
 
 def check_doc_file_references() -> dict[str, Any]:
-    """Check file path references in documentation.
+    """Check live Markdown links and explicit paths in reference sections."""
+    broken_refs: list[dict[str, Any]] = []
+    seen: set[tuple[str, int, str]] = set()
+    files = tracked_markdown_files()
 
-    Validates that paths like /path/to/file.md or docs/file.md resolve.
-    """
-    broken_refs = []
-
-    # Check skill-chain-aliases.md cross-references
-    if SKILL_CHAIN_ALIASES.exists():
-        content = SKILL_CHAIN_ALIASES.read_text(encoding="utf-8")
-
-        # Pattern: /CLAUDE.md, /AGENTS.md, and similar absolute paths
-        # But exclude /SKILL.md which is a generic placeholder, not a real file
-        abs_path_pattern = r"/([A-Z]+\.md)"
-        for match in re.finditer(abs_path_pattern, content):
-            filename = match.group(1)
-            # Skip generic placeholders
-            if filename == "SKILL.md":
+    for source in files:
+        content = source.read_text(encoding="utf-8")
+        candidates: list[tuple[str, int, bool]] = []
+        in_fence = False
+        in_reference_section = False
+        for line_number, line_text in enumerate(content.splitlines(), start=1):
+            stripped = line_text.strip()
+            if stripped.startswith(("```", "~~~")):
+                in_fence = not in_fence
                 continue
-            target_path = REPO_ROOT / filename
-            if not target_path.exists():
-                broken_refs.append({
-                    "reference": f"/{filename}",
-                    "context": "skill-chain-aliases.md",
-                    "expected_path": str(target_path.relative_to(REPO_ROOT)),
-                })
+            if in_fence:
+                continue
+            if stripped.startswith("#"):
+                in_reference_section = bool(REFERENCE_HEADING_PATTERN.match(stripped))
+
+            for match in MARKDOWN_LINK_PATTERN.finditer(line_text):
+                candidates.append((markdown_link_target(match.group(1)), line_number, False))
+            if in_reference_section:
+                for match in REPO_PATH_PATTERN.finditer(line_text):
+                    candidates.append((match.group(1), line_number, True))
+
+        for target, line, repo_relative in candidates:
+            resolved = resolve_doc_target(source, target, repo_relative=repo_relative)
+            if resolved is None or resolved.exists():
+                continue
+            context = str(source.relative_to(REPO_ROOT))
+            key = (context, line, target)
+            if key in seen:
+                continue
+            seen.add(key)
+            try:
+                expected = str(resolved.resolve().relative_to(REPO_ROOT.resolve()))
+            except ValueError:
+                expected = str(resolved.resolve())
+            broken_refs.append({
+                "reference": target,
+                "context": f"{context}:{line}",
+                "expected_path": expected,
+            })
 
     return {
+        "files_checked": len(files),
         "broken_references": broken_refs,
         "broken_count": len(broken_refs),
     }
@@ -326,7 +384,6 @@ def main() -> int:
         "valid_skills": sorted(get_valid_skills()),
         "skill_chain_aliases": check_skill_chain_aliases(),
         "skill_md_references": check_skill_md_references(),
-        "claude_md_references": check_claude_md_references(),
         "doc_file_references": check_doc_file_references(),
     }
 
@@ -334,7 +391,6 @@ def main() -> int:
     total_broken = (
         results["skill_chain_aliases"]["broken_count"]
         + results["skill_md_references"]["broken_count"]
-        + results["claude_md_references"]["broken_count"]
         + results["doc_file_references"]["broken_count"]
     )
 
@@ -381,21 +437,6 @@ def main() -> int:
                 print("    ✓ All references valid")
         else:
             print(f"SKILL.md References: {skr['note']}")
-        print()
-
-        # CLAUDE.md references check
-        cmd = results["claude_md_references"]
-        if cmd["exists"]:
-            print(f"CLAUDE.md References:")
-            print(f"  Total references: {cmd['total_references']}")
-            print(f"  Broken references: {cmd['broken_count']}")
-            if cmd["broken_references"]:
-                for ref in cmd["broken_references"]:
-                    print(f"    ✗ {ref['reference']}")
-            else:
-                print("    ✓ All references valid")
-        else:
-            print(f"CLAUDE.md References: {cmd['note']}")
         print()
 
         # Doc file references check

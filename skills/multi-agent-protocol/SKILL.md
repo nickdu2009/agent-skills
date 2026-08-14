@@ -1,6 +1,6 @@
 ---
 name: multi-agent-protocol
-description: Launch and coordinate parallel subagents. Use when (1) user explicitly says "in parallel", (2) task describes 3+ independent investigation areas owned by different teams/modules, or (3) AGENTS.md rules indicate Tier 2 parallelism. Implicit parallel opportunity example "understand X system, Y service, and Z pipeline" equals 3 independent areas.
+description: "Launch and coordinate parallel subagents. Use when (1) the user explicitly asks for parallel work, (2) a task has 3+ independent investigation areas owned by different teams/modules, or (3) write-capable work can be split into 2-4 non-overlapping scopes with a clear integration owner. Implicit example: understand X system, Y service, and Z pipeline is 3 independent areas."
 metadata:
   version: "0.2.0"
   tags: "coding, agents, orchestration"
@@ -22,11 +22,12 @@ Use this skill to decide whether parallel agent work is justified and how to mer
 - A single direct search or file read is enough.
 - Work areas overlap heavily.
 - The parent agent cannot clearly synthesize the outputs.
+- The active environment does not provide delegation or subagent capability.
 
-## Tiers
+## Delegation Modes
 
-- Tier 1, read-only: launch without declaration when each subagent has a clear question and must return evidence.
-- Tier 2, write-capable: before launch, emit `[delegate: <count 2-4> | split:<dimension> | risk:<low|medium|high>]`.
+- Read-only delegation: launch when each subagent has a clear question, bounded scope, and evidence format.
+- Write-capable delegation: before launch, emit `[delegate: <count 2-4> | split:<dimension> | risk:<low|medium|high>]`; assign non-overlapping write surfaces and one integration owner.
 
 ## Subagent Contract
 
@@ -70,7 +71,7 @@ When subagent conclusions disagree:
 ### Postconditions
 
 - Delegated lanes are explicit enough that subagents can run without overlapping responsibilities.
-- Tier 2 launches include an explicit `[delegate: ...]` gate when write-capable work is involved.
+- Write-capable launches include an explicit `[delegate: ...]` gate.
 - The parent agent remains accountable for final integration.
 
 ### Invariants

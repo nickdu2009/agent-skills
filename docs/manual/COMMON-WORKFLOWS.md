@@ -22,13 +22,13 @@
 - `scoped-tasking`
 - `targeted-validation`
 
-计划环节通常只需要 `AGENTS.md` 行为指南 §4 的轻量计划块（含 `[parallelism: ...]` 和验证点）；只有当改动需要可落盘、可审查的实施计划时，才升级到 `implementation-planning`。
+计划环节通常只需要包含 `[parallelism: ...]` 和验证点的轻量内联计划；只有当改动需要可落盘、可审查的实施计划时，才升级到 `implementation-planning`。
 
 ### 如何运行
 <div class="title-en">How It Runs</div>
 
 1. 先把任务缩到最小边界，只保留这次真正要完成的那一小块。
-2. 在编辑前按 §4 形成短计划，明确每一步该做什么、用什么方式验证。
+2. 在编辑前形成短计划，明确每一步该做什么、用什么方式验证。
 3. 按最小可行改动执行，不顺手清理无关代码。
 4. 先跑最小充分验证，只确认直接受影响的面。
 
@@ -52,7 +52,7 @@
 
 - `scoped-tasking`
 
-计划环节通常使用 `AGENTS.md` 行为指南 §4 的轻量计划块（含 `[parallelism: ...]` 和验证点）；如果定位完成后仍需要明确的多步实施计划，再转 `implementation-planning`。
+计划环节通常使用包含 `[parallelism: ...]` 和验证点的轻量内联计划；如果定位完成后仍需要明确的多步实施计划，再转 `implementation-planning`。
 
 ### 如何运行
 <div class="title-en">How It Runs</div>
@@ -112,7 +112,7 @@
 
 - `scoped-tasking`
 - `safe-refactor`
-- `self-review`
+- `artifact-review-loop`（`self-delivery` 上下文）
 - `targeted-validation`
 
 ### 如何运行
@@ -144,7 +144,7 @@
 - `multi-agent-protocol`
 - `targeted-validation`
 
-整体编排先用 `AGENTS.md` 行为指南 §4 判断并行是否值得；如果后续落为多文件、多步骤实施，再用 `implementation-planning` 把执行顺序、风险和 verify 写成计划文档。
+整体编排先判断并行是否真的能降低耗时且不会产生重叠写面；如果后续落为多文件、多步骤实施，再用 `implementation-planning` 把执行顺序、风险和 verify 写成计划文档。
 
 ### 如何运行
 <div class="title-en">How It Runs</div>

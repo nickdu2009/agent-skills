@@ -1,0 +1,206 @@
+{
+  "schema_version": "1.1",
+  "core_skill_names": [
+    "requirement-interview",
+    "scoped-tasking",
+    "design-before-plan",
+    "architecture-design",
+    "implementation-planning",
+    "bugfix-workflow",
+    "safe-refactor",
+    "artifact-review-loop",
+    "impact-analysis",
+    "targeted-validation"
+  ],
+  "optional_skill_names": [
+    "multi-agent-protocol",
+    "manage-agents-md"
+  ],
+  "retired_skill_names": [
+    "requirements-review-loop",
+    "design-review-loop",
+    "plan-review-loop",
+    "code-review-loop",
+    "test-review-loop",
+    "self-review"
+  ],
+  "approved_convergent_absent": [
+    "CLAUDE.md",
+    "docs/maintainer/chain-alias-adoption-tracker.md",
+    "docs/maintainer/chain-alias-optimization-summary.md",
+    "docs/maintainer/deduplication-analysis.md",
+    "docs/maintainer/deduplication-before-after.md",
+    "docs/maintainer/design-phase-coverage-analysis.md",
+    "docs/maintainer/industry-best-practices-analysis.md",
+    "docs/maintainer/low-intervention-agent-workflow.md",
+    "docs/maintainer/optimization-completion-checklist.md",
+    "docs/maintainer/phase3-deduplication-summary.md",
+    "docs/maintainer/protocol-v2-compact.md",
+    "docs/maintainer/protocol-v2-migration-tracker.md",
+    "docs/maintainer/skill-and-governance-architecture.md",
+    "docs/maintainer/skill-optimization-regression-test-2026-04-11.md",
+    "docs/maintainer/skill-trigger-collaboration-reliability-v0.2.1.md",
+    "docs/maintainer/skill-trigger-collaboration-reliability-v0.3.md",
+    "docs/maintainer/token-optimization-final-report.md",
+    "examples/refactor-installation-script.md",
+    "maintainer/docs/governance-template-eval.md",
+    "maintainer/governance_eval/cases.yaml",
+    "maintainer/governance_observability/decision_points.yaml",
+    "maintainer/governance_observability/run_observability_eval.py",
+    "maintainer/scripts/evaluation/run_claude_interactive_mainline.py",
+    "maintainer/scripts/evaluation/run_claude_trigger_smoke.py",
+    "maintainer/scripts/install/run_manage_governance_smoke.py",
+    "templates/governance/AGENTS-template.md",
+    "templates/governance/CLAUDE-template.md"
+  ],
+  "approved_retired_index_deletions": [
+    {
+      "path": "examples/self-review.md",
+      "index_sha256": "1916d58cea91031e0ee3434428f0e35efefc4318e4dfae17c1bbedac0112156e"
+    },
+    {
+      "path": "skills/architecture-design/architecture-template.md",
+      "index_sha256": "64a0315cebe3d998b69693a42b4e9edab0c301532b2ffb734a8a781aae611f14"
+    },
+    {
+      "path": "skills/code-review-loop/SKILL.md",
+      "index_sha256": "62d3490ad7bdf6809afaa4cea5ade0f79e4ebbb4a52a30af207bd121536975d7"
+    },
+    {
+      "path": "skills/design-review-loop/SKILL.md",
+      "index_sha256": "39bb31b2455e0334f842645b81df3eaeb9d3c21f92b232ee7eca453ee7bbdc40"
+    },
+    {
+      "path": "skills/implementation-planning/plan-template.md",
+      "index_sha256": "bb6f4ae2d049c9992622031788dd033f5173c9a8e5c447f171093be17a225a56"
+    },
+    {
+      "path": "skills/plan-review-loop/SKILL.md",
+      "index_sha256": "8192c3a4196577a8b85c8a557e3211873f7f10e72aa17883326cca1710eb2ac7"
+    },
+    {
+      "path": "skills/requirements-review-loop/SKILL.md",
+      "index_sha256": "6fcdcbec91335ce265571cbf3e42b28fb0d9952783aaa2482b3ee3df1f030d7f"
+    },
+    {
+      "path": "skills/self-review/SKILL.md",
+      "index_sha256": "4ccf44685d48fbb18b9316651d34da8cc577a18670d38080cbd5922a66b76d9e"
+    },
+    {
+      "path": "skills/test-review-loop/SKILL.md",
+      "index_sha256": "55389dedd09d26ebd52e9b33a15a3329c484fb10d0223028a3d78f8ac2f253da"
+    }
+  ],
+  "retired_name_exceptions": [
+    {
+      "path": "maintainer/data/skill_catalog.json",
+      "scope": "catalog-field:retired_skill_names",
+      "reason": "Canonical list of retired package identifiers."
+    },
+    {
+      "path": "maintainer/data/skill_catalog.json",
+      "scope": "catalog-field:approved_retired_index_deletions",
+      "reason": "Exact retired paths and index digests authorized by the 17-to-12 cutover."
+    },
+    {
+      "path": "maintainer/data/review_skill_migration_matrix.json",
+      "scope": "migration-field:legacy_skill",
+      "reason": "Each migration row identifies its legacy package."
+    },
+    {
+      "path": "maintainer/data/review_skill_migration_matrix.json",
+      "scope": "migration-field:retired_skill_names",
+      "reason": "The migration contract repeats the exact retired set for parity checks."
+    },
+    {
+      "path": "maintainer/data/review_skill_migration_matrix.json",
+      "scope": "migration-field:approved_retired_index_deletions",
+      "reason": "The migration contract repeats exact cutover deletions for parity checks."
+    },
+    {
+      "path": "maintainer/data/trigger_test_data.py",
+      "scope": "python-field:id",
+      "reason": "Stable legacy trigger case IDs remain comparable across the cutover."
+    },
+    {
+      "path": "maintainer/data/artifact_review_test_data.py",
+      "scope": "python-field:id",
+      "reason": "Stable review-routing case IDs preserve before/after traceability."
+    },
+    {
+      "path": "maintainer/data/skill_test_data.py",
+      "scope": "python-field:id",
+      "reason": "Stable evaluation case IDs preserve before/after traceability."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "scope": "historical-file",
+      "reason": "Release history must retain the identifiers used by earlier releases."
+    },
+    {
+      "path": "docs/maintainer/model-comparison/20260411-111541_MiniMax-M2.5.txt",
+      "scope": "historical-file",
+      "reason": "Immutable raw model-comparison result."
+    },
+    {
+      "path": "docs/maintainer/model-comparison/20260411-111541_deepseek-v3.txt",
+      "scope": "historical-file",
+      "reason": "Immutable raw model-comparison result."
+    },
+    {
+      "path": "docs/maintainer/model-comparison/20260411-111541_glm-5.txt",
+      "scope": "historical-file",
+      "reason": "Immutable raw model-comparison result."
+    },
+    {
+      "path": "docs/maintainer/model-comparison/20260411-111541_qwen3.6-plus.txt",
+      "scope": "historical-file",
+      "reason": "Immutable raw model-comparison result."
+    },
+    {
+      "path": "docs/maintainer/model-comparison/20260411-111541_summary.md",
+      "scope": "historical-file",
+      "reason": "Historical comparison summary."
+    },
+    {
+      "path": "docs/maintainer/pre-phase-skill-gap-analysis.md",
+      "scope": "historical-file",
+      "reason": "Historical pre-cutover analysis."
+    },
+    {
+      "path": "docs/maintainer/review-loop-mainchain-design.md",
+      "scope": "historical-file",
+      "reason": "Historical design record for the retired review packages."
+    },
+    {
+      "path": "docs/maintainer/review-loop-mainchain-plan.md",
+      "scope": "historical-file",
+      "reason": "Historical implementation record for the retired review packages."
+    },
+    {
+      "path": "docs/maintainer/skill-optimization-analysis-2026-04-11.md",
+      "scope": "historical-file",
+      "reason": "Historical optimization analysis."
+    },
+    {
+      "path": "docs/maintainer/skill-optimization-results-2026-04-11.md",
+      "scope": "historical-file",
+      "reason": "Historical optimization result."
+    },
+    {
+      "path": "docs/maintainer/template-adoption-tracker.md",
+      "scope": "historical-file",
+      "reason": "Historical template-adoption snapshot."
+    },
+    {
+      "path": "docs/maintainer/template-rollout-plan.md",
+      "scope": "historical-file",
+      "reason": "Historical template rollout plan."
+    },
+    {
+      "path": "docs/maintainer/v1.2-test-results.txt",
+      "scope": "historical-file",
+      "reason": "Immutable raw v1.2 test result."
+    }
+  ]
+}

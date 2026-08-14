@@ -1,248 +1,141 @@
 ---
 name: architecture-design
-description: "Guide architecture design for a system, subsystem, or module by producing a structured design document covering component decomposition, data architecture, interface contracts, non-functional design, deployment topology, and ADRs. Includes approach comparison when design direction is not yet settled. WHEN: Use when the user asks for architecture design / system design / technical proposal / 架构设计 / 系统设计 / 出个架构 / 写个技术方案, when a task involves 3+ components or a new subsystem, when technology selection decisions are needed, or when non-functional requirements (scalability, availability, security) require architectural treatment. Do NOT use for single-module internal design choices where design-before-plan suffices, for requirements clarification (use requirement-interview), or for reviewing an existing design doc (use design-review-loop)."
+description: "Design a system, subsystem, or significant module by defining components, data ownership and flow, interface contracts, non-functional architecture, deployment topology, and ADR candidates. Use for new subsystems, 3+ interacting components, technology selection, major evolution, or architecture-level scalability, availability, security, and operability concerns. Do not use for vague requirements or a small internal design choice."
 metadata:
-  version: "0.1.0"
-  tags: "coding, agents, architecture, design, system-design"
+  version: "0.2.0"
+  tags: "architecture, system-design, adr"
 ---
 
 # architecture-design
 
-Produce a structured architecture design for a system, subsystem, or module. The skill outputs a reviewable architecture design document — not code — covering component decomposition, data architecture, interface contracts, non-functional design, and key architecture decisions with rationale.
+Produce a concrete, reviewable architecture document, not production code. The result must let planning proceed without reopening component boundaries, technology choices, or public interfaces.
 
-# Purpose
+## Activation and scale boundary
 
-Turn a clear requirement or design direction into a concrete, reviewable architecture. Core goals:
+Activate for a new system/subsystem, significant module, 3+ interacting components, cross-service evolution, technology selection, deployment topology, or architecture-level NFR work. Use `design-before-plan` for a smaller approach/contract choice and `requirement-interview` when goal, actors, main flow, or scope is unclear.
 
-- Decompose the system into components with clear responsibilities and dependency directions.
-- Design data architecture: models, flow, storage, consistency.
-- Define cross-component interface contracts.
-- Address non-functional requirements at the architecture level (not as afterthoughts).
-- Record architecture decisions with rationale (ADRs) so they are traceable.
-- Produce a document that `design-review-loop` can review and `implementation-planning` can consume.
-
-Success criterion: on exit, the architecture document is specific enough for implementation planning without reopening component boundaries, technology choices, or interface contracts.
-
-# When to Use
-
-- The user asks for architecture design / system design / technical proposal / 架构设计 / 系统设计 / 技术方案.
-- A task involves building a new system, subsystem, or significant new module.
-- The change requires decomposing responsibilities across 3+ components.
-- Technology selection decisions are needed (database, messaging, caching, framework, etc.).
-- Non-functional requirements (scalability, availability, security, observability) need architectural solutions.
-- `design-before-plan` produced a design brief whose `blast_radius` is large and component decomposition is needed.
-- Major architecture evolution or migration of an existing system.
-
-# When Not to Use
-
-- Single-module internal design choice with limited blast radius → `design-before-plan`.
-- The requirement is still vague → `requirement-interview`.
-- An existing architecture document needs review → `design-review-loop`.
-- Simple bug fix or small refactor → `bugfix-workflow` / `safe-refactor`.
-- The user explicitly says "不用出架构，直接做" → respect the user, give a one-line risk note.
-
-# Scale Judgment
-
-Before starting, judge the task scale to calibrate output depth:
-
-| Scale | Signal | Output depth |
+| Scale | Typical signal | Required depth |
 |---|---|---|
-| **System-level** | New system / major evolution / 5+ components / cross-service / deployment topology matters | Full architecture document with all sections |
-| **Subsystem-level** | New subsystem / 3-4 components / technology selection needed / clear non-functional requirements | Full document, deployment section optional |
-| **Module-level** | Single module internal architecture / 2-3 internal layers / no cross-service impact | Lighter document: component decomposition + data architecture + key ADRs; skip deployment and some non-functional sections |
+| System | New/major system, 5+ components, cross-service topology | Full document including deployment |
+| Subsystem | 3–4 components, technology/NFR decisions | Full document; deployment when relevant |
+| Module | 2–3 internal layers, no cross-service topology | Components, data, interfaces, key decisions |
 
-When in doubt, start with the lighter version and expand if the design reveals more complexity.
+Choose the lightest scale supported by evidence and expand only when the design requires it.
 
-# Core Rules
+## Hard constraint
 
-- Do not write production code; output is an architecture design document only.
-- Decompose before detailing: establish component boundaries first, then dive into each component.
-- Every technology choice must have a rationale; do not list names without justification.
-- Architecture principles are a validation tool, not a design driver. Design from requirements, then validate against principles. See [reference.md](reference.md) for the principle checklist.
-- When principles conflict, record the trade-off explicitly (which principle was prioritized, which was relaxed, and why).
-- Do not over-architect: component count and layer depth must match the problem scale.
-- Use Mermaid diagrams for architecture visualization when helpful.
-- Always run at least one architecture clarification round before starting the design.
+**Run at least one architecture clarification round before drafting, and keep every unconfirmed behavioral strategy blocking instead of embedding it in components, interfaces, NFRs, or ADRs.**
 
-# Architecture Information Dimensions
+Behavioral strategies include timeouts, retry counts, fallbacks, degradation, matching thresholds, permission outcomes, and failure semantics. They require confirmed requirements, an active Accepted ADR/baseline, preserved compatibility, or an explicit owner decision.
 
-Use the readiness checklist in [architecture-template.md](architecture-template.md). At minimum, assess component boundaries, technology constraints, non-functional priorities, and data characteristics. If all four are unknown, ask before designing. Mark every reasonable assumption explicitly. "Reasonably assumed" covers mechanical architecture context only — not behavioral strategies such as retry counts, fallbacks, degradation paths, matching rules, or failure semantics.
+## Core workflow
 
-# Execution Pattern
+1. **Validate readiness and scale.** Collect requirements, design brief, scoped boundary, impact summary, existing architecture, and ADRs. Classify component boundaries, technology constraints, deployment, NFR priorities, data characteristics, integrations, ownership, scale, security/compliance, and migration as `known|unknown|assumed`.
+2. **Clarify architecture.** Ask 3–5 highest-impact architecture questions. Do not repeat requirement-level interviewing. Run another round only when a key dimension remains unsupported; expose assumption basis and `blocking` status.
+3. **Compare approaches when unsettled.** Evaluate 2–4 options by complexity, blast radius, reversibility, ownership, and requirement fit. Principles validate a requirement-led design; they do not select one. Use [principles.md](references/principles.md) only for a relevant decision or final calibration.
+4. **Decompose components.** Define responsibility, owner, public interface, dependencies, dependency direction, and technology rationale. Prefer cohesive boundaries, explicit contracts, least necessary complexity, and visible trade-offs.
+5. **Design data.** Define business source of truth, models, ownership, flows, storage rationale, consistency, lifecycle, and migration/coexistence. UI state, caches, logs, generated artifacts, and mocks are not truth without an authorized architecture decision.
+6. **Define interfaces.** Record caller/provider, inputs, outputs, errors, versioning, compatibility, and ownership. Keep unresolved observable behavior out of executable contracts.
+7. **Address NFRs and deployment.** Evaluate failure modes, scale, security, observability, operability, topology, and environment constraints. State authorized mechanisms and keep unsupported strategies as blocking assumptions.
+8. **Record decisions.** For each long-lived, cross-component, or costly-to-reverse choice, read [adr-format.md](references/adr-format.md) and create a separate vendor-neutral Proposed ADR artifact. The architecture document holds only `id`, `title`, `status`, and `artifact/path`.
+9. **Draft and verify.** Always read [architecture-template.md](references/architecture-template.md). Check component/data/interface consistency, technology rationale, assumption gates, risks, and architecture-level acceptance. Read [examples.md](references/examples.md) only for calibration.
 
-0. **Check inputs and judge scale**:
-   - Collect available requirement doc, design brief, scoped boundary, impact summary.
-   - Judge scale (system / subsystem / module) per the Scale Judgment table.
-   - If the requirement is unclear, hand off to `requirement-interview`.
+## Clarification and decision rules
 
-1. **Architecture clarification round** (mandatory, at least one round):
-   - Scan architecture information dimensions; mark each as known / unknown / assumed.
-   - Generate 3-5 questions for the most important unknown dimensions, ordered by impact on architecture decisions.
-   - Do not ask requirement-level questions (that belongs to `requirement-interview`).
-   - After receiving answers, update dimension status. If key dimensions remain unknown and cannot be reasonably assumed, run another round.
-   - No hard cap on rounds; stop when enough dimensions are known or reasonably assumed to support architecture decisions. In practice, 1-2 rounds usually suffice.
-   - Tag assumptions explicitly with their basis; assumptions enter the final document's "待确认假设" section, not treated as confirmed facts.
-   - Behavioral assumptions (timeouts, retries, circuit breakers, fallbacks, graceful degradation, matching thresholds) stay in "待确认假设" with `blocking: true` until confirmed; they must not become executable planning inputs.
+The mandatory first round must cover the dimensions most likely to change boundaries or technology. Ask about ownership and constraints before naming products. Do not ask all ten dimensions mechanically: select 3–5 unknowns with the highest decision impact. A dimension may be `assumed` only when the assumption is mechanical, its basis is visible, and a validation method exists.
 
-2. **Approach comparison** (if design direction is not settled):
-   - List 2-4 candidate architecture approaches.
-   - For each: pros, cons, complexity, blast radius, principle alignment.
-   - Choose one with explicit rationale; record rejected alternatives in ADR.
-   - If direction was already settled upstream, skip this step and note the source.
+Approach comparison is optional only when direction is already fixed by confirmed inputs or an active Accepted ADR. Otherwise compare credible architectures on the same requirements. Never add a queue, service, cache, database, layer, or abstraction only to appear scalable. When a technology is selected, state the required capability, why the option fits it, what alternatives were rejected, operational/ownership cost, and revisit condition.
 
-3. **Component decomposition**:
-   - Identify core components and their responsibilities.
-   - Define dependency directions (which component depends on which).
-   - Validate against structural principles: cohesion, coupling, separation of concerns, single responsibility.
-   - Produce a Mermaid component diagram.
+New ADRs are Proposed artifacts even when the architecture document recommends them. An existing Accepted ADR may constrain the design only while active and not superseded. Do not let a Proposed ADR silently authorize a behavioral strategy or implementation plan.
 
-4. **Data architecture**:
-   - Design core data models and their ownership (which component owns which data).
-   - Define data flow between components.
-   - Choose storage technology with rationale.
-   - Address data consistency strategy (transactions, eventual consistency, saga, etc.).
+## Architecture consistency gate
 
-5. **Interface contract definition**:
-   - Define cross-component interfaces: input/output types, error handling, versioning.
-   - Validate against interface principles: interface segregation, dependency inversion, encapsulation.
+Before completion, verify:
 
-6. **Non-functional architecture** (depth per scale judgment):
-   - Scalability: horizontal/vertical scaling strategy, bottleneck analysis.
-   - Availability & resilience: enumerate failure modes and required evaluation of timeout/retry/circuit-breaker/degradation options; adopt specific strategies only from confirmed requirements, architecture baseline, or an active Accepted ADR.
-   - Security: authentication, authorization, data protection, defense in depth.
-   - Observability: logging, metrics, tracing injection points.
-   - Validate against runtime quality principles.
+- Each component has one coherent responsibility, an owner, and a bounded public contract; dependencies do not bypass the contract through shared internals.
+- Every data object has one named business truth owner. Copies, projections, caches, indexes, and generated views state synchronization and failure implications without becoming competing truth.
+- Each data flow connects declared components and interfaces; consistency claims match storage and communication choices.
+- Interfaces align on semantic input/output, error ownership, versioning, and compatibility. Callers do not depend on provider implementation order or private schema.
+- Failure modes are evaluated at every external boundary. Concrete timeout/retry/fallback/degradation choices appear only when authorized; otherwise they remain blocking assumptions.
+- Security identifies trust boundaries, identity/authorization ownership, sensitive-data handling, and audit needs appropriate to scale.
+- Observability names where correlation, logs, metrics, and traces must be possible, without inventing alert thresholds.
+- Deployment topology matches component ownership, state, availability, and environment constraints; omit it only for a truly module-level design.
+- Architecture acceptance checks validate boundaries, data ownership/flow, interfaces, and key NFR outcomes rather than private code structure.
 
-7. **Deployment architecture** (system-level only):
-   - Deployment topology, environment requirements, infrastructure dependencies.
+When two components each claim the same truth, an interface has no error owner, or a key behavioral assumption remains open, the document is not ready for planning. Return the exact conflict to its owner or require design review.
 
-8. **Record ADRs**:
-   - Produce a separate, portable ADR artifact for each key long-lived or costly-to-reverse decision.
-   - Use [adr-format.md](adr-format.md); creating an ADR artifact does not imply writing a file.
-   - Keep the architecture document's ADR table as an index only: `id`, title, document status, and artifact/path reference.
-   - Preserve the compact protocol field name `adrs`; its value is `id + artifact/path + status`.
+Diagrams and prose must describe the same components, direction, and ownership. Every edge in a component/data/deployment diagram needs a corresponding interface or flow description; every declared public interface must have identifiable endpoints in the architecture. Treat a diagram mismatch as a design defect, not presentation cleanup. Architecture acceptance must also state how later validation can observe the claimed boundary or quality without requiring a specific private implementation.
 
-9. **Write or output the architecture design document** (see Output Format).
+Name excluded architecture work explicitly so deferred topology, migration, or quality concerns do not enter planning as implied scope.
 
-10. **Recommend next step**:
-    - `design-review-loop` when the architecture should be reviewed before planning.
-    - `implementation-planning` when the architecture is accepted.
+## Output contract
 
-# Input Contract
+Return:
 
-Provide one or more of:
+- `scale`: system, subsystem, or module
+- `components`: responsibilities, owners, interfaces, dependencies, technology rationale
+- `data_architecture`: truth owner, models, flow, storage, consistency, lifecycle
+- `interface_contracts`: inputs, outputs, errors, versioning, compatibility, ownership
+- `non_functional_architecture`: authorized scale, resilience, security, observability, operability choices
+- `deployment_topology`: when applicable
+- `adrs`: `{id, title, status, artifact/path}`; new candidates remain Proposed
+- `risks_and_constraints`
+- `assumptions`: basis, impact, blocking, validation/owner decision
+- `acceptance_criteria`: architecture-level observable conditions
 
-- a requirement document or requirement-clarification result
-- a design brief from `design-before-plan`
-- a scoped boundary from `scoped-tasking`
-- user's direct architecture task description
-
-Optional but helpful:
-
-- existing system architecture or context
-- technology constraints or preferences
-- team structure (for Conway's Law alignment)
-- non-functional priority ranking
-
-# Output Format
-
-Return a reviewable architecture document with:
-
-- background, goals, constraints, and scale
-- approach comparison when direction was open
-- component decomposition and dependency direction
-- data architecture and ownership
-- interface contracts
-- relevant non-functional and deployment design
-- ADR index (`id`, title, status, artifact/path)
-- risks, assumptions, and architecture-level acceptance criteria
-
-Use [architecture-template.md](architecture-template.md) for the full document shape. For module-level work, omit deployment and irrelevant non-functional sections. ADR artifacts follow [adr-format.md](adr-format.md).
-
-# Guardrails
-
-- Do not skip the architecture clarification round. Always scan the information dimensions and ask at least one round before designing.
-- Do not code while designing; this skill is read-only exploration and document production.
-- Do not over-decompose: if the problem needs 3 components, do not create 8 for "future flexibility".
-- Do not pick technologies without rationale ("用 Redis" is not architecture; "用 Redis 因为读多写少、需要亚毫秒延迟且数据可丢失" is).
-- Do not skip approach comparison when direction is genuinely open, even if one approach seems obvious.
-- Do not mechanically apply every architecture principle. Use principles as validation checks, not design drivers. See [reference.md](reference.md).
-- If requirement gaps block architecture decisions, stop and hand off to `requirement-interview` rather than guessing.
-- Ask at most 5 questions per clarification round; do not dump all architecture concerns at once.
-- Do not treat an assumption as a confirmed fact — tag it and record it in the "待确认假设" section.
-- Do not invent behavioral failure strategies under Design for Failure; evaluate failure modes, then require authorization before specifying retries, fallbacks, or degradation.
-- Do not write ADR files unless the user explicitly requests document persistence and the target repository's existing convention is known.
-
-# Composition
-
-Enter directly for explicit architecture work or after `design-before-plan` reveals system-level complexity. Upstream options are `requirement-interview`, `scoped-tasking`, `design-before-plan`, and `impact-analysis`. Hand off to `design-review-loop` when review is needed or to `implementation-planning` when accepted, then deactivate.
-
-# Example
-
-See [examples.md](examples.md) for a subsystem example with separate ADR artifacts and an ADR index.
+Use Mermaid only when it materially clarifies components, data flow, or deployment.
 
 ## Contract
 
 ### Preconditions
 
-- The requirement is clear enough to make architecture decisions (business goal, main flow, scope boundary are known).
-- The task genuinely needs architecture work (not a simple single-file edit).
-- The agent can identify 2+ components or layers that need explicit boundary definition.
+- Goal, main flow, and scope are clear enough for architecture decisions.
+- The task genuinely needs at least two explicit component/layer boundaries.
 
 ### Postconditions
 
 - `status: completed` includes `components`, `data_architecture`, `interface_contracts`, `adrs`, and `acceptance_criteria`.
-- The document is specific enough for `implementation-planning` to produce an execution plan without reopening component boundaries or technology choices.
-- Key architecture decisions are recorded with alternatives and rationale.
-- `adrs` keeps its existing field name and points to independent ADR artifacts using `id + artifact/path + status`.
+- Technology and boundary choices have rationale and alternatives where material.
+- The document is ready for `implementation-planning` without reopening core architecture.
 
 ### Invariants
 
-- This skill stays read-only; no production code is written.
-- Technology choices always have rationale.
-- Architecture complexity matches the problem scale.
-- Principles are used as validation, not as design drivers.
+- The skill remains read-only and right-sizes complexity.
+- Technology choices have rationale; principles validate rather than drive.
+- Unconfirmed behavioral assumptions remain blocking and cannot feed planning.
 
 ### Downstream Signals
 
-- `components` defines the decomposition for implementation to follow.
-- `data_architecture` grounds data modeling and storage decisions.
-- `interface_contracts` gives implementation precise API boundaries.
-- `adrs` prevent later phases from unknowingly revisiting settled decisions.
+- Components and interfaces define implementation ownership and landing boundaries.
+- Data architecture fixes source-of-truth and consistency expectations.
+- ADR references preserve decision lifecycle and traceability.
 
 ## Failure Handling
 
 ### Common Failure Causes
 
-- The requirement is too incomplete to make architecture decisions.
-- The technology landscape is unfamiliar and the agent cannot make informed choices.
-- Architecture scale is misjudged (treating a module-level task as system-level, or vice versa).
+- Requirements are immature, scale is misjudged, ownership is unknown, or technology evidence is insufficient.
 
 ### Retry Policy
 
-- No hard cap on clarification rounds; stop when enough architecture dimensions are known or reasonably assumed.
-- If two consecutive rounds produce no new confirmed information (user cannot or will not answer), stop and escalate to the user with the specific blocking dimensions listed.
+- Clarify while each round can add evidence. After two consecutive rounds add none, stop with the blocking dimensions.
 
 ### Fallback
 
-- Hand off to `requirement-interview` if the requirement is not mature.
-- Hand off to `design-before-plan` if only approach selection (not full architecture) is needed.
-- Hand off to `impact-analysis` if blast radius is speculative.
-- If the user insists on implementing directly, give a risk note and deactivate.
+- Use `requirement-interview` for immature requirements, `design-before-plan` for a smaller choice, or `impact-analysis` for speculative blast radius.
 
 ### Low Confidence Handling
 
-- Mark uncertain architecture decisions as provisional in the ADR table.
-- Recommend `design-review-loop` before proceeding when confidence is medium or low.
+- Mark uncertain decisions Proposed/provisional and require `artifact-review-loop` with `artifact_type: design` before planning.
 
 ## Output Example
 
-```
-[output: architecture-design | completed medium | scale:"subsystem" components:"notification-service, channel-adapters(3), preference-store" tech_choices:"RabbitMQ(async decoupling), PostgreSQL(preference storage)" adrs:"ADR-0001:inline-artifact:Proposed, ADR-0002:inline-artifact:Proposed" | next:design-review-loop]
+```text
+[output: architecture-design | completed medium | scale:"subsystem" components:"dispatcher, channel adapters, preference store" data_architecture:"preferences owned by service database" interface_contracts:"dispatch and preference APIs" adrs:"ADR-0001:inline:Proposed" | next:artifact-review-loop(type=design)]
 ```
 
 ## Deactivation Trigger
 
-- The architecture document is produced and handed off to `design-review-loop` or `implementation-planning`.
-- The task is downscaled to a simple design choice that `design-before-plan` can handle.
-- The user explicitly asks to skip architecture and implement directly.
+- The architecture is handed to design review or `implementation-planning`.
+- The task downscales to a local design choice or returns to upstream clarification.
+- The user explicitly skips architecture after receiving a bounded risk note.

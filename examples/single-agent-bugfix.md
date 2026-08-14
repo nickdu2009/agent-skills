@@ -10,13 +10,13 @@ An API returns `500` when an optional marketing profile is missing. The intended
 - `bugfix-workflow`
 - `targeted-validation`
 
-Editing follows `AGENTS.md` Behavioral Guidelines §4 short planning (plan + verify); this bugfix is intentionally small enough that `implementation-planning` is not needed.
+Editing follows a lightweight inline plan with explicit verification; this bugfix is intentionally small enough that `implementation-planning` is not needed.
 
 ## Why This Composition
 
 - `scoped-tasking` keeps the investigation inside the handler, service, and profile lookup path.
 - `bugfix-workflow` prevents editing before the symptom and fault domain are clear.
-- AGENTS.md §4 forces the agent to declare the intended edit surface and per-step verification before touching files.
+- The inline plan declares the intended edit surface and per-step verification before touching files.
 - `targeted-validation` keeps verification limited to the affected endpoint or test path.
 
 ## Example Execution

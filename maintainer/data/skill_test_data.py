@@ -56,27 +56,23 @@ SKILL_RUBRICS: dict[str, tuple[str, ...]] = {
         'Fail if the ADR table substitutes for complete decision records or ADR production silently writes repository files.',
         'Fail if Design for Failure is used to invent unauthorized retry/fallback strategies.',
     ),
-    'design-review-loop': (
-        'Pass if an adr-rfc review checks required sections, drivers, realistic alternatives, positive and negative consequences, status, relationships, and revisit conditions.',
-        'Fail if ADR content review performs persistence or candidate-lifecycle actions.',
+    'artifact-review-loop': (
+        'Pass if exactly one primary artifact type and matching kebab-case subtype are selected, with secondary types recorded but not activated as parallel routes.',
+        'Pass if first-person user wording remains requested review-only unless trusted current-agent origin, current-task write authority, and current-task target jointly prove code self-delivery.',
+        'Pass if revision output records authorization source and write scope, and review-only mode is zero-write.',
+        'Pass if ADR design review checks drivers, realistic alternatives, consequences, status, relationships, and revisit conditions without lifecycle mutation.',
+        'Pass if plan review follows active Accepted ADRs and excludes Proposed, inactive, replaced, or ambiguous records as constraints.',
+        'Pass if code review blocks unauthorized retries, fallbacks, thresholds, or failure policies rather than hiding them as assumptions.',
+        'Pass if test review checks scenario coverage and assertion quality without treating tests as behavior authorization.',
+        'Fail if artifact routing is ambiguous, revision authority is inferred, write scope crosses artifact types, or unresolved behavioral policy is forced clean.',
     ),
     'impact-analysis': (
         'Pass if shared callers, contracts, and data-flow impact are identified before planning.',
         'Fail if a shared change proceeds without checking affected dependents.',
     ),
-    'code-review-loop': (
-        'Pass if code issues are reviewed, fixed, validated, and re-reviewed until clean.',
-        'Pass if unauthorized behavioral policies affecting failure/data/permission semantics are blocking and block clean_with_assumptions.',
-        'Fail if findings are only reported or unrelated code is changed while fixing them.',
-        'Fail if behavioral assumptions are parked under Residual Assumptions to force a clean exit.',
-    ),
     'multi-agent-protocol': (
-        'Pass if tiered parallelism is used appropriately with clear assignments, Tier 2 gate declarations, and structured merge.',
-        'Fail if the task is split despite heavy overlap, the Tier 2 gate is skipped, or write scopes overlap without explicit management.',
-    ),
-    'plan-review-loop': (
-        'Pass if plan issues are revised in the target plan and re-reviewed until executable, including alignment to active Accepted ADRs.',
-        'Fail if the agent stops after reporting issues or edits unrelated artifacts.',
+        'Pass if read-only and write-capable delegation modes are selected appropriately with clear assignments, an explicit write-capable gate, and structured merge.',
+        'Fail if the task is split despite heavy overlap, the write-capable gate is skipped, or write scopes overlap without explicit management.',
     ),
     'implementation-planning': (
         'Pass if only active Accepted ADRs constrain the plan and each affected step cites the relevant ADR ID.',
@@ -91,14 +87,6 @@ SKILL_RUBRICS: dict[str, tuple[str, ...]] = {
     'scoped-tasking': (
         'Pass if the agent proposes a bounded initial working set and explains each scope expansion.',
         'Fail if the agent drifts into broad repository exploration without evidence.',
-    ),
-    'self-review': (
-        'Pass if the completed diff is checked for correctness, scope, residuals, behavior authority, and validation fit.',
-        'Fail if obvious debug leftovers, scope drift, mismatched docs, or unauthorized retries/fallbacks are missed.',
-    ),
-    'test-review-loop': (
-        'Pass if tests are reviewed for scenario coverage, assertion quality, and alignment with authorized contracts.',
-        'Fail if tests invent or lock in unauthorized product behavior, or if green tests are treated as authorization.',
     ),
     'targeted-validation': (
         'Pass if the first validation step is directly tied to the changed surface.',
@@ -175,15 +163,13 @@ EXAMPLE_CASES: tuple[ExampleCase, ...] = (
         title='Anti-Heuristic Review',
         scenario='Review a candidate billing timeout fix that invented retries and cache fallback, plus tests that lock that unauthorized behavior.',
         skills=(
-            'self-review',
-            'code-review-loop',
-            'test-review-loop',
+            'artifact-review-loop',
         ),
         expectations=(
-            'self-review flags missing behavior authorization',
-            'code review refuses clean and clean_with_assumptions for behavioral assumptions',
-            'test review rejects tests that invent/authorize product behavior',
-            'all review rounds remain zero-write',
+            'mixed implementation and tests select code as primary and tests as secondary',
+            'requested review stays review-only with no authorization source or write scope',
+            'the review refuses clean and clean_with_assumptions for unauthorized behavior',
+            'test evidence is rejected as a source of product behavior authorization',
         ),
     ),
 )

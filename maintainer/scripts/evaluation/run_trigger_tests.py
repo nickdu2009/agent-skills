@@ -62,8 +62,13 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 SKILLS_DIR = REPO_ROOT / "skills"
 DATA_DIR = REPO_ROOT / "maintainer" / "data"
 
-from dotenv import load_dotenv
-load_dotenv(REPO_ROOT / ".env")
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
+
+if load_dotenv is not None:
+    load_dotenv(REPO_ROOT / ".env")
 
 sys.path.insert(0, str(DATA_DIR))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -79,36 +84,48 @@ from skill_protocol import collect_skill_document_checks
 
 def extract_descriptions() -> dict[str, str]:
     """Extract the description field from each SKILL.md frontmatter."""
+    try:
+        import yaml
+    except ImportError as exc:
+        raise RuntimeError(
+            "prompt/api modes require PyYAML to parse Agent Skills frontmatter"
+        ) from exc
+
     descriptions: dict[str, str] = {}
     for skill_dir in sorted(SKILLS_DIR.iterdir()):
         skill_file = skill_dir / "SKILL.md"
         if not skill_file.exists():
             continue
-        text = skill_file.read_text(encoding="utf-8")
-        in_frontmatter = False
-        desc_lines: list[str] = []
-        for line in text.splitlines():
-            if line.strip() == "---":
-                if in_frontmatter:
-                    break
-                in_frontmatter = True
-                continue
-            if in_frontmatter and line.startswith("description:"):
-                desc_lines.append(line[len("description:"):].strip())
-        if desc_lines:
-            descriptions[skill_dir.name] = " ".join(desc_lines)
+        lines = skill_file.read_text(encoding="utf-8").splitlines()
+        if not lines or lines[0].strip() != "---":
+            continue
+        try:
+            end = next(
+                index
+                for index, line in enumerate(lines[1:], start=1)
+                if line.strip() == "---"
+            )
+        except StopIteration:
+            continue
+        frontmatter = yaml.safe_load("\n".join(lines[1:end])) or {}
+        description = frontmatter.get("description") if isinstance(frontmatter, dict) else None
+        if isinstance(description, str) and description:
+            descriptions[skill_dir.name] = description
     return descriptions
 
 
-def load_skill_index() -> dict[str, str]:
+def load_skill_index(*, strict: bool = False) -> dict[str, str]:
     """Load skill descriptions from compact skill_index.json.
 
-    Falls back to extract_descriptions() if index doesn't exist.
+    Runtime callers fall back to frontmatter when the index is unavailable.
+    Validation callers use strict=True so a stale/missing index fails closed.
     Returns dict mapping skill name to description.
     """
     skill_index_path = DATA_DIR / "skill_index.json"
 
     if not skill_index_path.exists():
+        if strict:
+            raise RuntimeError(f"Skill index not found at {skill_index_path}")
         print(f"Warning: Skill index not found at {skill_index_path}", file=sys.stderr)
         print("Falling back to SKILL.md frontmatter parsing...", file=sys.stderr)
         return extract_descriptions()
@@ -117,12 +134,25 @@ def load_skill_index() -> dict[str, str]:
         with open(skill_index_path, encoding="utf-8") as f:
             index_data = json.load(f)
 
+        skills = index_data.get("skills")
+        if not isinstance(skills, list):
+            raise ValueError("skills must be an array")
         descriptions: dict[str, str] = {}
-        for skill in index_data.get("skills", []):
-            descriptions[skill["name"]] = skill["description"]
+        for index, skill in enumerate(skills):
+            if not isinstance(skill, dict):
+                raise ValueError(f"skills[{index}] must be an object")
+            name = skill.get("name")
+            description = skill.get("description")
+            if not isinstance(name, str) or not isinstance(description, str):
+                raise ValueError(f"skills[{index}] requires string name and description")
+            if name in descriptions:
+                raise ValueError(f"duplicate Skill name in index: {name}")
+            descriptions[name] = description
 
         return descriptions
-    except (json.JSONDecodeError, KeyError) as e:
+    except (json.JSONDecodeError, KeyError, ValueError) as e:
+        if strict:
+            raise RuntimeError(f"Failed to parse Skill index: {e}") from e
         print(f"Warning: Failed to parse skill index: {e}", file=sys.stderr)
         print("Falling back to SKILL.md frontmatter parsing...", file=sys.stderr)
         return extract_descriptions()
@@ -236,24 +266,58 @@ def score_result(
 
 
 def print_protocol_readiness_report() -> int:
-    """Print legacy skill document readiness for all skills."""
+    """Print Skill document protocol readiness for all skills."""
     checks = collect_skill_document_checks(SKILLS_DIR)
     missing_count = 0
     print(f"\n{'='*60}")
-    print("  Legacy Skill Document Readiness")
+    print("  Skill Document Protocol Readiness")
     print(f"{'='*60}")
     for check in checks:
         if check.missing_sections:
             missing_count += 1
         status = "ok" if not check.missing_sections else "missing"
         missing = ", ".join(check.missing_sections) or "-"
-        legacy = "yes" if check.has_legacy_contract else "no"
         print(
             f"  [{status:7}] {check.skill:24} "
-            f"family={check.family:13} missing={missing} legacy_contract={legacy}"
+            f"family={check.family:13} missing={missing}"
         )
     print(f"\nSkills with missing required protocol sections: {missing_count} / {len(checks)}")
     return missing_count
+
+
+def validate_trigger_matrix(cases: tuple[TriggerCase, ...]) -> list[str]:
+    """Validate the single trigger matrix before filtering or reporting it."""
+    issues: list[str] = []
+    known_skills = {path.parent.name for path in SKILLS_DIR.glob("*/SKILL.md")}
+    ids: dict[str, int] = {}
+    referenced_skills: set[str] = set()
+    positive_coverage: set[str] = set()
+
+    for case in cases:
+        ids[case.id] = ids.get(case.id, 0) + 1
+        triggers = set(case.expected_triggers)
+        non_triggers = set(case.expected_non_triggers)
+        overlap = sorted(triggers & non_triggers)
+        if overlap:
+            issues.append(
+                f"case {case.id!r} both triggers and excludes: {', '.join(overlap)}"
+            )
+        referenced_skills.update(triggers | non_triggers)
+        positive_coverage.update(triggers)
+
+    duplicates = sorted(case_id for case_id, count in ids.items() if count > 1)
+    if duplicates:
+        issues.append("duplicate case IDs: " + ", ".join(duplicates))
+
+    unknown = sorted(referenced_skills - known_skills)
+    if unknown:
+        issues.append("cases reference unknown Skills: " + ", ".join(unknown))
+
+    uncovered = sorted(known_skills - positive_coverage)
+    if uncovered:
+        issues.append("Skills without a positive trigger case: " + ", ".join(uncovered))
+
+    return issues
 
 
 def mode_report(cases: list[TriggerCase], *, include_protocol_readiness: bool) -> int:
@@ -548,7 +612,7 @@ def main() -> int:
     parser.add_argument(
         "--compact-mode",
         action="store_true",
-        help="Use compact skill_index.json instead of parsing full SKILL.md frontmatter (reduces prompt size by 60-80%%). RECOMMENDED for CI/CD pipelines.",
+        help="Load the same Skill descriptions from skill_index.json instead of parsing SKILL.md frontmatter.",
     )
     parser.add_argument(
         "--model",
@@ -581,12 +645,12 @@ def main() -> int:
     parser.add_argument(
         "--skip-protocol-readiness",
         action="store_true",
-        help="Skip the legacy skill document readiness report in --mode report.",
+        help="Skip the Skill document protocol readiness report in --mode report.",
     )
     parser.add_argument(
         "--fail-on-protocol-issues",
         action="store_true",
-        help="Return a non-zero exit code when a skill document is missing required legacy sections.",
+        help="Return a non-zero exit code when a Skill document is missing required protocol sections.",
     )
     parser.add_argument(
         "--enable-cache",
@@ -594,6 +658,12 @@ def main() -> int:
         help="Enable explicit caching (adds cache_control to system message). Requires compatible models like qwen3-coder-plus. GLM models only support implicit caching.",
     )
     args = parser.parse_args()
+
+    matrix_issues = validate_trigger_matrix(ALL_TRIGGER_CASES)
+    if matrix_issues:
+        for issue in matrix_issues:
+            print(f"Error: {issue}", file=sys.stderr)
+        return 2
 
     # Parse --extra-body JSON string if provided
     extra_body_dict = None
@@ -615,13 +685,6 @@ def main() -> int:
         print("No matching cases found.", file=sys.stderr)
         return 1
 
-    # Load skill descriptions based on mode
-    if args.compact_mode:
-        descriptions = load_skill_index()
-    else:
-        descriptions = extract_descriptions()
-
-    skills_block = build_available_skills_block(descriptions)
     protocol_missing = 0
 
     if args.mode == "report":
@@ -630,8 +693,12 @@ def main() -> int:
             include_protocol_readiness=not args.skip_protocol_readiness,
         )
     elif args.mode == "prompt":
+        descriptions = load_skill_index() if args.compact_mode else extract_descriptions()
+        skills_block = build_available_skills_block(descriptions)
         mode_prompt(cases, skills_block, compact_mode=args.compact_mode)
     elif args.mode == "api":
+        descriptions = load_skill_index() if args.compact_mode else extract_descriptions()
+        skills_block = build_available_skills_block(descriptions)
         mode_api(
             cases,
             skills_block,

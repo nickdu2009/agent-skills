@@ -72,7 +72,7 @@ Use this skill when a patch is ready and the cheapest useful check is not obviou
 ### Fallback
 
 - Hand off to `bugfix-workflow` if validation selection turns into fault diagnosis.
-- Hand off to `self-review` if the diff itself still needs inspection before testing.
+- Hand off to `artifact-review-loop` in verified `self-delivery` context if the current-task diff still needs inspection before testing.
 
 ### Low Confidence Handling
 

@@ -15,22 +15,17 @@ from pathlib import Path
 
 try:
     import tiktoken
-    TIKTOKEN_AVAILABLE = True
 except ImportError:
-    TIKTOKEN_AVAILABLE = False
+    print("Error: tiktoken is required for exact o200k_base counts", file=sys.stderr)
+    sys.exit(1)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+ENCODING_NAME = "o200k_base"
+ENCODER = tiktoken.get_encoding(ENCODING_NAME)
 
 def count_tokens(text: str) -> int:
-    """Count tokens using tiktoken or character estimate."""
-    if TIKTOKEN_AVAILABLE:
-        try:
-            enc = tiktoken.get_encoding("cl100k_base")
-            return len(enc.encode(text))
-        except Exception:
-            pass
-    # Fallback: ~4 characters per token
-    return len(text) // 4
+    """Count tokens using the repository's canonical tokenizer."""
+    return len(ENCODER.encode(text))
 
 def extract_protocol_blocks_v1(content: str) -> str:
     """Extract v1 protocol blocks (verbose YAML format) from content."""
@@ -146,7 +141,7 @@ def main():
         print("-" * 80)
         print(f"Total protocol tokens across all examples: {total_tokens}")
         print()
-        print(f"Token counting method: {'tiktoken' if TIKTOKEN_AVAILABLE else 'character estimate (~4 chars/token)'}")
+        print(f"Token counting method: {ENCODING_NAME}")
 
     elif args.file:
         file_path = Path(args.file)
@@ -181,7 +176,7 @@ def main():
             print(f"Lines: {result['lines']}")
             print(f"Characters: {result['protocol_chars']}")
             print(f"Tokens: {result['protocol_tokens']}")
-            print(f"Token counting: {'tiktoken' if TIKTOKEN_AVAILABLE else 'character estimate'}")
+            print(f"Token counting: {ENCODING_NAME}")
         else:
             result = measure_file(file_path)
 
@@ -194,7 +189,7 @@ def main():
             print(f"Total file:")
             print(f"  Characters: {result['total_chars']}")
             print(f"  Tokens: {result['total_tokens']}")
-            print(f"Token counting: {'tiktoken' if TIKTOKEN_AVAILABLE else 'character estimate'}")
+            print(f"Token counting: {ENCODING_NAME}")
     else:
         parser.print_help()
         sys.exit(1)

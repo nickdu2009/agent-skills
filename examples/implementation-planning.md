@@ -9,16 +9,16 @@ The design for a notification preferences feature is already approved. `ADR-0042
 - `scoped-tasking`
 - `design-before-plan`
 - `implementation-planning`
-- `plan-review-loop`
+- `artifact-review-loop` (plan)
 
-Small local tasks would stay on `AGENTS.md` Behavioral Guidelines §4 short planning instead. This example is intentionally large enough to require a written plan artifact.
+Small local tasks would use a lightweight inline plan instead. This example is intentionally large enough to require a written plan artifact.
 
 ## Why This Composition
 
 - `scoped-tasking` confirms the edit boundary before planning.
 - `design-before-plan` settles the request/response contract and acceptance criteria.
 - `implementation-planning` turns that settled design into ordered steps, file landing, verify checks, and rollback notes.
-- `plan-review-loop` hardens the plan before implementation begins.
+- `artifact-review-loop` hardens the plan before implementation begins.
 
 ## Example Flow
 
@@ -41,7 +41,7 @@ Small local tasks would stay on `AGENTS.md` Behavioral Guidelines §4 short plan
    - `[parallelism: ...]`
    - ordered steps with file landing and `verify`
    - risk/rollback table
-6. `plan-review-loop` reviews the plan artifact and ADR alignment before coding starts.
+6. `artifact-review-loop` routes the plan artifact and reviews ADR alignment before coding starts.
 
 ## What Good Looks Like
 
